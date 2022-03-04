@@ -1,0 +1,14 @@
+<p style="color: green"><%= notice %></p>
+
+<h1>Printers</h1>
+
+<div id="printers">
+  <% @printers.each do |printer| %>
+    <%= render printer %>
+    <p>
+      <%= link_to "Show this printer", printer %>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New printer", new_printer_path %>

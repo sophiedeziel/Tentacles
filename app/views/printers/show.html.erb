@@ -1,0 +1,10 @@
+<p style="color: green"><%= notice %></p>
+
+<%= render @printer %>
+
+<div>
+  <%= link_to "Edit this printer", edit_printer_path(@printer) %> |
+  <%= link_to "Back to printers", printers_path %>
+
+  <%= button_to "Destroy this printer", @printer, method: :delete %>
+</div>
