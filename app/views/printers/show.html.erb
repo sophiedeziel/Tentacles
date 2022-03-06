@@ -2,6 +2,8 @@
 
 <%= render @printer %>
 
+<%= @printer.octoprint_version.text %>
+
 <div>
   <%= link_to "Edit this printer", edit_printer_path(@printer) %> |
   <%= link_to "Back to printers", printers_path %>

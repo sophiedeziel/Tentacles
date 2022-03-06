@@ -1,3 +1,11 @@
+GIT
+  remote: https://github.com/sophiedeziel/octoprint.git
+  revision: 34a7c848a49b65163270c0eeef22a580b7e49448
+  branch: main
+  specs:
+    octoprint (0.1.0)
+      faraday (~> 2.2.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -89,6 +97,10 @@ GEM
       reline (>= 0.2.7)
     digest (3.1.0)
     erubi (1.10.0)
+    faraday (2.2.0)
+      faraday-net_http (~> 2.0)
+      ruby2_keywords (>= 0.0.4)
+    faraday-net_http (2.0.1)
     globalid (1.0.0)
       activesupport (>= 5.0)
     i18n (1.10.0)
@@ -171,6 +183,7 @@ GEM
     reline (0.3.1)
       io-console (~> 0.5)
     rexml (3.2.5)
+    ruby2_keywords (0.0.5)
     rubyzip (2.3.2)
     selenium-webdriver (4.1.0)
       childprocess (>= 0.5, < 5.0)
@@ -219,6 +232,7 @@ DEPENDENCIES
   debug
   importmap-rails
   jbuilder
+  octoprint!
   puma (~> 5.0)
   rails (~> 7.0.2, >= 7.0.2.2)
   redis (~> 4.0)
