@@ -197,14 +197,9 @@ GEM
       activesupport (>= 5.2)
       sprockets (>= 3.0.0)
     sqlite3 (1.4.2)
-    stimulus-rails (1.0.4)
-      railties (>= 6.0.0)
     strscan (3.0.1)
     thor (1.2.1)
     timeout (0.2.0)
-    turbo-rails (1.0.1)
-      actionpack (>= 6.0.0)
-      railties (>= 6.0.0)
     tzinfo (2.0.4)
       concurrent-ruby (~> 1.0)
     web-console (4.2.0)
@@ -239,8 +234,6 @@ DEPENDENCIES
   selenium-webdriver
   sprockets-rails
   sqlite3 (~> 1.4)
-  stimulus-rails
-  turbo-rails
   tzinfo-data
   web-console
   webdrivers
