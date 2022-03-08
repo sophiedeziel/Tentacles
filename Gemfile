@@ -68,3 +68,6 @@ group :test do
   gem "selenium-webdriver"
   gem "webdrivers"
 end
+
+gem "sewing_kit", "~> 0.129.0"
+gem "quilt_rails", "~> 3.5"

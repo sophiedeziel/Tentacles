@@ -1,0 +1,40 @@
+{
+  "name": "tentacles",
+  "private": true,
+  "sideEffects": false,
+  "scripts": {
+    "dev": "sewing-kit dev",
+    "check": "sewing-kit check",
+    "lint": "sewing-kit lint",
+    "type-check": "sewing-kit type-check",
+    "nuke": "sewing-kit nuke",
+    "test": "sewing-kit test"
+  },
+  "eslintConfig": {
+    "extends": [
+      "plugin:@shopify/typescript",
+      "plugin:@shopify/react",
+      "plugin:@shopify/prettier",
+      "plugin:@shopify/jest",
+      "plugin:@shopify/polaris",
+      "plugin:@shopify/graphql"
+    ]
+  },
+  "prettier": "@shopify/prettier-config",
+  "stylelint": {
+    "extends": [
+      "@shopify/stylelint-plugin/prettier"
+    ]
+  },
+  "resolutions": {
+    "babel-plugin-dynamic-import-node": "2.3.0"
+  },
+  "dependencies": {
+    "@shopify/sewing-kit": "^5.1.0",
+    "@types/react": "~16.9.0",
+    "@types/react-dom": "~16.9.0",
+    "react": "~16.11.0",
+    "react-dom": "~16.11.0",
+    "typescript": "~3.8.0"
+  }
+}

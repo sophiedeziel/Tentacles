@@ -79,6 +79,9 @@ GEM
     bindex (0.8.1)
     bootsnap (1.10.3)
       msgpack (~> 1.2)
+    browserslist_useragent (0.2.0)
+      semantic
+      user_agent_parser
     builder (3.2.4)
     capybara (3.36.0)
       addressable
@@ -151,8 +154,15 @@ GEM
     public_suffix (4.0.6)
     puma (5.6.2)
       nio4r (~> 2.0)
+    quilt_rails (3.5.5)
+      activesupport (>= 3.2.0)
+      rails-reverse-proxy (~> 0.9.0)
+      railties (>= 3.2.0)
+      statsd-instrument (>= 2.8.0)
     racc (1.6.0)
     rack (2.2.3)
+    rack-proxy (0.7.2)
+      rack
     rack-test (1.1.0)
       rack (>= 1.0, < 3)
     rails (7.0.2.2)
@@ -174,6 +184,11 @@ GEM
       nokogiri (>= 1.6)
     rails-html-sanitizer (1.4.2)
       loofah (~> 2.3)
+    rails-reverse-proxy (0.9.1)
+      addressable
+      rack
+      rack-proxy
+      rails
     railties (7.0.2.2)
       actionpack (= 7.0.2.2)
       activesupport (= 7.0.2.2)
@@ -193,6 +208,11 @@ GEM
       childprocess (>= 0.5, < 5.0)
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2)
+    semantic (1.6.1)
+    sewing_kit (0.129.0)
+      browserslist_useragent
+      railties (>= 3.2.0)
+      rake
     sprockets (4.0.3)
       concurrent-ruby (~> 1.0)
       rack (> 1, < 3)
@@ -201,11 +221,13 @@ GEM
       activesupport (>= 5.2)
       sprockets (>= 3.0.0)
     sqlite3 (1.4.2)
+    statsd-instrument (3.1.2)
     strscan (3.0.1)
     thor (1.2.1)
     timeout (0.2.0)
     tzinfo (2.0.4)
       concurrent-ruby (~> 1.0)
+    user_agent_parser (2.9.0)
     web-console (4.2.0)
       actionview (>= 6.0.0)
       activemodel (>= 6.0.0)
@@ -235,9 +257,11 @@ DEPENDENCIES
   jbuilder
   octoprint!
   puma (~> 5.0)
+  quilt_rails (~> 3.5)
   rails (~> 7.0.2, >= 7.0.2.2)
   redis (~> 4.0)
   selenium-webdriver
+  sewing_kit (~> 0.129.0)
   sprockets-rails
   sqlite3 (~> 1.4)
   tzinfo-data

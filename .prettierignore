@@ -1,0 +1,10 @@
+package.json
+.runix
+.sewing-kit
+.dev
+node_modules
+tmp
+public
+*.svg
+*.graphql.d.ts
+build
