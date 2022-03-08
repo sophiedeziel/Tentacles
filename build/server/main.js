@@ -87,6 +87,21 @@ module.exports =
 /************************************************************************/
 /******/ ({
 
+/***/ "./app/ui/App.css":
+/*!************************!*\
+  !*** ./app/ui/App.css ***!
+  \************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+// Exports
+module.exports = {
+
+};
+
+
+/***/ }),
+
 /***/ "./app/ui/index.tsx":
 /*!**************************!*\
   !*** ./app/ui/index.tsx ***!
@@ -104,19 +119,32 @@ exports.default = void 0;
 
 var _react = _interopRequireDefault(__webpack_require__(/*! react */ "react"));
 
+var _antd = __webpack_require__(/*! antd */ "antd");
+
+__webpack_require__(/*! ./App.css */ "./app/ui/App.css");
+
 var _jsxFileName = "/Users/sophiedeziel/dev/Tentacles/app/ui/index.tsx";
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function App() {
   return /*#__PURE__*/_react.default.createElement("div", {
+    className: "App",
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 4,
-      columnNumber: 10
+      lineNumber: 7,
+      columnNumber: 5
     }
-  }, "Hello Quilt");
+  }, /*#__PURE__*/_react.default.createElement(_antd.Button, {
+    type: "primary",
+    __self: this,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 8,
+      columnNumber: 7
+    }
+  }, "Button"));
 }
 
 var _default = App;
@@ -3026,6 +3054,17 @@ module.exports = require("@shopify/react-network/server");
 /***/ (function(module, exports) {
 
 module.exports = require("@shopify/sewing-kit-koa");
+
+/***/ }),
+
+/***/ "antd":
+/*!***********************!*\
+  !*** external "antd" ***!
+  \***********************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("antd");
 
 /***/ }),
 
