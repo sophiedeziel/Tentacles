@@ -102,6 +102,22 @@ module.exports = {
 
 /***/ }),
 
+/***/ "./app/ui/App.module.scss":
+/*!********************************!*\
+  !*** ./app/ui/App.module.scss ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+// Exports
+module.exports = {
+	"Logo": "App-module-Logo_dxYWD",
+	"siteLayoutBackground": "App-module-siteLayoutBackground_oyI1b"
+};
+
+
+/***/ }),
+
 /***/ "./app/ui/index.tsx":
 /*!**************************!*\
   !*** ./app/ui/index.tsx ***!
@@ -117,34 +133,277 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _react = _interopRequireDefault(__webpack_require__(/*! react */ "react"));
+var _react = _interopRequireWildcard(__webpack_require__(/*! react */ "react"));
 
 var _antd = __webpack_require__(/*! antd */ "antd");
 
+var _icons = __webpack_require__(/*! @ant-design/icons */ "@ant-design/icons");
+
 __webpack_require__(/*! ./App.css */ "./app/ui/App.css");
+
+var _AppModule = _interopRequireDefault(__webpack_require__(/*! ./App.module.scss */ "./app/ui/App.module.scss"));
 
 var _jsxFileName = "/Users/sophiedeziel/dev/Tentacles/app/ui/index.tsx";
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+const {
+  Header,
+  Content,
+  Footer,
+  Sider
+} = _antd.Layout;
+const {
+  SubMenu
+} = _antd.Menu;
+
 function App() {
-  return /*#__PURE__*/_react.default.createElement("div", {
-    className: "App",
+  const [collapsed, setCollaped] = (0, _react.useState)(false);
+
+  const onCollapse = () => {
+    setCollaped(!collapsed);
+  };
+
+  return /*#__PURE__*/_react.default.createElement(_antd.Layout, {
+    style: {
+      minHeight: '100vh'
+    },
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 7,
+      lineNumber: 25,
       columnNumber: 5
     }
-  }, /*#__PURE__*/_react.default.createElement(_antd.Button, {
-    type: "primary",
+  }, /*#__PURE__*/_react.default.createElement(Sider, {
+    collapsible: true,
+    collapsed: collapsed,
+    onCollapse: onCollapse,
+    trigger: null,
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 8,
-      columnNumber: 7
+      lineNumber: 26,
+      columnNumber: 9
     }
-  }, "Button"));
+  }, /*#__PURE__*/_react.default.createElement("div", {
+    className: _AppModule.default.Logo,
+    __self: this,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 27,
+      columnNumber: 11
+    }
+  }), /*#__PURE__*/_react.default.createElement(_antd.Menu, {
+    theme: "dark",
+    defaultSelectedKeys: ['1'],
+    mode: "inline",
+    __self: this,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 28,
+      columnNumber: 11
+    }
+  }, /*#__PURE__*/_react.default.createElement(_antd.Menu.Item, {
+    key: "1",
+    icon: /*#__PURE__*/_react.default.createElement(_icons.PieChartOutlined, {
+      __self: this,
+      __source: {
+        fileName: _jsxFileName,
+        lineNumber: 29,
+        columnNumber: 38
+      }
+    }),
+    __self: this,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 29,
+      columnNumber: 13
+    }
+  }, "Dashboard"), /*#__PURE__*/_react.default.createElement(_antd.Menu.Item, {
+    key: "2",
+    icon: /*#__PURE__*/_react.default.createElement(_icons.DesktopOutlined, {
+      __self: this,
+      __source: {
+        fileName: _jsxFileName,
+        lineNumber: 32,
+        columnNumber: 38
+      }
+    }),
+    __self: this,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 32,
+      columnNumber: 13
+    }
+  }, "Option 2"), /*#__PURE__*/_react.default.createElement(SubMenu, {
+    key: "sub1",
+    icon: /*#__PURE__*/_react.default.createElement(_icons.UserOutlined, {
+      __self: this,
+      __source: {
+        fileName: _jsxFileName,
+        lineNumber: 35,
+        columnNumber: 39
+      }
+    }),
+    title: "User",
+    __self: this,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 35,
+      columnNumber: 13
+    }
+  }, /*#__PURE__*/_react.default.createElement(_antd.Menu.Item, {
+    key: "3",
+    __self: this,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 36,
+      columnNumber: 15
+    }
+  }, "Tom"), /*#__PURE__*/_react.default.createElement(_antd.Menu.Item, {
+    key: "4",
+    __self: this,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 37,
+      columnNumber: 15
+    }
+  }, "Bill"), /*#__PURE__*/_react.default.createElement(_antd.Menu.Item, {
+    key: "5",
+    __self: this,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 38,
+      columnNumber: 15
+    }
+  }, "Alex")), /*#__PURE__*/_react.default.createElement(SubMenu, {
+    key: "sub2",
+    icon: /*#__PURE__*/_react.default.createElement(_icons.TeamOutlined, {
+      __self: this,
+      __source: {
+        fileName: _jsxFileName,
+        lineNumber: 40,
+        columnNumber: 39
+      }
+    }),
+    title: "Team",
+    __self: this,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 40,
+      columnNumber: 13
+    }
+  }, /*#__PURE__*/_react.default.createElement(_antd.Menu.Item, {
+    key: "6",
+    __self: this,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 41,
+      columnNumber: 15
+    }
+  }, "Team 1"), /*#__PURE__*/_react.default.createElement(_antd.Menu.Item, {
+    key: "8",
+    __self: this,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 42,
+      columnNumber: 15
+    }
+  }, "Team 2")), /*#__PURE__*/_react.default.createElement(_antd.Menu.Item, {
+    key: "9",
+    icon: /*#__PURE__*/_react.default.createElement(_icons.FileOutlined, {
+      __self: this,
+      __source: {
+        fileName: _jsxFileName,
+        lineNumber: 44,
+        columnNumber: 38
+      }
+    }),
+    __self: this,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 44,
+      columnNumber: 13
+    }
+  }, "Files"))), /*#__PURE__*/_react.default.createElement(_antd.Layout, {
+    __self: this,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 49,
+      columnNumber: 9
+    }
+  }, /*#__PURE__*/_react.default.createElement(Header, {
+    className: _AppModule.default.siteLayoutBackground,
+    style: {
+      padding: 0
+    },
+    __self: this,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 50,
+      columnNumber: 11
+    }
+  }), /*#__PURE__*/_react.default.createElement(Content, {
+    style: {
+      margin: '0 16px'
+    },
+    __self: this,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 51,
+      columnNumber: 11
+    }
+  }, /*#__PURE__*/_react.default.createElement(_antd.Breadcrumb, {
+    style: {
+      margin: '16px 0'
+    },
+    __self: this,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 52,
+      columnNumber: 13
+    }
+  }, /*#__PURE__*/_react.default.createElement(_antd.Breadcrumb.Item, {
+    __self: this,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 53,
+      columnNumber: 15
+    }
+  }, "User"), /*#__PURE__*/_react.default.createElement(_antd.Breadcrumb.Item, {
+    __self: this,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 54,
+      columnNumber: 15
+    }
+  }, "Bill")), /*#__PURE__*/_react.default.createElement("div", {
+    className: "site-layout-background",
+    style: {
+      padding: 24,
+      minHeight: 360
+    },
+    __self: this,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 56,
+      columnNumber: 13
+    }
+  }, "Bill is a cat.")), /*#__PURE__*/_react.default.createElement(Footer, {
+    style: {
+      textAlign: 'center'
+    },
+    __self: this,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 60,
+      columnNumber: 11
+    }
+  }, "Tentacles")));
 }
 
 var _default = App;
@@ -2922,6 +3181,17 @@ module.exports = function(module) {
 __webpack_require__(/*! source-map-support/register */"./node_modules/source-map-support/register.js");
 module.exports = __webpack_require__(/*! /Users/sophiedeziel/dev/Tentacles/app/ui/server */"./app/ui/server.js");
 
+
+/***/ }),
+
+/***/ "@ant-design/icons":
+/*!************************************!*\
+  !*** external "@ant-design/icons" ***!
+  \************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("@ant-design/icons");
 
 /***/ }),
 
