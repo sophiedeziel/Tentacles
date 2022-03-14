@@ -8,17 +8,33 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 
+import PrintersList from '../../Sections/Printers/PrintersList/PrintersList'
+
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
 
 import "antd/dist/antd.css";
 
-import classes from './Renamed-App.module.scss';
+import classes from './App.module.scss';
 
-import { ApolloClient, InMemoryCache, ApolloProvider, HttpLink } from "@apollo/client";
-import fetch from 'cross-fetch';
+import { ApolloClient, HttpLink, InMemoryCache, ApolloProvider } from '@apollo/client';
+
+import { setContext } from "@apollo/client/link/context";
+
+const authLink = setContext((_, { headers }) => {
+  const csrfToken = document?.querySelector("meta[name=csrf-token]")?.getAttribute("content");
+
+  return {
+    headers: {
+      ...headers,
+      "X-CSRF-Token": csrfToken,
+    },
+  };
+});
+
+
 const client = new ApolloClient({
-  link: new HttpLink({ uri: '/graphql', fetch }),
+  link: authLink.concat(new HttpLink({ uri: "/graphql" })),
   cache: new InMemoryCache(),
 });
 
@@ -63,7 +79,7 @@ function App() {
               <Breadcrumb.Item>Bill</Breadcrumb.Item>
             </Breadcrumb>
             <div className="site-layout-background" style={{ padding: 24, minHeight: 360 }}>
-            Bill is a cat.
+              <PrintersList />
             </div>
           </Content>
           <Footer style={{ textAlign: 'center' }}>Tentacles</Footer>
