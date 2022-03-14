@@ -143,6 +143,10 @@ __webpack_require__(/*! ./App.css */ "./app/ui/App.css");
 
 var _AppModule = _interopRequireDefault(__webpack_require__(/*! ./App.module.scss */ "./app/ui/App.module.scss"));
 
+var _client = __webpack_require__(/*! @apollo/client */ "@apollo/client");
+
+var _crossFetch = _interopRequireDefault(__webpack_require__(/*! cross-fetch */ "cross-fetch"));
+
 var _jsxFileName = "/Users/sophiedeziel/dev/Tentacles/app/ui/index.tsx";
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -160,6 +164,13 @@ const {
 const {
   SubMenu
 } = _antd.Menu;
+const client = new _client.ApolloClient({
+  link: new _client.HttpLink({
+    uri: '/graphql',
+    fetch: _crossFetch.default
+  }),
+  cache: new _client.InMemoryCache()
+});
 
 function App() {
   const [collapsed, setCollaped] = (0, _react.useState)(false);
@@ -168,14 +179,22 @@ function App() {
     setCollaped(!collapsed);
   };
 
-  return /*#__PURE__*/_react.default.createElement(_antd.Layout, {
+  return /*#__PURE__*/_react.default.createElement(_client.ApolloProvider, {
+    client: client,
+    __self: this,
+    __source: {
+      fileName: _jsxFileName,
+      lineNumber: 32,
+      columnNumber: 5
+    }
+  }, /*#__PURE__*/_react.default.createElement(_antd.Layout, {
     style: {
       minHeight: '100vh'
     },
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 25,
+      lineNumber: 33,
       columnNumber: 5
     }
   }, /*#__PURE__*/_react.default.createElement(Sider, {
@@ -186,7 +205,7 @@ function App() {
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 26,
+      lineNumber: 34,
       columnNumber: 9
     }
   }, /*#__PURE__*/_react.default.createElement("div", {
@@ -194,7 +213,7 @@ function App() {
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 27,
+      lineNumber: 35,
       columnNumber: 11
     }
   }), /*#__PURE__*/_react.default.createElement(_antd.Menu, {
@@ -204,7 +223,7 @@ function App() {
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 28,
+      lineNumber: 36,
       columnNumber: 11
     }
   }, /*#__PURE__*/_react.default.createElement(_antd.Menu.Item, {
@@ -213,14 +232,14 @@ function App() {
       __self: this,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 29,
+        lineNumber: 37,
         columnNumber: 38
       }
     }),
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 29,
+      lineNumber: 37,
       columnNumber: 13
     }
   }, "Dashboard"), /*#__PURE__*/_react.default.createElement(_antd.Menu.Item, {
@@ -229,14 +248,14 @@ function App() {
       __self: this,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 32,
+        lineNumber: 40,
         columnNumber: 38
       }
     }),
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 32,
+      lineNumber: 40,
       columnNumber: 13
     }
   }, "Option 2"), /*#__PURE__*/_react.default.createElement(SubMenu, {
@@ -245,7 +264,7 @@ function App() {
       __self: this,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 35,
+        lineNumber: 43,
         columnNumber: 39
       }
     }),
@@ -253,7 +272,7 @@ function App() {
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 35,
+      lineNumber: 43,
       columnNumber: 13
     }
   }, /*#__PURE__*/_react.default.createElement(_antd.Menu.Item, {
@@ -261,7 +280,7 @@ function App() {
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 36,
+      lineNumber: 44,
       columnNumber: 15
     }
   }, "Tom"), /*#__PURE__*/_react.default.createElement(_antd.Menu.Item, {
@@ -269,7 +288,7 @@ function App() {
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 37,
+      lineNumber: 45,
       columnNumber: 15
     }
   }, "Bill"), /*#__PURE__*/_react.default.createElement(_antd.Menu.Item, {
@@ -277,7 +296,7 @@ function App() {
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 38,
+      lineNumber: 46,
       columnNumber: 15
     }
   }, "Alex")), /*#__PURE__*/_react.default.createElement(SubMenu, {
@@ -286,7 +305,7 @@ function App() {
       __self: this,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 40,
+        lineNumber: 48,
         columnNumber: 39
       }
     }),
@@ -294,7 +313,7 @@ function App() {
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 40,
+      lineNumber: 48,
       columnNumber: 13
     }
   }, /*#__PURE__*/_react.default.createElement(_antd.Menu.Item, {
@@ -302,7 +321,7 @@ function App() {
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 41,
+      lineNumber: 49,
       columnNumber: 15
     }
   }, "Team 1"), /*#__PURE__*/_react.default.createElement(_antd.Menu.Item, {
@@ -310,7 +329,7 @@ function App() {
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 42,
+      lineNumber: 50,
       columnNumber: 15
     }
   }, "Team 2")), /*#__PURE__*/_react.default.createElement(_antd.Menu.Item, {
@@ -319,21 +338,21 @@ function App() {
       __self: this,
       __source: {
         fileName: _jsxFileName,
-        lineNumber: 44,
+        lineNumber: 52,
         columnNumber: 38
       }
     }),
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 44,
+      lineNumber: 52,
       columnNumber: 13
     }
   }, "Files"))), /*#__PURE__*/_react.default.createElement(_antd.Layout, {
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 49,
+      lineNumber: 57,
       columnNumber: 9
     }
   }, /*#__PURE__*/_react.default.createElement(Header, {
@@ -344,7 +363,7 @@ function App() {
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 50,
+      lineNumber: 58,
       columnNumber: 11
     }
   }), /*#__PURE__*/_react.default.createElement(Content, {
@@ -354,7 +373,7 @@ function App() {
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 51,
+      lineNumber: 59,
       columnNumber: 11
     }
   }, /*#__PURE__*/_react.default.createElement(_antd.Breadcrumb, {
@@ -364,21 +383,21 @@ function App() {
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 52,
+      lineNumber: 60,
       columnNumber: 13
     }
   }, /*#__PURE__*/_react.default.createElement(_antd.Breadcrumb.Item, {
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 53,
+      lineNumber: 61,
       columnNumber: 15
     }
   }, "User"), /*#__PURE__*/_react.default.createElement(_antd.Breadcrumb.Item, {
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 54,
+      lineNumber: 62,
       columnNumber: 15
     }
   }, "Bill")), /*#__PURE__*/_react.default.createElement("div", {
@@ -390,7 +409,7 @@ function App() {
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 56,
+      lineNumber: 64,
       columnNumber: 13
     }
   }, "Bill is a cat.")), /*#__PURE__*/_react.default.createElement(Footer, {
@@ -400,10 +419,10 @@ function App() {
     __self: this,
     __source: {
       fileName: _jsxFileName,
-      lineNumber: 60,
+      lineNumber: 68,
       columnNumber: 11
     }
-  }, "Tentacles")));
+  }, "Tentacles"))));
 }
 
 var _default = App;
@@ -3192,6 +3211,17 @@ module.exports = __webpack_require__(/*! /Users/sophiedeziel/dev/Tentacles/app/u
 /***/ (function(module, exports) {
 
 module.exports = require("@ant-design/icons");
+
+/***/ }),
+
+/***/ "@apollo/client":
+/*!*********************************!*\
+  !*** external "@apollo/client" ***!
+  \*********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("@apollo/client");
 
 /***/ }),
 

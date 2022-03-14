@@ -2,40 +2,57 @@
   "name": "tentacles",
   "private": true,
   "sideEffects": false,
-  "scripts": {
-    "dev": "sewing-kit dev",
-    "check": "sewing-kit check",
-    "lint": "sewing-kit lint",
-    "type-check": "sewing-kit type-check",
-    "nuke": "sewing-kit nuke",
-    "test": "sewing-kit test"
-  },
-  "eslintConfig": {
-    "extends": [
-      "plugin:@shopify/typescript",
-      "plugin:@shopify/react",
-      "plugin:@shopify/prettier",
-      "plugin:@shopify/jest",
-      "plugin:@shopify/polaris",
-      "plugin:@shopify/graphql"
-    ]
-  },
-  "prettier": "@shopify/prettier-config",
-  "stylelint": {
-    "extends": [
-      "@shopify/stylelint-plugin/prettier"
-    ]
-  },
   "resolutions": {
-    "babel-plugin-dynamic-import-node": "2.3.0"
+    "babel-plugin-dynamic-import-node": "2.3.3"
   },
   "dependencies": {
-    "@shopify/sewing-kit": "^5.1.0",
+    "@apollo/client": "^3.5.10",
+    "@babel/core": "7",
+    "@babel/plugin-transform-runtime": "7",
+    "@babel/preset-env": "7",
+    "@babel/preset-react": "^7.16.7",
+    "@babel/preset-typescript": "^7.16.7",
+    "@babel/runtime": "7",
     "@types/react": "~16.9.0",
     "@types/react-dom": "~16.9.0",
     "antd": "^4.19.1",
-    "react": "~16.11.0",
-    "react-dom": "~16.11.0",
-    "typescript": "~3.8.0"
+    "babel-loader": "8",
+    "compression-webpack-plugin": "9",
+    "core-js": "^3.21.1",
+    "cross-fetch": "^3.1.5",
+    "graphql": "^16.3.0",
+    "js-yaml": "^4.1.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-on-rails": "^13.0.2",
+    "regenerator-runtime": "^0.13.9",
+    "shakapacker": "6.1.1",
+    "terser-webpack-plugin": "5",
+    "webpack": "5",
+    "webpack-assets-manifest": "5",
+    "webpack-cli": "4",
+    "webpack-merge": "5"
+  },
+  "devDependencies": {
+    "@webpack-cli/serve": "^1.6.1",
+    "css-loader": "^6.7.1",
+    "less": "^4.1.2",
+    "less-loader": "^10.2.0",
+    "node-sass": "^7.0.1",
+    "postcss": "^8.4.8",
+    "postcss-import": "^14.0.2",
+    "react-scripts": "^5.0.0",
+    "sass-loader": "^12.6.0",
+    "style-loader": "^3.3.1",
+    "webpack-dev-server": "^4.7.4"
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-env",
+      "@babel/preset-react"
+    ],
+    "plugins": [
+      "@babel/plugin-proposal-class-properties"
+    ]
   }
 }

@@ -11,8 +11,16 @@ import {
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
 
-import './App.css';
-import classes from './App.module.scss'
+import "antd/dist/antd.css";
+
+import classes from './Renamed-App.module.scss';
+
+import { ApolloClient, InMemoryCache, ApolloProvider, HttpLink } from "@apollo/client";
+import fetch from 'cross-fetch';
+const client = new ApolloClient({
+  link: new HttpLink({ uri: '/graphql', fetch }),
+  cache: new InMemoryCache(),
+});
 
 function App() {
   const [collapsed, setCollaped] = useState(false);
@@ -22,6 +30,7 @@ function App() {
   }
 
   return (
+    <ApolloProvider client={client}>
     <Layout style={{ minHeight: '100vh' }}>
         <Sider collapsible collapsed={collapsed} onCollapse={onCollapse} trigger={null}>
           <div className={classes.Logo} />
@@ -54,12 +63,13 @@ function App() {
               <Breadcrumb.Item>Bill</Breadcrumb.Item>
             </Breadcrumb>
             <div className="site-layout-background" style={{ padding: 24, minHeight: 360 }}>
-              Bill is a cat.
+            Bill is a cat.
             </div>
           </Content>
           <Footer style={{ textAlign: 'center' }}>Tentacles</Footer>
         </Layout>
       </Layout>
+      </ApolloProvider>
   )
 }
 

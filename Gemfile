@@ -45,6 +45,10 @@ gem "bootsnap", require: false
 gem 'octoprint', :github => 'sophiedeziel/octoprint', :branch => 'main' # For prototype purposes
 gem "graphql"
 
+gem "react_on_rails"
+gem "shakapacker", "~> 6.1"
+gem 'mini_racer', platforms: :ruby
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri mingw x64_mingw ]
@@ -68,6 +72,3 @@ group :test do
   gem "selenium-webdriver"
   gem "webdrivers"
 end
-
-gem "sewing_kit", "~> 0.129.0"
-gem "quilt_rails", "~> 3.5"

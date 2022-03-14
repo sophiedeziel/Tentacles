@@ -79,9 +79,6 @@ GEM
     bindex (0.8.1)
     bootsnap (1.10.3)
       msgpack (~> 1.2)
-    browserslist_useragent (0.2.0)
-      semantic
-      user_agent_parser
     builder (3.2.4)
     capybara (3.36.0)
       addressable
@@ -94,12 +91,14 @@ GEM
       xpath (~> 3.2)
     childprocess (4.1.0)
     concurrent-ruby (1.1.9)
+    connection_pool (2.2.5)
     crass (1.0.6)
     debug (1.4.0)
       irb (>= 1.3.6)
       reline (>= 0.2.7)
     digest (3.1.0)
     erubi (1.10.0)
+    execjs (2.8.1)
     faraday (2.2.0)
       faraday-net_http (~> 2.0)
       ruby2_keywords (>= 0.0.4)
@@ -122,6 +121,7 @@ GEM
     jbuilder (2.11.5)
       actionview (>= 5.0.0)
       activesupport (>= 5.0.0)
+    libv8-node (16.10.0.0-x86_64-darwin)
     loofah (2.14.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
@@ -131,6 +131,8 @@ GEM
     matrix (0.4.2)
     method_source (1.0.0)
     mini_mime (1.1.2)
+    mini_racer (0.6.2)
+      libv8-node (~> 16.10.0.0)
     minitest (5.15.0)
     msgpack (1.4.5)
     net-imap (0.2.3)
@@ -154,11 +156,6 @@ GEM
     public_suffix (4.0.6)
     puma (5.6.2)
       nio4r (~> 2.0)
-    quilt_rails (3.5.5)
-      activesupport (>= 3.2.0)
-      rails-reverse-proxy (~> 0.9.0)
-      railties (>= 3.2.0)
-      statsd-instrument (>= 2.8.0)
     racc (1.6.0)
     rack (2.2.3)
     rack-proxy (0.7.2)
@@ -184,11 +181,6 @@ GEM
       nokogiri (>= 1.6)
     rails-html-sanitizer (1.4.2)
       loofah (~> 2.3)
-    rails-reverse-proxy (0.9.1)
-      addressable
-      rack
-      rack-proxy
-      rails
     railties (7.0.2.2)
       actionpack (= 7.0.2.2)
       activesupport (= 7.0.2.2)
@@ -196,7 +188,14 @@ GEM
       rake (>= 12.2)
       thor (~> 1.0)
       zeitwerk (~> 2.5)
+    rainbow (3.1.1)
     rake (13.0.6)
+    react_on_rails (13.0.2)
+      addressable
+      connection_pool
+      execjs (~> 2.5)
+      rails (>= 5.2)
+      rainbow (~> 3.0)
     redis (4.6.0)
     regexp_parser (2.2.1)
     reline (0.3.1)
@@ -208,11 +207,12 @@ GEM
       childprocess (>= 0.5, < 5.0)
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2)
-    semantic (1.6.1)
-    sewing_kit (0.129.0)
-      browserslist_useragent
-      railties (>= 3.2.0)
-      rake
+    semantic_range (3.0.0)
+    shakapacker (6.1.1)
+      activesupport (>= 5.2)
+      rack-proxy (>= 0.6.1)
+      railties (>= 5.2)
+      semantic_range (>= 2.3.0)
     sprockets (4.0.3)
       concurrent-ruby (~> 1.0)
       rack (> 1, < 3)
@@ -221,13 +221,11 @@ GEM
       activesupport (>= 5.2)
       sprockets (>= 3.0.0)
     sqlite3 (1.4.2)
-    statsd-instrument (3.1.2)
     strscan (3.0.1)
     thor (1.2.1)
     timeout (0.2.0)
     tzinfo (2.0.4)
       concurrent-ruby (~> 1.0)
-    user_agent_parser (2.9.0)
     web-console (4.2.0)
       actionview (>= 6.0.0)
       activemodel (>= 6.0.0)
@@ -255,13 +253,14 @@ DEPENDENCIES
   graphql
   importmap-rails
   jbuilder
+  mini_racer
   octoprint!
   puma (~> 5.0)
-  quilt_rails (~> 3.5)
   rails (~> 7.0.2, >= 7.0.2.2)
+  react_on_rails
   redis (~> 4.0)
   selenium-webdriver
-  sewing_kit (~> 0.129.0)
+  shakapacker (~> 6.1)
   sprockets-rails
   sqlite3 (~> 1.4)
   tzinfo-data
