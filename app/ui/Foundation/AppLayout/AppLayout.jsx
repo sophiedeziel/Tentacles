@@ -6,16 +6,22 @@ import {
   FileOutlined,
   TeamOutlined,
   UserOutlined,
+  MailOutlined,
+  AppstoreOutlined,
+  SettingOutlined,
 } from '@ant-design/icons';
+import { useHistory } from "react-router";
+import { Link } from "react-router-dom";
 
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
 
-import "antd/dist/antd.css";
+import "antd/dist/antd.less";
 
-import classes from './AppLayout.module.scss';
+import classes from './AppLayout.module.less';
 
 function AppLayout({children}) {
+  let history = useHistory();
   const [collapsed, setCollaped] = useState(false);
 
   const onCollapse = () => {
@@ -26,12 +32,15 @@ function AppLayout({children}) {
     <Layout style={{ minHeight: '100vh' }}>
       <Sider collapsible collapsed={collapsed} onCollapse={onCollapse} trigger={null}>
         <div className={classes.Logo} />
-        <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline">
-          <Menu.Item key="1" icon={<PieChartOutlined />}>
-            Dashboard
+        <Menu 
+          theme="dark" 
+          defaultSelectedKeys={['1']} 
+          mode="inline" >
+          <Menu.Item key="1" icon={<PieChartOutlined />} to="/printers" >
+            <Link to="/">Dashboard</Link>
           </Menu.Item>
           <Menu.Item key="2" icon={<DesktopOutlined />}>
-            Option 2
+            <Link to="/printers">Printers</Link>
           </Menu.Item>
           <SubMenu key="sub1" icon={<UserOutlined />} title="User">
             <Menu.Item key="3">Tom</Menu.Item>
@@ -42,13 +51,37 @@ function AppLayout({children}) {
             <Menu.Item key="6">Team 1</Menu.Item>
             <Menu.Item key="8">Team 2</Menu.Item>
           </SubMenu>
-          <Menu.Item key="9" icon={<FileOutlined />}>
+          <Menu.Item key="9" icon={<FileOutlined />} to='/files'>
             Files
           </Menu.Item>
         </Menu>
       </Sider>
       <Layout>
-        <Header className={classes.siteLayoutBackground} style={{ padding: 0 }} />
+        <Header className={classes.siteLayoutBackground} style={{ padding: 0 }} >
+          <Menu mode="horizontal">
+            <Menu.Item key="mail" icon={<MailOutlined />}>
+              Navigation One
+            </Menu.Item>
+            <Menu.Item key="app" disabled icon={<AppstoreOutlined />}>
+              Navigation Two
+            </Menu.Item>
+            <SubMenu key="SubMenu" icon={<SettingOutlined />} title="Navigation Three - Submenu">
+              <Menu.ItemGroup title="Item 1">
+                <Menu.Item key="setting:1">Option 1</Menu.Item>
+                <Menu.Item key="setting:2">Option 2</Menu.Item>
+              </Menu.ItemGroup>
+              <Menu.ItemGroup title="Item 2">
+                <Menu.Item key="setting:3">Option 3</Menu.Item>
+                <Menu.Item key="setting:4">Option 4</Menu.Item>
+              </Menu.ItemGroup>
+            </SubMenu>
+            <Menu.Item key="alipay">
+              <a href="https://ant.design" target="_blank" rel="noopener noreferrer">
+                Navigation Four - Link
+              </a>
+            </Menu.Item>
+          </Menu>
+        </Header>
         <Content style={{ margin: '0 16px' }}>
           <Breadcrumb style={{ margin: '16px 0' }}>
             <Breadcrumb.Item>User</Breadcrumb.Item>

@@ -1,9 +1,12 @@
 import React from 'react';
 import AppLayout from '../AppLayout/AppLayout'
 
-import PrintersList from '../../Sections/Printers/PrintersList/PrintersList'
+import AppSwitcher from '../AppSwitcher/AppSwitcher'
 
 import { ApolloClient, HttpLink, InMemoryCache, ApolloProvider } from '@apollo/client';
+import {
+  BrowserRouter as Router,
+} from "react-router-dom";
 
 import { setContext } from "@apollo/client/link/context";
 
@@ -26,9 +29,11 @@ const client = new ApolloClient({
 function App() {
   return (
     <ApolloProvider client={client}>
-      <AppLayout>
-        <PrintersList />
-      </AppLayout>
+      <Router>
+        <AppLayout>
+          <AppSwitcher />
+        </AppLayout>
+      </Router>
     </ApolloProvider>
   )
 }
