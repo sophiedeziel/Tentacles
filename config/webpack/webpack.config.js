@@ -26,6 +26,10 @@ other = {
             loader: 'less-loader', 
             options: { 
               lessOptions: { 
+                modifyVars: {
+                  'primary-color': '#722ed1',
+                  'layout-header-background': '#120338'
+                },
                 javascriptEnabled: true
               },
             } 
