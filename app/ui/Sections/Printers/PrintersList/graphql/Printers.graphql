@@ -4,6 +4,7 @@ query Printers {
     name
     octoprintUri
     octoprintKey
+    octoprintVersion
     createdAt
     updatedAt
   }
