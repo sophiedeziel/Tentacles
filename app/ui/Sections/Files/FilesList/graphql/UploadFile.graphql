@@ -1,0 +1,12 @@
+mutation UploadFile($input: UploadFileInput!) {
+  uploadFile(input: $input) {
+    printfile {
+      id
+      filename
+      filetype
+      notes
+      createdAt
+      updatedAt
+    }
+  }
+}

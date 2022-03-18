@@ -3,7 +3,8 @@ import AppLayout from '../AppLayout/AppLayout'
 
 import AppSwitcher from '../AppSwitcher/AppSwitcher'
 
-import { ApolloClient, HttpLink, InMemoryCache, ApolloProvider } from '@apollo/client';
+import { ApolloClient, HttpLink, InMemoryCache, ApolloProvider, ApolloLink } from '@apollo/client';
+import { createUploadLink } from 'apollo-upload-client';
 import {
   BrowserRouter as Router,
 } from "react-router-dom";
@@ -21,8 +22,14 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
+const httpLink = ApolloLink.split(
+  (operation) => operation.getContext().hasUpload,
+  createUploadLink({ uri: '/graphql' }),
+  new HttpLink({ uri: '/graphql' }),
+);
+
 const client = new ApolloClient({
-  link: authLink.concat(new HttpLink({ uri: "/graphql" })),
+  link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
 });
 

@@ -44,6 +44,7 @@ gem "bootsnap", require: false
 
 gem 'octoprint', :github => 'sophiedeziel/octoprint', :branch => 'main' # For prototype purposes
 gem "graphql"
+gem 'apollo_upload_server'
 
 gem "react_on_rails"
 gem "shakapacker", "~> 6.1"
@@ -64,6 +65,7 @@ group :development do
 
   # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
   # gem "spring"
+  gem 'pry'
 end
 
 group :test do
