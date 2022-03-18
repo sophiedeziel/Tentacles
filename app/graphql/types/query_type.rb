@@ -12,5 +12,11 @@ module Types
     def printers
       Printer.all
     end
+
+    field :printfiles, [PrintfileType], null: false, 
+      description: "files"
+    def printfiles
+      Printfile.all
+    end
   end
 end

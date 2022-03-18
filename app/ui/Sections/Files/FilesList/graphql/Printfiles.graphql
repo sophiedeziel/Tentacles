@@ -1,0 +1,10 @@
+query Printfiles {
+  printfiles {
+    id
+    filename
+    filetype
+    notes
+    createdAt
+    updatedAt
+  }
+}
