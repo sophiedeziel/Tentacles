@@ -139,6 +139,7 @@ GEM
       libv8-node (~> 16.10.0.0)
     minitest (5.15.0)
     msgpack (1.4.5)
+    mysql2 (0.5.3)
     net-imap (0.2.3)
       digest
       net-protocol
@@ -227,7 +228,6 @@ GEM
       actionpack (>= 5.2)
       activesupport (>= 5.2)
       sprockets (>= 3.0.0)
-    sqlite3 (1.4.2)
     strscan (3.0.1)
     thor (1.2.1)
     timeout (0.2.0)
@@ -262,6 +262,7 @@ DEPENDENCIES
   importmap-rails
   jbuilder
   mini_racer
+  mysql2 (~> 0.5.3)
   octoprint!
   pry
   puma (~> 5.0)
@@ -271,7 +272,6 @@ DEPENDENCIES
   selenium-webdriver
   shakapacker (~> 6.1)
   sprockets-rails
-  sqlite3 (~> 1.4)
   tzinfo-data
   web-console
   webdrivers
