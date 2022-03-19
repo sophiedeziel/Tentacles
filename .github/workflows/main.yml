@@ -25,7 +25,7 @@ jobs:
         image: mysql:5.7
         env:
           MYSQL_HOST: 127.0.0.1
-          MYSQL_DB: github_actions_test
+          MYSQL_DB: tentacles_test
           MYSQL_USER: root
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
           MYSQL_PASSWORD:
