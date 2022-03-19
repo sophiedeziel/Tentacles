@@ -16,9 +16,6 @@ jobs:
     services:
       mysql:
         image: mysql:5.7
-        env:
-          MYSQL_USER: tentacles_test
-          MYSQL_PASSWORD: tentacles_test
         ports: ['3306:3306']
     env:
       RAILS_ENV: test
