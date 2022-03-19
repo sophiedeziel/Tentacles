@@ -45,10 +45,10 @@ jobs:
         env:
           RAILS_ENV: test
           DATABASE_PORT: 3306
-        run: 
-          - bin/rails db:create
-          - bin/rails db:schema:load
-          - bin/rake
+        run: |
+          bin/rails db:create
+          bin/rails db:schema:load
+          bin/rake
 
   lint:
     runs-on: ubuntu-latest
