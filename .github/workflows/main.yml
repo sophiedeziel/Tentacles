@@ -36,9 +36,8 @@ jobs:
           RAILS_ENV: test
           # tell Rails to use proper port for MySQL
           DB_PORT: ${{ job.services.mysql.ports[3306] }}
-        run: |
-          bin/rails db:create
-          bin/rails db:schema:load       
+        run: bin/rails db:schema:load
+                 
       - name: Run tests
         env:
           RAILS_ENV: test
