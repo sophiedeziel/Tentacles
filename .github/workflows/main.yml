@@ -14,7 +14,7 @@ env:
   MYSQL_DATABASE: tentacles_test
 on:
   push:
-    branches: [ '*' ]
+    branches: [ 'main' ]
   pull_request:
     branches: [ main ]
 jobs:
