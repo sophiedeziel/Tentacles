@@ -19,8 +19,6 @@ development:
 test:
   <<: *default
   host: 127.0.0.1
-  username: <%= ENV["DB_USER"] %>
-  password: <%= ENV["DB_PASSWORD"] %>
   database: tentacles_test
 
 production:

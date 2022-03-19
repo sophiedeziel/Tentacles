@@ -15,11 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mysql:5.7
+        image: mysql:8
         env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_PASSWORD: tentacles_test
-          MYSQL_USER: tentacles_test
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: tentacles_test
+          MYSQL_USER: root
         ports:
           - 3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
@@ -36,16 +36,12 @@ jobs:
       - name: Setup database
         env:
           RAILS_ENV: test
-          DB_PASSWORD: tentacles_test
-          DB_USER: tentacles_test
         run: |
           bin/rails db:create
           bin/rails db:schema:load       
       - name: Run tests
         env:
           RAILS_ENV: test
-          DB_PASSWORD: tentacles_test
-          DB_USER: tentacles_test
         run: bin/rake
 
   lint:
