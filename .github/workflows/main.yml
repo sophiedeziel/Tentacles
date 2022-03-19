@@ -28,7 +28,8 @@ jobs:
           MYSQL_PORT: 3306
           MYSQL_DB: tentacles_test
           MYSQL_USER: root
-          MYSQL_PASSWORD: password
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_PASSWORD:
         ports:
           - "3306:3306"
     env:
@@ -41,15 +42,14 @@ jobs:
         uses: ruby/setup-ruby@8f312efe1262fb463d906e9bf040319394c18d3e # v1.92
         with:
           bundler-cache: true
-      - name: Run tests
+      - name: Setup database
         env:
           RAILS_ENV: test
           MYSQL_PORT: 3306
           DATABASE_PORT: 3306
-        run: |
-          bin/rails db:create
-          bin/rails db:schema:load
-          bin/rake
+        run: bin/rails db:schema:load       
+      - name: Run tests
+        run: bin/rake
 
   lint:
     runs-on: ubuntu-latest
