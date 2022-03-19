@@ -21,7 +21,7 @@ jobs:
           MYSQL_PASSWORD: tentacles_test
           MYSQL_USER: tentacles_test
         ports:
-        - 3306
+          - 3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     env:
       RAILS_ENV: test
@@ -38,8 +38,6 @@ jobs:
           RAILS_ENV: test
           DB_PASSWORD: tentacles_test
           DB_USER: tentacles_test
-          # tell Rails to use proper port for MySQL
-          DB_PORT: ${{ job.services.mysql.ports[3306] }}
         run: |
           bin/rails db:create
           bin/rails db:schema:load       
@@ -48,7 +46,6 @@ jobs:
           RAILS_ENV: test
           DB_PASSWORD: tentacles_test
           DB_USER: tentacles_test
-          DB_PORT: ${{ job.services.mysql.ports[3306] }} # get randomly assigned published port
         run: bin/rake
 
   lint:
