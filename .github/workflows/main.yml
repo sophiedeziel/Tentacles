@@ -25,6 +25,7 @@ jobs:
         image: mysql:5.7
         env:
           MYSQL_HOST: 127.0.0.1
+          MYSQL_PORT: 3306
           MYSQL_DB: tentacles_test
           MYSQL_USER: root
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
@@ -44,7 +45,12 @@ jobs:
       - name: Run tests
         env:
           RAILS_ENV: test
+          MYSQL_HOST: 127.0.0.1
           MYSQL_PORT: 3306
+          MYSQL_DB: tentacles_test
+          MYSQL_USER: root
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_PASSWORD:
         run: |
           bin/rails db:create
           bin/rails db:schema:load
