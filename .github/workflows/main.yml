@@ -5,13 +5,6 @@
 # This workflow will install a prebuilt Ruby version, install dependencies, and
 # run tests and linters.
 name: "Ruby on Rails CI"
-env:
-  MYSQL_USERNAME: root
-  MYSQL_PASSWORD: password
-  MYSQL_ROOT_PASSWORD: password
-  MYSQL_HOST: 127.0.0.1
-  MYSQL_PORT: 3307
-  MYSQL_DATABASE: tentacles_test
 on:
   push:
     branches: [ 'main' ]
@@ -47,7 +40,9 @@ jobs:
           RAILS_ENV: test
           MYSQL_PORT: 3306
           DATABASE_PORT: 3306
-        run: bin/rails db:schema:load       
+        run: |
+          bin/rails db:create
+          bin/rails db:schema:load       
       - name: Run tests
         run: bin/rake
 
