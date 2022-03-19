@@ -60,6 +60,7 @@ group :development, :test do
   gem 'graphiql-rails'
   gem 'rubocop', '~> 1.26', require: false
   gem 'rubocop-rails', '~> 2.14', require: false
+  gem 'rspec-rails'
 end
 
 group :development do
