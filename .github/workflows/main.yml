@@ -17,9 +17,9 @@ jobs:
       mysql:
         image: mysql:8
         env:
-          MYSQL_USER: tentacles_test
-          MYSQL_PASSWORD: tentacles_test
-          MYSQL_ROOT_PASSWORD: root
+          # MYSQL_USER: tentacles_test
+          # MYSQL_PASSWORD: tentacles_test
+          # MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: tentacles_test
         ports:
           - 3306:3306
