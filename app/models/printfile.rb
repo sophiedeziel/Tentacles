@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Printfile < ApplicationRecord
   has_one_attached :file
 
@@ -6,6 +8,6 @@ class Printfile < ApplicationRecord
   end
 
   def filetype
-    '.' + filename.split('.').last
+    ".#{filename.split('.').last}"
   end
 end

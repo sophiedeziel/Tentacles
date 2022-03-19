@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Types
   class PrintfileType < Types::BaseObject
     field :id, ID, null: false
