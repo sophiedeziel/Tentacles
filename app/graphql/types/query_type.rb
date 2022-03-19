@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Types
   class QueryType < Types::BaseObject
     # Add `node(id: ID!) and `nodes(ids: [ID!]!)`
@@ -8,13 +10,13 @@ module Types
     # They will be entry points for queries on your schema.
 
     field :printers, [PrinterType], null: false,
-      description: "asdf"
+                                    description: 'asdf'
     def printers
       Printer.all
     end
 
-    field :printfiles, [PrintfileType], null: false, 
-      description: "files"
+    field :printfiles, [PrintfileType], null: false,
+                                        description: 'files'
     def printfiles
       Printfile.all
     end

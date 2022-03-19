@@ -7,21 +7,22 @@
 name: "Ruby on Rails CI"
 on:
   push:
-    branches: [ $default-branch ]
+    branches: [ 'main' ]
   pull_request:
-    branches: [ $default-branch ]
+    branches: [ main ]
 jobs:
   test:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mysql:5.7
+        image: mysql:8
         env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: false
-          MYSQL_ROOT_PASSWORD: password
+          MYSQL_USER: tentacles_test
+          MYSQL_PASSWORD: tentacles_test
+          MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: tentacles_test
         ports:
-          - 3306
+          - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     env:
       RAILS_ENV: test
@@ -33,11 +34,17 @@ jobs:
         uses: ruby/setup-ruby@8f312efe1262fb463d906e9bf040319394c18d3e # v1.92
         with:
           bundler-cache: true
-      # Add or replace database setup steps here
-      - name: Set up database schema
-        run: bin/rails db:schema:load
-      # Add or replace test runners here
+      - name: Setup database
+        env:
+          RAILS_ENV: test
+          DB_USER: tentacles_test
+          DB_PASSWORD: tentacles_test
+        run: bin/rails db:schema:load                 
       - name: Run tests
+        env:
+          RAILS_ENV: test
+          DB_USER: tentacles_test
+          DB_PASSWORD: tentacles_test
         run: bin/rake
 
   lint:
@@ -54,5 +61,5 @@ jobs:
       #   run: bin/bundler-audit --update
       # - name: Security audit application code
       #   run: bin/brakeman -q -w2
-      # - name: Lint Ruby files
-      #   run: bin/rubocop --parallel
+      - name: Lint Ruby files
+        run: bin/rubocop --parallel
