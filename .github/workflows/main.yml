@@ -17,9 +17,11 @@ jobs:
       mysql:
         image: mysql:5.7
         env:
-          MYSQL_USER: test_user
-          MYSQL_PASSWORD: 
-          MYSQL_DATABASE: tentacles_test
+          MYSQL_HOST: 127.0.0.1
+          MYSQL_PORT: 3306
+          MYSQL_USER: root
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_PASSWORD:
           MYSQL_ROOT_PASSWORD: root
         ports:
           - "3306:3306"
@@ -37,8 +39,6 @@ jobs:
       - name: Setup database
         env:
           RAILS_ENV: test
-          MYSQL_USER: test_user
-          MYSQL_PASSWORD: 
           # tell Rails to use proper port for MySQL
           DB_PORT: ${{ job.services.mysql.ports[3306] }}
         run: |
@@ -47,8 +47,6 @@ jobs:
       - name: Run tests
         env:
           RAILS_ENV: test
-          MYSQL_USER: test_user
-          MYSQL_PASSWORD: 
           DB_PORT: ${{ job.services.mysql.ports[3306] }} # get randomly assigned published port
         run: bin/rake
 
