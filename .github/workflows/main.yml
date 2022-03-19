@@ -44,7 +44,7 @@ jobs:
       - name: Run tests
         env:
           RAILS_ENV: test
-          DATABASE_PORT: 3306
+          MYSQL_PORT: 3306
         run: |
           bin/rails db:create
           bin/rails db:schema:load
