@@ -16,7 +16,11 @@ jobs:
     services:
       mysql:
         image: mysql:5.7
-        ports: ['3306:3306']
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+        - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     env:
       RAILS_ENV: test
     steps:
@@ -27,6 +31,11 @@ jobs:
         uses: ruby/setup-ruby@8f312efe1262fb463d906e9bf040319394c18d3e # v1.92
         with:
           bundler-cache: true
+      - name: Verify MySQL connection from host
+          run: |
+            sudo apt-get install -y mysql-client libmysqlclient-dev
+            mysql --host 127.0.0.1 --port ${{ job.services.mysql.ports[3306] }} -uroot -proot -e "SHOW GRANTS FOR 'root'@'localhost'"
+            mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql --host 127.0.0.1 --port ${{ job.services.mysql.ports[3306] }} -uroot -proot mysql
       - name: Setup database
         env:
           RAILS_ENV: test
