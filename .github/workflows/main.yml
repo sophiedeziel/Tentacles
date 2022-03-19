@@ -39,9 +39,7 @@ jobs:
           RAILS_ENV: test
           DB_USER: tentacles_test
           DB_PASSWORD: tentacles_test
-        run: |
-          bin/rails db:create
-          bin/rails db:schema:load       
+        run: bin/rails db:schema:load                 
       - name: Run tests
         env:
           RAILS_ENV: test
