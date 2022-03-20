@@ -148,6 +148,7 @@ export default function PrintersList() {
       dataSource={files} 
       onChange={onChange} 
       rowSelection={rowSelection}
+      pagination={false}
       expandable={{
         expandedRowRender: expandedRow
       }}
