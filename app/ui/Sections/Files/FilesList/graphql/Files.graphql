@@ -1,10 +1,6 @@
+#import "./FileFragment.graphql"
 query Files {
   files {
-    id
-    filename
-    filetype
-    notes
-    createdAt
-    updatedAt
+    ...FileFields
   }
 }

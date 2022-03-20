@@ -11,5 +11,9 @@ module FileManager
     def filetype
       ".#{filename.split('.').last}"
     end
+
+    def filesize
+      file.blob.byte_size
+    end
   end
 end

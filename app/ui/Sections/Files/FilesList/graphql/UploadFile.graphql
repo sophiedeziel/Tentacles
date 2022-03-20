@@ -1,12 +1,8 @@
+#import "./FileFragment.graphql"
 mutation UploadFile($input: UploadFileInput!) {
   uploadFile(input: $input) {
-    printfile {
-      id
-      filename
-      filetype
-      notes
-      createdAt
-      updatedAt
+    file {
+      ...FileFields
     }
   }
 }

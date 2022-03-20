@@ -1,0 +1,9 @@
+fragment FileFields on File {
+  id
+  filename
+  filetype
+  filesize
+  notes
+  createdAt
+  updatedAt
+}
