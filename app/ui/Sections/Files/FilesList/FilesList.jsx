@@ -59,7 +59,7 @@ export default function PrintersList() {
           value: '.stl',
         },
       ],
-      onFilter: (value, record) => record.type.indexOf(value) === 0,
+      onFilter: (value, record) => record.filetype === value,
     },
     {
       title: 'Uploaded at',
