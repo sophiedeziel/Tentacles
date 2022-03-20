@@ -44,7 +44,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_03_20_050845) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "is_not_archived", default: true
-    t.datetime "archived_at"
+    t.datetime "archived_at", precision: nil
   end
 
   create_table "printers", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
