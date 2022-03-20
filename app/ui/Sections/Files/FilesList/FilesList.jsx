@@ -7,6 +7,8 @@ import UploadFile from './graphql/UploadFile.graphql'
 import {Table, Upload, Statistic, Spin} from 'antd'
 import { InboxOutlined } from '@ant-design/icons';
 
+var filesize = require('file-size');
+
 const { Dragger } = Upload;
 
 export default function PrintersList() {
@@ -64,6 +66,13 @@ export default function PrintersList() {
       dataIndex: 'createdAt',
       defaultSortOrder: 'descend',
       sorter: (a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt),
+    },
+    {
+      title: 'File size',
+      dataIndex: 'filesize',
+      defaultSortOrder: 'descend',
+      sorter: (a, b) => a.type - b.type,
+      render: (value) => filesize(value).human('si'),
     },
   ];
 
