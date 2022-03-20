@@ -15,10 +15,10 @@ module Types
       Printer.all
     end
 
-    field :printfiles, [PrintfileType], null: false,
-                                        description: 'files'
-    def printfiles
-      Printfile.all
+    field :files, [FileType], null: false,
+                              description: 'files'
+    def files
+      FileManager::File.all
     end
   end
 end
