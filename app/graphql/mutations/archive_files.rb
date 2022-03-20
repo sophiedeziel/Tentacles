@@ -8,7 +8,7 @@ module Mutations
              [ID],
              required: true
 
-    field :success, :boolean, null: false
+    field :success, Boolean, null: false
 
     def resolve(file_ids:)
       files = FileManager::File.where(id: file_ids)
@@ -16,7 +16,7 @@ module Mutations
       files.each(&:archive)
       { success: true }
     rescue StandardError
-      { file: nil }
+      { success: false }
     end
   end
 end
