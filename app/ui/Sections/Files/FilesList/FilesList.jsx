@@ -4,7 +4,7 @@ import { useQuery, useMutation } from '@apollo/client'
 import Files from './graphql/Files.graphql'
 import UploadFile from './graphql/UploadFile.graphql'
 
-import {Table, Upload, Statistic, Spin} from 'antd'
+import {Table, Upload, Statistic, Spin, Button, Form} from 'antd'
 import { InboxOutlined } from '@ant-design/icons';
 
 var filesize = require('file-size');
@@ -12,7 +12,7 @@ var filesize = require('file-size');
 const { Dragger } = Upload;
 
 export default function PrintersList() {
-  
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [uploadFile] = useMutation(UploadFile, {
     context: { hasUpload: true },
     update: (cache, {data}) => {
@@ -110,7 +110,16 @@ export default function PrintersList() {
     },
   };
 
-  console.log(files);
+  const onSelectChange = (selectedRowKeys) => {
+    console.log('selectedRowKeys changed: ', selectedRowKeys);
+    setSelectedRowKeys(selectedRowKeys);
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: onSelectChange,
+  };
+  const hasSelected = selectedRowKeys.length > 0;
 
   return (
     <>
@@ -125,12 +134,20 @@ export default function PrintersList() {
       </Dragger>
       <br />
       <Statistic title="Number of files" value={ files.length } formatter={(value) => (value || <Spin/>)}/>
+      <div style={{ marginBottom: 16 }}>
+        <Form.Item label={selectedRowKeys.length + " selected : "}>
+          
+          <Button type="primary"  disabled={!hasSelected} loading={loading}>
+            Archive
+          </Button>
+        </Form.Item>
+      </div>
       <Table 
       rowKey={'id'}
       columns={columns} 
       dataSource={files} 
       onChange={onChange} 
-      rowSelection={{}}
+      rowSelection={rowSelection}
       expandable={{
         expandedRowRender: expandedRow
       }}
