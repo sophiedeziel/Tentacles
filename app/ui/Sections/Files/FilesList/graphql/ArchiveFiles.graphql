@@ -1,0 +1,5 @@
+mutation ArchiveFiles($input: ArchiveFilesInput!) {
+  archiveFiles(input: $input) {
+    success
+  }
+}

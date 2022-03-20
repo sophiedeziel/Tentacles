@@ -3,6 +3,7 @@ import React, {useState} from "react";
 import { useQuery, useMutation } from '@apollo/client'
 import Files from './graphql/Files.graphql'
 import UploadFile from './graphql/UploadFile.graphql'
+import ArchiveFiles from './graphql/ArchiveFiles.graphql'
 
 import {Table, Upload, Statistic, Spin, Button, Form} from 'antd'
 import { InboxOutlined } from '@ant-design/icons';
@@ -23,6 +24,23 @@ export default function PrintersList() {
         query: Files,
         data: {
           files: [...filesdata.files, data.uploadFile.printfile],
+        },
+      });
+    },
+  });
+  const [archiveFiles] = useMutation(ArchiveFiles, {
+    update: (cache, {data}) => {
+      
+      const filesdata = cache.readQuery({ query: Files });
+
+      const filteredFiles = filesdata.files.filter((file) => {
+        return selectedRowKeys.indexOf(file.id) == -1;
+      });
+
+      cache.writeQuery({
+        query: Files,
+        data: {
+          files: filteredFiles,
         },
       });
     },
@@ -110,10 +128,14 @@ export default function PrintersList() {
     },
   };
 
-  const onSelectChange = (selectedRowKeys) => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
-    setSelectedRowKeys(selectedRowKeys);
+  const onSelectChange = (newSelectedRowKeys) => {
+    console.log('selectedRowKeys changed: ', newSelectedRowKeys);
+    setSelectedRowKeys(newSelectedRowKeys);
   };
+
+  const handleArchiveClick = () => {
+    archiveFiles({variables: {input: {fileIds: selectedRowKeys}}});
+  }
 
   const rowSelection = {
     selectedRowKeys,
@@ -137,7 +159,7 @@ export default function PrintersList() {
       <div style={{ marginBottom: 16 }}>
         <Form.Item label={selectedRowKeys.length + " selected : "}>
           
-          <Button type="primary"  disabled={!hasSelected} loading={loading}>
+          <Button type="primary" onClick={handleArchiveClick} disabled={!hasSelected} loading={loading}>
             Archive
           </Button>
         </Form.Item>
