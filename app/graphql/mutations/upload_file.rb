@@ -8,14 +8,14 @@ module Mutations
              InputObjects::UploadFileAttributes,
              required: true
 
-    field :printfile, Types::PrintfileType, null: true
+    field :file, Types::FileType, null: true
 
     def resolve(file_attributes:)
-      printfile = Printfile.new(file_attributes.to_h)
-      if printfile.save!
-        { printfile: printfile }
+      file = FileManager::File.new(file_attributes.to_h)
+      if file.save!
+        { file: file }
       else
-        { printfile: nil }
+        { file: nil }
       end
     end
   end

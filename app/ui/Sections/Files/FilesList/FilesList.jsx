@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 
 import { useQuery, useMutation } from '@apollo/client'
-import Printfiles from './graphql/Printfiles.graphql'
+import Files from './graphql/Files.graphql'
 import UploadFile from './graphql/UploadFile.graphql'
 
 import {Table, Upload, Statistic, Spin} from 'antd'
@@ -15,23 +15,23 @@ export default function PrintersList() {
     context: { hasUpload: true },
     update: (cache, {data}) => {
       
-      const filesdata = cache.readQuery({ query: Printfiles });
+      const filesdata = cache.readQuery({ query: Files });
 
       cache.writeQuery({
-        query: Printfiles,
+        query: Files,
         data: {
-          printfiles: [...filesdata.printfiles, data.uploadFile.printfile],
+          files: [...filesdata.files, data.uploadFile.printfile],
         },
       });
     },
   });
   
-  const { loading, error, data: printfilesData } = useQuery(Printfiles);
+  const { loading, error, data: filesData } = useQuery(Files);
   if (error) return(<>Error!{error.message}</>);
 
   if (loading) return(<>Loading</>);
 
-  const {printfiles} = printfilesData;
+  const {files} = filesData;
 
   const columns = [
     Table.SELECTION_COLUMN,
@@ -101,7 +101,7 @@ export default function PrintersList() {
     },
   };
 
-  console.log(printfiles);
+  console.log(files);
 
   return (
     <>
@@ -115,11 +115,11 @@ export default function PrintersList() {
         </p>
       </Dragger>
       <br />
-      <Statistic title="Number of files" value={ printfiles.length } formatter={(value) => (value || <Spin/>)}/>
+      <Statistic title="Number of files" value={ files.length } formatter={(value) => (value || <Spin/>)}/>
       <Table 
       rowKey={'id'}
       columns={columns} 
-      dataSource={printfiles} 
+      dataSource={files} 
       onChange={onChange} 
       rowSelection={{}}
       expandable={{
