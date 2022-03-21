@@ -5,7 +5,7 @@ import Files from './graphql/Files.graphql'
 import UploadFile from './graphql/UploadFile.graphql'
 import ArchiveFiles from './graphql/ArchiveFiles.graphql'
 
-import {Table, Upload, Statistic, Spin, Button, Form} from 'antd'
+import {Table, Upload, Statistic, Spin, Button, Form, Tabs} from 'antd'
 import { InboxOutlined } from '@ant-design/icons';
 
 var filesize = require('file-size');
@@ -13,7 +13,15 @@ var filesize = require('file-size');
 const { Dragger } = Upload;
 
 export default function PrintersList() {
+  const filters = {
+    "active": (file) => {
+      return(!file.isArchived && !file.isDeleted)
+    },
+    "archived": (file) => {return(file.isArchived && !file.isDeleted)},
+    "trash": (file) => {return(file.isDeleted)},
+  }
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [filesFilters, setFilesFilters] = useState("active");
   const [uploadFile] = useMutation(UploadFile, {
     context: { hasUpload: true },
     update: (cache, {data}) => {
@@ -32,9 +40,13 @@ export default function PrintersList() {
     update: (cache, {data}) => {
       
       const filesdata = cache.readQuery({ query: Files });
+      setSelectedRowKeys([]);
 
-      const filteredFiles = filesdata.files.filter((file) => {
-        return selectedRowKeys.indexOf(file.id) == -1;
+      const filteredFiles = filesdata.files.map((file) => {
+        if(selectedRowKeys.indexOf(file.id) != -1) {
+          return {...file, isArchived: true}
+        }
+        return file;
       });
 
       cache.writeQuery({
@@ -51,7 +63,7 @@ export default function PrintersList() {
 
   if (loading) return(<>Loading</>);
 
-  const {files} = filesData;
+  const files = filesData.files?.filter(filters[filesFilters]);
 
   const columns = [
     Table.SELECTION_COLUMN,
@@ -129,7 +141,6 @@ export default function PrintersList() {
   };
 
   const onSelectChange = (newSelectedRowKeys) => {
-    console.log('selectedRowKeys changed: ', newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
   };
 
@@ -137,11 +148,18 @@ export default function PrintersList() {
     archiveFiles({variables: {input: {fileIds: selectedRowKeys}}});
   }
 
+  const handleUnarchiveClick = () => {
+  }
+
   const rowSelection = {
     selectedRowKeys,
     onChange: onSelectChange,
   };
   const hasSelected = selectedRowKeys.length > 0;
+
+  const handleTabChange = (key) => {
+    setFilesFilters(key);
+  }
 
   return (
     <>
@@ -156,24 +174,34 @@ export default function PrintersList() {
       </Dragger>
       <br />
       <Statistic title="Number of files" value={ files.length } formatter={(value) => (value || <Spin/>)}/>
-      <div style={{ marginBottom: 16 }}>
-        <Form.Item label={selectedRowKeys.length + " selected : "}>
-          
-          <Button type="primary" onClick={handleArchiveClick} disabled={!hasSelected} loading={loading}>
-            Archive
-          </Button>
-        </Form.Item>
-      </div>
+      <Tabs defaultActiveKey="1" onChange={handleTabChange}>
+        <Tabs.TabPane tab="Active" key="active">
+          <Form.Item label={selectedRowKeys.length + " selected : "}>
+            <Button type="primary" onClick={handleArchiveClick} disabled={!hasSelected} loading={loading}>
+              Archive
+            </Button>
+          </Form.Item>
+        </Tabs.TabPane>
+        <Tabs.TabPane tab="Archived" key="archived">
+          <Form.Item label={selectedRowKeys.length + " selected : "}>
+            <Button type="primary" onClick={handleUnarchiveClick} disabled={true} loading={loading}>
+              Unarchive
+            </Button>
+          </Form.Item>
+        </Tabs.TabPane>
+        {/* <Tabs.TabPane tab="Trash" key="trash">
+        </Tabs.TabPane> */}
+      </Tabs>
       <Table 
-      rowKey={'id'}
       columns={columns} 
       dataSource={files} 
-      onChange={onChange} 
-      rowSelection={rowSelection}
-      pagination={false}
       expandable={{
         expandedRowRender: expandedRow
       }}
+      onChange={onChange} 
+      pagination={false}
+      rowKey={'id'}
+      rowSelection={rowSelection}
       />
     </>
   );
