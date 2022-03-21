@@ -15,10 +15,11 @@ module Types
       Printer.all
     end
 
-    field :files, [FileType], null: false,
-                              description: 'files'
+    field :files, [FileType], null: false do
+      description 'files'
+    end
     def files
-      FileManager::File.all
+      FileManager::File.unscoped.with_attached_file
     end
   end
 end
