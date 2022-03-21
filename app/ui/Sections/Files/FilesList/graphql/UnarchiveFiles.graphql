@@ -1,0 +1,5 @@
+mutation UnarchiveFiles($input: UnarchiveFilesInput!) {
+  unarchiveFiles(input: $input) {
+    success
+  }
+}
