@@ -61,7 +61,7 @@ jobs:
         with:
           node-version: 16.14.0
       - name: Install Yarn
-        uses: borales/actions-yarn@v2.0.0
+        uses: borales/actions-yarn@v2.3.0
         with:
           cmd: install
       # Add or replace any other lints here
