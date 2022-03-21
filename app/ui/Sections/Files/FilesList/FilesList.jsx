@@ -4,6 +4,7 @@ import { useQuery, useMutation } from '@apollo/client'
 import Files from './graphql/Files.graphql'
 import UploadFile from './graphql/UploadFile.graphql'
 import ArchiveFiles from './graphql/ArchiveFiles.graphql'
+import UnarchiveFiles from './graphql/UnarchiveFiles.graphql'
 
 import {Table, Upload, Statistic, Spin, Button, Form, Tabs} from 'antd'
 import { InboxOutlined } from '@ant-design/icons';
@@ -45,6 +46,28 @@ export default function PrintersList() {
       const filteredFiles = filesdata.files.map((file) => {
         if(selectedRowKeys.indexOf(file.id) != -1) {
           return {...file, isArchived: true}
+        }
+        return file;
+      });
+
+      cache.writeQuery({
+        query: Files,
+        data: {
+          files: filteredFiles,
+        },
+      });
+    },
+  });
+
+  const [unarchiveFiles] = useMutation(UnarchiveFiles, {
+    update: (cache, {data}) => {
+      
+      const filesdata = cache.readQuery({ query: Files });
+      setSelectedRowKeys([]);
+
+      const filteredFiles = filesdata.files.map((file) => {
+        if(selectedRowKeys.indexOf(file.id) != -1) {
+          return {...file, isArchived: false}
         }
         return file;
       });
@@ -149,6 +172,7 @@ export default function PrintersList() {
   }
 
   const handleUnarchiveClick = () => {
+    unarchiveFiles({variables: {input: {fileIds: selectedRowKeys}}});
   }
 
   const rowSelection = {
@@ -184,7 +208,7 @@ export default function PrintersList() {
         </Tabs.TabPane>
         <Tabs.TabPane tab="Archived" key="archived">
           <Form.Item label={selectedRowKeys.length + " selected : "}>
-            <Button type="primary" onClick={handleUnarchiveClick} disabled={true} loading={loading}>
+            <Button type="primary" onClick={handleUnarchiveClick} disabled={!hasSelected} loading={loading}>
               Unarchive
             </Button>
           </Form.Item>

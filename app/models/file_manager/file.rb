@@ -19,5 +19,9 @@ module FileManager
     def archive
       update(is_not_archived: false, archived_at: Time.current)
     end
+
+    def unarchive
+      update(is_not_archived: true, archived_at: nil)
+    end
   end
 end
