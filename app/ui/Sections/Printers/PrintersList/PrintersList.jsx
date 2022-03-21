@@ -1,23 +1,22 @@
-import React from "react";
+import React from 'react'
 
 import { useQuery } from '@apollo/client'
 import Printers from './graphql/Printers.graphql'
 
-export default function PrintersList() {
+export default function PrintersList () {
+  const { loading, error, data: printersData } = useQuery(Printers)
 
-  const { loading, error, data: printersData } = useQuery(Printers);
+  if (error) return (<>Error!{error.message}</>)
 
-  if (error) return(<>Error!{error.message}</>);
+  if (loading) return (<>Loading</>)
 
-  if (loading) return(<>Loading</>);
-
-  const {printers} = printersData;
+  const { printers } = printersData
 
   return (
     <>
       <ul>{
       printers.map((printer) => {
-        return(
+        return (
         <li key={printer.id}>
           {printer.name}
         </li>
@@ -26,5 +25,5 @@ export default function PrintersList() {
       }
       </ul>
     </>
-  );
+  )
 }
