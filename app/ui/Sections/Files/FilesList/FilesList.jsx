@@ -63,7 +63,7 @@ export default function PrintersList () {
       setSelectedRowKeys([])
 
       const filteredFiles = filesdata.files.map((file) => {
-        if (selectedRowKeys.indexOf(file.id) != -1) {
+        if (selectedRowKeys.indexOf(file.id) !== -1) {
           return { ...file, isArchived: false }
         }
         return file
