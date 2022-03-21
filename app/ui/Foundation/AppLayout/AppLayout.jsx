@@ -1,5 +1,6 @@
-import React, {useState} from 'react';
-import { Layout, Menu, Breadcrumb } from 'antd';
+import React, { useState } from 'react'
+import PropTypes from 'prop-types'
+import { Layout, Menu } from 'antd'
 import {
   DesktopOutlined,
   PieChartOutlined,
@@ -8,33 +9,31 @@ import {
   UserOutlined,
   MailOutlined,
   AppstoreOutlined,
-  SettingOutlined,
-} from '@ant-design/icons';
-import { useHistory } from "react-router";
-import { Link } from "react-router-dom";
+  SettingOutlined
+} from '@ant-design/icons'
+import { Link } from 'react-router-dom'
 
-const { Header, Content, Footer, Sider } = Layout;
-const { SubMenu } = Menu;
+import 'antd/dist/antd.less'
 
-import "antd/dist/antd.less";
+import classes from './AppLayout.module.less'
 
-import classes from './AppLayout.module.less';
+const { Header, Content, Footer, Sider } = Layout
+const { SubMenu } = Menu
 
-function AppLayout({children}) {
-  let history = useHistory();
-  const [collapsed, setCollaped] = useState(false);
+function AppLayout ({ children }) {
+  const [collapsed, setCollaped] = useState(false)
 
   const onCollapse = () => {
-    setCollaped(!collapsed);
+    setCollaped(!collapsed)
   }
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider collapsible collapsed={collapsed} onCollapse={onCollapse} trigger={null}>
         <div className={classes.Logo} />
-        <Menu 
-          theme="dark" 
-          defaultSelectedKeys={['1']} 
+        <Menu
+          theme="dark"
+          defaultSelectedKeys={['1']}
           mode="inline" >
           <Menu.Item key="1" icon={<PieChartOutlined />} >
             <Link to="/">Dashboard</Link>
@@ -93,4 +92,8 @@ function AppLayout({children}) {
   )
 }
 
-export default AppLayout;
+AppLayout.propTypes = {
+  children: PropTypes.node
+}
+
+export default AppLayout

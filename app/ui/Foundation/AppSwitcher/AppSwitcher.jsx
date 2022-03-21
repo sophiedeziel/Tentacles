@@ -1,18 +1,14 @@
-import React, {Suspense, lazy} from "react";
-
+import React, { Suspense, lazy } from 'react'
 
 import {
-  BrowserRouter as Router,
   Switch,
-  Route,
-} from "react-router-dom";
+  Route
+} from 'react-router-dom'
 
-const PrintersList = lazy(() => import('../../Sections/Printers/PrintersList/PrintersList'));
-const FilesList = lazy(() => import("../../Sections/Files/FilesList/FilesList"));
+const PrintersList = lazy(() => import('../../Sections/Printers/PrintersList/PrintersList'))
+const FilesList = lazy(() => import('../../Sections/Files/FilesList/FilesList'))
 
-
-export default function AppSwithcer({children}) {
-  
+export default function AppSwithcer () {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <Switch>
@@ -21,8 +17,8 @@ export default function AppSwithcer({children}) {
           <Route path="/" exact>
             <h1>Accueil</h1>
           </Route>
-          <Route path="/bye" component={() => { 
-            window.location.reload();
+          <Route path="/bye" component={() => {
+            window.location.reload()
           }} />
       </Switch>
     </Suspense>

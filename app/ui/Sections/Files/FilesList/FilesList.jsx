@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useState } from 'react'
 
 import { useQuery, useMutation } from '@apollo/client'
 import Files from './graphql/Files.graphql'
@@ -6,87 +6,84 @@ import UploadFile from './graphql/UploadFile.graphql'
 import ArchiveFiles from './graphql/ArchiveFiles.graphql'
 import UnarchiveFiles from './graphql/UnarchiveFiles.graphql'
 
-import {Table, Upload, Statistic, Spin, Button, Form, Tabs} from 'antd'
-import { InboxOutlined } from '@ant-design/icons';
+import { Table, Upload, Statistic, Spin, Button, Form, Tabs } from 'antd'
+import { InboxOutlined } from '@ant-design/icons'
 
-var filesize = require('file-size');
+const filesize = require('file-size')
 
-const { Dragger } = Upload;
+const { Dragger } = Upload
 
-export default function PrintersList() {
+export default function PrintersList () {
   const filters = {
-    "active": (file) => {
-      return(!file.isArchived && !file.isDeleted)
+    active: (file) => {
+      return (!file.isArchived && !file.isDeleted)
     },
-    "archived": (file) => {return(file.isArchived && !file.isDeleted)},
-    "trash": (file) => {return(file.isDeleted)},
+    archived: (file) => { return (file.isArchived && !file.isDeleted) },
+    trash: (file) => { return (file.isDeleted) }
   }
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [filesFilters, setFilesFilters] = useState("active");
+  const [selectedRowKeys, setSelectedRowKeys] = useState([])
+  const [filesFilters, setFilesFilters] = useState('active')
   const [uploadFile] = useMutation(UploadFile, {
     context: { hasUpload: true },
-    update: (cache, {data}) => {
-      
-      const filesdata = cache.readQuery({ query: Files });
+    update: (cache, { data }) => {
+      const filesdata = cache.readQuery({ query: Files })
 
       cache.writeQuery({
         query: Files,
         data: {
-          files: [...filesdata.files, data.uploadFile.printfile],
-        },
-      });
-    },
-  });
+          files: [...filesdata.files, data.uploadFile.printfile]
+        }
+      })
+    }
+  })
   const [archiveFiles] = useMutation(ArchiveFiles, {
-    update: (cache, {data}) => {
-      
-      const filesdata = cache.readQuery({ query: Files });
-      setSelectedRowKeys([]);
+    update: (cache, { data }) => {
+      const filesdata = cache.readQuery({ query: Files })
+      setSelectedRowKeys([])
 
       const filteredFiles = filesdata.files.map((file) => {
-        if(selectedRowKeys.indexOf(file.id) != -1) {
-          return {...file, isArchived: true}
+        if (selectedRowKeys.indexOf(file.id) !== -1) {
+          return { ...file, isArchived: true }
         }
-        return file;
-      });
+        return file
+      })
 
       cache.writeQuery({
         query: Files,
         data: {
-          files: filteredFiles,
-        },
-      });
-    },
-  });
+          files: filteredFiles
+        }
+      })
+    }
+  })
 
   const [unarchiveFiles] = useMutation(UnarchiveFiles, {
-    update: (cache, {data}) => {
-      
-      const filesdata = cache.readQuery({ query: Files });
-      setSelectedRowKeys([]);
+    update: (cache, { data }) => {
+      const filesdata = cache.readQuery({ query: Files })
+      setSelectedRowKeys([])
 
       const filteredFiles = filesdata.files.map((file) => {
-        if(selectedRowKeys.indexOf(file.id) != -1) {
-          return {...file, isArchived: false}
+        if (selectedRowKeys.indexOf(file.id) !== -1) {
+          return { ...file, isArchived: false }
         }
-        return file;
-      });
+        return file
+      })
 
       cache.writeQuery({
         query: Files,
         data: {
-          files: filteredFiles,
-        },
-      });
-    },
-  });
-  
-  const { loading, error, data: filesData } = useQuery(Files);
-  if (error) return(<>Error!{error.message}</>);
+          files: filteredFiles
+        }
+      })
+    }
+  })
 
-  if (loading) return(<>Loading</>);
+  const { loading, error, data: filesData } = useQuery(Files)
+  if (error) return (<>Error!{error.message}</>)
 
-  const files = filesData.files?.filter(filters[filesFilters]);
+  if (loading) return (<>Loading</>)
+
+  const files = filesData.files?.filter(filters[filesFilters])
 
   const columns = [
     Table.SELECTION_COLUMN,
@@ -94,7 +91,7 @@ export default function PrintersList() {
       title: 'Name',
       dataIndex: 'filename',
       defaultSortOrder: 'ascend',
-      sorter: (a, b) => a.filename.localeCompare(b.filename),
+      sorter: (a, b) => a.filename.localeCompare(b.filename)
     },
     Table.EXPAND_COLUMN,
     {
@@ -105,84 +102,84 @@ export default function PrintersList() {
       filters: [
         {
           text: '.gcode',
-          value: '.gcode',
+          value: '.gcode'
         },
         {
           text: '.stl',
-          value: '.stl',
-        },
+          value: '.stl'
+        }
       ],
-      onFilter: (value, record) => record.filetype === value,
+      onFilter: (value, record) => record.filetype === value
     },
     {
       title: 'Uploaded at',
       dataIndex: 'createdAt',
       defaultSortOrder: 'descend',
-      sorter: (a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt),
+      sorter: (a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt)
     },
     {
       title: 'File size',
       dataIndex: 'filesize',
       defaultSortOrder: 'descend',
       sorter: (a, b) => a.type - b.type,
-      render: (value) => filesize(value).human('si'),
-    },
-  ];
+      render: (value) => filesize(value).human('si')
+    }
+  ]
 
   const onChange = (pagination, filters, sorter, extra) => {
-    console.log('params', pagination, filters, sorter, extra);
+    console.log('params', pagination, filters, sorter, extra)
   }
 
   const expandedRow = (record) => {
-    return(<p style={{ margin: 0 }}>{record.notes}</p>)
+    return (<p style={{ margin: 0 }}>{record.notes}</p>)
   }
 
   const props = {
     name: 'upload',
     multiple: true,
     showUploadList: false,
-    customRequest({file, onProgress, onSuccess}) {
+    customRequest ({ file, onProgress, onSuccess }) {
       const variables = {
         fileAttributes: {
           file: file,
-          notes: "Some notes"
+          notes: 'Some notes'
         }
       }
-      uploadFile({variables: {input: variables}});
-      onProgress({percent: 100}, file);
-      onSuccess(file);
+      uploadFile({ variables: { input: variables } })
+      onProgress({ percent: 100 }, file)
+      onSuccess(file)
     },
     accept: '.gcode, .stl',
     progress: {
       strokeColor: {
         '0%': '#108ee9',
-        '100%': '#87d068',
+        '100%': '#87d068'
       },
       strokeWidth: 10,
-      format: percent => `${parseFloat(percent.toFixed(2))}%`,
-    },
-  };
+      format: percent => `${parseFloat(percent.toFixed(2))}%`
+    }
+  }
 
   const onSelectChange = (newSelectedRowKeys) => {
-    setSelectedRowKeys(newSelectedRowKeys);
-  };
+    setSelectedRowKeys(newSelectedRowKeys)
+  }
 
   const handleArchiveClick = () => {
-    archiveFiles({variables: {input: {fileIds: selectedRowKeys}}});
+    archiveFiles({ variables: { input: { fileIds: selectedRowKeys } } })
   }
 
   const handleUnarchiveClick = () => {
-    unarchiveFiles({variables: {input: {fileIds: selectedRowKeys}}});
+    unarchiveFiles({ variables: { input: { fileIds: selectedRowKeys } } })
   }
 
   const rowSelection = {
     selectedRowKeys,
-    onChange: onSelectChange,
-  };
-  const hasSelected = selectedRowKeys.length > 0;
+    onChange: onSelectChange
+  }
+  const hasSelected = selectedRowKeys.length > 0
 
   const handleTabChange = (key) => {
-    setFilesFilters(key);
+    setFilesFilters(key)
   }
 
   return (
@@ -200,14 +197,14 @@ export default function PrintersList() {
       <Statistic title="Number of files" value={ files.length } formatter={(value) => (value || <Spin/>)}/>
       <Tabs defaultActiveKey="1" onChange={handleTabChange}>
         <Tabs.TabPane tab="Active" key="active">
-          <Form.Item label={selectedRowKeys.length + " selected : "}>
+          <Form.Item label={selectedRowKeys.length + ' selected : '}>
             <Button type="primary" onClick={handleArchiveClick} disabled={!hasSelected} loading={loading}>
               Archive
             </Button>
           </Form.Item>
         </Tabs.TabPane>
         <Tabs.TabPane tab="Archived" key="archived">
-          <Form.Item label={selectedRowKeys.length + " selected : "}>
+          <Form.Item label={selectedRowKeys.length + ' selected : '}>
             <Button type="primary" onClick={handleUnarchiveClick} disabled={!hasSelected} loading={loading}>
               Unarchive
             </Button>
@@ -216,17 +213,17 @@ export default function PrintersList() {
         {/* <Tabs.TabPane tab="Trash" key="trash">
         </Tabs.TabPane> */}
       </Tabs>
-      <Table 
-      columns={columns} 
-      dataSource={files} 
+      <Table
+      columns={columns}
+      dataSource={files}
       expandable={{
         expandedRowRender: expandedRow
       }}
-      onChange={onChange} 
+      onChange={onChange}
       pagination={false}
       rowKey={'id'}
       rowSelection={rowSelection}
       />
     </>
-  );
+  )
 }
