@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Menu } from 'antd'
 import {
   DesktopOutlined,
@@ -7,36 +7,69 @@ import {
   TeamOutlined,
   UserOutlined
 } from '@ant-design/icons'
-import { useLocation, Link } from 'react-router-dom'
+import { useLocation, useHistory } from 'react-router-dom'
+
+const rootSubmenuKeys = ['printers', 'macros', 'reports']
 const { SubMenu } = Menu
 
 function SideMenu () {
   const location = useLocation()
   const { pathname } = location
+  const history = useHistory()
+
+  const getRootFromLocation = (path = pathname) => {
+    return (path.split('/').filter(e => e)[0] || '/')
+  }
+
+  const [openKeys, setOpenKeys] = useState([getRootFromLocation()])
+
+  const onOpenChange = keys => {
+    const latestOpenKey = keys.find(key => openKeys.indexOf(key) === -1)
+
+    if (rootSubmenuKeys.indexOf(latestOpenKey) === -1) {
+      setOpenKeys(keys)
+    } else {
+      history.push('/' + latestOpenKey)
+      setOpenKeys(latestOpenKey ? [latestOpenKey] : [])
+    }
+  }
+
+  const onSelect = ({ item, key, keyPath, selectedKeys, domEvent }) => {
+    history.push(key)
+    if (rootSubmenuKeys.indexOf(getRootFromLocation(key)) === -1) {
+      setOpenKeys([])
+    }
+  }
 
   return (
     <Menu
-    theme="dark"
     defaultSelectedKeys={['1']}
-    selectedKeys={['/' + pathname.split('/').filter(e => e)[0]]}
-    mode="inline" >
+    mode="inline"
+    onOpenChange={onOpenChange}
+    openKeys={openKeys}
+    onSelect={onSelect}
+    selectedKeys={[getRootFromLocation(), pathname]}
+    theme="dark"
+    >
     <Menu.Item key="/" icon={<PieChartOutlined />} >
-      <Link to="/">Dashboard</Link>
+      Dashboard
     </Menu.Item>
-    <Menu.Item key="/printers" icon={<DesktopOutlined />}>
-      <Link to="/printers">Printers</Link>
-    </Menu.Item>
-    <Menu.Item key="/files" icon={<FileOutlined />} to='/files'>
-      <Link to="/files">Files</Link>
-    </Menu.Item>
-    <SubMenu key="sub1" icon={<UserOutlined />} title="User">
-      <Menu.Item key="4">Bill</Menu.Item>
-      <Menu.Item key="5">Alex</Menu.Item>
-      <Menu.Item key="6">Tom</Menu.Item>
+    <SubMenu key="printers" icon={<DesktopOutlined />} title="Printers">
+      <Menu.Item key="/printers">something</Menu.Item>
+      <Menu.Item key="/printers/5">Alex</Menu.Item>
+      <Menu.Item key="/printers/6">Tom</Menu.Item>
     </SubMenu>
-    <SubMenu key="sub2" icon={<TeamOutlined />} title="Team">
-      <Menu.Item key="7">Team 1</Menu.Item>
-      <Menu.Item key="8">Team 2</Menu.Item>
+    <Menu.Item key="/files" icon={<FileOutlined />}>
+      Files
+    </Menu.Item>
+    <SubMenu key="macros" icon={<UserOutlined />} title="Macros">
+      <Menu.Item key="/macros">Bill</Menu.Item>
+      <Menu.Item key="/macros/10">Alex</Menu.Item>
+      <Menu.Item key="/macros/11">Tom</Menu.Item>
+    </SubMenu>
+    <SubMenu key="reports" icon={<TeamOutlined />} title="Reports">
+      <Menu.Item key="/reports">Team 1</Menu.Item>
+      <Menu.Item key="/reports/8">Team 2</Menu.Item>
     </SubMenu>
     </Menu>
   )
