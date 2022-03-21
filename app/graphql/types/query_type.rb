@@ -19,7 +19,7 @@ module Types
       description 'files'
     end
     def files
-      FileManager::File.unscoped.with_attached_file
+      FileManager::File.with_attached_file
     end
   end
 end
