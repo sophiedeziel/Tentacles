@@ -47,7 +47,7 @@ jobs:
           DB_PASSWORD: tentacles_test
         run: bin/rake
 
-  lint:
+  lint-ruby:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -56,6 +56,19 @@ jobs:
         uses: ruby/setup-ruby@8f312efe1262fb463d906e9bf040319394c18d3e # v1.92
         with:
           bundler-cache: true
+      # Add or replace any other lints here
+      # - name: Security audit dependencies
+      #   run: bin/bundler-audit --update
+      # - name: Security audit application code
+      #   run: bin/brakeman -q -w2
+      - name: Lint Ruby files
+        run: bin/rubocop --parallel
+
+  lint-javascript:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
       - name: Install Nodejs and packages
         uses: actions/setup-node@v2
         with:
@@ -64,12 +77,5 @@ jobs:
         uses: borales/actions-yarn@v2.3.0
         with:
           cmd: install
-      # Add or replace any other lints here
-      # - name: Security audit dependencies
-      #   run: bin/bundler-audit --update
-      # - name: Security audit application code
-      #   run: bin/brakeman -q -w2
-      - name: Lint Ruby files
-        run: bin/rubocop --parallel
       - name: Lint Javascript files
         run: bin/yarn run eslint app/ui/**/*.jsx
