@@ -59,7 +59,7 @@ jobs:
       - name: Install Nodejs and packages
         uses: actions/setup-node@v2
         with:
-          node-version: 16
+          node-version: 16.14.0
       - name: Install Yarn
         uses: borales/actions-yarn@v2.0.0
         with:
