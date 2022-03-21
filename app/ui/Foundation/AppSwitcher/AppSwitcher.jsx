@@ -1,7 +1,6 @@
 import React, { Suspense, lazy } from 'react'
 
 import {
-  BrowserRouter as Router,
   Switch,
   Route
 } from 'react-router-dom'
@@ -9,7 +8,7 @@ import {
 const PrintersList = lazy(() => import('../../Sections/Printers/PrintersList/PrintersList'))
 const FilesList = lazy(() => import('../../Sections/Files/FilesList/FilesList'))
 
-export default function AppSwithcer ({ children }) {
+export default function AppSwithcer () {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <Switch>

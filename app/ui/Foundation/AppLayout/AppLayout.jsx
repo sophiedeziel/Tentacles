@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { Layout, Menu, Breadcrumb } from 'antd'
+import PropTypes from 'prop-types'
+import { Layout, Menu } from 'antd'
 import {
   DesktopOutlined,
   PieChartOutlined,
@@ -10,7 +11,6 @@ import {
   AppstoreOutlined,
   SettingOutlined
 } from '@ant-design/icons'
-import { useHistory } from 'react-router'
 import { Link } from 'react-router-dom'
 
 import 'antd/dist/antd.less'
@@ -21,7 +21,6 @@ const { Header, Content, Footer, Sider } = Layout
 const { SubMenu } = Menu
 
 function AppLayout ({ children }) {
-  const history = useHistory()
   const [collapsed, setCollaped] = useState(false)
 
   const onCollapse = () => {
@@ -91,6 +90,10 @@ function AppLayout ({ children }) {
       </Layout>
     </Layout>
   )
+}
+
+AppLayout.propTypes = {
+  children: PropTypes.node
 }
 
 export default AppLayout
