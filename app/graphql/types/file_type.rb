@@ -2,6 +2,8 @@
 
 module Types
   class FileType < Types::BaseObject
+    include Rails.application.routes.url_helpers
+
     field :id, ID, null: false
     field :filename, String, null: false
     field :notes, String, null: false
@@ -18,5 +20,9 @@ module Types
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
     field :archived_at, GraphQL::Types::ISO8601DateTime, null: true
+    field :download_url, String, null: false
+    def download_url
+      url_for(object.file)
+    end
   end
 end
