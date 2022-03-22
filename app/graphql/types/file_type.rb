@@ -24,5 +24,6 @@ module Types
     def download_url
       url_for(object.file)
     end
+    field :top_file_comments, String, null: true
   end
 end

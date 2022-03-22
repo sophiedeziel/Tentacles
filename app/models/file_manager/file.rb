@@ -23,5 +23,18 @@ module FileManager
     def unarchive
       update(is_not_archived: true, archived_at: nil)
     end
+
+    def top_file_comments
+      top_comments = []
+      file.blob.open do |file|
+        file.each do |line|
+          line.strip!
+          return top_comments.join("\r\n") unless line.empty? || line.starts_with?(';')
+
+          top_comments << line
+        end
+      end
+      top_comments.join("\r\n")
+    end
   end
 end
