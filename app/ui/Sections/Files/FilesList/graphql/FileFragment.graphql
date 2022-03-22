@@ -10,4 +10,5 @@ fragment FileFields on File {
   isDeleted
   archivedAt
   downloadUrl
+  topFileComments
 }

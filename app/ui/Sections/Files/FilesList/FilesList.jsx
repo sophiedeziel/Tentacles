@@ -6,7 +6,7 @@ import UploadFile from './graphql/UploadFile.graphql'
 import ArchiveFiles from './graphql/ArchiveFiles.graphql'
 import UnarchiveFiles from './graphql/UnarchiveFiles.graphql'
 
-import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space } from 'antd'
+import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Descriptions } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
 
 const filesize = require('file-size')
@@ -31,7 +31,7 @@ export default function PrintersList () {
       cache.writeQuery({
         query: Files,
         data: {
-          files: [...filesdata.files, data.uploadFile.printfile]
+          files: [...filesdata.files, data.uploadFile.file]
         }
       })
     }
@@ -141,7 +141,18 @@ export default function PrintersList () {
   }
 
   const expandedRow = (record) => {
-    return (<p style={{ margin: 0 }}>{record.notes}</p>)
+    return (
+      <Descriptions
+        layout="vertical"
+      >
+        <Descriptions.Item label="Top file comments">
+          <pre style={{ margin: 0 }}>{record.topFileComments}</pre>
+        </Descriptions.Item>
+        <Descriptions.Item label="Notes">
+          {record.notes}
+        </Descriptions.Item>
+      </Descriptions>
+    )
   }
 
   const props = {
