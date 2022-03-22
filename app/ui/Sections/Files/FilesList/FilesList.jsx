@@ -6,7 +6,7 @@ import UploadFile from './graphql/UploadFile.graphql'
 import ArchiveFiles from './graphql/ArchiveFiles.graphql'
 import UnarchiveFiles from './graphql/UnarchiveFiles.graphql'
 
-import { Table, Upload, Statistic, Spin, Button, Form, Tabs } from 'antd'
+import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
 
 const filesize = require('file-size')
@@ -123,6 +123,16 @@ export default function PrintersList () {
       defaultSortOrder: 'descend',
       sorter: (a, b) => a.type - b.type,
       render: (value) => filesize(value).human('si')
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      sorter: true,
+      render: (file) => {
+        return (<Space size="middle">
+          <a href={file.downloadUrl}>Download</a>
+        </Space>)
+      }
     }
   ]
 

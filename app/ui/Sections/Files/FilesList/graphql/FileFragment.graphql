@@ -9,4 +9,5 @@ fragment FileFields on File {
   isArchived
   isDeleted
   archivedAt
+  downloadUrl
 }
