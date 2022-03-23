@@ -36,5 +36,9 @@ module FileManager
       end
       top_comments.join("\r\n")
     end
+
+    def file_content
+      file.blob.download
+    end
   end
 end

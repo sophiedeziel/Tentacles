@@ -25,5 +25,6 @@ module Types
       url_for(object.file)
     end
     field :top_file_comments, String, null: true
+    field :file_content, String, null: true
   end
 end

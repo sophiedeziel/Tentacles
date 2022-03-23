@@ -21,5 +21,12 @@ module Types
     def files
       FileManager::File.with_attached_file
     end
+
+    field :file, FileType, null: true do
+      argument :id, ID, required: true
+    end
+    def file(id:)
+      FileManager::File.find(id)
+    end
   end
 end
