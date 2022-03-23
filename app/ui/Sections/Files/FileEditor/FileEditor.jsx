@@ -5,17 +5,14 @@ import { useQuery, useMutation } from '@apollo/client'
 import File from './graphql/File.graphql'
 import UpdateFile from './graphql/UpdateFile.graphql'
 
-import { Button, PageHeader } from 'antd'
+import { Col, Row, Button, PageHeader } from 'antd'
 
 export default function FileEditor () {
   const match = useRouteMatch('/files/:id')
   const fileID = match.params.id
 
   const editorRef = useRef(null)
-  // const [lineNumber, setLineNumber] = useState()
-  // const [lineContent, setLineContent] = useState()
-  const [setLineNumber] = useState()
-  const [setLineContent] = useState()
+  const [lineContent, setLineContent] = useState()
 
   const [updateFile] = useMutation(UpdateFile, {
     // update: (cache, { data }) => {
@@ -43,16 +40,14 @@ export default function FileEditor () {
   function handleEditorMount (editor) {
     editorRef.current = editor
     editor.onDidChangeCursorPosition((position) => {
-      setLineNumber(position.position.lineNumber)
       const model = editor.getModel()
       const content = model.getValueInRange({
         startLineNumber: position.position.lineNumber,
         startColumn: 1,
-
         endLineNumber: position.position.lineNumber + 1,
         endColumn: 1
       })
-      setLineContent(content)
+      setLineContent(content.split(' ')[0])
     })
   }
 
@@ -79,8 +74,8 @@ export default function FileEditor () {
       >
         <Button type="primary" onClick={handleSave}>Save</Button>
       </PageHeader>
-      {/* <Row>
-        <Col span={12}> */}
+      <Row gutter={24}>
+        <Col span={12}>
         <Editor
           height="90vh"
           defaultLanguage="gcode"
@@ -88,12 +83,11 @@ export default function FileEditor () {
           defaultValue={file.fileContent}
           onMount={handleEditorMount}
           />
-        {/* </Col>
+        </Col>
         <Col span={12}>
-
-          <pre>{lineNumber}: {lineContent}</pre>
+          <pre>{lineContent}</pre>
           </Col>
-      </Row> */}
+      </Row>
     </>
 
   )
