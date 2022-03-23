@@ -26,23 +26,7 @@ export default function FileEditor () {
       value={file.fileContent}
       extensions={[GCodeLanguage()]}
       height="calc(100vh - 190px)"
-      onChange={(value, viewUpdate) => {
-        console.log('value:', value)
-      }}
     />
-    <pre>
-    {/* {file.fileContent} */}
-    </pre>
-      {/* <CodeEditor
-        value={file.fileContent}
-        language="gcode"
-        onChange={(evn) => setCode(evn.target.value)}
-        padding={15}
-        // style={{
-        //   fontSize: 12,
-        //   fontFamily: 'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace'
-        // }}
-        /> */}
     </>
   )
 }
