@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useRouteMatch } from 'react-router'
 import CodeMirror from '@uiw/react-codemirror'
+import { GCodeLanguage } from 'gcode-lang-codemirror'
 
 import { useQuery } from '@apollo/client'
 import File from './graphql/File.graphql'
@@ -23,6 +24,7 @@ export default function FileEditor () {
     <>
       <CodeMirror
       value={file.fileContent}
+      extensions={[GCodeLanguage()]}
       height="calc(100vh - 190px)"
       onChange={(value, viewUpdate) => {
         console.log('value:', value)
