@@ -5,15 +5,17 @@ import { useQuery, useMutation } from '@apollo/client'
 import File from './graphql/File.graphql'
 import UpdateFile from './graphql/UpdateFile.graphql'
 
-import { Row, Col, Button, PageHeader } from 'antd'
+import { Button, PageHeader } from 'antd'
 
 export default function FileEditor () {
   const match = useRouteMatch('/files/:id')
   const fileID = match.params.id
 
   const editorRef = useRef(null)
-  const [lineNumber, setLineNumber] = useState()
-  const [lineContent, setLineContent] = useState()
+  // const [lineNumber, setLineNumber] = useState()
+  // const [lineContent, setLineContent] = useState()
+  const [setLineNumber] = useState()
+  const [setLineContent] = useState()
 
   const [updateFile] = useMutation(UpdateFile, {
     // update: (cache, { data }) => {
