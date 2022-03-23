@@ -36,5 +36,15 @@ module FileManager
       end
       top_comments.join("\r\n")
     end
+
+    def file_content
+      file.blob.download
+    end
+
+    def change_file_content!(content)
+      temp_filename = "#{Rails.root}/tmp/#{file.filename}"
+      ::File.write(temp_filename, content)
+      file.attach(io: ::File.open(temp_filename), filename: filename)
+    end
   end
 end

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import { useQuery, useMutation } from '@apollo/client'
 import Files from './graphql/Files.graphql'
@@ -89,9 +90,18 @@ export default function PrintersList () {
     Table.SELECTION_COLUMN,
     {
       title: 'Name',
-      dataIndex: 'filename',
       defaultSortOrder: 'ascend',
-      sorter: (a, b) => a.filename.localeCompare(b.filename)
+      sorter: (a, b) => a.filename.localeCompare(b.filename),
+      render: (file) => {
+        console.log(file)
+        return (<Link to={'/files/' + file.id}>{file.filename}</Link>)
+      }
+      // render: (file) => {
+      //   console.log(file)
+      //   return (
+      //   <Link to={'/files/' + file.id}>{file.filename}</Link>
+      //   )
+      // }
     },
     Table.EXPAND_COLUMN,
     {

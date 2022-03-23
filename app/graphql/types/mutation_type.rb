@@ -5,5 +5,6 @@ module Types
     field :archiveFiles, mutation: Mutations::ArchiveFiles
     field :unarchiveFiles, mutation: Mutations::UnarchiveFiles
     field :uploadFile, mutation: Mutations::UploadFile
+    field :updateFile, mutation: Mutations::UpdateFile
   end
 end

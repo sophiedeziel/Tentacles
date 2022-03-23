@@ -7,6 +7,7 @@ import {
 
 const PrintersList = lazy(() => import('../../Sections/Printers/PrintersList/PrintersList'))
 const FilesList = lazy(() => import('../../Sections/Files/FilesList/FilesList'))
+const FileEditor = lazy(() => import('../../Sections/Files/FileEditor/FileEditor'))
 
 export default function AppSwithcer () {
   return (
@@ -14,6 +15,7 @@ export default function AppSwithcer () {
       <Switch>
           <Route path="/printers" exact component={PrintersList} />
           <Route path="/files" exact component={FilesList} />
+          <Route path="/files/:fileId" component={FileEditor} />
           <Route path="/" exact>
             <h1>Accueil</h1>
           </Route>
