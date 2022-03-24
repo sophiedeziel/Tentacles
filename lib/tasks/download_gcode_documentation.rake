@@ -15,6 +15,7 @@ namespace :gcode_documentation do
                 .to_a
                 .slice_after(/^---/)
                 .reject { |line| line[0].match?(/^---/) }
+<<<<<<< HEAD
       parsed = YAML.safe_load(content.first.join)
       parsed['codes'].each do |code|
         docs[code] = {
@@ -24,5 +25,18 @@ namespace :gcode_documentation do
       end
     end
     File.write('app/ui/sections/Files/FileEditor/GcodeDocs/GcodeDocs.json', docs.to_json)
+=======
+      parsed = YAML.load(content.first.join)
+      parsed["codes"].each do |code|
+        docs[code] = {
+          structured_doc: parsed,
+          md_description: content.last.join
+        } 
+      end
+    end
+    File.open('app/ui/sections/Files/FileEditor/GcodeDocs/GcodeDocs.json', 'w') do |file|
+      file.write(docs.to_json)
+    end
+>>>>>>> f3de111 (import transform gcode's documentation)
   end
 end
