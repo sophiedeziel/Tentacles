@@ -1,24 +1,11 @@
-# README
+# Tentacles
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+This is a WIP in early stage.
 
-Things you may want to cover:
+## Update Gcode documentation
 
-* Ruby version
+Run the following script from the project's root directory: 
 
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+```
+rails gcode_documentation:fetch
+```
