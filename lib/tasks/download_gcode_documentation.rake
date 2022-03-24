@@ -18,8 +18,8 @@ namespace :gcode_documentation do
       parsed = YAML.safe_load(content.first.join)
       parsed['codes'].each do |code|
         docs[code] = {
-          structured_doc: parsed,
-          md_description: content.last.join
+          structuredDoc: parsed,
+          mdDescription: content.last.join
         }
       end
     end
