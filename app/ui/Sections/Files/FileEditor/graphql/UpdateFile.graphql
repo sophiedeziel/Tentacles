@@ -2,7 +2,9 @@ mutation UpdateFile($input: UpdateFileInput!) {
   updateFile(input: $input) {
     file{
       id
+      filename
       fileContent
+      downloadUrl
     }
   }
 }

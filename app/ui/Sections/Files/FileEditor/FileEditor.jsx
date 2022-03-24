@@ -6,9 +6,9 @@ import { useQuery, useMutation } from '@apollo/client'
 import File from './graphql/File.graphql'
 import UpdateFile from './graphql/UpdateFile.graphql'
 import GcodeDocs from './GcodeDocs/GcodeDocs.json'
+import { GCodeViewer } from 'react-gcode-viewer'
 
 import { Col, Row, Button, PageHeader, Typography, Drawer } from 'antd'
-import classes from './FileEditor.module.less'
 const { Title } = Typography
 
 export default function FileEditor () {
@@ -166,7 +166,23 @@ export default function FileEditor () {
           onMount={handleEditorMount}
           />
         </Col>
-        <Col span={12} className={classes.docs}>
+        <Col span={12}>
+          <GCodeViewer
+              orbitControls
+              showAxes
+              quality={0.2}
+              floorProps={{
+                gridWidth: 300,
+                gridLength: 300
+              }}
+              style={{
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: 'calc(100vh - 250px)'
+              }}
+              url={file.downloadUrl}
+          />
         </Col>
       </Row>
       <Drawer
