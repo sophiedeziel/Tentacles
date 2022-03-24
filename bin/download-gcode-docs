@@ -1,0 +1,9 @@
+cd tmp
+if [[ -d MarlinDocumentation ]]
+then
+  cd MarlinDocumentation
+  git pull
+else
+  git clone https://github.com/MarlinFirmware/MarlinDocumentation.git
+fi
+

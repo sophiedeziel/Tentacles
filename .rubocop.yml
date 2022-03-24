@@ -6,6 +6,7 @@ AllCops:
     - 'node_modules/**/*'
     - 'vendor/**/*'
     - 'bin/**/*'
+    - 'tmp/**/*'
 
 Metrics/MethodLength:
   Exclude:
