@@ -6,9 +6,9 @@ import { useQuery, useMutation } from '@apollo/client'
 import File from './graphql/File.graphql'
 import UpdateFile from './graphql/UpdateFile.graphql'
 import GcodeDocs from './GcodeDocs/GcodeDocs.json'
+import { GCodeViewer } from 'react-gcode-viewer'
 
-import { Col, Row, Button, PageHeader, Typography } from 'antd'
-import classes from './FileEditor.module.less'
+import { Col, Row, Button, PageHeader, Typography, Drawer, Divider } from 'antd'
 const { Title } = Typography
 
 export default function FileEditor () {
@@ -17,6 +17,7 @@ export default function FileEditor () {
 
   const editorRef = useRef(null)
   const [lineContent, setLineContent] = useState()
+  const [visible, setVisible] = useState(false)
 
   const [updateFile] = useMutation(UpdateFile, {
     // update: (cache, { data }) => {
@@ -80,6 +81,128 @@ export default function FileEditor () {
     return (null)
   }
 
+  const showDrawer = () => {
+    setVisible(true)
+  }
+  const onClose = () => {
+    setVisible(false)
+  }
+
+  const ContextualDocumentation = () => {
+    if (!GcodeDocs[lineContent]) {
+      return (null)
+    }
+
+    const { structuredDoc, mdDescription } = GcodeDocs[lineContent]
+    const { parameters, title, notes, devnotes, examples } = structuredDoc
+
+    return (
+      <>
+        <Title level={2}>{lineContent + ' : ' + title}</Title>
+        { parameters &&
+        <code>
+          {
+            parameters.filter((value) => value) && lineContent
+          }
+          {
+            parameters.filter((value) => value)?.map(({ tag, optional, values }) => (
+              <span key={tag}>
+                {' '}
+                {optional && '['}
+                {tag}
+                {values?.map(({ tag }, index) => (
+                  <span key={tag + index}>{`<${tag}>`}</span>
+                ))}
+                {optional && ']'}
+              </span>
+            ))
+          }
+        </code>
+        }
+        <Title level={3}>Description</Title>
+        <ReactMarkdown transformLinkUri={uriTransformer}>
+        { mdDescription }
+        </ReactMarkdown>
+
+        { notes &&
+          <>
+            <Title level={3}>Notes</Title>
+            { typeof (notes) === 'object' &&
+              <ReactMarkdown transformLinkUri={uriTransformer}>
+                {notes.map(
+                  (note) => (
+                    `- ${note}`
+                  )).join('\r\n')}
+              </ReactMarkdown>
+            }
+            { typeof (notes) === 'string' &&
+              <ReactMarkdown transformLinkUri={uriTransformer}>
+                {notes}
+              </ReactMarkdown>
+            }
+
+          </>
+        }
+
+        { devnotes &&
+          <>
+            <Title level={3}>Developer notes</Title>
+            <ReactMarkdown transformLinkUri={uriTransformer}>
+              {devnotes}
+            </ReactMarkdown>
+          </>
+        }
+
+        { parameters &&
+          <>
+            <Title level={3}>Parameters</Title>
+            {
+              parameters.filter((value) => value)?.map(({ tag, optional, values, description }) => (
+                <p key={tag}>
+                  <span>
+                    {' '}
+                    {optional && '['}
+                    {tag}
+                    {values?.map(({ tag }, index) => (
+                      <span key={index}>{`<${tag}>`}</span>
+                    ))}
+                    {optional && ']'}
+                    {' '}
+                  </span>
+                  {description}
+                </p>
+              ))
+            }
+          </>
+        }
+
+        { examples &&
+        <>
+          <Title level={3}>Examples</Title>
+          {
+          examples.map(
+            ({ pre, post, code }, index) => (
+                <div key={index}>
+                  <ReactMarkdown transformLinkUri={uriTransformer}>
+                    {pre}
+                  </ReactMarkdown>
+                  <code>
+                    {code}
+                  </code>
+                  <ReactMarkdown transformLinkUri={uriTransformer}>
+                    {post}
+                  </ReactMarkdown>
+                  <Divider />
+                </div>
+            )
+          )
+          }
+        </>
+        }
+      </>
+    )
+  }
+
   return (
     <>
       <PageHeader
@@ -87,6 +210,9 @@ export default function FileEditor () {
       ghost={false}
       onBack={() => window.history.back()}
       title={file.filename}
+      extra={[
+        <Button key="1" type="primary" onClick={showDrawer}>Docs</Button>
+      ]}
       >
         <Button type="primary" onClick={handleSave}>Save</Button>
       </PageHeader>
@@ -100,19 +226,35 @@ export default function FileEditor () {
           onMount={handleEditorMount}
           />
         </Col>
-        <Col span={12} className={classes.docs}>
-          <Title level={2}>{GcodeDocs[lineContent]?.structured_doc?.title}</Title>
-          {GcodeDocs[lineContent]?.md_description
-            ? (
-            <ReactMarkdown transformLinkUri={uriTransformer}>
-            { GcodeDocs[lineContent].md_description}
-            </ReactMarkdown>
-              )
-            : ''
-          }
+        <Col span={12}>
+          <GCodeViewer
+              orbitControls
+              showAxes
+              quality={0.2}
+              floorProps={{
+                gridWidth: 300,
+                gridLength: 300
+              }}
+              style={{
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: 'calc(100vh - 250px)'
+              }}
+              url={file.downloadUrl}
+          />
         </Col>
       </Row>
+      <Drawer
+      mask={false}
+      closable={true}
+      visible={visible}
+      size={'large'}
+      title={'Documentation'}
+      onClose={onClose}
+      >
+        <ContextualDocumentation />
+      </Drawer>
     </>
-
   )
 }

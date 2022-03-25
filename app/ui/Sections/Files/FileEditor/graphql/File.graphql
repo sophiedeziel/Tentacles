@@ -3,5 +3,6 @@ query File($id: ID!) {
     id
     filename
     fileContent
+    downloadUrl
   }
 }
