@@ -8,7 +8,7 @@ import UpdateFile from './graphql/UpdateFile.graphql'
 import GcodeDocs from './GcodeDocs/GcodeDocs.json'
 import { GCodeViewer } from 'react-gcode-viewer'
 
-import { Col, Row, Button, PageHeader, Typography, Drawer } from 'antd'
+import { Col, Row, Button, PageHeader, Typography, Drawer, Divider } from 'antd'
 const { Title } = Typography
 
 export default function FileEditor () {
@@ -62,7 +62,6 @@ export default function FileEditor () {
       })
 
       setLineContent(command(content))
-      console.log(GcodeDocs[command(content)]?.structuredDoc)
     })
   }
 
@@ -95,7 +94,7 @@ export default function FileEditor () {
     }
 
     const { structuredDoc, mdDescription } = GcodeDocs[lineContent]
-    const { parameters, title, notes, devnotes } = structuredDoc
+    const { parameters, title, notes, devnotes, examples } = structuredDoc
 
     return (
       <>
@@ -103,15 +102,16 @@ export default function FileEditor () {
         { parameters &&
         <code>
           {
-            parameters.filter((value) => value) && lineContent}
+            parameters.filter((value) => value) && lineContent
+          }
           {
             parameters.filter((value) => value)?.map(({ tag, optional, values }) => (
               <span key={tag}>
                 {' '}
                 {optional && '['}
                 {tag}
-                {values?.map(({ tag }) => (
-                  <span key={tag}>{`<${tag}>`}</span>
+                {values?.map(({ tag }, index) => (
+                  <span key={tag + index}>{`<${tag}>`}</span>
                 ))}
                 {optional && ']'}
               </span>
@@ -126,18 +126,78 @@ export default function FileEditor () {
 
         { notes &&
           <>
-          <Title level={3}>Notes</Title><ReactMarkdown transformLinkUri={uriTransformer}>
-            {notes}
-          </ReactMarkdown>
+            <Title level={3}>Notes</Title>
+            { typeof (notes) === 'object' &&
+              <ReactMarkdown transformLinkUri={uriTransformer}>
+                {notes.map(
+                  (note) => (
+                    `- ${note}`
+                  )).join('\r\n')}
+              </ReactMarkdown>
+            }
+            { typeof (notes) === 'string' &&
+              <ReactMarkdown transformLinkUri={uriTransformer}>
+                {notes}
+              </ReactMarkdown>
+            }
+
           </>
         }
 
         { devnotes &&
           <>
-          <Title level={3}>Developer notes</Title><ReactMarkdown transformLinkUri={uriTransformer}>
-            {devnotes}
-          </ReactMarkdown>
+            <Title level={3}>Developer notes</Title>
+            <ReactMarkdown transformLinkUri={uriTransformer}>
+              {devnotes}
+            </ReactMarkdown>
           </>
+        }
+
+        { parameters &&
+          <>
+            <Title level={3}>Parameters</Title>
+            {
+              parameters.filter((value) => value)?.map(({ tag, optional, values, description }) => (
+                <p key={tag}>
+                  <span>
+                    {' '}
+                    {optional && '['}
+                    {tag}
+                    {values?.map(({ tag }, index) => (
+                      <span key={index}>{`<${tag}>`}</span>
+                    ))}
+                    {optional && ']'}
+                    {' '}
+                  </span>
+                  {description}
+                </p>
+              ))
+            }
+          </>
+        }
+
+        { examples &&
+        <>
+          <Title level={3}>Examples</Title>
+          {
+          examples.map(
+            ({ pre, post, code }, index) => (
+                <div key={index}>
+                  <ReactMarkdown transformLinkUri={uriTransformer}>
+                    {pre}
+                  </ReactMarkdown>
+                  <code>
+                    {code}
+                  </code>
+                  <ReactMarkdown transformLinkUri={uriTransformer}>
+                    {post}
+                  </ReactMarkdown>
+                  <Divider />
+                </div>
+            )
+          )
+          }
+        </>
         }
       </>
     )
