@@ -2,9 +2,7 @@ import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { Layout, Menu } from 'antd'
 import {
-  MailOutlined,
-  AppstoreOutlined,
-  SettingOutlined
+  BugOutlined
 } from '@ant-design/icons'
 
 import 'antd/dist/antd.less'
@@ -13,7 +11,6 @@ import SideMenu from './components/SideMenu'
 import classes from './AppLayout.module.less'
 
 const { Header, Content, Footer, Sider } = Layout
-const { SubMenu } = Menu
 
 function AppLayout ({ children }) {
   const [collapsed, setCollaped] = useState(false)
@@ -25,31 +22,15 @@ function AppLayout ({ children }) {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider collapsible collapsed={collapsed} onCollapse={onCollapse} trigger={null}>
-        <div className={classes.Logo} />
+        <div className={classes.Logo} >Tentacles</div>
         <SideMenu></SideMenu>
       </Sider>
       <Layout>
         <Header className={classes.siteLayoutBackground} style={{ padding: 0 }} >
-          <Menu mode="horizontal">
-            <Menu.Item key="mail" icon={<MailOutlined />}>
-              Navigation One
-            </Menu.Item>
-            <Menu.Item key="app" disabled icon={<AppstoreOutlined />}>
-              Navigation Two
-            </Menu.Item>
-            <SubMenu key="SubMenu" icon={<SettingOutlined />} title="Navigation Three - Submenu">
-              <Menu.ItemGroup title="Item 1">
-                <Menu.Item key="setting:1">Option 1</Menu.Item>
-                <Menu.Item key="setting:2">Option 2</Menu.Item>
-              </Menu.ItemGroup>
-              <Menu.ItemGroup title="Item 2">
-                <Menu.Item key="setting:3">Option 3</Menu.Item>
-                <Menu.Item key="setting:4">Option 4</Menu.Item>
-              </Menu.ItemGroup>
-            </SubMenu>
-            <Menu.Item key="alipay">
-              <a href="https://ant.design" target="_blank" rel="noopener noreferrer">
-                Navigation Four - Link
+          <Menu mode="horizontal" style={{ float: 'right' }}>
+            <Menu.Item>
+              <a href="https://github.com/sophiedeziel/Tentacles/issues" target="_blank" rel="noreferrer">
+                <BugOutlined />
               </a>
             </Menu.Item>
           </Menu>

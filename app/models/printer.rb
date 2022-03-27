@@ -2,10 +2,26 @@
 
 class Printer < ApplicationRecord
   def octoprint_version
-    client = Octoprint::Client.new(host: octoprint_uri, api_key: octoprint_key)
+    using_api do
+      return Octoprint::ServerVersion.get
+    end
+  end
 
-    Octoprint::ServerVersion.get(client: client)
+  def job_status
+    using_api do
+      Octoprint::Job.get.state
+    end
+  end
+
+  private
+
+  def using_api(&block)
+    api_client.use(&block)
   rescue StandardError
     nil
+  end
+
+  def api_client
+    @api_client ||= Octoprint::Client.new(host: octoprint_uri, api_key: octoprint_key)
   end
 end

@@ -18,7 +18,7 @@ export default function PrintersList () {
       printers.map((printer) => {
         return (
         <li key={printer.id}>
-          {printer.name}
+          {printer.name}, {printer.octoprintVersion}
         </li>
         )
       })

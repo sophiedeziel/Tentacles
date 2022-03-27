@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
 import { Menu } from 'antd'
 import {
-  DesktopOutlined,
-  PieChartOutlined,
+  BarChartOutlined,
+  BookOutlined,
+  CodeOutlined,
   FileOutlined,
-  TeamOutlined,
-  UserOutlined
+  PieChartOutlined,
+  UsbOutlined
 } from '@ant-design/icons'
 import { useLocation, useHistory } from 'react-router-dom'
 
@@ -54,23 +55,23 @@ function SideMenu () {
     <Menu.Item key="/" icon={<PieChartOutlined />} >
       Dashboard
     </Menu.Item>
-    <SubMenu key="printers" icon={<DesktopOutlined />} title="Printers">
-      <Menu.Item key="/printers">something</Menu.Item>
-      <Menu.Item key="/printers/5">Alex</Menu.Item>
-      <Menu.Item key="/printers/6">Tom</Menu.Item>
+    <Menu.Item key="/projects" icon={<BookOutlined />}>
+      Projects
+    </Menu.Item>
+    <SubMenu key="printers" icon={<UsbOutlined />} title="Printers">
+      <Menu.Item key="/printers">Manage</Menu.Item>
+      <Menu.Item key="/printers/operations">Operations</Menu.Item>
+      <Menu.Item key="/printers/option2">option2</Menu.Item>
     </SubMenu>
     <Menu.Item key="/files" icon={<FileOutlined />}>
       Files
     </Menu.Item>
-    <SubMenu key="macros" icon={<UserOutlined />} title="Macros">
-      <Menu.Item key="/macros">Bill</Menu.Item>
-      <Menu.Item key="/macros/10">Alex</Menu.Item>
-      <Menu.Item key="/macros/11">Tom</Menu.Item>
-    </SubMenu>
-    <SubMenu key="reports" icon={<TeamOutlined />} title="Reports">
-      <Menu.Item key="/reports">Team 1</Menu.Item>
-      <Menu.Item key="/reports/8">Team 2</Menu.Item>
-    </SubMenu>
+    <Menu.Item key="/macros" icon={<CodeOutlined />}>
+      Macros
+    </Menu.Item>
+    <Menu.Item key="/reports" icon={<BarChartOutlined />}>
+      Reports
+    </Menu.Item>
     </Menu>
   )
 }

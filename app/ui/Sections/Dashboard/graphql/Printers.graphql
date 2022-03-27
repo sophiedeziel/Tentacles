@@ -1,0 +1,12 @@
+query Printers {
+  printers {
+    id
+    name
+    octoprintUri
+    octoprintKey
+    octoprintVersion
+    jobStatus
+    createdAt
+    updatedAt
+  }
+}
