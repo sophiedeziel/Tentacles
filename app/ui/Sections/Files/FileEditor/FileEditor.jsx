@@ -8,8 +8,9 @@ import UpdateFile from './graphql/UpdateFile.graphql'
 import GcodeDocs from './GcodeDocs/GcodeDocs.json'
 import { GCodeViewer } from 'react-gcode-viewer'
 
-import { Col, Row, Button, PageHeader, Typography, Drawer, Divider } from 'antd'
+import { Col, Row, Button, PageHeader, Typography, Drawer, Divider, Input } from 'antd'
 const { Title } = Typography
+const { Search } = Input
 
 export default function FileEditor () {
   const match = useRouteMatch('/files/:id')
@@ -19,18 +20,7 @@ export default function FileEditor () {
   const [lineContent, setLineContent] = useState()
   const [visible, setVisible] = useState(false)
 
-  const [updateFile] = useMutation(UpdateFile, {
-    // update: (cache, { data }) => {
-    //   const filesdata = cache.readQuery({ query: Files })
-
-    //   cache.writeQuery({
-    //     query: Files,
-    //     data: {
-    //       files: [...filesdata.files, data.uploadFile.file]
-    //     }
-    //   })
-    // }
-  })
+  const [updateFile] = useMutation(UpdateFile)
 
   const { loading, error, data: fileData } = useQuery(File, {
     variables: { id: fileID }
@@ -75,6 +65,15 @@ export default function FileEditor () {
       }
     }
     )
+  }
+
+  const onSearch = (event) => {
+    const command = event.target.value.toUpperCase()
+    if (GcodeDocs[command]) {
+      setLineContent(command)
+    } else {
+      // Search in documentation text
+    }
   }
 
   const uriTransformer = (text) => {
@@ -252,6 +251,7 @@ export default function FileEditor () {
       size={'large'}
       title={'Documentation'}
       onClose={onClose}
+      extra={<Search placeholder="Serach a gocde command" allowClear onChange={onSearch} style={{ width: 400 }} />}
       >
         <ContextualDocumentation />
       </Drawer>
