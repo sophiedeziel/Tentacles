@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
+import ReactMarkdown from 'react-markdown'
 
 import { useQuery, useMutation } from '@apollo/client'
 import Files from './graphql/Files.graphql'
@@ -7,7 +8,7 @@ import UploadFile from './graphql/UploadFile.graphql'
 import ArchiveFiles from './graphql/ArchiveFiles.graphql'
 import UnarchiveFiles from './graphql/UnarchiveFiles.graphql'
 
-import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Descriptions } from 'antd'
+import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Row, Col } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
 
 const filesize = require('file-size')
@@ -152,16 +153,16 @@ export default function PrintersList () {
 
   const expandedRow = (record) => {
     return (
-      <Descriptions
-        layout="vertical"
-      >
-        <Descriptions.Item label="Top file comments">
+      <Row>
+        <Col span={12}>
           <pre style={{ margin: 0 }}>{record.topFileComments}</pre>
-        </Descriptions.Item>
-        <Descriptions.Item label="Notes">
-          {record.notes}
-        </Descriptions.Item>
-      </Descriptions>
+        </Col>
+        <Col span={12}>
+          <ReactMarkdown>
+            {record.notes}
+          </ReactMarkdown>
+        </Col>
+      </Row>
     )
   }
 
