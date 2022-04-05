@@ -7,13 +7,15 @@ import Files from './graphql/Files.graphql'
 import UploadFile from './graphql/UploadFile.graphql'
 import ArchiveFiles from './graphql/ArchiveFiles.graphql'
 import UnarchiveFiles from './graphql/UnarchiveFiles.graphql'
+import UpdateFileNotes from './graphql/UpdateFileNotes.graphql'
 
-import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Row, Col } from 'antd'
+import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Row, Col, Input } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
 
 const filesize = require('file-size')
 
 const { Dragger } = Upload
+const { TextArea } = Input
 
 export default function PrintersList () {
   const filters = {
@@ -38,6 +40,27 @@ export default function PrintersList () {
       })
     }
   })
+
+  const [updateFileNotes] = useMutation(UpdateFileNotes, {
+    update: (cache, { data }) => {
+      const filesdata = cache.readQuery({ query: Files })
+
+      const filteredFiles = filesdata.files.map((file) => {
+        if (selectedRowKeys.indexOf(file.id) !== -1) {
+          return data.updateFileNotes.file
+        }
+        return file
+      })
+
+      cache.writeQuery({
+        query: Files,
+        data: {
+          files: filteredFiles
+        }
+      })
+    }
+  })
+
   const [archiveFiles] = useMutation(ArchiveFiles, {
     update: (cache, { data }) => {
       const filesdata = cache.readQuery({ query: Files })
@@ -151,6 +174,10 @@ export default function PrintersList () {
     console.log('params', pagination, filters, sorter, extra)
   }
 
+  const onNotesSave = (values) => {
+    updateFileNotes({ variables: { input: { id: values.id, notes: values.notes } } })
+  }
+
   const expandedRow = (record) => {
     return (
       <Row>
@@ -161,6 +188,24 @@ export default function PrintersList () {
           <ReactMarkdown>
             {record.notes}
           </ReactMarkdown>
+          <Form
+            name={`fileNotes[${record.id}]`}
+            onFinish={onNotesSave}
+            autoComplete="off"
+            initialValues={{ notes: record.notes, id: record.id }}
+            >
+            <Form.Item hidden name="id" >
+              <Input />
+            </Form.Item>
+            <Form.Item name="notes">
+              <TextArea rows={10} />
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" htmlType="submit">
+                Save
+              </Button>
+            </Form.Item>
+          </Form>
         </Col>
       </Row>
     )
