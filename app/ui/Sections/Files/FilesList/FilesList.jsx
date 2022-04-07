@@ -1,21 +1,19 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import ReactMarkdown from 'react-markdown'
 
 import { useQuery, useMutation } from '@apollo/client'
 import Files from './graphql/Files.graphql'
 import UploadFile from './graphql/UploadFile.graphql'
 import ArchiveFiles from './graphql/ArchiveFiles.graphql'
 import UnarchiveFiles from './graphql/UnarchiveFiles.graphql'
-import UpdateFileNotes from './graphql/UpdateFileNotes.graphql'
 
-import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Row, Col, Input } from 'antd'
+import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
+import FileDetails from './components/fileDetails/FileDetails.jsx'
 
 const filesize = require('file-size')
 
 const { Dragger } = Upload
-const { TextArea } = Input
 
 export default function PrintersList () {
   const filters = {
@@ -36,26 +34,6 @@ export default function PrintersList () {
         query: Files,
         data: {
           files: [...filesdata.files, data.uploadFile.file]
-        }
-      })
-    }
-  })
-
-  const [updateFileNotes] = useMutation(UpdateFileNotes, {
-    update: (cache, { data }) => {
-      const filesdata = cache.readQuery({ query: Files })
-
-      const filteredFiles = filesdata.files.map((file) => {
-        if (selectedRowKeys.indexOf(file.id) !== -1) {
-          return data.updateFileNotes.file
-        }
-        return file
-      })
-
-      cache.writeQuery({
-        query: Files,
-        data: {
-          files: filteredFiles
         }
       })
     }
@@ -117,7 +95,6 @@ export default function PrintersList () {
       defaultSortOrder: 'ascend',
       sorter: (a, b) => a.filename.localeCompare(b.filename),
       render: (file) => {
-        console.log(file)
         return (<Link to={'/files/' + file.id}>{file.filename}</Link>)
       }
       // render: (file) => {
@@ -174,43 +151,6 @@ export default function PrintersList () {
     console.log('params', pagination, filters, sorter, extra)
   }
 
-  const onNotesSave = (values) => {
-    updateFileNotes({ variables: { input: { id: values.id, notes: values.notes } } })
-  }
-
-  const expandedRow = (record) => {
-    return (
-      <Row>
-        <Col span={12}>
-          <pre style={{ margin: 0 }}>{record.topFileComments}</pre>
-        </Col>
-        <Col span={12}>
-          <ReactMarkdown>
-            {record.notes}
-          </ReactMarkdown>
-          <Form
-            name={`fileNotes[${record.id}]`}
-            onFinish={onNotesSave}
-            autoComplete="off"
-            initialValues={{ notes: record.notes, id: record.id }}
-            >
-            <Form.Item hidden name="id" >
-              <Input />
-            </Form.Item>
-            <Form.Item name="notes">
-              <TextArea rows={10} />
-            </Form.Item>
-            <Form.Item>
-              <Button type="primary" htmlType="submit">
-                Save
-              </Button>
-            </Form.Item>
-          </Form>
-        </Col>
-      </Row>
-    )
-  }
-
   const props = {
     name: 'upload',
     multiple: true,
@@ -257,6 +197,12 @@ export default function PrintersList () {
 
   const handleTabChange = (key) => {
     setFilesFilters(key)
+  }
+
+  const expandedRow = (record) => {
+    return (
+      <FileDetails record={record} />
+    )
   }
 
   return (

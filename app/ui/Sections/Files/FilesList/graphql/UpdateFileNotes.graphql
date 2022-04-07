@@ -1,0 +1,8 @@
+#import "./FileFragment.graphql"
+mutation UpdateFileNotes($input: UpdateFileNotesInput!) {
+  updateFileNotes(input: $input) {
+    file {
+      ...FileFields
+    }
+  }
+}
