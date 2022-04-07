@@ -7,8 +7,9 @@ import UploadFile from './graphql/UploadFile.graphql'
 import ArchiveFiles from './graphql/ArchiveFiles.graphql'
 import UnarchiveFiles from './graphql/UnarchiveFiles.graphql'
 
-import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Descriptions } from 'antd'
+import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
+import FileDetails from './components/fileDetails/FileDetails.jsx'
 
 const filesize = require('file-size')
 
@@ -37,6 +38,7 @@ export default function PrintersList () {
       })
     }
   })
+
   const [archiveFiles] = useMutation(ArchiveFiles, {
     update: (cache, { data }) => {
       const filesdata = cache.readQuery({ query: Files })
@@ -93,7 +95,6 @@ export default function PrintersList () {
       defaultSortOrder: 'ascend',
       sorter: (a, b) => a.filename.localeCompare(b.filename),
       render: (file) => {
-        console.log(file)
         return (<Link to={'/files/' + file.id}>{file.filename}</Link>)
       }
       // render: (file) => {
@@ -150,21 +151,6 @@ export default function PrintersList () {
     console.log('params', pagination, filters, sorter, extra)
   }
 
-  const expandedRow = (record) => {
-    return (
-      <Descriptions
-        layout="vertical"
-      >
-        <Descriptions.Item label="Top file comments">
-          <pre style={{ margin: 0 }}>{record.topFileComments}</pre>
-        </Descriptions.Item>
-        <Descriptions.Item label="Notes">
-          {record.notes}
-        </Descriptions.Item>
-      </Descriptions>
-    )
-  }
-
   const props = {
     name: 'upload',
     multiple: true,
@@ -211,6 +197,12 @@ export default function PrintersList () {
 
   const handleTabChange = (key) => {
     setFilesFilters(key)
+  }
+
+  const expandedRow = (record) => {
+    return (
+      <FileDetails record={record} />
+    )
   }
 
   return (
