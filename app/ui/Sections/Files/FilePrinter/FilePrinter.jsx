@@ -2,6 +2,8 @@ import React from 'react'
 import { useRouteMatch } from 'react-router'
 import { useQuery } from '@apollo/client'
 import ReactMarkdown from 'react-markdown'
+import { GCodeViewer } from 'react-gcode-viewer'
+
 import classes from './FilePrinter.module.less'
 
 import { Col, Row, PageHeader, Card, Checkbox, Button, List, Statistic } from 'antd'
@@ -53,6 +55,24 @@ export default function FilePrinter () {
           </Card>
         </Col>
         <Col span={12}>
+          <Card title="File Preview" >
+            <GCodeViewer
+              orbitControls
+              showAxes
+              quality={0.2}
+              floorProps={{
+                gridWidth: 300,
+                gridLength: 300
+              }}
+              style={{
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '400px'
+              }}
+              url={file.downloadUrl}
+            />
+          </Card>
           <Card title="File informations" >
             <Row>
               <Statistic title="Estimated print time" value="~3h" />
