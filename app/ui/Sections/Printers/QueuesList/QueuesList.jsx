@@ -18,7 +18,7 @@ export default function QueuesList () {
       printers.map((printer) => {
         return (
         <li key={printer.id}>
-          {printer.name}
+          {printer.name}, {printer.jobStatus}, {printer.jobsCount} jobs in queue
         </li>
         )
       })

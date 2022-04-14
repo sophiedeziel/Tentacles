@@ -14,5 +14,9 @@ module Types
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
     field :jobs, Types::JobType.connection_type, null: false
+    field :jobs_count, Integer, null: false
+    def jobs_count
+      object.jobs.count
+    end
   end
 end

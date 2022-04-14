@@ -1,10 +1,9 @@
 query Printers {
   printers {
     id
+    jobsCount
     name
-    octoprintUri
-    octoprintKey
-    octoprintVersion
+    jobStatus
     createdAt
     updatedAt
   }
