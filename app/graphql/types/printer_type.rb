@@ -13,5 +13,6 @@ module Types
     field :job_status, String, null: true
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
+    field :jobs, Types::JobType.connection_type, null: false
   end
 end
