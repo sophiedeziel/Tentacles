@@ -28,7 +28,7 @@ export default function FilePrinter () {
 
   const { file, printers } = queryData
 
-  const handleSendToPrinters = () => {
+  const handleUpload = () => {
     sendFileToPrinters({
       variables: {
         input: {
@@ -37,6 +37,10 @@ export default function FilePrinter () {
         }
       }
     })
+  }
+
+  const handleEnqueue = () => {
+    console.log(`Enqueued ${fileID} on ${selectedPrinters.join(', ')}`)
   }
 
   const handlePrinterSelectChange = (id, checked) => {
@@ -73,7 +77,8 @@ export default function FilePrinter () {
               )}
             />
             <Row style={{ marginTop: 12 }}>
-              <Button type="primary" onClick={handleSendToPrinters}>Send to printer</Button>
+              <Button type="primary" onClick={handleEnqueue}>Enqueue print</Button>
+              <Button onClick={handleUpload}>Upload</Button>
             </Row>
           </Card>
         </Col>
