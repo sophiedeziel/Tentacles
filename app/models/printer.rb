@@ -1,6 +1,14 @@
 # frozen_string_literal: true
 
 class Printer < ApplicationRecord
+  has_many :jobs, class_name: 'Printer::Job', dependent: :nullify
+
+  def self.table_name_prefix
+    return '' if self == Printer
+
+    'printer_'
+  end
+
   def octoprint_version
     using_api do
       return Octoprint::ServerVersion.get

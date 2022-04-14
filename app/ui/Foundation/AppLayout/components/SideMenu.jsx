@@ -59,9 +59,9 @@ function SideMenu () {
       Projects
     </Menu.Item>
     <SubMenu key="printers" icon={<UsbOutlined />} title="Printers">
-      <Menu.Item key="/printers">Manage</Menu.Item>
+      <Menu.Item key="/printers">Print Queues</Menu.Item>
+      <Menu.Item key="/printers/manage">Manage</Menu.Item>
       <Menu.Item key="/printers/operations">Operations</Menu.Item>
-      <Menu.Item key="/printers/option2">option2</Menu.Item>
     </SubMenu>
     <Menu.Item key="/files" icon={<FileOutlined />}>
       Files

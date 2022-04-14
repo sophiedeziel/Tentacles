@@ -1,0 +1,10 @@
+query Printers {
+  printers {
+    id
+    jobsCount
+    name
+    jobStatus
+    createdAt
+    updatedAt
+  }
+}

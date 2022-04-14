@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_03_20_050845) do
+ActiveRecord::Schema[7.0].define(version: 2022_04_14_021340) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -47,6 +47,17 @@ ActiveRecord::Schema[7.0].define(version: 2022_03_20_050845) do
     t.datetime "archived_at", precision: nil
   end
 
+  create_table "printer_jobs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "name"
+    t.bigint "printer_id", null: false
+    t.integer "executable_id", null: false
+    t.string "executable_type", null: false
+    t.string "status", default: "enqueued", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["printer_id"], name: "index_printer_jobs_on_printer_id"
+  end
+
   create_table "printers", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name"
     t.string "octoprint_uri"
@@ -57,4 +68,5 @@ ActiveRecord::Schema[7.0].define(version: 2022_03_20_050845) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "printer_jobs", "printers"
 end
