@@ -1,0 +1,13 @@
+mutation EnqueueFiles($enqueueFilesInput: EnqueueFilesInput!) {
+  enqueueFiles(input: $enqueueFilesInput) {
+    jobs {
+      id
+      name
+      status
+      executable {
+        filename
+      }
+      createdAt
+    }
+  }
+}

@@ -6,10 +6,11 @@ import { GCodeViewer } from 'react-gcode-viewer'
 
 import classes from './FilePrinter.module.less'
 
-import { Col, Row, PageHeader, Card, Checkbox, Button, List, Statistic } from 'antd'
+import { Col, Row, PageHeader, Card, Checkbox, Button, List, Statistic, message } from 'antd'
 
 import File from './graphql/File.graphql'
 import SendFileToPrinters from './graphql/SendFileToPrinters.graphql'
+import EnqueueFiles from './graphql/EnqueueFiles.graphql'
 
 export default function FilePrinter () {
   const [selectedPrinters, setSelectedPrinters] = useState([])
@@ -17,6 +18,7 @@ export default function FilePrinter () {
   const fileID = match.params.id
 
   const [sendFileToPrinters] = useMutation(SendFileToPrinters)
+  const [enqueueFiles] = useMutation(EnqueueFiles)
 
   const { loading, error, data: queryData } = useQuery(File, {
     variables: { id: fileID }
@@ -28,7 +30,11 @@ export default function FilePrinter () {
 
   const { file, printers } = queryData
 
-  const handleSendToPrinters = () => {
+  const handleUpload = () => {
+    if (selectedPrinters.length === 0) {
+      message.error('Please select at least one printer')
+      return
+    }
     sendFileToPrinters({
       variables: {
         input: {
@@ -36,6 +42,23 @@ export default function FilePrinter () {
           printerIds: selectedPrinters
         }
       }
+    })
+  }
+
+  const handleEnqueue = () => {
+    if (selectedPrinters.length === 0) {
+      message.error('Please select at least one printer')
+      return
+    }
+    enqueueFiles({
+      variables: {
+        enqueueFilesInput: {
+          fileIds: [fileID],
+          printerIds: selectedPrinters
+        }
+      }
+    }).then(() => {
+      message.success(`File enqueued on ${selectedPrinters.length} printer${selectedPrinters.length > 1 ? 's' : ''}`)
     })
   }
 
@@ -73,7 +96,8 @@ export default function FilePrinter () {
               )}
             />
             <Row style={{ marginTop: 12 }}>
-              <Button type="primary" onClick={handleSendToPrinters}>Send to printer</Button>
+              <Button type="primary" onClick={handleEnqueue}>Enqueue print</Button>
+              <Button onClick={handleUpload}>Upload</Button>
             </Row>
           </Card>
         </Col>
