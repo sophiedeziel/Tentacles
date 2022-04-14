@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useRouteMatch } from 'react-router'
-import { useQuery } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client'
 import ReactMarkdown from 'react-markdown'
 import { GCodeViewer } from 'react-gcode-viewer'
 
@@ -9,10 +9,14 @@ import classes from './FilePrinter.module.less'
 import { Col, Row, PageHeader, Card, Checkbox, Button, List, Statistic } from 'antd'
 
 import File from './graphql/File.graphql'
+import SendFileToPrinters from './graphql/SendFileToPrinters.graphql'
 
 export default function FilePrinter () {
+  const [selectedPrinters, setSelectedPrinters] = useState([])
   const match = useRouteMatch('/files/:id')
   const fileID = match.params.id
+
+  const [sendFileToPrinters] = useMutation(SendFileToPrinters)
 
   const { loading, error, data: queryData } = useQuery(File, {
     variables: { id: fileID }
@@ -23,6 +27,25 @@ export default function FilePrinter () {
   if (loading) return (<>Loading</>)
 
   const { file, printers } = queryData
+
+  const handleSendToPrinters = () => {
+    sendFileToPrinters({
+      variables: {
+        input: {
+          fileIds: [fileID],
+          printerIds: selectedPrinters
+        }
+      }
+    })
+  }
+
+  const handlePrinterSelectChange = (id, checked) => {
+    if (checked) {
+      setSelectedPrinters([...selectedPrinters, id])
+    } else {
+      setSelectedPrinters(selectedPrinters.filter(item => item !== id))
+    }
+  }
 
   return (
     <>
@@ -42,7 +65,7 @@ export default function FilePrinter () {
               renderItem={item => (
                 <List.Item>
                   <List.Item.Meta
-                    avatar={<Checkbox disabled={item.jobStatus !== 'Operational'}/>}
+                    avatar={<Checkbox onChange={(e) => { handlePrinterSelectChange(item.id, e.target.checked) } } />}
                     title={item.name}
                     description={item.jobStatus}
                   />
@@ -50,7 +73,7 @@ export default function FilePrinter () {
               )}
             />
             <Row style={{ marginTop: 12 }}>
-              <Button type="primary">Send to printer</Button>
+              <Button type="primary" onClick={handleSendToPrinters}>Send to printer</Button>
             </Row>
           </Card>
         </Col>
