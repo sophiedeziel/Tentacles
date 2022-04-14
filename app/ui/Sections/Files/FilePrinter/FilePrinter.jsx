@@ -6,7 +6,7 @@ import { GCodeViewer } from 'react-gcode-viewer'
 
 import classes from './FilePrinter.module.less'
 
-import { Col, Row, PageHeader, Card, Checkbox, Button, List, Statistic } from 'antd'
+import { Col, Row, PageHeader, Card, Checkbox, Button, List, Statistic, message } from 'antd'
 
 import File from './graphql/File.graphql'
 import SendFileToPrinters from './graphql/SendFileToPrinters.graphql'
@@ -31,6 +31,10 @@ export default function FilePrinter () {
   const { file, printers } = queryData
 
   const handleUpload = () => {
+    if (selectedPrinters.length === 0) {
+      message.error('Please select at least one printer')
+      return
+    }
     sendFileToPrinters({
       variables: {
         input: {
@@ -42,7 +46,10 @@ export default function FilePrinter () {
   }
 
   const handleEnqueue = () => {
-    console.log(`Enqueued ${fileID} on ${selectedPrinters.join(', ')}`)
+    if (selectedPrinters.length === 0) {
+      message.error('Please select at least one printer')
+      return
+    }
     enqueueFiles({
       variables: {
         enqueueFilesInput: {
@@ -50,6 +57,8 @@ export default function FilePrinter () {
           printerIds: selectedPrinters
         }
       }
+    }).then(() => {
+      message.success(`File enqueued on ${selectedPrinters.length} printer${selectedPrinters.length > 1 ? 's' : ''}`)
     })
   }
 
