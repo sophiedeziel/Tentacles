@@ -1,11 +1,13 @@
 GIT
   remote: https://github.com/sophiedeziel/octoprint.git
-  revision: df34671062144917f4c8b1300ae80323ea037dc0
+  revision: 1d92239306aab74c90886e4909a2e0cd45344b67
   branch: main
   specs:
     octoprint (0.1.0)
       activesupport
       faraday (~> 2.2.0)
+      faraday-multipart (~> 1.0.3)
+      zeitwerk (~> 2.5)
 
 GEM
   remote: https://rubygems.org/
@@ -109,7 +111,9 @@ GEM
     faraday (2.2.0)
       faraday-net_http (~> 2.0)
       ruby2_keywords (>= 0.0.4)
-    faraday-net_http (2.0.1)
+    faraday-multipart (1.0.3)
+      multipart-post (>= 1.2, < 3)
+    faraday-net_http (2.0.2)
     globalid (1.0.0)
       activesupport (>= 5.0)
     graphiql-rails (1.8.0)
@@ -143,6 +147,7 @@ GEM
       libv8-node (~> 16.10.0.0)
     minitest (5.15.0)
     msgpack (1.4.5)
+    multipart-post (2.1.1)
     mysql2 (0.5.3)
     net-imap (0.2.3)
       digest

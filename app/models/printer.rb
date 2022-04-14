@@ -13,12 +13,16 @@ class Printer < ApplicationRecord
     end
   end
 
+  def upload(file)
+    using_api do
+      Octoprint::Files.upload(file)
+    end
+  end
+
   private
 
   def using_api(&block)
     api_client.use(&block)
-  rescue StandardError
-    nil
   end
 
   def api_client

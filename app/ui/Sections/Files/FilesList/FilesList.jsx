@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { saveAs } from 'file-saver'
 
 import { useQuery, useMutation } from '@apollo/client'
 import Files from './graphql/Files.graphql'
@@ -7,7 +8,7 @@ import UploadFile from './graphql/UploadFile.graphql'
 import ArchiveFiles from './graphql/ArchiveFiles.graphql'
 import UnarchiveFiles from './graphql/UnarchiveFiles.graphql'
 
-import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space } from 'antd'
+import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Dropdown, Menu } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
 import FileDetails from './components/fileDetails/FileDetails.jsx'
 
@@ -38,6 +39,13 @@ export default function PrintersList () {
       })
     }
   })
+
+  const saveFile = (downloadUrl, filename) => {
+    saveAs(
+      downloadUrl,
+      filename
+    )
+  }
 
   const [archiveFiles] = useMutation(ArchiveFiles, {
     update: (cache, { data }) => {
@@ -95,14 +103,8 @@ export default function PrintersList () {
       defaultSortOrder: 'ascend',
       sorter: (a, b) => a.filename.localeCompare(b.filename),
       render: (file) => {
-        return (<Link to={'/files/' + file.id}>{file.filename}</Link>)
+        return (<Link to={'/files/' + file.id + '/print'}>{file.filename}</Link>)
       }
-      // render: (file) => {
-      //   console.log(file)
-      //   return (
-      //   <Link to={'/files/' + file.id}>{file.filename}</Link>
-      //   )
-      // }
     },
     Table.EXPAND_COLUMN,
     {
@@ -140,9 +142,22 @@ export default function PrintersList () {
       key: 'action',
       sorter: true,
       render: (file) => {
-        return (<Space size="middle">
-          <a href={file.downloadUrl}>Download</a>
-        </Space>)
+        return (
+          <Space size="middle">
+            <Dropdown.Button overlay={
+              <Menu>
+                <Menu.Item key="edit">
+                  <Link to={'/files/' + file.id}>Edit</Link>
+                </Menu.Item>
+                <Menu.Item key="download" onClick={ () => { saveFile(file.downloadUrl, file.filename) } }>
+                  Download
+                </Menu.Item>
+              </Menu>
+              }>
+              <Link to={'/files/' + file.id + '/print'}>Print</Link>
+            </Dropdown.Button>
+          </Space>
+        )
       }
     }
   ]

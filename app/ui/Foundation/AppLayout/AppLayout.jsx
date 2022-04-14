@@ -26,7 +26,7 @@ function AppLayout ({ children }) {
         <SideMenu></SideMenu>
       </Sider>
       <Layout>
-        <Header className={classes.siteLayoutBackground} style={{ padding: 0 }} >
+        <Header className={classes.Header} style={{ padding: 0 }} >
           <Menu mode="horizontal" style={{ float: 'right' }}>
             <Menu.Item>
               <a href="https://github.com/sophiedeziel/Tentacles/issues" target="_blank" rel="noreferrer">
@@ -36,7 +36,7 @@ function AppLayout ({ children }) {
           </Menu>
         </Header>
         <Content style={{ margin: '0 16px' }}>
-          <div className="site-layout-background" style={{ padding: 24, minHeight: 360 }}>
+          <div className={classes.siteLayoutBackground}>
             {children}
           </div>
         </Content>
