@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Mutations
-  class EnqueueFile < Mutations::BaseMutation
+  class EnqueueFiles < Mutations::BaseMutation
     description 'Mutation to upload a file to printers'
 
     argument :file_ids, [ID], required: true

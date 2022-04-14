@@ -10,6 +10,7 @@ import { Col, Row, PageHeader, Card, Checkbox, Button, List, Statistic } from 'a
 
 import File from './graphql/File.graphql'
 import SendFileToPrinters from './graphql/SendFileToPrinters.graphql'
+import EnqueueFiles from './graphql/EnqueueFiles.graphql'
 
 export default function FilePrinter () {
   const [selectedPrinters, setSelectedPrinters] = useState([])
@@ -17,6 +18,7 @@ export default function FilePrinter () {
   const fileID = match.params.id
 
   const [sendFileToPrinters] = useMutation(SendFileToPrinters)
+  const [enqueueFiles] = useMutation(EnqueueFiles)
 
   const { loading, error, data: queryData } = useQuery(File, {
     variables: { id: fileID }
@@ -41,6 +43,14 @@ export default function FilePrinter () {
 
   const handleEnqueue = () => {
     console.log(`Enqueued ${fileID} on ${selectedPrinters.join(', ')}`)
+    enqueueFiles({
+      variables: {
+        enqueueFilesInput: {
+          fileIds: [fileID],
+          printerIds: selectedPrinters
+        }
+      }
+    })
   }
 
   const handlePrinterSelectChange = (id, checked) => {
