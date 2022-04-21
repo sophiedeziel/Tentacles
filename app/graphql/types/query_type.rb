@@ -28,5 +28,10 @@ module Types
     def file(id:)
       FileManager::File.find(id)
     end
+
+    field :search_network_printers, [String], null: true
+    def search_network_printers
+      PrinterScanner.new.call
+    end
   end
 end
