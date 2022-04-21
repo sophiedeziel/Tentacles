@@ -23,6 +23,12 @@ brew install mysql
 brew services start mysql
 ```
 
+Finally, you need yarn for the front-end development
+
+```
+brew install yarn
+```
+
 ### Setup
 
 ```
@@ -31,7 +37,18 @@ cd Tentacles
 asdf install
 bundle
 yarn
+
+rake db:setup
 ```
+
+### Start the servers
+
+```
+foreman start
+```
+
+After compilation, the application should be available at `http://localhost:5100`
+
 
 ## Update Gcode documentation
 
