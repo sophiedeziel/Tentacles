@@ -6,10 +6,27 @@ class PrinterScanner
   # rubocop:enable Layout/LineLength
 
   def call
-    all_network_ips.select { |ip| octoprint?(ip) }
+    use_cache do
+      all_network_ips.select { |ip| octoprint?(ip) }
+    end
   end
 
   private
+
+  def use_cache
+    return JSON.parse Redis.current.get(:printers_ips) if last_printer_scan > 5.minutes.ago.to_i
+
+    yield.tap { |ips| store_printers_ips(ips) }
+  end
+
+  def last_printer_scan
+    Redis.current.get(:last_printer_scan).to_i
+  end
+
+  def store_printers_ips(ips)
+    Redis.current.set(:printers_ips, ips.to_json)
+    Redis.current.set(:last_printer_scan, Time.now.to_i)
+  end
 
   def all_network_ips
     return [] unless local_ip
