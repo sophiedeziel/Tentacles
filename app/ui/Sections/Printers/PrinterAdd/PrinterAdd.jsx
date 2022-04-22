@@ -1,14 +1,65 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useQuery } from '@apollo/client'
 import { Card, Form, Input, Button, Space } from 'antd'
+import useInterval from '../../../utils/UseInterval'
 
 import SearchNetworkPrinters from './graphql/SearchNetworkPrinters.graphql'
 
 export default function PrinterAdd () {
+  const [delay] = useState(1000)
+  const [isRunning, setIsRunning] = useState(false)
+  const [apiRequestToken, setApiRequestToken] = useState()
+  const [apiRequestIP, setApiRequestIP] = useState()
+
+  useInterval(() => {
+    pollAPIKey()
+  }, isRunning ? delay : null)
+
   const { loading, error, data } = useQuery(SearchNetworkPrinters)
 
+  const pollAPIKey = () => {
+    console.log(apiRequestIP)
+    console.log(apiRequestToken)
+    fetch(`http://${apiRequestIP}/plugin/appkeys/request/${apiRequestToken}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then((response) => {
+      if (response.status === 200) {
+        setIsRunning(false)
+        return (response.json())
+      }
+    }).then((data) => {
+      console.log(data?.api_key)
+    }).catch((error) => {
+      console.log(error)
+    })
+  }
+
+  const requestAPIKey = (ip) => {
+    fetch(`http://${ip}/plugin/appkeys/request`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ app: 'Tentacles' })
+    }).then((response) => {
+      if (response.status === 201) {
+        return (response.json())
+      }
+    }).then(({ app_token }) => {
+      setIsRunning(true)
+      setApiRequestToken(app_token)
+      setApiRequestIP(ip)
+      window.open(
+        `http://${ip}`, '_blank')
+    }).catch(() => {
+    })
+  }
+
   const AddPrinterButtons = () => {
-    if (loading) return (<></>)
+    if (loading) return (<>Scanning</>)
     if (error) return (<></>)
 
     return (
@@ -16,7 +67,7 @@ export default function PrinterAdd () {
         {
           data.searchNetworkPrinters.map((ip) => {
             return (
-              <Button key={ip} type="primary">{ip}</Button>
+              <Button key={ip} type="primary" onClick={() => { requestAPIKey(ip) }}>{ip}</Button>
             )
           })
         }

@@ -14,7 +14,7 @@ class PrinterScanner
   private
 
   def use_cache
-    return JSON.parse Redis.current.get(:printers_ips) if last_printer_scan > 5.minutes.ago.to_i
+    return JSON.parse Redis.current.get(:printers_ips) if last_printer_scan > 15.minutes.ago.to_i
 
     yield.tap { |ips| store_printers_ips(ips) }
   end
@@ -36,10 +36,10 @@ class PrinterScanner
   end
 
   def octoprint?(ip)
-    uri = URI("http://#{ip}/api/currentuser")
+    uri = URI("http://#{ip}/plugin/appkeys/probe")
     begin
       res = Net::HTTP.get_response(uri)
-      res.is_a?(Net::HTTPSuccess) && JSON.parse(res.body)['groups'] == ['guests']
+      res.is_a?(Net::HTTPSuccess) && res.code == '204'
     rescue StandardError
       false
     end
