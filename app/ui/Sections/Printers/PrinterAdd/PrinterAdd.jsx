@@ -10,6 +10,7 @@ export default function PrinterAdd () {
   const [isRunning, setIsRunning] = useState(false)
   const [apiRequestToken, setApiRequestToken] = useState()
   const [apiRequestIP, setApiRequestIP] = useState()
+  const [octoprintTab, setOctoprintTab] = useState()
 
   useInterval(() => {
     pollAPIKey()
@@ -18,8 +19,6 @@ export default function PrinterAdd () {
   const { loading, error, data } = useQuery(SearchNetworkPrinters)
 
   const pollAPIKey = () => {
-    console.log(apiRequestIP)
-    console.log(apiRequestToken)
     fetch(`http://${apiRequestIP}/plugin/appkeys/request/${apiRequestToken}`, {
       method: 'GET',
       headers: {
@@ -32,6 +31,9 @@ export default function PrinterAdd () {
       }
     }).then((data) => {
       console.log(data?.api_key)
+      if (data?.api_key) {
+        octoprintTab.close()
+      }
     }).catch((error) => {
       console.log(error)
     })
@@ -48,12 +50,12 @@ export default function PrinterAdd () {
       if (response.status === 201) {
         return (response.json())
       }
-    }).then(({ app_token }) => {
+    }).then(({ app_token: appToken }) => {
       setIsRunning(true)
-      setApiRequestToken(app_token)
+      setApiRequestToken(appToken)
       setApiRequestIP(ip)
-      window.open(
-        `http://${ip}`, '_blank')
+      setOctoprintTab(window.open(
+        `http://${ip}`, '_blank'))
     }).catch(() => {
     })
   }
@@ -84,6 +86,10 @@ export default function PrinterAdd () {
         <Form layout="vertical">
 
           <Form.Item label="Printer name">
+            <Input />
+          </Form.Item>
+
+          <Form.Item label="API key">
             <Input />
           </Form.Item>
 
