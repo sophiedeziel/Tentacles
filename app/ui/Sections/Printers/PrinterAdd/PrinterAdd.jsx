@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
-import { useQuery } from '@apollo/client'
+import { useQuery, useLazyQuery, useMutation } from '@apollo/client'
 import { Card, Form, Input, Button, Space } from 'antd'
 import useInterval from '../../../utils/UseInterval'
 
 import SearchNetworkPrinters from './graphql/SearchNetworkPrinters.graphql'
+import PrinterName from './graphql/PrinterName.graphql'
+import AddPrinter from './graphql/AddPrinter.graphql'
 
 export default function PrinterAdd () {
   const [delay] = useState(1000)
@@ -17,6 +19,8 @@ export default function PrinterAdd () {
   }, isRunning ? delay : null)
 
   const { loading, error, data } = useQuery(SearchNetworkPrinters)
+  const [printerQuery] = useLazyQuery(PrinterName)
+  const [addPrinter] = useMutation(AddPrinter)
 
   const pollAPIKey = () => {
     fetch(`http://${apiRequestIP}/plugin/appkeys/request/${apiRequestToken}`, {
@@ -33,6 +37,13 @@ export default function PrinterAdd () {
       console.log(data?.api_key)
       if (data?.api_key) {
         octoprintTab.close()
+        printerQuery({ variables: { octoprintUri: `http://${apiRequestIP}/`, octoprintKey: data.api_key } }).then(({ data: printerData }) => {
+          console.log(printerData)
+          const name = printerData.octoprintName
+          addPrinter({ variables: {input: { name: name, octoprintUri: `http://${apiRequestIP}/`, octoprintKey: data.api_key }} }).then(() => {
+            console.log('Printer added')
+          })
+        })
       }
     }).catch((error) => {
       console.log(error)
@@ -86,6 +97,10 @@ export default function PrinterAdd () {
         <Form layout="vertical">
 
           <Form.Item label="Printer name">
+            <Input />
+          </Form.Item>
+
+          <Form.Item label="URI">
             <Input />
           </Form.Item>
 

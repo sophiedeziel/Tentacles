@@ -1,0 +1,3 @@
+query PrinterName($octoprintUri: String!, $octoprintKey: String!) {
+  octoprintName(octoprintUri: $octoprintUri, octoprintKey: $octoprintKey)
+}
