@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
 import { useQuery, useLazyQuery, useMutation } from '@apollo/client'
-import { Card, Form, Input, Button, Space } from 'antd'
+import { Card, Form, Input, Button, Space, PageHeader } from 'antd'
 import useInterval from '../../../utils/UseInterval'
 
 import SearchNetworkPrinters from './graphql/SearchNetworkPrinters.graphql'
 import PrinterName from './graphql/PrinterName.graphql'
 import AddPrinter from './graphql/AddPrinter.graphql'
+
+import classes from '../../../common/Common.module.less'
 
 export default function PrinterAdd () {
   const [delay] = useState(1000)
@@ -90,10 +92,25 @@ export default function PrinterAdd () {
 
   return (
     <>
-      <Card title="Add a printer from network scan">
+      <PageHeader
+        className="site-page-header"
+        ghost={false}
+        onBack={() => window.history.back()}
+        title="Back to printer's management"
+      >
+      </PageHeader>
+
+      <Card
+        className={classes.pageCard}
+        title="Add a printer from network scan"
+      >
         <AddPrinterButtons />
       </Card>
-      <Card title="Add a printer">
+
+      <Card
+        className={classes.pageCard}
+        title="Add a printer"
+      >
         <Form layout="vertical">
 
           <Form.Item label="Printer name">
@@ -108,7 +125,7 @@ export default function PrinterAdd () {
             <Input />
           </Form.Item>
 
-          </Form>
+      </Form>
       </Card>
     </>
   )
