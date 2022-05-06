@@ -38,10 +38,9 @@ export default function PrinterAdd () {
       if (data?.api_key) {
         octoprintTab.close()
         printerQuery({ variables: { octoprintUri: `http://${apiRequestIP}/`, octoprintKey: data.api_key } }).then(({ data: printerData }) => {
-          console.log(printerData)
           const name = printerData.octoprintName
-          addPrinter({ variables: {input: { name: name, octoprintUri: `http://${apiRequestIP}/`, octoprintKey: data.api_key }} }).then(() => {
-            console.log('Printer added')
+          addPrinter({ variables: { input: { name: name, octoprintUri: `http://${apiRequestIP}/`, octoprintKey: data.api_key } } }).then(() => {
+            window.location.href = '/printers/manage'
           })
         })
       }
@@ -68,6 +67,7 @@ export default function PrinterAdd () {
       setOctoprintTab(window.open(
         `http://${ip}`, '_blank'))
     }).catch(() => {
+      window.open(`http://${ip}`, '_blank')
     })
   }
 
