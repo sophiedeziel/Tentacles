@@ -19,11 +19,6 @@ export default function PrintersList () {
   const { printers } = printersData
 
   const DisplayPrintersList = () => {
-    if (printers.length === 0) {
-      return <Empty
-        description="Configure a printer to see it here"
-      />
-    }
     return (
       <>
         <PageHeader
@@ -39,6 +34,7 @@ export default function PrintersList () {
           <List
             itemLayout="horizontal"
             dataSource={printers}
+            locale={ { emptyText: <Empty description="Configure a printer to see it here" /> } }
             renderItem={printer => (
               <List.Item>
                 <List.Item.Meta

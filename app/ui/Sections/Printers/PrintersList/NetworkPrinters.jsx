@@ -18,8 +18,7 @@ export default function NetworkPrinters () {
     notification.info({
       message: `${printers.length} printers found on the network`,
       description:
-        'This is the content of the notification. This is the content of the notification. This is the content of the notification.',
-      duration: 0
+        'This is the content of the notification. This is the content of the notification. This is the content of the notification.'
     })
   }
 

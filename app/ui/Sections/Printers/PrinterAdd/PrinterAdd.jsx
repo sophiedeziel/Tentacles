@@ -41,14 +41,22 @@ export default function PrinterAdd () {
         octoprintTab.close()
         printerQuery({ variables: { octoprintUri: `http://${apiRequestIP}/`, octoprintKey: data.api_key } }).then(({ data: printerData }) => {
           const name = printerData.octoprintName
-          addPrinter({ variables: { input: { name: name, octoprintUri: `http://${apiRequestIP}/`, octoprintKey: data.api_key } } }).then(() => {
-            window.location.href = '/printers/manage'
-          })
+          sendAddPrinter(name, `http://${apiRequestIP}/`, data.api_key)
         })
       }
     }).catch((error) => {
       console.log(error)
     })
+  }
+
+  const sendAddPrinter = (name, octoprintUri, octoprintKey) => {
+    addPrinter({ variables: { input: { name: name, octoprintUri: octoprintUri, octoprintKey: octoprintKey } } }).then(() => {
+      window.location.href = '/printers/manage'
+    })
+  }
+
+  const handleCreateSubmit = (values) => {
+    sendAddPrinter(values.name, values.octoprintUri, values.octoprintKey)
   }
 
   const requestAPIKey = (ip) => {
@@ -111,18 +119,27 @@ export default function PrinterAdd () {
         className={classes.pageCard}
         title="Add a printer"
       >
-        <Form layout="vertical">
+        <Form
+          layout="vertical"
+          onFinish={handleCreateSubmit}
+          >
 
-          <Form.Item label="Printer name">
+          <Form.Item label="Printer name" name="name">
             <Input />
           </Form.Item>
 
-          <Form.Item label="URI">
+          <Form.Item label="URI" name="octoprintUri">
             <Input />
           </Form.Item>
 
-          <Form.Item label="API key">
+          <Form.Item label="API key" name="octoprintKey">
             <Input />
+          </Form.Item>
+
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              Add printer
+            </Button>
           </Form.Item>
 
       </Form>
