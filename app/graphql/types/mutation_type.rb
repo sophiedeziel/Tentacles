@@ -3,6 +3,7 @@
 module Types
   class MutationType < Types::BaseObject
     field :archiveFiles, mutation: Mutations::ArchiveFiles
+    field :addPrinter, mutation: Mutations::AddPrinter
     field :enqueueFiles, mutation: Mutations::EnqueueFiles
     field :send_files_to_printers, mutation: Mutations::SendFilesToPrinters
     field :unarchiveFiles, mutation: Mutations::UnarchiveFiles

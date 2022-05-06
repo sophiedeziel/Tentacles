@@ -7,6 +7,7 @@ import {
 
 const Dashboard = lazy(() => import('../../Sections/Dashboard/Dashboard'))
 const PrintersList = lazy(() => import('../../Sections/Printers/PrintersList/PrintersList'))
+const PrinterAdd = lazy(() => import('../../Sections/Printers/PrinterAdd/PrinterAdd'))
 const QueuesList = lazy(() => import('../../Sections/Printers/QueuesList/QueuesList'))
 const FilesList = lazy(() => import('../../Sections/Files/FilesList/FilesList'))
 const FileEditor = lazy(() => import('../../Sections/Files/FileEditor/FileEditor'))
@@ -18,6 +19,7 @@ export default function AppSwithcer () {
       <Switch>
           <Route path="/printers" exact component={QueuesList} />
           <Route path="/printers/manage" exact component={PrintersList} />
+          <Route path="/printers/add" exact component={PrinterAdd} />
           <Route path="/files" exact component={FilesList} />
           <Route path="/files/:fileId/print" component={FilePrinter} />
           <Route path="/files/:fileId" component={FileEditor} />

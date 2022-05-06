@@ -1,0 +1,8 @@
+mutation AddPrinter($input: AddPrinterInput! ) {
+  addPrinter(input:$input) {
+    printer {
+      id
+      octoprintVersion
+    }
+  }
+}
