@@ -42,7 +42,7 @@ module Types
       client = Octoprint::Client.new(host: octoprint_uri, api_key: octoprint_key)
       client.use do
         connection = Octoprint::Connection.get
-        default_profile = connection.options.printer_profiles.find { |p| p[:id] == '_default'}
+        default_profile = connection.options.printer_profiles.find { |p| p[:id] == '_default' }
         default_profile[:name]
       end
     end
