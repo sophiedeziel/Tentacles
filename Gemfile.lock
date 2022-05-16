@@ -108,6 +108,11 @@ GEM
     digest (3.1.0)
     erubi (1.10.0)
     execjs (2.8.1)
+    factory_bot (6.2.1)
+      activesupport (>= 5.0.0)
+    factory_bot_rails (6.2.0)
+      factory_bot (~> 6.2.0)
+      railties (>= 5.0.0)
     faraday (2.3.0)
       faraday-net_http (~> 2.0)
       ruby2_keywords (>= 0.0.4)
@@ -253,6 +258,8 @@ GEM
       activesupport (>= 4.2.0)
       rack (>= 1.1)
       rubocop (>= 1.7.0, < 2.0)
+    rubocop-rspec (2.10.0)
+      rubocop (~> 1.19)
     ruby-progressbar (1.11.0)
     ruby2_keywords (0.0.5)
     rubyzip (2.3.2)
@@ -305,6 +312,7 @@ DEPENDENCIES
   bootsnap
   capybara
   debug
+  factory_bot_rails
   graphiql-rails
   graphql
   importmap-rails
@@ -320,6 +328,7 @@ DEPENDENCIES
   rspec-rails
   rubocop (~> 1.29)
   rubocop-rails (~> 2.14)
+  rubocop-rspec
   selenium-webdriver
   shakapacker (~> 6.1)
   sprockets-rails

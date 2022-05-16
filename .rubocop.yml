@@ -22,3 +22,7 @@ Style/Documentation:
 Naming/PredicateName:
   Exclude:
     - 'app/graphql/types/**/*'
+
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
