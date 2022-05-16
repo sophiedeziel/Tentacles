@@ -59,7 +59,7 @@ group :development, :test do
   gem 'debug', platforms: %i[mri mingw x64_mingw]
   gem 'graphiql-rails'
   gem 'rspec-rails'
-  gem 'rubocop', '~> 1.26', require: false
+  gem 'rubocop', '~> 1.29', require: false
   gem 'rubocop-rails', '~> 2.14', require: false
 end
 
