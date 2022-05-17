@@ -45,7 +45,7 @@ jobs:
           RAILS_ENV: test
           DB_USER: tentacles_test
           DB_PASSWORD: tentacles_test
-        run: bin/rake
+        run: bin/rspec
 
   lint-ruby:
     runs-on: ubuntu-latest
