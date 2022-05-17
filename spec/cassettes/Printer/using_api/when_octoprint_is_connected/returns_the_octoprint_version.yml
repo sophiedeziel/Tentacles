@@ -41,5 +41,5 @@ http_interactions:
       string: '{"api":"0.1","server":"1.7.3","text":"OctoPrint 1.7.3"}
 
         '
-  recorded_at: Tue, 17 May 2022 00:06:35 GMT
+  recorded_at: Tue, 17 May 2022 00:37:33 GMT
 recorded_with: VCR 6.1.0
