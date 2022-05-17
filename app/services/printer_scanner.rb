@@ -33,7 +33,6 @@ class PrinterScanner
   def all_network_ips
     return [] unless local_ip
 
-    network_scan = `nmap -sP #{local_ip}/24`
     network_scan.split("\n").map { |line| IP_REGEX.match(line) }.compact.map { |line| line[1] }
   end
 
@@ -49,5 +48,9 @@ class PrinterScanner
 
   def local_ip
     Socket.ip_address_list.detect(&:ipv4_private?)&.ip_address
+  end
+
+  def network_scan
+    @network_scan ||= `nmap -sP #{local_ip}/24`
   end
 end
