@@ -7,7 +7,7 @@ RSpec.describe Printer, type: :model do
     expect(build(:printer)).to be_valid
   end
 
-  describe 'using_api' do
+  describe 'using_api', :vcr do
     let(:printer) { build(:printer) }
     subject do
       printer.using_api do
