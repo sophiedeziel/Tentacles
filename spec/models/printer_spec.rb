@@ -2,15 +2,14 @@
 
 require 'rails_helper'
 
-RSpec.describe Printer, type: :model do
+RSpec.describe Printer, :vcr, type: :model do
   let(:printer) { build(:printer) }
 
   it 'has a valid factory' do
     expect(printer).to be_valid
   end
 
-  describe 'octoprint_version', :vcr do
-
+  describe 'octoprint_version' do
     subject { printer.octoprint_version }
 
     it           { is_expected.to be_a(Octoprint::ServerVersion) }
@@ -19,13 +18,22 @@ RSpec.describe Printer, type: :model do
     its(:text)   { is_expected.to eq('OctoPrint 1.7.3') }
   end
 
-  describe 'job_status', :vcr do
+  describe 'job_status' do
     subject { printer.job_status }
 
     it { is_expected.to eq 'Operational' }
   end
 
-  describe 'using_api', :vcr do
+  describe 'upload' do
+    let(:file_path) {'spec/fixture_files/test.gcode' }
+
+    subject { printer.upload(file_path) }
+
+    it { is_expected.to be_a(Hash) }
+    its([:done]) { is_expected.to be_truthy }
+  end
+
+  describe 'using_api' do
     subject do
       printer.using_api do
         Octoprint::ServerVersion.get
