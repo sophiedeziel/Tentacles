@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 FactoryBot.define do
   factory :file_manager_file, class: 'FileManager::File' do
     after(:build) do |post|

@@ -25,7 +25,7 @@ RSpec.describe Printer, :vcr, type: :model do
   end
 
   describe 'upload' do
-    let(:file_path) {'spec/fixture_files/test.gcode' }
+    let(:file_path) { 'spec/fixture_files/test.gcode' }
 
     subject { printer.upload(file_path) }
 
