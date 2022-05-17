@@ -9,6 +9,17 @@ RSpec.describe Printer, :vcr, type: :model do
     expect(printer).to be_valid
   end
 
+  describe '.table_name_prefix' do
+    it 'returns the default on the parent class' do
+      expect(described_class.table_name_prefix).to eq ''
+    end
+
+    it 'has a prefix on the child classes' do
+      test_class = Class.new(described_class)
+      expect(test_class.table_name_prefix).to eq 'printer_'
+    end
+  end
+
   describe 'octoprint_version' do
     subject { printer.octoprint_version }
 
