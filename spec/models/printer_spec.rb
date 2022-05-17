@@ -3,12 +3,29 @@
 require 'rails_helper'
 
 RSpec.describe Printer, type: :model do
+  let(:printer) { build(:printer) }
+
   it 'has a valid factory' do
-    expect(build(:printer)).to be_valid
+    expect(printer).to be_valid
+  end
+
+  describe 'octoprint_version', :vcr do
+
+    subject { printer.octoprint_version }
+
+    it           { is_expected.to be_a(Octoprint::ServerVersion) }
+    its(:api)    { is_expected.to eq('0.1') }
+    its(:server) { is_expected.to eq('1.7.3') }
+    its(:text)   { is_expected.to eq('OctoPrint 1.7.3') }
+  end
+
+  describe 'job_status', :vcr do
+    subject { printer.job_status }
+
+    it { is_expected.to eq 'Operational' }
   end
 
   describe 'using_api', :vcr do
-    let(:printer) { build(:printer) }
     subject do
       printer.using_api do
         Octoprint::ServerVersion.get
