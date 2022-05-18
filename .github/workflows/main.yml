@@ -38,6 +38,8 @@ jobs:
         uses: borales/actions-yarn@v2.3.0
         with:
           cmd: install
+      - name: install FE dependencies
+        run: bin/rails webpacker:compile
       - name: Setup database
         env:
           RAILS_ENV: test
@@ -46,8 +48,6 @@ jobs:
         run: bin/rails db:schema:load
       - name: Start Redis
         uses: supercharge/redis-github-action@1.4.0
-      - name: install FE dependencies
-        run: bin/rails webpacker:compile
       - name: Run tests
         env:
           RAILS_ENV: test
