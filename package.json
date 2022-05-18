@@ -25,7 +25,7 @@
     "cross-fetch": "^3.1.5",
     "file-saver": "^2.0.5",
     "file-size": "^1.0.0",
-    "gcode-lang-codemirror": "0.1.2",
+    "gcode-lang-codemirror": "0.2.4",
     "graphql": "^16.3.0",
     "js-yaml": "^4.1.0",
     "react": "^17.0.2",
