@@ -34,6 +34,10 @@ jobs:
         uses: ruby/setup-ruby@cd4241788aec4fdcd3325da7068efa9b62a017af # v1.92
         with:
           bundler-cache: true
+      - name: Install Yarn
+        uses: borales/actions-yarn@v2.3.0
+        with:
+          cmd: install
       - name: Setup database
         env:
           RAILS_ENV: test
@@ -43,7 +47,7 @@ jobs:
       - name: Start Redis
         uses: supercharge/redis-github-action@1.4.0
       - name: Compile assets
-        run: bin/yarn
+        run: bin/rails assets:precompile
       - name: Run tests
         env:
           RAILS_ENV: test
