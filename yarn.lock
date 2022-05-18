@@ -1188,29 +1188,6 @@
     "@codemirror/view" "^0.20.0"
     "@lezer/common" "^0.16.0"
 
-"@codemirror/highlight@^0.19.7":
-  version "0.19.7"
-  resolved "https://registry.yarnpkg.com/@codemirror/highlight/-/highlight-0.19.7.tgz#91a0c9994c759f5f153861e3aae74ff9e7c7c35b"
-  integrity sha512-3W32hBCY0pbbv/xidismw+RDMKuIag+fo4kZIbD7WoRj+Ttcaxjf+vP6RttRHXLaaqbWh031lTeON8kMlDhMYw==
-  dependencies:
-    "@codemirror/language" "^0.19.0"
-    "@codemirror/rangeset" "^0.19.0"
-    "@codemirror/state" "^0.19.3"
-    "@codemirror/view" "^0.19.0"
-    "@lezer/common" "^0.15.0"
-    style-mod "^4.0.0"
-
-"@codemirror/language@^0.19.0", "@codemirror/language@^0.19.7":
-  version "0.19.8"
-  resolved "https://registry.yarnpkg.com/@codemirror/language/-/language-0.19.8.tgz#fddaa76affb44d71e84dfde7308058732b88c064"
-  integrity sha512-KhRne8qmzSKkaw+qhkwgNsPKxmThlyeJ3umfc33B9kJzVP7xhTkwX2MEPl0almM3brxMi+lPYx7gCPOy1gHsWw==
-  dependencies:
-    "@codemirror/state" "^0.19.0"
-    "@codemirror/text" "^0.19.0"
-    "@codemirror/view" "^0.19.0"
-    "@lezer/common" "^0.15.5"
-    "@lezer/lr" "^0.15.0"
-
 "@codemirror/language@^0.20.0":
   version "0.20.0"
   resolved "https://registry.yarnpkg.com/@codemirror/language/-/language-0.20.0.tgz#959967901e780c1612934cf5d6df3d7b7e5bf9f0"
@@ -1231,13 +1208,6 @@
     "@codemirror/view" "^0.20.2"
     crelt "^1.0.5"
 
-"@codemirror/rangeset@^0.19.0", "@codemirror/rangeset@^0.19.5":
-  version "0.19.9"
-  resolved "https://registry.yarnpkg.com/@codemirror/rangeset/-/rangeset-0.19.9.tgz#e80895de93c39dc7899f5be31d368c9d88aa4efc"
-  integrity sha512-V8YUuOvK+ew87Xem+71nKcqu1SXd5QROMRLMS/ljT5/3MCxtgrRie1Cvild0G/Z2f1fpWxzX78V0U4jjXBorBQ==
-  dependencies:
-    "@codemirror/state" "^0.19.0"
-
 "@codemirror/search@^0.20.0":
   version "0.20.1"
   resolved "https://registry.yarnpkg.com/@codemirror/search/-/search-0.20.1.tgz#9eba0514218a673e29501a889a4fcb7da7ce24ad"
@@ -1247,22 +1217,10 @@
     "@codemirror/view" "^0.20.0"
     crelt "^1.0.5"
 
-"@codemirror/state@^0.19.0", "@codemirror/state@^0.19.3":
-  version "0.19.9"
-  resolved "https://registry.yarnpkg.com/@codemirror/state/-/state-0.19.9.tgz#b797f9fbc204d6dc7975485e231693c09001b0dd"
-  integrity sha512-psOzDolKTZkx4CgUqhBQ8T8gBc0xN5z4gzed109aF6x7D7umpDRoimacI/O6d9UGuyl4eYuDCZmDFr2Rq7aGOw==
-  dependencies:
-    "@codemirror/text" "^0.19.0"
-
 "@codemirror/state@^0.20.0":
   version "0.20.0"
   resolved "https://registry.yarnpkg.com/@codemirror/state/-/state-0.20.0.tgz#3343d209169813b0152b77361cd78bea01549a73"
   integrity sha512-R3XrAWCS5Xm9lx+4pDET4EUPEg+8bDfAa5zoOFIhx+VChsfew9Vy33dAjCXS5ES4Q8UecW4WM4UudmUFpZ+86A==
-
-"@codemirror/text@^0.19.0":
-  version "0.19.6"
-  resolved "https://registry.yarnpkg.com/@codemirror/text/-/text-0.19.6.tgz#9adcbd8137f69b75518eacd30ddb16fd67bbac45"
-  integrity sha512-T9jnREMIygx+TPC1bOuepz18maGq/92q2a+n4qTqObKwvNMg+8cMTslb8yxeEDEq7S3kpgGWxgO1UWbQRij0dA==
 
 "@codemirror/theme-one-dark@^0.20.0":
   version "0.20.0"
@@ -1273,25 +1231,6 @@
     "@codemirror/state" "^0.20.0"
     "@codemirror/view" "^0.20.0"
     "@lezer/highlight" "^0.16.0"
-
-"@codemirror/tooltip@^0.19.7":
-  version "0.19.16"
-  resolved "https://registry.yarnpkg.com/@codemirror/tooltip/-/tooltip-0.19.16.tgz#6ba2c43f9d8e3d943d9d7bbae22bf800f7726a22"
-  integrity sha512-zxKDHryUV5/RS45AQL+wOeN+i7/l81wK56OMnUPoTSzCWNITfxHn7BToDsjtrRKbzHqUxKYmBnn/4hPjpZ4WJQ==
-  dependencies:
-    "@codemirror/state" "^0.19.0"
-    "@codemirror/view" "^0.19.0"
-
-"@codemirror/view@^0.19.0":
-  version "0.19.47"
-  resolved "https://registry.yarnpkg.com/@codemirror/view/-/view-0.19.47.tgz#2163c3016d7680bf50dd695c0e3abdaf80f45363"
-  integrity sha512-SfbagKvJQl5dtt+9wYpo9sa3ZkMgUxTq+/hXDf0KVwIx+zu3cJIqfEm9xSx6yXkq7it7RsPGHaPasApNffF/8g==
-  dependencies:
-    "@codemirror/rangeset" "^0.19.5"
-    "@codemirror/state" "^0.19.3"
-    "@codemirror/text" "^0.19.0"
-    style-mod "^4.0.0"
-    w3c-keyname "^2.2.4"
 
 "@codemirror/view@^0.20.0", "@codemirror/view@^0.20.2":
   version "0.20.4"
@@ -1642,11 +1581,6 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@lezer/common@^0.15.0", "@lezer/common@^0.15.5":
-  version "0.15.12"
-  resolved "https://registry.yarnpkg.com/@lezer/common/-/common-0.15.12.tgz#2f21aec551dd5fd7d24eb069f90f54d5bc6ee5e9"
-  integrity sha512-edfwCxNLnzq5pBA/yaIhwJ3U3Kz8VAUOTRg0hhxaizaI1N+qxV7EXDv/kLCkLeq2RzSFvxexlaj5Mzfn2kY0Ig==
-
 "@lezer/common@^0.16.0":
   version "0.16.0"
   resolved "https://registry.yarnpkg.com/@lezer/common/-/common-0.16.0.tgz#b6023a0a682b0b7676d0e7f0e0838f71bde39fcd"
@@ -1659,14 +1593,7 @@
   dependencies:
     "@lezer/common" "^0.16.0"
 
-"@lezer/lr@^0.15.0", "@lezer/lr@^0.15.4":
-  version "0.15.8"
-  resolved "https://registry.yarnpkg.com/@lezer/lr/-/lr-0.15.8.tgz#1564a911e62b0a0f75ca63794a6aa8c5dc63db21"
-  integrity sha512-bM6oE6VQZ6hIFxDNKk8bKPa14hqFrV07J/vHGOeiAbJReIaQXmkVb6xQu4MR+JBTLa5arGRyAAjJe1qaQt3Uvg==
-  dependencies:
-    "@lezer/common" "^0.15.0"
-
-"@lezer/lr@^0.16.0":
+"@lezer/lr@^0.16.0", "@lezer/lr@^0.16.2":
   version "0.16.3"
   resolved "https://registry.yarnpkg.com/@lezer/lr/-/lr-0.16.3.tgz#1e4cc581d2725c498e6a731fc83c379114ba3a70"
   integrity sha512-pau7um4eAw94BEuuShUIeQDTf3k4Wt6oIUOYxMmkZgDHdqtIcxWND4LRxi8nI9KuT4I1bXQv67BCapkxt7Ywqw==
@@ -5403,15 +5330,14 @@ gaze@^1.0.0:
   dependencies:
     globule "^1.0.0"
 
-gcode-lang-codemirror@0.1.2:
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/gcode-lang-codemirror/-/gcode-lang-codemirror-0.1.2.tgz#7d3fe986411112688b733803b28ed426d8f0eb3f"
-  integrity sha512-Z0aQlPNNxJK+Zzx16Sfmd2maG0qUIdDkEXKeodHmvA4vkdgST0WvY620lrs5x5yj6W4iEAwm34vKWH9Q+jW7mQ==
+gcode-lang-codemirror@0.2.4:
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/gcode-lang-codemirror/-/gcode-lang-codemirror-0.2.4.tgz#515222459cf7cd06224a3205b59623d1bfc3f465"
+  integrity sha512-CK4Gc5YCqoIhrNgP4VHNjkF+f3aRATRSpQHXaWuWQPhP2qEVKjptboRebZbwKMju1I3yWGf12+ev5e/TFlKq9A==
   dependencies:
-    "@codemirror/highlight" "^0.19.7"
-    "@codemirror/language" "^0.19.7"
-    "@codemirror/tooltip" "^0.19.7"
-    "@lezer/lr" "^0.15.4"
+    "@codemirror/language" "^0.20.0"
+    "@codemirror/view" "^0.20.2"
+    "@lezer/lr" "^0.16.2"
 
 gensync@^1.0.0-beta.2:
   version "1.0.0-beta.2"
