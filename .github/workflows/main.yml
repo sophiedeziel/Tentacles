@@ -39,7 +39,9 @@ jobs:
           RAILS_ENV: test
           DB_USER: tentacles_test
           DB_PASSWORD: tentacles_test
-        run: bin/rails db:schema:load                 
+        run: bin/rails db:schema:load
+      - name: Start Redis
+        uses: supercharge/redis-github-action@1.4.0
       - name: Run tests
         env:
           RAILS_ENV: test
