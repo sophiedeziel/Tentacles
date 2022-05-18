@@ -11,7 +11,7 @@ on:
   pull_request:
     branches: [ main ]
 jobs:
-  test:
+  rspec:
     runs-on: ubuntu-latest
     services:
       mysql:
@@ -42,6 +42,8 @@ jobs:
         run: bin/rails db:schema:load
       - name: Start Redis
         uses: supercharge/redis-github-action@1.4.0
+      - name: Compile assets
+        run: bin/yarn
       - name: Run tests
         env:
           RAILS_ENV: test
