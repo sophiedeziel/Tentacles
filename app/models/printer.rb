@@ -3,6 +3,8 @@
 class Printer < ApplicationRecord
   has_many :jobs, class_name: 'Printer::Job', dependent: :nullify
 
+  validates :name, presence: true
+
   def self.table_name_prefix
     return '' if self == Printer
 
@@ -27,11 +29,11 @@ class Printer < ApplicationRecord
     end
   end
 
-  private
-
   def using_api(&block)
     api_client.use(&block)
   end
+
+  private
 
   def api_client
     @api_client ||= Octoprint::Client.new(host: octoprint_uri, api_key: octoprint_key)

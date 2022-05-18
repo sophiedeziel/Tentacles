@@ -4,7 +4,7 @@ import 'regenerator-runtime/runtime'
 import React from "react";
 import ReactDOM from 'react-dom';
 
-import App from "../foundation/App/App";
+import App from "../Foundation/App/App";
 
 document.addEventListener("DOMContentLoaded", () => {
   ReactDOM.render(

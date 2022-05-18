@@ -4,6 +4,8 @@ module FileManager
   class File < ApplicationRecord
     has_one_attached :file
 
+    validates :file, presence: true
+
     def filename
       file.filename.to_s
     end

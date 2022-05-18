@@ -11,7 +11,7 @@ on:
   pull_request:
     branches: [ main ]
 jobs:
-  test:
+  rspec:
     runs-on: ubuntu-latest
     services:
       mysql:
@@ -34,18 +34,26 @@ jobs:
         uses: ruby/setup-ruby@cd4241788aec4fdcd3325da7068efa9b62a017af # v1.92
         with:
           bundler-cache: true
+      - name: Install Yarn
+        uses: borales/actions-yarn@v2.3.0
+        with:
+          cmd: install
+      - name: install FE dependencies
+        run: bin/rails webpacker:compile
       - name: Setup database
         env:
           RAILS_ENV: test
           DB_USER: tentacles_test
           DB_PASSWORD: tentacles_test
-        run: bin/rails db:schema:load                 
+        run: bin/rails db:schema:load
+      - name: Start Redis
+        uses: supercharge/redis-github-action@1.4.0
       - name: Run tests
         env:
           RAILS_ENV: test
           DB_USER: tentacles_test
           DB_PASSWORD: tentacles_test
-        run: bin/rake
+        run: bin/rspec
 
   lint-ruby:
     runs-on: ubuntu-latest
