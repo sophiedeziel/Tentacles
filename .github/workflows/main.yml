@@ -46,8 +46,8 @@ jobs:
         run: bin/rails db:schema:load
       - name: Start Redis
         uses: supercharge/redis-github-action@1.4.0
-      - name: Compile assets
-        run: bin/rails assets:precompile
+      - name: Serve assets
+        run: bin/webpacker-dev-server
       - name: Run tests
         env:
           RAILS_ENV: test
