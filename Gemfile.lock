@@ -1,11 +1,11 @@
 GIT
   remote: https://github.com/sophiedeziel/octoprint.git
-  revision: 1d92239306aab74c90886e4909a2e0cd45344b67
+  revision: fd08da6867cf203ae0d32adde757bd9483d71eea
   branch: main
   specs:
     octoprint (0.1.0)
       activesupport
-      faraday (~> 2.2.0)
+      faraday (>= 2.2, < 2.4)
       faraday-multipart (~> 1.0.3)
       zeitwerk (~> 2.5)
 
@@ -108,7 +108,7 @@ GEM
     digest (3.1.0)
     erubi (1.10.0)
     execjs (2.8.1)
-    faraday (2.2.0)
+    faraday (2.3.0)
       faraday-net_http (~> 2.0)
       ruby2_keywords (>= 0.0.4)
     faraday-multipart (1.0.3)
