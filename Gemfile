@@ -52,7 +52,7 @@ gem 'octoprint', github: 'sophiedeziel/octoprint', branch: 'main' # For prototyp
 
 gem 'mini_racer', platforms: :ruby
 gem 'react_on_rails'
-gem 'shakapacker', '~> 6.2'
+gem 'shakapacker', '~> 6.3'
 
 group :development, :test do
   gem 'bundler-audit'
