@@ -2,7 +2,9 @@ import React from 'react'
 import { useMatch } from 'react-router'
 import { useQuery } from '@apollo/client'
 
-import { PageHeader, Steps, Space } from 'antd'
+import { PageHeader } from 'antd'
+
+import PrintTable from './components/PrintTable'
 
 import PrinterQuery from './graphql/PrinterQuery.graphql'
 
@@ -19,15 +21,19 @@ export default function Queue () {
   const { printer } = data
   const jobs = printer.jobs.edges.map(({ node }) => node)
 
-  const completedJobs = jobs.filter(job => job.status === 'completed')
-  const activeJobs = jobs.filter(job => job.status === 'active')
+  // const completedJobs = jobs.filter(job => job.status === 'completed')
+  // const activeJobs = jobs.filter(job => job.status === 'active')
   const enqueuedJobs = jobs.filter(job => job.status === 'enqueued')
 
-  const { Step } = Steps
+  const tableData = enqueuedJobs.map((job, index) => ({
+    ...job,
+    key: job.id,
+    index: index,
+    filename: job.executable.filename
+  }))
 
   return (
     <>
-    <Space direction="vertical" size="large">
       <PageHeader
         className="site-page-header"
         ghost={false}
@@ -35,12 +41,10 @@ export default function Queue () {
         title={printer.name}
         >
       </PageHeader>
-      <Steps direction="vertical" current={completedJobs.length}>
-        {[...completedJobs, ...activeJobs, ...enqueuedJobs].map(job => (
-          <Step key={job.id} title={job.executable.filename} description={job.status} />
-        ))}
-      </Steps>
-    </Space>
+
+        <PrintTable
+          enqueuedJobs={tableData}
+        />
     </>
   )
 }
