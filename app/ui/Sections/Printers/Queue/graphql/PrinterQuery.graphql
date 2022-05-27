@@ -1,0 +1,16 @@
+query PrinterQuery($id: ID!) {
+  printer(id: $id) {
+    name
+    jobs {
+      edges {
+        node {
+          id
+          executable {
+            filename
+          }
+          status
+        }
+      }
+    }
+  }
+}
