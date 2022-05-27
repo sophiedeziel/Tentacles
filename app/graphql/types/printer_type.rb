@@ -16,7 +16,7 @@ module Types
     field :jobs, Types::JobType.connection_type, null: false
     field :jobs_count, Integer, null: false
     def jobs_count
-      object.jobs.count
+      object.jobs.where(status: 'enqueued').count
     end
   end
 end
