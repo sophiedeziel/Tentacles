@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useRouteMatch } from 'react-router'
+import { useMatch } from 'react-router'
 import { useQuery, useMutation } from '@apollo/client'
 import ReactMarkdown from 'react-markdown'
 import { GCodeViewer } from 'react-gcode-viewer'
@@ -14,7 +14,7 @@ import EnqueueFiles from './graphql/EnqueueFiles.graphql'
 
 export default function FilePrinter () {
   const [selectedPrinters, setSelectedPrinters] = useState([])
-  const match = useRouteMatch('/files/:id')
+  const match = useMatch('/files/:id/print')
   const fileID = match.params.id
 
   const [sendFileToPrinters] = useMutation(SendFileToPrinters)

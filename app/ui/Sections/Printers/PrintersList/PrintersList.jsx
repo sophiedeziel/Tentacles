@@ -10,6 +10,7 @@ import NetworkPrinters from './NetworkPrinters'
 import classes from '../../../common/Common.module.less'
 
 export default function PrintersList () {
+  console.log("Hello extragornax!")
   const { loading, error, data: printersData } = useQuery(Printers)
 
   if (error) return (<>Error!{error.message}</>)

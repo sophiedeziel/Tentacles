@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { useRouteMatch } from 'react-router'
+import { useMatch } from 'react-router'
 import Editor from '@monaco-editor/react'
 import ReactMarkdown from 'react-markdown'
 import { useQuery, useMutation } from '@apollo/client'
@@ -13,7 +13,7 @@ const { Title } = Typography
 const { Search } = Input
 
 export default function FileEditor () {
-  const match = useRouteMatch('/files/:id')
+  const match = useMatch('/files/:id')
   const fileID = match.params.id
 
   const editorRef = useRef(null)
