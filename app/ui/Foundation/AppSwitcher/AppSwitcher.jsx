@@ -1,8 +1,9 @@
 import React, { Suspense, lazy } from 'react'
 
 import {
-  Switch,
-  Route
+  Routes,
+  Route,
+  Outlet
 } from 'react-router-dom'
 
 const Dashboard = lazy(() => import('../../Sections/Dashboard/Dashboard'))
@@ -16,18 +17,24 @@ const FilePrinter = lazy(() => import('../../Sections/Files/FilePrinter/FilePrin
 export default function AppSwithcer () {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <Switch>
-          <Route path="/printers" exact component={QueuesList} />
-          <Route path="/printers/manage" exact component={PrintersList} />
-          <Route path="/printers/add" exact component={PrinterAdd} />
-          <Route path="/files" exact component={FilesList} />
-          <Route path="/files/:fileId/print" component={FilePrinter} />
-          <Route path="/files/:fileId" component={FileEditor} />
-          <Route path="/" exact component={Dashboard}/>
-          <Route path="/bye" component={() => {
+      <Routes>
+          <Route path="/" element={<Dashboard />}/>
+          <Route path="printers" element={<Outlet />}>
+            <Route index element={<QueuesList />} />
+            <Route path="manage" element={<PrintersList />} />
+            <Route path="add" element={<PrinterAdd />} />
+          </Route>
+          <Route path="files" element={<Outlet />} >
+            <Route index element={<FilesList />} />
+            <Route path=":id" element={<Outlet />} >
+              <Route index element={<FileEditor />} />
+              <Route path="print" element={<FilePrinter />} />
+            </Route>
+          </Route>
+          {/* <Route path="bye" component={() => {
             window.location.reload()
-          }} />
-      </Switch>
+          }} /> */}
+      </Routes>
     </Suspense>
   )
 }

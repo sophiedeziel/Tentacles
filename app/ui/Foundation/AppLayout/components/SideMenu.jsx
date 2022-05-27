@@ -8,7 +8,7 @@ import {
   PieChartOutlined,
   UsbOutlined
 } from '@ant-design/icons'
-import { useLocation, useHistory } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 const rootSubmenuKeys = ['printers', 'macros', 'reports']
 const { SubMenu } = Menu
@@ -16,7 +16,7 @@ const { SubMenu } = Menu
 function SideMenu () {
   const location = useLocation()
   const { pathname } = location
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const getRootFromLocation = (path = pathname) => {
     return (path.split('/').filter(e => e)[0] || '/')
@@ -30,13 +30,13 @@ function SideMenu () {
     if (rootSubmenuKeys.indexOf(latestOpenKey) === -1) {
       setOpenKeys(keys)
     } else {
-      history.push('/' + latestOpenKey)
+      navigate('/' + latestOpenKey)
       setOpenKeys(latestOpenKey ? [latestOpenKey] : [])
     }
   }
 
   const onSelect = ({ item, key, keyPath, selectedKeys, domEvent }) => {
-    history.push(key)
+    navigate(key)
     if (rootSubmenuKeys.indexOf(getRootFromLocation(key)) === -1) {
       setOpenKeys([])
     }
