@@ -54,6 +54,8 @@ gem 'mini_racer', platforms: :ruby
 gem 'react_on_rails'
 gem 'shakapacker', '~> 6.5'
 
+gem 'sidekiq', '~> 6.4'
+
 group :development, :test do
   gem 'bundler-audit'
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
