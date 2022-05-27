@@ -15,6 +15,13 @@ module Types
       Printer.all
     end
 
+    field :printer, PrinterType, null: true do
+      argument :id, ID, required: true
+    end
+    def printer(id:)
+      Printer.find(id)
+    end
+
     field :files, [FileType], null: false do
       description 'files'
     end
