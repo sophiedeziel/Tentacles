@@ -20,7 +20,7 @@
     "antd": "^4.20.7",
     "apollo-upload-client": "^17.0.0",
     "babel-loader": "8",
-    "compression-webpack-plugin": "9",
+    "compression-webpack-plugin": "10",
     "core-js": "^3.22.8",
     "cross-fetch": "^3.1.5",
     "file-saver": "^2.0.5",
