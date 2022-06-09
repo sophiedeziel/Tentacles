@@ -35,7 +35,7 @@ jobs:
         with:
           bundler-cache: true
       - name: Install Yarn
-        uses: borales/actions-yarn@v2.3.0
+        uses: borales/actions-yarn@v3.0.0
         with:
           cmd: install
       - name: install FE dependencies
@@ -82,7 +82,7 @@ jobs:
         with:
           node-version: 16.14.0
       - name: Install Yarn
-        uses: borales/actions-yarn@v2.3.0
+        uses: borales/actions-yarn@v3.0.0
         with:
           cmd: install
       - name: Lint Javascript files
