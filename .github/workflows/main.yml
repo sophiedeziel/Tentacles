@@ -78,7 +78,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Install Nodejs and packages
-        uses: actions/setup-node@v3.2.0
+        uses: actions/setup-node@v3.3.0
         with:
           node-version: 16.14.0
       - name: Install Yarn
