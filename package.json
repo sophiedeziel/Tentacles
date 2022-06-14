@@ -17,7 +17,7 @@
     "@types/react": "~16.9.0",
     "@types/react-dom": "~16.9.0",
     "@uiw/react-codemirror": "^4.8.1",
-    "antd": "^4.21.0",
+    "antd": "^4.21.1",
     "apollo-upload-client": "^17.0.0",
     "babel-loader": "8",
     "compression-webpack-plugin": "10",
