@@ -1,6 +1,9 @@
 const { webpackConfig: baseWebpackConfig, merge } = require('shakapacker')
 
 const other = {
+  cache: {
+    type: 'filesystem'
+  },
   module: {
     rules: [
       {

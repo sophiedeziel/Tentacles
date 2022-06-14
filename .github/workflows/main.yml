@@ -4,13 +4,14 @@
 #
 # This workflow will install a prebuilt Ruby version, install dependencies, and
 # run tests and linters.
-name: "Ruby on Rails CI"
+name: "CI"
 on:
   push:
     branches: [ 'main' ]
   pull_request:
     branches: [ main ]
 jobs:
+
   rspec:
     runs-on: ubuntu-latest
     services:
@@ -26,28 +27,49 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     env:
       RAILS_ENV: test
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      # Add or replace dependency steps here
+
       - name: Install Ruby and gems
         uses: ruby/setup-ruby@8029ebd6e5bd8f4e0d6f7623ea76a01ec5b1010d # v1.92
         with:
           bundler-cache: true
-      - name: Install Yarn
-        uses: borales/actions-yarn@v3.0.0
-        with:
-          cmd: install
-      - name: install FE dependencies
-        run: bin/rails webpacker:compile
+
       - name: Setup database
         env:
           RAILS_ENV: test
           DB_USER: tentacles_test
           DB_PASSWORD: tentacles_test
         run: bin/rails db:schema:load
+
       - name: Start Redis
         uses: supercharge/redis-github-action@1.4.0
+
+      - name: Restore cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            **/node_modules
+            public/assets/
+            public/packs-test/
+            tmp/webpacker
+          key: ${{ runner.os }}-assets-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-assets-
+
+      - uses: actions/setup-node@v3
+        with:
+          cache: yarn
+          node-version: 18.0.0
+
+      - name: 'Yarn Install'
+        run: yarn install
+
+      - name: Compile assets (js and css)
+        run: bin/rails webpacker:compile
+
       - name: Run tests
         env:
           RAILS_ENV: test
@@ -77,13 +99,26 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Install Nodejs and packages
-        uses: actions/setup-node@v3.3.0
+
+      - name: Restore cache
+        uses: actions/cache@v3
         with:
-          node-version: 16.14.0
-      - name: Install Yarn
-        uses: borales/actions-yarn@v3.0.0
+          path: |
+            **/node_modules
+            public/assets/
+            public/packs-test/
+            tmp/webpacker
+          key: ${{ runner.os }}-assets-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-assets-
+
+      - uses: actions/setup-node@v3
         with:
-          cmd: install
+          cache: yarn
+          node-version: 18.0.0
+
+      - name: 'Yarn Install'
+        run: yarn install
+
       - name: Lint Javascript files
         run: bin/yarn run eslint app/ui/**/*.jsx
