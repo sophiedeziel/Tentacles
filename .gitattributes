@@ -2,6 +2,8 @@
 
 # Mark the database schema as having been generated.
 db/schema.rb linguist-generated
+spec/cassettes/* linguist-generated
 
 # Mark any vendored files as having been vendored.
 vendor/* linguist-vendored
+spec/fixture_files/* linguist-vendored
