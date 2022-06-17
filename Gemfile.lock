@@ -101,6 +101,7 @@ GEM
       xpath (~> 3.2)
     childprocess (4.1.0)
     coderay (1.1.3)
+    colorize (0.8.1)
     concurrent-ruby (1.1.10)
     connection_pool (2.3.0)
     crack (0.4.5)
@@ -338,6 +339,7 @@ DEPENDENCIES
   bootsnap
   bundler-audit
   capybara
+  colorize
   debug
   factory_bot_rails
   graphiql-rails
