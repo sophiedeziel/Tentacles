@@ -2580,10 +2580,10 @@
     "@typescript-eslint/types" "5.27.0"
     eslint-visitor-keys "^3.3.0"
 
-"@uiw/react-codemirror@^4.8.1":
-  version "4.8.1"
-  resolved "https://registry.yarnpkg.com/@uiw/react-codemirror/-/react-codemirror-4.8.1.tgz#7edb13e42256dfc0b20986b7a677452d3655e717"
-  integrity sha512-0fMZB1bdwZ2gmuwjLCGYvX9iw6rWjAnHqIivvkoth0gbNPR0/DCNSnxPbZzNdI3Sf2w3fg0rfGPGoVhbJssViQ==
+"@uiw/react-codemirror@^4.9.2":
+  version "4.9.2"
+  resolved "https://registry.yarnpkg.com/@uiw/react-codemirror/-/react-codemirror-4.9.2.tgz#c2928caf899ec2483fa0ea71abf70fd3a9c63d33"
+  integrity sha512-OdfuF6VwqPFID2Hn3sUlLUts1ZqhcX0dvQ4y9lCrdAcaDs/XnkZpBcTk7NdyziYmPQPduJDDQmW+Y/ZY5J1yvQ==
   dependencies:
     "@babel/runtime" ">=7.11.0"
     "@codemirror/theme-one-dark" "^6.0.0"
