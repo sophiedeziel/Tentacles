@@ -1,6 +1,12 @@
 const { webpackConfig: baseWebpackConfig, merge } = require('shakapacker')
 
 const other = {
+
+  resolve: {
+    fallback: {
+      fs: false
+    }
+  },
   cache: {
     type: 'filesystem'
   },
