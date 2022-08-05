@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-
 module Spooler
   class Operation
     def initialize(printer)
@@ -35,7 +34,7 @@ module Spooler
         job = Octoprint::Job.get
         printing = job.state == "Printing"
 
-        log(job.progress.completion.ceil.to_s + '%')
+        log(job.progress.completion.ceil.to_s + '%') if printing
       end
 
       log "3. Profit.".green

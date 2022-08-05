@@ -7,7 +7,6 @@ require 'rainbow/refinement'
 require 'octoprint'
 require 'colorize'
 
-
 PRINTERS = [{ id: 8,
               name: 'Ender 3',
               octoprint_uri: 'http://10.0.1.165/',
@@ -28,10 +27,13 @@ FILE = {
 
 module Spooler
 
-  workers = PRINTERS.each do |printer|
+  workers = PRINTERS.map do |printer|
     queue = Queue.new(printer[:name])
     queue.start(Print.new(printer, FILE))
+    queue
   end
+
+  workers.first.start(Print.new(PRINTERS.first, FILE))
 
   loop do
   end

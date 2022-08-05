@@ -2,22 +2,25 @@
 
 module Spooler
   class Queue
-    attr_reader :name
+    attr_reader :name, :operations
 
     def initialize(name)
       @name = name
-      @thread = nil
+      @operations = []
+      @thread = Thread.new do
+        loop do
+          op = @operations.slice!(0)
+          op.execute if op.present?
+        end
+      end
     end
 
     def working?
-      !!@thread
+      @operations.any?
     end
 
     def start(operation)
-      @thread =
-      Thread.new do
-        operation.execute
-      end
+      @operations << operation
     end
 
     def stop
