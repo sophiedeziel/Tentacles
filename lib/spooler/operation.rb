@@ -10,15 +10,19 @@ class Spooler
       puts "Not implemented yet"
     end
 
+    def interrupt
+      puts "Not implemented yet"
+    end
+
     def log(message)
       puts "#{" " * (15 - @printer.name.size) } [ #{@printer.name} ] : #{message}"
     end
   end
 
   class Print < Operation
-    def initialize(printer, file)
+    def initialize(printer, file_id)
       super(printer)
-      @file = file
+      @file = FileManager::File.find(file_id)
     end
 
     def execute
