@@ -35,31 +35,29 @@ class Spooler
     private
 
     def log(message)
-      puts "#{" " * (15 - @printer.name.size) } [ #{@printer.name} ] : #{message}"
+      Rails.logger.debug { "#{' ' * (15 - @printer.name.size)} [ #{@printer.name} ] : #{message}" }
     end
 
     def start_thread
       Thread.new do
-        Thread.handle_interrupt(Exception => :never) do
-          Rails.application.executor.wrap do
-            Thread.handle_interrupt(Exception => :immediate) do
-              begin
-                loop do
-                  log @active
-                  if @active && @operations.any?
-                    @current_operation = @operations.slice!(0)
-                    @current_operation.execute
-                    @active = @start_job_after_finish
-                  else
-                    sleep(WAIT_TIME)
-                    #puts "waiting"
-                  end
-                end
-              ensure
-                @current_operation&.interrupt
-              end
-            end
+        Rails.application.executor.wrap do
+          Thread.handle_interrupt(Exception => :immediate) do
+            operations_loop
+          ensure
+            @current_operation&.interrupt
           end
+        end
+      end
+    end
+
+    def operations_loop
+      loop do
+        if @active && @operations.any?
+          @current_operation = @operations.slice!(0)
+          @current_operation.execute
+          @active = @start_job_after_finish
+        else
+          Thread.pass
         end
       end
     end

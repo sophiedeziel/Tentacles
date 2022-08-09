@@ -16,7 +16,7 @@ Metrics/AbcSize:
   Exclude:
     - 'db/migrate/*'
 
-Style/Documentation: 
+Style/Documentation:
   Enabled: false
 
 Naming/PredicateName:
@@ -26,3 +26,8 @@ Naming/PredicateName:
 Metrics/BlockLength:
   Exclude:
     - 'spec/**/*'
+
+Rails/Output:
+  Exclude:
+    - 'lib/spooler.rb'
+    - 'lib/spooler/**/*'
