@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Spooler
+class Spooler
   class Operation
     def initialize(printer)
       @printer = printer
@@ -11,7 +11,7 @@ module Spooler
     end
 
     def log(message)
-      puts "#{" " * (15 - @printer[:name].size) } [ #{@printer[:name]} ] : #{message}"
+      puts "#{" " * (15 - @printer.name.size) } [ #{@printer.name} ] : #{message}"
     end
   end
 
@@ -22,12 +22,11 @@ module Spooler
     end
 
     def execute
-      log "1. Start the print the right gcode to octoprint"
+      Octoprint.configure(host: @printer.octoprint_uri, api_key: @printer.octoprint_key)
+      log "1. Start the print: send the right gcode to octoprint".cyan
+      UploadFilesToPrintersJob.perform_now([@file.id], [@printer.id], select: true, print: true)
 
-      Octoprint.configure(host: @printer[:octoprint_uri], api_key: @printer[:octoprint_key])
-      Octoprint::Files.upload(@file[:path], select: true, print: true)
-
-      log "2. Monitor the print"
+      log "2. Monitor the print".cyan
 
       printing = true
       while(printing)
@@ -35,6 +34,7 @@ module Spooler
         printing = job.state == "Printing"
 
         log(job.progress.completion.ceil.to_s + '%') if printing
+        sleep(WAIT_TIME)
       end
 
       log "3. Profit.".green

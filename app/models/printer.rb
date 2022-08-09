@@ -23,9 +23,9 @@ class Printer < ApplicationRecord
     end
   end
 
-  def upload(file)
+  def upload(file, **options)
     using_api do
-      Octoprint::Files.upload(file)
+      Octoprint::Files.upload(file, **options)
     end
   end
 
