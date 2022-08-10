@@ -1,11 +1,11 @@
 GIT
   remote: https://github.com/sophiedeziel/octoprint.git
-  revision: 5224eb342a787dcf3dd1f709ff776da2062e060a
+  revision: 8579578d7e310e87736ebdbcea8e418b9ead58c7
   branch: main
   specs:
     octoprint (0.1.0)
       activesupport
-      faraday (>= 2.2, < 2.5)
+      faraday (>= 2.2, < 2.6)
       faraday-multipart (~> 1.0.3)
       zeitwerk (~> 2.5)
 
@@ -119,12 +119,12 @@ GEM
     factory_bot_rails (6.2.0)
       factory_bot (~> 6.2.0)
       railties (>= 5.0.0)
-    faraday (2.4.0)
-      faraday-net_http (~> 2.0)
+    faraday (2.5.1)
+      faraday-net_http (>= 2.0, < 3.1)
       ruby2_keywords (>= 0.0.4)
     faraday-multipart (1.0.4)
       multipart-post (~> 2)
-    faraday-net_http (2.1.0)
+    faraday-net_http (3.0.0)
     globalid (1.0.0)
       activesupport (>= 5.0)
     graphiql-rails (1.8.0)
