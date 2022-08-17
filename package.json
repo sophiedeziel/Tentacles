@@ -38,7 +38,7 @@
     "react-on-rails": "^13.0.2",
     "react-router-dom": "^6.3.0",
     "regenerator-runtime": "^0.13.9",
-    "shakapacker": "6.5.0",
+    "shakapacker": "6.5.1",
     "terser-webpack-plugin": "5",
     "three": "^0.132.0",
     "typescript": "^4.7.4",
