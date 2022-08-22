@@ -1236,18 +1236,10 @@
     "@babel/helper-validator-option" "^7.18.6"
     "@babel/plugin-transform-typescript" "^7.18.6"
 
-"@babel/runtime-corejs3@^7.10.2":
+"@babel/runtime-corejs3@^7.10.2", "@babel/runtime-corejs3@^7.12.5":
   version "7.18.3"
   resolved "https://registry.yarnpkg.com/@babel/runtime-corejs3/-/runtime-corejs3-7.18.3.tgz#52f0241a31e0ec61a6187530af6227c2846bd60c"
   integrity sha512-l4ddFwrc9rnR+EJsHsh+TJ4A35YqQz/UqcjtlX2ov53hlJYG5CxtQmNZxyajwDVmCxwy++rtvGU5HazCK4W41Q==
-  dependencies:
-    core-js-pure "^3.20.2"
-    regenerator-runtime "^0.13.4"
-
-"@babel/runtime-corejs3@^7.12.5":
-  version "7.17.8"
-  resolved "https://registry.npmjs.org/@babel/runtime-corejs3/-/runtime-corejs3-7.17.8.tgz"
-  integrity sha512-ZbYSUvoSF6dXZmMl/CYTMOvzIFnbGfv4W3SEHYgMvNsFTeLaF2gkGAF4K2ddmtSK4Emej+0aYcnSC6N5dPCXUQ==
   dependencies:
     core-js-pure "^3.20.2"
     regenerator-runtime "^0.13.4"
@@ -9861,10 +9853,10 @@ react-merge-refs@^1.1.0:
   resolved "https://registry.yarnpkg.com/react-merge-refs/-/react-merge-refs-1.1.0.tgz#73d88b892c6c68cbb7a66e0800faa374f4c38b06"
   integrity sha512-alTKsjEL0dKH/ru1Iyn7vliS2QRcBp9zZPGoWxUOvRGWPUYgjo+V01is7p04It6KhgrzhJGnIj9GgX8W4bZoCQ==
 
-react-on-rails@^13.0.2:
-  version "13.0.2"
-  resolved "https://registry.npmjs.org/react-on-rails/-/react-on-rails-13.0.2.tgz"
-  integrity sha512-FPgpw5/klHXxonOUe2Slp1Enq2qrzI2SGW9MfBvoFFo9yf/Bu6NXIm75Pbeu58fM2kfzgRl23UsWnvEfk+UuUw==
+react-on-rails@^13.1.0:
+  version "13.1.0"
+  resolved "https://registry.yarnpkg.com/react-on-rails/-/react-on-rails-13.1.0.tgz#997dee0d6cd27762f01a5baa58ed51c222a152f0"
+  integrity sha512-OOSzFkQoZc/q8c2E9zc4eOOCUKvmm1KCFE/Le570Sxwov3lnUVrpCjPbk+LblYvZLmKTjXMY8p4ocx7mYn7E7Q==
   dependencies:
     "@babel/runtime-corejs3" "^7.12.5"
     concurrently "^5.1.0"
