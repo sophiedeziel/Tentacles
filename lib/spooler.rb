@@ -53,8 +53,10 @@ class Spooler
         log "Added a new printer: #{printer.name}"
       end
     when 'start_print'
-      log "Enqueuing on #{printer.name} : File id #{opts[:file_id]}"
-      @workers[printer.id].enqueue(Print, opts[:file_id])
+      unless @workers[printer.id].working?
+        log "Starting job on #{printer.name}"
+        @workers[printer.id].resume
+      end
     when 'stop_print'
       log "Stopping print on #{printer.name}"
       @workers[printer.id].stop

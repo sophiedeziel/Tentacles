@@ -22,12 +22,22 @@ module Mutations
     private
 
     def create_job(file, printer_id)
-      Printer::Job.create(
+      print_immediately = Printer::Job.queue(printer_id).size == 1
+
+      job = Printer::Job.create(
         name: "Job for file #{file.id}",
         status: 'enqueued',
         executable: file,
         printer_id: printer_id
       )
+
+      if print_immediately
+        Redis.current.publish('printers',
+                              { command: :start_print,
+                                printer_id: printer_id }.to_json)
+      end
+
+      job
     end
   end
 end

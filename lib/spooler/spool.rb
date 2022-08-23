@@ -2,24 +2,18 @@
 
 class Spooler
   class Spool
-    attr_reader :name, :operations
+    attr_reader :name
 
     def initialize(printer)
       @printer = printer
-      @operations = []
       @thread = start_thread
       @current_operation = nil
-      @active = true
+      @active = false
       @start_job_after_finish = false
     end
 
     def working?
-      @operations.any?
-    end
-
-    def enqueue(type, *args)
-      operation = type.new(@printer, *args)
-      @operations << operation
+      @current_operation.present?
     end
 
     def stop
@@ -52,14 +46,26 @@ class Spooler
 
     def operations_loop
       loop do
-        if @active && @operations.any?
-          @current_operation = @operations.slice!(0)
-          @current_operation.execute
-          @active = @start_job_after_finish
+        if @active && (job = @printer.next_job)
+          start_and_monitor(job)
         else
           Thread.pass
         end
       end
+    end
+
+    def start_and_monitor(job)
+      type = {
+        'FileManager::File' => Print
+      }[job.executable_type]
+
+      @current_operation = type.new(@printer, job.executable_id)
+      job.update(status: 'executing')
+
+      @current_operation.execute
+      @active = @start_job_after_finish
+      @current_operation = nil
+      job.update(status: 'done')
     end
   end
 end

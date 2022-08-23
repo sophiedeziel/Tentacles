@@ -33,6 +33,14 @@ class Printer < ApplicationRecord
     api_client.use(&block)
   end
 
+  def queue
+    jobs.where(status: 'enqueued').order(created_at: :asc)
+  end
+
+  def next_job
+    queue.first
+  end
+
   private
 
   def api_client
