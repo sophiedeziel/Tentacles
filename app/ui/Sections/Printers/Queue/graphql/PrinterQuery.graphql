@@ -9,6 +9,7 @@ query PrinterQuery($id: ID!) {
             filename
           }
           status
+          createdAt
         }
       }
     }

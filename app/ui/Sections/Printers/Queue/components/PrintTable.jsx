@@ -32,6 +32,10 @@ const columns = [
   {
     title: 'Status',
     dataIndex: 'status'
+  },
+  {
+    title: 'Enqueued at',
+    dataIndex: 'createdAt'
   }
 ]
 
