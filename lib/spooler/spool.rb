@@ -60,12 +60,12 @@ class Spooler
       }[job.executable_type]
 
       @current_operation = type.new(@printer, job.executable_id)
-      job.update(status: 'executing')
+      job.update(status: 'active')
 
       @current_operation.execute
       @active = @start_job_after_finish
       @current_operation = nil
-      job.update(status: 'done')
+      job.update(status: 'completed')
     end
   end
 end

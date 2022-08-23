@@ -43,8 +43,8 @@ const SortableItem = SortableElement((props) => <tr {...props} />)
 const SortableBody = SortableContainer((props) => <tbody {...props} />)
 
 // eslint-disable-next-line react/prop-types
-export default function PrintTable ({ enqueuedJobs }) {
-  const [dataSource, setDataSource] = useState(enqueuedJobs)
+export default function PrintTable ({ jobs }) {
+  const [dataSource, setDataSource] = useState(jobs)
 
   const onSortEnd = ({ oldIndex, newIndex }) => {
     if (oldIndex !== newIndex) {

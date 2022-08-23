@@ -21,16 +21,18 @@ export default function Queue () {
   const { printer } = data
   const jobs = printer.jobs.edges.map(({ node }) => node)
 
-  // const completedJobs = jobs.filter(job => job.status === 'completed')
-  // const activeJobs = jobs.filter(job => job.status === 'active')
+  const completedJobs = jobs.filter(job => job.status === 'completed')
+  const activeJob = jobs.filter(job => job.status === 'active')[0]
   const enqueuedJobs = jobs.filter(job => job.status === 'enqueued')
 
-  const tableData = enqueuedJobs.map((job, index) => ({
-    ...job,
-    key: job.id,
-    index: index,
-    filename: job.executable.filename
-  }))
+  const tableData = (jobs) => {
+    return jobs.map((job, index) => ({
+      ...job,
+      key: job.id,
+      index: index,
+      filename: job.executable.filename
+    }))
+  }
 
   return (
     <>
@@ -42,8 +44,17 @@ export default function Queue () {
         >
       </PageHeader>
 
+      <>
+        {activeJob?.executable?.filename}
+      </>
+      <h2>Enqueued</h2>
         <PrintTable
-          enqueuedJobs={tableData}
+          jobs={tableData(enqueuedJobs)}
+        />
+
+      <h2>History</h2>
+        <PrintTable
+          jobs={tableData(completedJobs)}
         />
     </>
   )
