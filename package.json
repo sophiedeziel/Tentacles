@@ -36,7 +36,7 @@
     "react-gcode-viewer": "^2.2.0",
     "react-markdown": "^8.0.3",
     "react-on-rails": "^13.1.0",
-    "react-router-dom": "^6.3.0",
+    "react-router-dom": "^6.4.0",
     "regenerator-runtime": "^0.13.9",
     "shakapacker": "6.5.2",
     "terser-webpack-plugin": "5",
