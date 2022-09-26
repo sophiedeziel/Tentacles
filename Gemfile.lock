@@ -330,9 +330,7 @@ GEM
     zeitwerk (2.6.0)
 
 PLATFORMS
-  x86_64-darwin-20
   x86_64-darwin-21
-  x86_64-linux
 
 DEPENDENCIES
   apollo_upload_server
