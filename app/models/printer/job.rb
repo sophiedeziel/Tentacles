@@ -5,6 +5,6 @@ class Printer
     belongs_to :printer
     belongs_to :executable, polymorphic: true
 
-    validates :status, inclusion: {in: ['enqueued', 'active', 'completed', 'error']}
+    validates :status, inclusion: { in: %w[enqueued active completed error] }
   end
 end
