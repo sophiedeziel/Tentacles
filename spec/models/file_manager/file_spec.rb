@@ -88,7 +88,7 @@ RSpec.describe FileManager::File, type: :model do
   describe '#file_content' do
     subject { file.file_content }
 
-    it { is_expected.to eq File.read(Rails.root.join('spec/fixture_files/test.gcode')) }
+    it { is_expected.to eq Rails.root.join('spec/fixture_files/test.gcode').read }
   end
 
   describe '#change_file_content!' do
@@ -99,7 +99,7 @@ RSpec.describe FileManager::File, type: :model do
     it 'changes the file content' do
       expect { subject }.to change {
                               file.file_content
-                            }.from(File.read(Rails.root.join('spec/fixture_files/test.gcode'))).to(content)
+                            }.from(Rails.root.join('spec/fixture_files/test.gcode').read).to(content)
     end
   end
 end
