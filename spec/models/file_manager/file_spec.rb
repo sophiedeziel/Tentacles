@@ -75,7 +75,7 @@ RSpec.describe FileManager::File, type: :model do
   describe '#download_url' do
     subject { file.download_url }
 
-    it { is_expected.to match /\/rails\/active_storage.+\/test.gcode/ }
+    it { is_expected.to match(%r{/rails/active_storage.+/test.gcode}) }
   end
 
   describe '#top_file_comments' do
