@@ -28,13 +28,15 @@ class Spooler
   end
 
   def subcribe_to_commands
-    Redis.current.subscribe('printers') do |on|
-      on.message do |_channel, message|
-        message = JSON.parse(message).deep_symbolize_keys
-        printer = Printer.find(message[:printer_id])
-        command = message.delete(:command)
+    REDIS_POOL.with do |conn|
+      conn.subscribe('printers') do |on|
+        on.message do |_channel, message|
+          message = JSON.parse(message).deep_symbolize_keys
+          printer = Printer.find(message[:printer_id])
+          command = message.delete(:command)
 
-        send_command(printer, command, message)
+          send_command(printer, command, message)
+        end
       end
     end
   rescue StandardError => e

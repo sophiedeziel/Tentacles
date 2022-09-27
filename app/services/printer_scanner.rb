@@ -16,18 +16,25 @@ class PrinterScanner
   private
 
   def use_cache
-    return JSON.parse Redis.current.get(:printers_ips) if last_printer_scan > 15.minutes.ago.to_i
+    cached_ips = REDIS_POOL.with do |conn|
+      conn.get(:printers_ips)
+    end
+    return JSON.parse cached_ips if last_printer_scan > 15.minutes.ago.to_i
 
     yield.tap { |ips| store_printers_ips(ips) }
   end
 
   def last_printer_scan
-    Redis.current.get(:last_printer_scan).to_i
+    REDIS_POOL.with do |conn|
+      conn.get(:last_printer_scan).to_i
+    end
   end
 
   def store_printers_ips(ips)
-    Redis.current.set(:printers_ips, ips.to_json)
-    Redis.current.set(:last_printer_scan, Time.now.to_i)
+    REDIS_POOL.with do |conn|
+      conn.set(:printers_ips, ips.to_json)
+      conn.set(:last_printer_scan, Time.now.to_i)
+    end
   end
 
   def all_network_ips

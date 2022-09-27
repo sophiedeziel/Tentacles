@@ -33,9 +33,11 @@ module Mutations
       )
 
       if print_immediately
-        Redis.current.publish('printers',
-                              { command: :start_print,
-                                printer_id: printer_id }.to_json)
+        REDIS_POOL.with do |conn|
+          conn.publish('printers',
+                                { command: :start_print,
+                                  printer_id: printer_id }.to_json)
+        end
       end
 
       job

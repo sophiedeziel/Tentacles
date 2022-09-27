@@ -12,8 +12,10 @@ RSpec.describe PrinterScanner do
     end
 
     after(:each) do
-      Redis.current.set(:printers_ips, nil)
-      Redis.current.set(:last_printer_scan, nil)
+      REDIS_POOL.with do |conn|
+        conn.set(:printers_ips, nil)
+        conn.set(:last_printer_scan, nil)
+      end
     end
 
     context 'when there are no printers' do
@@ -35,15 +37,19 @@ RSpec.describe PrinterScanner do
 
       describe 'cashing' do
         it 'caches the result' do
-          subject
-          expect(Redis.current.get(:printers_ips)).to eq '["10.0.1.165"]'
-          expect(Redis.current.get(:last_printer_scan)).to be_present
+          REDIS_POOL.with do |conn|
+            subject
+            expect(conn.get(:printers_ips)).to eq '["10.0.1.165"]'
+            expect(conn.get(:last_printer_scan)).to be_present
+          end
         end
 
         it 'uses the cache' do
-          Redis.current.set(:printers_ips, ['192.168.0.5'])
-          Redis.current.set(:last_printer_scan, 3.minutes.ago.to_i)
-          expect(subject).to eq ['192.168.0.5']
+          REDIS_POOL.with do |conn|
+            conn.set(:printers_ips, ['192.168.0.5'])
+            conn.set(:last_printer_scan, 3.minutes.ago.to_i)
+            expect(subject).to eq ['192.168.0.5']
+          end
         end
       end
     end
