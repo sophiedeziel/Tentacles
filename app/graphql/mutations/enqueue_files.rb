@@ -22,7 +22,8 @@ module Mutations
     private
 
     def create_job(file, printer_id)
-      print_immediately = Printer::Job.queue(printer_id).size == 1
+      printer = Printer.find(printer_id)
+      print_immediately = printer.queue.size == 1
 
       job = Printer::Job.create(
         name: "Job for file #{file.id}",

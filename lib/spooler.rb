@@ -23,10 +23,8 @@ class Spooler
     end
   end
 
-  private
-
   def log(message)
-    puts "#{' ' * (15 - 'Spooler'.size)} [ #{Spooler} ] : #{message}"
+    puts "#{' ' * (15 - 'Spooler'.size)} [ Spooler ] : #{message}"
   end
 
   def subcribe_to_commands
@@ -40,7 +38,7 @@ class Spooler
       end
     end
   rescue StandardError => e
-    puts e.message.red
+    log e.message.red
   end
 
   # rubocop:disable Metrics/AbcSize
@@ -69,4 +67,3 @@ class Spooler
   # rubocop:enable Metrics/MethodLength
 end
 
-Spooler.new.run

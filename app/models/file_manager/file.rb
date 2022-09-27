@@ -26,6 +26,18 @@ module FileManager
       update(is_not_archived: true, archived_at: nil)
     end
 
+    def archived?
+      !is_not_archived?
+    end
+
+    def deleted?
+      false
+    end
+
+    def download_url
+      Rails.application.routes.url_helpers.url_for(file)
+    end
+
     def top_file_comments
       top_comments = []
       file.blob.open do |file|
