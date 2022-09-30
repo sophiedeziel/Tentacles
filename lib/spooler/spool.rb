@@ -47,27 +47,32 @@ class Spooler
     def operations_loop
       loop do
         if @active && (job = @printer.next_job)
-          start_and_monitor(job)
+          @current_operation = build_operation(job)
+          start_and_monitor
+          @active = @start_job_after_finish
+          @current_operation = nil
         else
           Thread.pass
         end
       end
     end
 
-    def start_and_monitor(job)
+    def start_and_monitor
+      @current_operation.job.update(status: 'active')
+      @current_operation.update_subscribers
+
+      @current_operation.execute
+
+      @current_operation.job.update(status: 'completed')
+      @current_operation.update_subscribers
+    end
+
+    def build_operation(job)
       type = {
         'FileManager::File' => Print
       }[job.executable_type]
 
-      @current_operation = type.new(@printer, job)
-      job.update(status: 'active')
-      @current_operation.update_subscribers
-
-      @current_operation.execute
-      @active = @start_job_after_finish
-      job.update(status: 'completed')
-      @current_operation.update_subscribers
-      @current_operation = nil
+      type.new(@printer, job)
     end
   end
 end

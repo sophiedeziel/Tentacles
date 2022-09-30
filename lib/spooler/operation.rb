@@ -2,6 +2,8 @@
 
 class Spooler
   class Operation
+    attr_reader :job, :printer
+
     def initialize(printer, job)
       @job = job
       @printer = printer
@@ -54,15 +56,20 @@ class Spooler
       while printing
         job = Octoprint::Job.get
         printing = job.state == 'Printing'
-        if printing
-          progress = job.progress.completion.ceil
+        printing_updates(job)
 
-          track_progress(progress)
-          log("#{progress}%")
-          update_subscribers
-        end
         sleep(WAIT_TIME)
       end
+    end
+
+    def printing_updates(job)
+      return unless job.state == 'Printing'
+
+      progress = job.progress.completion.ceil
+
+      track_progress(progress)
+      log("#{progress}%")
+      update_subscribers
     end
   end
 end

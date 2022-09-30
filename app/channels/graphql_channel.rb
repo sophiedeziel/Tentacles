@@ -5,6 +5,7 @@ class GraphqlChannel < ApplicationCable::Channel
     @subscription_ids = []
   end
 
+  # rubocop:disable Metrics/MethodLength
   def execute(data)
     query = data['query']
     variables = ensure_hash(data['variables'])
@@ -35,6 +36,7 @@ class GraphqlChannel < ApplicationCable::Channel
 
     transmit(payload)
   end
+  # rubocop:enable Metrics/MethodLength
 
   def unsubscribed
     @subscription_ids.each do |sid|
@@ -44,6 +46,7 @@ class GraphqlChannel < ApplicationCable::Channel
 
   private
 
+  # rubocop:disable Metrics/MethodLength
   def ensure_hash(ambiguous_param)
     case ambiguous_param
     when String
@@ -60,4 +63,5 @@ class GraphqlChannel < ApplicationCable::Channel
       raise ArgumentError, "Unexpected parameter: #{ambiguous_param}"
     end
   end
+  # rubocop:enable Metrics/MethodLength
 end
