@@ -6,6 +6,7 @@ module Types
     field :addPrinter, mutation: Mutations::AddPrinter
     field :enqueueFiles, mutation: Mutations::EnqueueFiles
     field :send_files_to_printers, mutation: Mutations::SendFilesToPrinters
+    field :start_next_print, mutation: Mutations::StartNextPrint
     field :unarchiveFiles, mutation: Mutations::UnarchiveFiles
     field :uploadFile, mutation: Mutations::UploadFile
     field :updateFile, mutation: Mutations::UpdateFile

@@ -1,0 +1,5 @@
+mutation StartNextPrint($input: StartNextPrintInput!) {
+  startNextPrint(input: $input) {
+    success
+  }
+}

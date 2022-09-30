@@ -49,6 +49,12 @@ class Printer < ApplicationRecord
     TentaclesSchema.subscriptions.trigger(:printer_subscription, { id: id }, {})
   end
 
+  def start_print
+    REDIS_POOL.with do |conn|
+      conn.publish('printers', { command: :start_print, printer_id: id }.to_json)
+    end
+  end
+
   private
 
   def api_client

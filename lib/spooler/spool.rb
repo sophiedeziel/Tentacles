@@ -61,6 +61,7 @@ class Spooler
 
       @current_operation = type.new(@printer, job)
       job.update(status: 'active')
+      @current_operation.update_subscribers
 
       @current_operation.execute
       @active = @start_job_after_finish
