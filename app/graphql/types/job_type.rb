@@ -8,5 +8,6 @@ module Types
     field :executable, Types::FileType, null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
+    field :progress, Float, null: false
   end
 end

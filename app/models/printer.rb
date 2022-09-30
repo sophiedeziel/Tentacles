@@ -14,7 +14,7 @@ class Printer < ApplicationRecord
   def octoprint_version
     using_api do
       return Octoprint::ServerVersion.get
-    end
+    end&.text
   end
 
   def job_status
@@ -23,14 +23,36 @@ class Printer < ApplicationRecord
     end
   end
 
-  def upload(file)
+  def jobs_count
+    jobs.where(status: 'enqueued').count
+  end
+
+  def upload(file, **options)
     using_api do
-      Octoprint::Files.upload(file)
+      Octoprint::Files.upload(file, **options)
     end
   end
 
   def using_api(&block)
     api_client.use(&block)
+  end
+
+  def queue
+    jobs.where(status: 'enqueued').order(created_at: :asc)
+  end
+
+  def next_job
+    queue.first
+  end
+
+  def update_subscribers
+    TentaclesSchema.subscriptions.trigger(:printer_subscription, { id: id }, {})
+  end
+
+  def start_print
+    REDIS_POOL.with do |conn|
+      conn.publish('printers', { command: :start_print, printer_id: id }.to_json)
+    end
   end
 
   private

@@ -28,7 +28,7 @@ function AppLayout ({ children }) {
       <Layout>
         <Header className={classes.Header} style={{ padding: 0 }} >
           <Menu mode="horizontal" style={{ float: 'right' }}>
-            <Menu.Item>
+            <Menu.Item key='bugs'>
               <a href="https://github.com/sophiedeziel/Tentacles/issues" target="_blank" rel="noreferrer">
                 <BugOutlined />
               </a>

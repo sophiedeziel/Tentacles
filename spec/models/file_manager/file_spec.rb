@@ -35,6 +35,28 @@ RSpec.describe FileManager::File, type: :model do
     end
   end
 
+  describe '#is_not_archived?' do
+    subject { file.is_not_archived? }
+
+    it { is_expected.to eq true }
+
+    context 'when the file is archived' do
+      before { file.archive }
+      it { is_expected.to eq false }
+    end
+  end
+
+  describe '#archived?' do
+    subject { file.archived? }
+
+    it { is_expected.to eq false }
+
+    context 'when the file is archived' do
+      before { file.archive }
+      it { is_expected.to eq true }
+    end
+  end
+
   describe '#unarchive' do
     subject { file.unarchive }
 
@@ -42,6 +64,18 @@ RSpec.describe FileManager::File, type: :model do
       file.archive
       expect { subject }.to change { file.is_not_archived }.from(false).to(true)
     end
+  end
+
+  describe '#deleted?' do
+    subject { file.deleted? }
+
+    it { is_expected.to eq false }
+  end
+
+  describe '#download_url' do
+    subject { file.download_url }
+
+    it { is_expected.to match(%r{/rails/active_storage.+/test.gcode}) }
   end
 
   describe '#top_file_comments' do

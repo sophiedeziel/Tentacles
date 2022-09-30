@@ -35,6 +35,32 @@ RSpec.describe Printer, :vcr, type: :model do
     it { is_expected.to eq 'Operational' }
   end
 
+  describe 'jobs_count' do
+    let!(:enqueued_jobs) { create_list(:printer_job, 3, printer: printer, status: 'enqueued') }
+
+    subject { printer.jobs_count }
+
+    it { is_expected.to eq enqueued_jobs.count }
+  end
+
+  describe 'queue' do
+    let!(:enqueued_jobs)  { create_list(:printer_job, 3, printer: printer, status: 'enqueued')  }
+    let!(:completed_jobs) { create_list(:printer_job, 3, printer: printer, status: 'completed') }
+
+    subject { printer.queue }
+
+    it { is_expected.to eq enqueued_jobs }
+    it { is_expected.to_not include completed_jobs }
+  end
+
+  describe 'next_job' do
+    let!(:enqueued_jobs) { create_list(:printer_job, 3, printer: printer, status: 'enqueued') }
+
+    subject { printer.next_job }
+
+    it { is_expected.to eq enqueued_jobs.first }
+  end
+
   describe 'upload' do
     let(:file_path) { 'spec/fixture_files/test.gcode' }
 

@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 module Mutations
-  module Books
+  module AddPrinterSpec
     RSpec.describe AddPrinter, type: :request do
       let(:variables) do
         {

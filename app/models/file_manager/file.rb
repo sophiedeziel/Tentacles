@@ -3,6 +3,7 @@
 module FileManager
   class File < ApplicationRecord
     has_one_attached :file
+    has_many :jobs, class_name: 'Printer::Job', as: :executable, dependent: :nullify
 
     validates :file, presence: true
 
@@ -24,6 +25,18 @@ module FileManager
 
     def unarchive
       update(is_not_archived: true, archived_at: nil)
+    end
+
+    def archived?
+      !is_not_archived?
+    end
+
+    def deleted?
+      false
+    end
+
+    def download_url
+      Rails.application.routes.url_helpers.url_for(file)
     end
 
     def top_file_comments

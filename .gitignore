@@ -35,6 +35,7 @@
 /config/master.key
 
 .vscode
+.DS_Store
 node_modules/
 
 /public/packs

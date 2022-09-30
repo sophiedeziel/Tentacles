@@ -1,0 +1,21 @@
+subscription PrinterSubscription($id: ID!) {
+  printerSubscription(id: $id) {
+    printer {
+      name
+      jobs {
+        edges {
+          node {
+            id
+            executable {
+              filename
+            }
+            status
+            progress
+            createdAt
+          }
+        }
+      }
+    }
+  }
+}
+
