@@ -59,7 +59,7 @@ class Spooler
         'FileManager::File' => Print
       }[job.executable_type]
 
-      @current_operation = type.new(@printer, job.executable_id)
+      @current_operation = type.new(@printer, job)
       job.update(status: 'active')
 
       @current_operation.execute

@@ -45,6 +45,10 @@ class Printer < ApplicationRecord
     queue.first
   end
 
+  def update_subscribers
+    TentaclesSchema.subscriptions.trigger(:printer_subscription, { id: id }, {})
+  end
+
   private
 
   def api_client

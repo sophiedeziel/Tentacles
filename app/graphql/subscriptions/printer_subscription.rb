@@ -8,7 +8,15 @@ module Subscriptions
     def subscribe(id:)
       # authorize, etc ...
       # Return the room in the initial response
-      { printer: Printer.find(id) }
+      { printer: printer_scope.find(id) }
+    end
+
+    def update(id:)
+      { printer: printer_scope.find(id) }
+    end
+
+    def printer_scope
+      Printer.includes({ jobs: { executable: { file: :blob } } })
     end
   end
 end

@@ -10,6 +10,7 @@ subscription PrinterSubscription($id: ID!) {
               filename
             }
             status
+            progress
             createdAt
           }
         }

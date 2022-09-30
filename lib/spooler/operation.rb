@@ -2,7 +2,8 @@
 
 class Spooler
   class Operation
-    def initialize(printer)
+    def initialize(printer, job)
+      @job = job
       @printer = printer
     end
 
@@ -14,15 +15,19 @@ class Spooler
       log 'Not implemented yet'
     end
 
+    def track_progress(progress)
+      @job.update(progress: progress)
+    end
+
     def log(message)
       puts "#{' ' * (15 - @printer.name.size)} [ #{@printer.name} ] : #{message}"
     end
   end
 
   class Print < Operation
-    def initialize(printer, file_id)
-      super(printer)
-      @file = FileManager::File.find(file_id)
+    def initialize(printer, job)
+      super(printer, job)
+      @file = FileManager::File.find(job.executable_id)
     end
 
     def execute
@@ -39,7 +44,7 @@ class Spooler
     end
 
     def update_subscribers
-      TentaclesSchema.subscriptions.trigger(:printer_subscription, {id: @printer.id}, {printer: @printer.reload})
+      @printer.reload.update_subscribers
     end
 
     private
@@ -49,9 +54,13 @@ class Spooler
       while printing
         job = Octoprint::Job.get
         printing = job.state == 'Printing'
+        if printing
+          progress = job.progress.completion.ceil
 
-        log("#{job.progress.completion.ceil}%") if printing
-        update_subscribers
+          track_progress(progress)
+          log("#{progress}%")
+          update_subscribers
+        end
         sleep(WAIT_TIME)
       end
     end

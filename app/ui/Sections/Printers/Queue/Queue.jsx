@@ -2,7 +2,7 @@ import React from 'react'
 import { useMatch } from 'react-router'
 import { useSubscription } from '@apollo/client'
 
-import { PageHeader } from 'antd'
+import { PageHeader, Progress } from 'antd'
 
 import PrintTable from './components/PrintTable'
 
@@ -17,8 +17,6 @@ export default function Queue () {
   if (error) return (<>Error!{error.message}</>)
 
   if (loading) return (<>Loading</>)
-
-  console.log(data)
 
   const { printer } = data.printerSubscription
   const jobs = printer.jobs.edges.map(({ node }) => node)
@@ -36,6 +34,24 @@ export default function Queue () {
     }))
   }
 
+  /* eslint-disable react/prop-types */
+  const CurrentJob = ({ activeJob }) => {
+    if (activeJob !== undefined) {
+      return (
+        <>
+          <h2>Active</h2>
+          <>
+            {activeJob.executable?.filename}
+            <Progress percent={activeJob.progress} />
+          </>
+        </>
+      )
+    } else {
+      return (<></>)
+    }
+  }
+  /* eslint-enable react/prop-types */
+
   return (
     <>
       <PageHeader
@@ -44,11 +60,9 @@ export default function Queue () {
         onBack={() => window.history.back()}
         title={printer.name}
         >
+        <CurrentJob activeJob={activeJob} />
       </PageHeader>
 
-      <>
-        {activeJob?.executable?.filename}
-      </>
       <h2>Enqueued ({enqueuedJobs.length})</h2>
         <PrintTable
           jobs={tableData(enqueuedJobs)}
