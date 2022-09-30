@@ -28,11 +28,18 @@ class Spooler
     def execute
       Octoprint.configure(host: @printer.octoprint_uri, api_key: @printer.octoprint_key)
       log '1. Start the print: send the right gcode to octoprint'.cyan
+      update_subscribers
       UploadFilesToPrintersJob.perform_now([@file.id], [@printer.id], select: true, print: true)
 
       log '2. Monitor the print'.cyan
+
       wait_for_print_to_finish
+      update_subscribers
       log '3. Profit.'.green
+    end
+
+    def update_subscribers
+      TentaclesSchema.subscriptions.trigger(:printer_subscription, {id: @printer.id}, {printer: @printer.reload})
     end
 
     private
@@ -44,6 +51,7 @@ class Spooler
         printing = job.state == 'Printing'
 
         log("#{job.progress.completion.ceil}%") if printing
+        update_subscribers
         sleep(WAIT_TIME)
       end
     end

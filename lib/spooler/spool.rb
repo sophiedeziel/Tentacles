@@ -64,8 +64,9 @@ class Spooler
 
       @current_operation.execute
       @active = @start_job_after_finish
-      @current_operation = nil
       job.update(status: 'completed')
+      @current_operation.update_subscribers
+      @current_operation = nil
     end
   end
 end

@@ -1,24 +1,26 @@
 import React from 'react'
 import { useMatch } from 'react-router'
-import { useQuery } from '@apollo/client'
+import { useSubscription } from '@apollo/client'
 
 import { PageHeader } from 'antd'
 
 import PrintTable from './components/PrintTable'
 
-import PrinterQuery from './graphql/PrinterQuery.graphql'
+import PrinterSubscription from './graphql/PrinterSubscription.graphql'
 
 export default function Queue () {
   const match = useMatch('/printers/:id/queue')
   const printerID = match.params.id
 
-  const { loading, error, data } = useQuery(PrinterQuery, { variables: { id: printerID } })
+  const { loading, error, data } = useSubscription(PrinterSubscription, { variables: { id: printerID } })
 
   if (error) return (<>Error!{error.message}</>)
 
   if (loading) return (<>Loading</>)
 
-  const { printer } = data
+  console.log(data)
+
+  const { printer } = data.printerSubscription
   const jobs = printer.jobs.edges.map(({ node }) => node)
 
   const completedJobs = jobs.filter(job => job.status === 'completed')
@@ -47,12 +49,14 @@ export default function Queue () {
       <>
         {activeJob?.executable?.filename}
       </>
-      <h2>Enqueued</h2>
+      <h2>Enqueued ({enqueuedJobs.length})</h2>
         <PrintTable
           jobs={tableData(enqueuedJobs)}
         />
 
-      <h2>History</h2>
+        <br />
+
+      <h2>History ({completedJobs.length})</h2>
         <PrintTable
           jobs={tableData(completedJobs)}
         />

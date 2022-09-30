@@ -76,15 +76,15 @@ export default function PrintTable ({ jobs }) {
   return (
     <Table
       pagination={false}
-      dataSource={dataSource}
+      dataSource={jobs}
       columns={columns}
       rowKey="index"
-      components={{
-        body: {
-          wrapper: DraggableContainer,
-          row: DraggableBodyRow
-        }
-      }}
+      // components={{
+      //   body: {
+      //     wrapper: DraggableContainer,
+      //     row: DraggableBodyRow
+      //   }
+      // }}
     />
   )
 }
