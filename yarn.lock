@@ -5756,10 +5756,10 @@ grapheme-splitter@^1.0.4:
   resolved "https://registry.yarnpkg.com/grapheme-splitter/-/grapheme-splitter-1.0.4.tgz#9cf3a665c6247479896834af35cf1dbb4400767e"
   integrity sha512-bzh50DW9kTPM00T8y4o8vQg89Di9oLJVLW/KaOGIXJWP/iqCN6WKYkbNOF04vFLJhwcpYUh9ydh/+5vpOqV4YQ==
 
-graphql-ruby-client@^1.11.2:
-  version "1.11.2"
-  resolved "https://registry.yarnpkg.com/graphql-ruby-client/-/graphql-ruby-client-1.11.2.tgz#5b7ed179e9147fb15f7bfe3ebc6eadd25a559791"
-  integrity sha512-+NwheKEtkFBxZbVDDMAzJUO6pHGgs+EsxxwyQCJrYHDqnWJbbNYjvZrulxU0UzYiAJWADuiLnuawWpo9tZUh0Q==
+graphql-ruby-client@^1.11.3:
+  version "1.11.3"
+  resolved "https://registry.yarnpkg.com/graphql-ruby-client/-/graphql-ruby-client-1.11.3.tgz#4f603c13d1fce90504859121146065add936dbd5"
+  integrity sha512-sKzsI+284ku1zfM+oDy5nmmRzQQyYiIS+WcZ1a8DIJP6E20V+BloM2C29bUQN4n0Seyh+Tw00GbyuXEZUl3R6w==
   dependencies:
     glob "^7.1.4"
     minimist "^1.2.0"
