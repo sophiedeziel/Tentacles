@@ -66,7 +66,7 @@ group :development, :test do
   gem 'rspec-its'
   gem 'rspec-rails'
   gem 'rubocop', '~> 1.36', require: false
-  gem 'rubocop-rails', '~> 2.16', require: false
+  gem 'rubocop-rails', '~> 2.17', require: false
   gem 'rubocop-rspec', require: false
   gem 'simplecov', require: false
   gem 'vcr', '~> 6.1'
