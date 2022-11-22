@@ -231,7 +231,7 @@ GEM
       rails (>= 5.2)
       rainbow (~> 3.0)
     redis (4.8.0)
-    regexp_parser (2.6.0)
+    regexp_parser (2.6.1)
     reline (0.3.1)
       io-console (~> 0.5)
     rexml (3.2.5)
@@ -255,7 +255,7 @@ GEM
       rspec-mocks (~> 3.11)
       rspec-support (~> 3.11)
     rspec-support (3.11.1)
-    rubocop (1.37.1)
+    rubocop (1.39.0)
       json (~> 2.3)
       parallel (~> 1.10)
       parser (>= 3.1.2.1)
@@ -358,7 +358,7 @@ DEPENDENCIES
   redis (~> 4.8)
   rspec-its
   rspec-rails
-  rubocop (~> 1.37)
+  rubocop (~> 1.39)
   rubocop-rails (~> 2.16)
   rubocop-rspec
   selenium-webdriver
