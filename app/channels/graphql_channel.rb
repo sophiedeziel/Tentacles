@@ -19,10 +19,10 @@ class GraphqlChannel < ApplicationCable::Channel
     }
 
     result = TentaclesSchema.execute(
-      query: query,
-      context: context,
-      variables: variables,
-      operation_name: operation_name
+      query:,
+      context:,
+      variables:,
+      operation_name:
     )
 
     payload = {

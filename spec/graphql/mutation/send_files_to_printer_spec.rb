@@ -21,12 +21,12 @@ module Mutations
       describe '.resolve' do
         it 'enqueues the job' do
           expect do
-            post '/graphql', params: { query: query, variables: variables }
+            post '/graphql', params: { query:, variables: }
           end.to change { enqueued_jobs.count }.by(1)
         end
 
         it 'returns true' do
-          post '/graphql', params: { query: query, variables: variables }
+          post '/graphql', params: { query:, variables: }
           json = JSON.parse(response.body)
           data = json['data']['sendFilesToPrinters']
 
@@ -44,12 +44,12 @@ module Mutations
           end
           it 'does not add a printer' do
             expect do
-              post '/graphql', params: { query: query, variables: variables }
+              post '/graphql', params: { query:, variables: }
             end.to change { enqueued_jobs.count }.by(0)
           end
 
           it 'returns a nil printer' do
-            post '/graphql', params: { query: query, variables: variables }
+            post '/graphql', params: { query:, variables: }
             json = JSON.parse(response.body)
             data = json['data']['sendFilesToPrinters']
 

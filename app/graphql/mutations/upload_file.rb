@@ -13,7 +13,7 @@ module Mutations
     def resolve(file_attributes:)
       file = FileManager::File.new(file_attributes.to_h)
       if file.save!
-        { file: file }
+        { file: }
       else
         { file: nil }
       end

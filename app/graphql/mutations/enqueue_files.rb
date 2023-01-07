@@ -16,7 +16,7 @@ module Mutations
           create_job(file, printer_id)
         end
       end
-      { jobs: jobs }
+      { jobs: }
     end
 
     private
@@ -29,14 +29,14 @@ module Mutations
         name: "Job for file #{file.id}",
         status: 'enqueued',
         executable: file,
-        printer_id: printer_id
+        printer_id:
       )
 
       if print_immediately
         REDIS_POOL.with do |conn|
           conn.publish('printers',
                        { command: :start_print,
-                         printer_id: printer_id }.to_json)
+                         printer_id: }.to_json)
         end
       end
 

@@ -36,7 +36,7 @@ RSpec.describe Printer, :vcr, type: :model do
   end
 
   describe 'jobs_count' do
-    let!(:enqueued_jobs) { create_list(:printer_job, 3, printer: printer, status: 'enqueued') }
+    let!(:enqueued_jobs) { create_list(:printer_job, 3, printer:, status: 'enqueued') }
 
     subject { printer.jobs_count }
 
@@ -44,8 +44,8 @@ RSpec.describe Printer, :vcr, type: :model do
   end
 
   describe 'queue' do
-    let!(:enqueued_jobs)  { create_list(:printer_job, 3, printer: printer, status: 'enqueued')  }
-    let!(:completed_jobs) { create_list(:printer_job, 3, printer: printer, status: 'completed') }
+    let!(:enqueued_jobs)  { create_list(:printer_job, 3, printer:, status: 'enqueued')  }
+    let!(:completed_jobs) { create_list(:printer_job, 3, printer:, status: 'completed') }
 
     subject { printer.queue }
 
@@ -54,7 +54,7 @@ RSpec.describe Printer, :vcr, type: :model do
   end
 
   describe 'next_job' do
-    let!(:enqueued_jobs) { create_list(:printer_job, 3, printer: printer, status: 'enqueued') }
+    let!(:enqueued_jobs) { create_list(:printer_job, 3, printer:, status: 'enqueued') }
 
     subject { printer.next_job }
 

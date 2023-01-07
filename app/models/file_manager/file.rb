@@ -59,7 +59,7 @@ module FileManager
     def change_file_content!(content)
       temp_filename = "#{Rails.root}/tmp/#{file.filename}"
       ::File.write(temp_filename, content)
-      file.attach(io: ::File.open(temp_filename), filename: filename)
+      file.attach(io: ::File.open(temp_filename), filename:)
     end
   end
 end

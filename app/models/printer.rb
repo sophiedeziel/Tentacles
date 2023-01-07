@@ -33,8 +33,8 @@ class Printer < ApplicationRecord
     end
   end
 
-  def using_api(&block)
-    api_client.use(&block)
+  def using_api(&)
+    api_client.use(&)
   end
 
   def queue
@@ -46,7 +46,7 @@ class Printer < ApplicationRecord
   end
 
   def update_subscribers
-    TentaclesSchema.subscriptions.trigger(:printer_subscription, { id: id }, {})
+    TentaclesSchema.subscriptions.trigger(:printer_subscription, { id: }, {})
   end
 
   def start_print

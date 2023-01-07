@@ -18,7 +18,7 @@ class Spooler
     end
 
     def track_progress(progress)
-      @job.update(progress: progress)
+      @job.update(progress:)
     end
 
     def log(message)

@@ -15,7 +15,7 @@ module Mutations
       file = FileManager::File.find(id)
 
       if file.change_file_content!(file_content)
-        { file: file }
+        { file: }
       else
         { file: nil }
       end

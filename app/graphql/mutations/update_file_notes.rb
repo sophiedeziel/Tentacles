@@ -14,8 +14,8 @@ module Mutations
     def resolve(id:, notes:)
       file = FileManager::File.find(id)
 
-      if file.update!(notes: notes)
-        { file: file }
+      if file.update!(notes:)
+        { file: }
       else
         { file: nil }
       end

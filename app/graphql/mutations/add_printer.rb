@@ -13,7 +13,7 @@ module Mutations
     def resolve(**kargs)
       printer = Printer.new(kargs)
       if printer.save
-        { printer: printer }
+        { printer: }
       else
         { printer: nil }
       end

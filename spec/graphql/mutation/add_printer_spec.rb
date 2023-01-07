@@ -18,12 +18,12 @@ module Mutations
       describe '.resolve' do
         it 'adds a printer' do
           expect do
-            post '/graphql', params: { query: query, variables: variables }
+            post '/graphql', params: { query:, variables: }
           end.to change { Printer.count }.by(1)
         end
 
         it 'returns a printer' do
-          post '/graphql', params: { query: query, variables: variables }
+          post '/graphql', params: { query:, variables: }
           json = JSON.parse(response.body)
           data = json['data']['addPrinter']
 
@@ -49,12 +49,12 @@ module Mutations
           end
           it 'does not add a printer' do
             expect do
-              post '/graphql', params: { query: query, variables: variables }
+              post '/graphql', params: { query:, variables: }
             end.to_not(change { Printer.count })
           end
 
           it 'returns a nil printer' do
-            post '/graphql', params: { query: query, variables: variables }
+            post '/graphql', params: { query:, variables: }
             json = JSON.parse(response.body)
             data = json['data']['addPrinter']
 

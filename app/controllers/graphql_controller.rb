@@ -14,7 +14,7 @@ class GraphqlController < ApplicationController
       # Query context goes here, for example:
       # current_user: current_user,
     }
-    result = TentaclesSchema.execute(query, variables: variables, context: context, operation_name: operation_name)
+    result = TentaclesSchema.execute(query, variables:, context:, operation_name:)
     render json: result
   rescue StandardError => e
     raise e unless Rails.env.development?
