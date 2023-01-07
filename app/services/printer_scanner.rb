@@ -40,7 +40,7 @@ class PrinterScanner
   def all_network_ips
     return [] unless local_ip
 
-    network_scan.split("\n").map { |line| IP_REGEX.match(line) }.compact.map { |line| line[1] }
+    network_scan.split("\n").map { |line| IP_REGEX.match(line) }.compact.pluck(1)
   end
 
   def octoprint?(ip)
