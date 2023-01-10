@@ -31,7 +31,7 @@
     "file-size": "^1.0.0",
     "gcode-lang-codemirror": "0.2.4",
     "graphql": "^16.6.0",
-    "graphql-ruby-client": "^1.11.3",
+    "graphql-ruby-client": "^1.11.4",
     "js-yaml": "^4.1.0",
     "monaco-editor": "^0.34.1",
     "react": "^17.0.2",
