@@ -164,7 +164,7 @@ GEM
     minitest (5.17.0)
     msgpack (1.6.0)
     multipart-post (2.2.3)
-    mysql2 (0.5.4)
+    mysql2 (0.5.5)
     net-imap (0.3.4)
       date
       net-protocol
@@ -351,7 +351,7 @@ DEPENDENCIES
   importmap-rails
   jbuilder
   mini_racer
-  mysql2 (~> 0.5.4)
+  mysql2 (~> 0.5.5)
   octoprint!
   pry
   puma (~> 6.0)
