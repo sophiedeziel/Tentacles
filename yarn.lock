@@ -9652,10 +9652,10 @@ react-merge-refs@^1.1.0:
   resolved "https://registry.yarnpkg.com/react-merge-refs/-/react-merge-refs-1.1.0.tgz#73d88b892c6c68cbb7a66e0800faa374f4c38b06"
   integrity sha512-alTKsjEL0dKH/ru1Iyn7vliS2QRcBp9zZPGoWxUOvRGWPUYgjo+V01is7p04It6KhgrzhJGnIj9GgX8W4bZoCQ==
 
-react-on-rails@^13.2.0:
-  version "13.2.0"
-  resolved "https://registry.yarnpkg.com/react-on-rails/-/react-on-rails-13.2.0.tgz#1098a8b17968e4b57e3248fb047392d8d6002843"
-  integrity sha512-YZDbvO7yALzwXxfG2HHyX2zmLCiuY81kxSLmi8PKDxtd3/VJd4cU5cJ1Y/3K8JQCD308aZV5yWsXT7j/QO3lkg==
+react-on-rails@^13.3.0:
+  version "13.3.0"
+  resolved "https://registry.yarnpkg.com/react-on-rails/-/react-on-rails-13.3.0.tgz#1f3d0eacd11e9a9c1523fb91193c30ce971c4d3d"
+  integrity sha512-kZxSInD4niloF6iO0gCEAjP9jouF6xFWAO0nHmVkHPpDIRxd4Re9RlEw65lQsjmahHTvLlkrAuQZBq6JRe+a5g==
   dependencies:
     "@babel/runtime-corejs3" "^7.12.5"
     concurrently "^5.1.0"
