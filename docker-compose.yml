@@ -10,7 +10,7 @@ services:
       MYSQL_USER: user
       MYSQL_DATABASE: tentacles_development
     volumes:
-      - .:/var/run/mysqld
+      - 'mysql:/data'
   web:
     build: .
     command: bash -c "rm -f tmp/pids/server.pid && bundle exec bin/rails s -p 9000 -b '0.0.0.0'"
@@ -53,3 +53,4 @@ services:
       - 'redis:/data'
 volumes:
   redis:
+  mysql:
