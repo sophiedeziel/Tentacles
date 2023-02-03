@@ -1,0 +1,44 @@
+services:
+  db:
+    image: mysql
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_PASSWORD: password
+      MYSQL_USER: user
+      MYSQL_DATABASE: tentacles_development
+    volumes:
+      - .:/var/run/mysqld
+  web:
+    build: .
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec bin/rails s -p 9000 -b '0.0.0.0'"
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "9000:9000"
+    depends_on:
+      - db
+      - webpack
+    links:
+     - db
+    environment:
+      WEBPACKER_DEV_SERVER_HOST: webpack
+      DB_USER: root
+      DB_NAME: tentacles_development
+      DB_PORT: 3306
+      DB_PASSWORD: password
+      DB_HOST: db
+  webpack:
+    build: .
+    command: ./bin/webpacker-dev-server
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "3035:3035"
+    environment:
+      NODE_ENV: development
+      RAILS_ENV: development
+      WEBPACKER_DEV_SERVER_HOST: 0.0.0.0
