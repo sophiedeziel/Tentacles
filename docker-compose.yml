@@ -24,10 +24,29 @@ services:
       - webpack
       - redis
     links:
-     - db
-     - redis
+      - db
+      - redis
     environment:
       WEBPACKER_DEV_SERVER_HOST: webpack
+      DB_USER: root
+      DB_NAME: tentacles_development
+      DB_PORT: 3306
+      DB_PASSWORD: password
+      DB_HOST: db
+      REDIS_URL: redis://redis:6379/1
+  spooler:
+    build: .
+    command: bash -c "bin/spooler"
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+    depends_on:
+      - db
+      - redis
+    links:
+      - db
+      - redis
+    environment:
       DB_USER: root
       DB_NAME: tentacles_development
       DB_PORT: 3306
