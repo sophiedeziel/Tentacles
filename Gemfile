@@ -55,7 +55,7 @@ gem 'react_on_rails'
 gem 'shakapacker', '~> 6.5'
 
 gem 'colorize'
-gem 'sidekiq', '~> 6.4'
+gem 'sidekiq', '~> 7.0'
 
 group :development, :test do
   gem 'bundler-audit'
