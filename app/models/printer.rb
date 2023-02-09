@@ -15,16 +15,22 @@ class Printer < ApplicationRecord
     using_api do
       return Octoprint::ServerVersion.get
     end&.text
+  rescue StandardError
+    nil
   end
 
   def job_status
     using_api do
       Octoprint::Job.get.state
     end
+  rescue StandardError
+    nil
   end
 
   def jobs_count
     jobs.where(status: 'enqueued').count
+  rescue StandardError
+    0
   end
 
   def upload(file, **options)
