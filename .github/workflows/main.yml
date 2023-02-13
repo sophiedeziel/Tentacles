@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install Ruby and gems
-        uses: ruby/setup-ruby@4d060a10e6d98429c69057f0aafbc65fb982bae8 # v1.92
+        uses: ruby/setup-ruby@f60ef1e8084a2e64569f928c3f1cfac6c7e12ad7 # v1.92
         with:
           bundler-cache: true
 
@@ -83,7 +83,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       - name: Install Ruby and gems
-        uses: ruby/setup-ruby@4d060a10e6d98429c69057f0aafbc65fb982bae8 # v1.92
+        uses: ruby/setup-ruby@f60ef1e8084a2e64569f928c3f1cfac6c7e12ad7 # v1.92
         with:
           bundler-cache: true
       # Add or replace any other lints here
