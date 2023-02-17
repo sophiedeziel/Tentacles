@@ -8,7 +8,8 @@ import UpdateFile from './graphql/UpdateFile.graphql'
 import GcodeDocs from './GcodeDocs/GcodeDocs.json'
 import { GCodeViewer } from 'react-gcode-viewer'
 
-import { Col, Row, Button, PageHeader, Typography, Drawer, Divider, Input } from 'antd'
+import { Col, Row, Button, Typography, Drawer, Divider, Input } from 'antd'
+import { PageHeader } from '@ant-design/pro-layout'
 const { Title } = Typography
 const { Search } = Input
 
@@ -202,59 +203,57 @@ export default function FileEditor () {
     )
   }
 
-  return (
-    <>
-      <PageHeader
-      className="site-page-header"
-      ghost={false}
-      onBack={() => window.history.back()}
-      title={file.filename}
-      extra={[
-        <Button key="1" type="primary" onClick={showDrawer}>Docs</Button>
-      ]}
-      >
-        <Button type="primary" onClick={handleSave}>Save</Button>
-      </PageHeader>
-      <Row >
-        <Col span={12}>
-        <Editor
-          height="calc(100vh - 250px)"
-          defaultLanguage="gcode"
-          path={file.filename}
-          defaultValue={file.fileContent}
-          onMount={handleEditorMount}
-          />
-        </Col>
-        <Col span={12}>
-          <GCodeViewer
-              orbitControls
-              showAxes
-              quality={0.2}
-              floorProps={{
-                gridWidth: 300,
-                gridLength: 300
-              }}
-              style={{
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: 'calc(100vh - 250px)'
-              }}
-              url={file.downloadUrl}
-          />
-        </Col>
-      </Row>
-      <Drawer
-      mask={false}
-      closable={true}
-      visible={visible}
-      size={'large'}
-      title={'Documentation'}
-      onClose={onClose}
-      extra={<Search placeholder="Serach a gocde command" allowClear onChange={onSearch} style={{ width: 400 }} />}
-      >
-        <ContextualDocumentation />
-      </Drawer>
-    </>
-  )
+  return (<>
+    <PageHeader
+    className="site-page-header"
+    ghost={false}
+    onBack={() => window.history.back()}
+    title={file.filename}
+    extra={[
+      <Button key="1" type="primary" onClick={showDrawer}>Docs</Button>
+    ]}
+    >
+      <Button type="primary" onClick={handleSave}>Save</Button>
+    </PageHeader>
+    <Row >
+      <Col span={12}>
+      <Editor
+        height="calc(100vh - 250px)"
+        defaultLanguage="gcode"
+        path={file.filename}
+        defaultValue={file.fileContent}
+        onMount={handleEditorMount}
+        />
+      </Col>
+      <Col span={12}>
+        <GCodeViewer
+            orbitControls
+            showAxes
+            quality={0.2}
+            floorProps={{
+              gridWidth: 300,
+              gridLength: 300
+            }}
+            style={{
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: 'calc(100vh - 250px)'
+            }}
+            url={file.downloadUrl}
+        />
+      </Col>
+    </Row>
+    <Drawer
+    mask={false}
+    closable={true}
+    open={visible}
+    size={'large'}
+    title={'Documentation'}
+    onClose={onClose}
+    extra={<Search placeholder="Serach a gocde command" allowClear onChange={onSearch} rootStyle={{ width: 400 }} />}
+    >
+      <ContextualDocumentation />
+    </Drawer>
+  </>)
 }

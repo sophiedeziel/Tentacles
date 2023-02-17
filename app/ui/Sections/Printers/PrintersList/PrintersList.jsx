@@ -2,7 +2,8 @@ import React from 'react'
 
 import { useQuery } from '@apollo/client'
 import { Link } from 'react-router-dom'
-import { Empty, List, Avatar, Button, Card, PageHeader } from 'antd'
+import { Empty, List, Avatar, Button, Card } from 'antd'
+import { PageHeader } from '@ant-design/pro-layout'
 
 import Printers from './graphql/Printers.graphql'
 import NetworkPrinters from './NetworkPrinters'

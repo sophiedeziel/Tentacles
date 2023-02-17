@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useQuery, useLazyQuery, useMutation } from '@apollo/client'
-import { Card, Form, Input, Button, Space, PageHeader } from 'antd'
+import { Card, Form, Input, Button, Space } from 'antd'
+import { PageHeader } from '@ant-design/pro-layout'
 import useInterval from '../../../utils/UseInterval'
 
 import SearchNetworkPrinters from './graphql/SearchNetworkPrinters.graphql'
