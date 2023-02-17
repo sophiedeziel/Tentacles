@@ -2,7 +2,8 @@ import React from 'react'
 import { useMatch } from 'react-router'
 import { useSubscription, useMutation } from '@apollo/client'
 
-import { PageHeader, Progress, Button } from 'antd'
+import { Progress, Button } from 'antd'
+import { PageHeader } from '@ant-design/pro-layout'
 
 import PrintTable from './components/PrintTable'
 

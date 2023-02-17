@@ -17,6 +17,7 @@ const other = {
         exclude: /node_modules/,
         loader: 'graphql-tag/loader'
       },
+      // TODO: convert me to something
       {
         test: /\.less$/,
         use: [

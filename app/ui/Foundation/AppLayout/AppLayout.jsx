@@ -5,7 +5,7 @@ import {
   BugOutlined
 } from '@ant-design/icons'
 
-import 'antd/dist/antd.less'
+// import 'antd/dist/antd.css'
 import SideMenu from './components/SideMenu'
 
 import classes from './AppLayout.module.less'

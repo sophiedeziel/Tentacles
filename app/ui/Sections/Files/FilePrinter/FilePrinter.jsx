@@ -6,7 +6,8 @@ import { GCodeViewer } from 'react-gcode-viewer'
 
 import classes from './FilePrinter.module.less'
 
-import { Col, Row, PageHeader, Card, Checkbox, Button, List, Statistic, message } from 'antd'
+import { Col, Row, Card, Checkbox, Button, List, Statistic, message } from 'antd'
+import { PageHeader } from '@ant-design/pro-layout'
 
 import File from './graphql/File.graphql'
 import SendFileToPrinters from './graphql/SendFileToPrinters.graphql'

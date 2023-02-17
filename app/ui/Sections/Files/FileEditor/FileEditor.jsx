@@ -8,7 +8,8 @@ import UpdateFile from './graphql/UpdateFile.graphql'
 import GcodeDocs from './GcodeDocs/GcodeDocs.json'
 import { GCodeViewer } from 'react-gcode-viewer'
 
-import { Col, Row, Button, PageHeader, Typography, Drawer, Divider, Input } from 'antd'
+import { Col, Row, Button, Typography, Drawer, Divider, Input } from 'antd'
+import { PageHeader } from '@ant-design/pro-layout'
 const { Title } = Typography
 const { Search } = Input
 
