@@ -6,6 +6,7 @@ import {
 } from '@ant-design/icons'
 
 // import 'antd/dist/antd.css'
+import 'antd/dist/reset.css'
 import SideMenu from './components/SideMenu'
 
 import classes from './AppLayout.module.less'
