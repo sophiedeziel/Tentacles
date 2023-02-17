@@ -125,7 +125,7 @@ GEM
     faraday-multipart (1.0.4)
       multipart-post (~> 2)
     faraday-net_http (3.0.2)
-    globalid (1.0.1)
+    globalid (1.1.0)
       activesupport (>= 5.0)
     graphiql-rails (1.8.0)
       railties
@@ -150,7 +150,7 @@ GEM
     loofah (2.19.1)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
-    mail (2.8.0.1)
+    mail (2.8.1)
       mini_mime (>= 0.1.1)
       net-imap
       net-pop
@@ -175,11 +175,11 @@ GEM
     net-smtp (0.3.3)
       net-protocol
     nio4r (2.5.8)
-    nokogiri (1.14.1-arm64-darwin)
+    nokogiri (1.14.2-arm64-darwin)
       racc (~> 1.4)
-    nokogiri (1.14.1-x86_64-darwin)
+    nokogiri (1.14.2-x86_64-darwin)
       racc (~> 1.4)
-    nokogiri (1.14.1-x86_64-linux)
+    nokogiri (1.14.2-x86_64-linux)
       racc (~> 1.4)
     parallel (1.22.1)
     parser (3.2.0.0)
@@ -224,7 +224,7 @@ GEM
       zeitwerk (~> 2.5)
     rainbow (3.1.1)
     rake (13.0.6)
-    react_on_rails (13.2.0)
+    react_on_rails (13.3.1)
       addressable
       connection_pool
       execjs (~> 2.5)
@@ -311,7 +311,7 @@ GEM
       activesupport (>= 5.2)
       sprockets (>= 3.0.0)
     thor (1.2.1)
-    timeout (0.3.1)
+    timeout (0.3.2)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.4.2)
