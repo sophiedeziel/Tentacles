@@ -19,43 +19,37 @@ export default function PrintersList () {
 
   const { printers } = printersData
 
-  const DisplayPrintersList = () => {
-    return (
-      <>
-        <PageHeader
-          className="site-page-header"
-          ghost={false}
-          title="Printers management"
-        >
-        </PageHeader>
-        <Card
-          className={classes.pageCard}
-          title="Configured printers"
-        >
-          <List
-            itemLayout="horizontal"
-            dataSource={printers}
-            locale={ { emptyText: <Empty description="Configure a printer to see it here" /> } }
-            renderItem={printer => (
-              <List.Item>
-                <List.Item.Meta
-                  avatar={<Avatar src={`${printer.octoprintUri}/static/img/apple-touch-icon-114x114.png`} />}
-                  title={ printer.name }
-                  description={ printer.octoprintVersion }
-                />
-              </List.Item>
-            )}
-            footer={<Button type="primary"><Link to={'/printers/add'}>Configure a new printer</Link></Button>}
-          />
-        </Card>
-      </>
-    )
-  }
-
   return (
-    <>
+    <><PageHeader
+      className="site-page-header"
+      ghost={false}
+      onBack={() => window.history.back()}
+      title="Printers management"
+      extra={<Button type="primary"><Link to={'/printers/add'}>Configure a new printer</Link></Button>}
+    >
+    </PageHeader>
+
       <NetworkPrinters />
-      <DisplayPrintersList />
-    </>
+
+      <Card
+        className={classes.pageCard}
+        title="Configured printers"
+      >
+        <List
+          className={classes.pageCardList}
+          itemLayout="horizontal"
+          dataSource={printers}
+          locale={{ emptyText: <Empty description="Configure a printer to see it here" /> }}
+          renderItem={printer => (
+            <List.Item>
+              <List.Item.Meta
+                avatar={<Avatar src={`${printer.octoprintUri}/static/img/apple-touch-icon-114x114.png`} />}
+                title={printer.name}
+                description={printer.octoprintVersion} />
+            </List.Item>
+          )}
+        />
+      </Card>
+      </>
   )
 }
