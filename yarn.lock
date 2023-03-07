@@ -131,10 +131,10 @@
     jsonpointer "^5.0.0"
     leven "^3.1.0"
 
-"@apollo/client@^3.7.9":
-  version "3.7.9"
-  resolved "https://registry.yarnpkg.com/@apollo/client/-/client-3.7.9.tgz#459454dc4a7c81adaa66e13e626ce41f633dc862"
-  integrity sha512-YnJvrJOVWrp4y/zdNvUaM8q4GuSHCEIecsRDTJhK/veT33P/B7lfqGJ24NeLdKMj8tDEuXYF7V0t+th4+rgC+Q==
+"@apollo/client@^3.7.10":
+  version "3.7.10"
+  resolved "https://registry.yarnpkg.com/@apollo/client/-/client-3.7.10.tgz#addc5fcebaf016981d9476268a06d529be83f568"
+  integrity sha512-/k1MfrqPKYiPNdHcOzdxg9cEx96vhAGxAcSorzfBvV29XtFQcYW2cPNQOTjK/fpSMtqVo8UNmu5vwQAWD1gfCg==
   dependencies:
     "@graphql-typed-document-node/core" "^3.1.1"
     "@wry/context" "^0.7.0"
@@ -1244,7 +1244,7 @@
     "@babel/parser" "^7.20.7"
     "@babel/types" "^7.20.7"
 
-"@babel/traverse@^7.19.0", "@babel/traverse@^7.19.1", "@babel/traverse@^7.21.0", "@babel/traverse@^7.21.2", "@babel/traverse@^7.7.2":
+"@babel/traverse@^7.19.0", "@babel/traverse@^7.19.1", "@babel/traverse@^7.20.7", "@babel/traverse@^7.21.0", "@babel/traverse@^7.21.2", "@babel/traverse@^7.7.2":
   version "7.21.2"
   resolved "https://registry.yarnpkg.com/@babel/traverse/-/traverse-7.21.2.tgz#ac7e1f27658750892e815e60ae90f382a46d8e75"
   integrity sha512-ts5FFU/dSUPS13tv8XiEObDu9K+iagEKME9kAbaP7r0Y9KtZJZ+NGndDvWoRAYNpeWafbpFeki3q9QoMD6gxyw==
@@ -1260,7 +1260,7 @@
     debug "^4.1.0"
     globals "^11.1.0"
 
-"@babel/types@^7.0.0", "@babel/types@^7.12.6", "@babel/types@^7.18.6", "@babel/types@^7.18.9", "@babel/types@^7.19.0", "@babel/types@^7.20.2", "@babel/types@^7.20.7", "@babel/types@^7.21.0", "@babel/types@^7.21.2", "@babel/types@^7.3.0", "@babel/types@^7.3.3", "@babel/types@^7.4.4":
+"@babel/types@^7.0.0", "@babel/types@^7.12.6", "@babel/types@^7.18.6", "@babel/types@^7.18.9", "@babel/types@^7.19.0", "@babel/types@^7.20.2", "@babel/types@^7.20.7", "@babel/types@^7.21.2", "@babel/types@^7.3.0", "@babel/types@^7.3.3", "@babel/types@^7.4.4":
   version "7.21.2"
   resolved "https://registry.yarnpkg.com/@babel/types/-/types-7.21.2.tgz#92246f6e00f91755893c2876ad653db70c8310d1"
   integrity sha512-3wRZSs7jiFaB8AjxiiD+VqN5DTG2iRvJGQ+qYFrs/654lg6kGTQWIOFjlBo5RaXuAZjBmP3+OQH4dmhqiiyYxw==
