@@ -13,7 +13,7 @@ class Printer < ApplicationRecord
 
   def octoprint_version
     using_api do
-      return Octoprint::ServerVersion.get
+      Octoprint::ServerVersion.get
     end&.text
   rescue StandardError
     nil
