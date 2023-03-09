@@ -52,7 +52,7 @@ gem 'octoprint', github: 'sophiedeziel/octoprint', branch: 'main' # For prototyp
 
 gem 'mini_racer', platforms: :ruby
 gem 'react_on_rails'
-gem 'shakapacker', '~> 6.5'
+gem 'shakapacker', '~> 6.6'
 
 gem 'colorize'
 gem 'sidekiq', '~> 7.0'
