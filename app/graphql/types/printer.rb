@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Types
-  class Printer < Types::BaseObject
+  class Printer < Base::Object
     field :id, ID, null: false
     field :name, String, null: false
     field :octoprint_uri, String, null: true

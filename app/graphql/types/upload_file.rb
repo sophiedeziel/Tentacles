@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Types
-  class UploadFile < Types::BaseScalar
+  class UploadFile < Base::Scalar
     description 'A valid URL, transported as a string'
 
     def self.coerce_input(file, _context)

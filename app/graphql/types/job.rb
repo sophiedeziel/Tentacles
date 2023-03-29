@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Types
-  class Job < Types::BaseObject
+  class Job < Base::Object
     field :id, ID, null: false
     field :name, String, null: false
     field :status, String, null: true

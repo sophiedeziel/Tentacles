@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 class TentaclesSchema < GraphQL::Schema
-  mutation(Types::MutationType)
-  query(Types::QueryType)
-  subscription(Types::SubscriptionType)
+  mutation(RootOperations::Mutation)
+  query(RootOperations::Query)
+  subscription(RootOperations::Subscription)
 
   # For batch-loading (see https://graphql-ruby.org/dataloader/overview.html)
   use GraphQL::Dataloader
