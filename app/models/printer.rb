@@ -8,10 +8,10 @@ class Printer < ApplicationRecord
   def current_job
     jobs.find_by(status: 'active') || using_api do
       data = Octoprint::Job.get
-      puts data.inspect
+      Rails.logger.debug data.inspect
       {
         name: data.information.file[:name],
-        progress: data.progress.completion.round(1),
+        progress: data.progress.completion.round(1)
       }
     end
   rescue StandardError

@@ -10,7 +10,7 @@ module Types
     # They will be entry points for queries on your schema.
 
     field :printers, [Types::Printer], null: false,
-                                    description: 'asdf'
+                                       description: 'asdf'
     def printers
       ::Printer.all
     end
