@@ -1,13 +1,26 @@
 # frozen_string_literal: true
 
 module Types
-  class Job < Base::Object
+  module Job
+    include Base::Interface
+    description 'A job that can be executed by a printer.'
+
     field :id, ID, null: false
     field :name, String, null: false
     field :status, String, null: true
-    field :executable, Types::File, null: false
-    field :created_at, GraphQL::Types::ISO8601DateTime, null: false
-    field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
     field :progress, Float, null: false
+
+    orphan_types Types::OctoprintJob
+
+    definition_methods do
+      def resolve_type(object, _context)
+        case object
+        when ::Printer::Job
+          Types::EnqueuedJob
+        when Hash
+          Types::OctoprintJob
+        end
+      end
+    end
   end
 end
