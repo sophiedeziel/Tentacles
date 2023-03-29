@@ -8,10 +8,10 @@ module Mutations
     argument :octoprint_key, String, required: true
     argument :name, String, required: true
 
-    field :printer, Types::PrinterType, null: true
+    field :printer, Types::Printer, null: true
 
     def resolve(**kargs)
-      printer = Printer.new(kargs)
+      printer = ::Printer.new(kargs)
       if printer.save
         { printer: }
       else

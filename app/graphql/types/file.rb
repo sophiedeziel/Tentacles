@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Types
-  class FileType < Types::BaseObject
+  class File < Types::BaseObject
     field :id, ID, null: false
     field :filename, String, null: false
     field :notes, String, null: false

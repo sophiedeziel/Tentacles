@@ -7,11 +7,11 @@ module Mutations
     argument :file_ids, [ID], required: true
     argument :printer_ids, [ID], required: true
 
-    field :jobs, [Types::JobType], null: true
+    field :jobs, [Types::Job], null: true
 
     def resolve(file_ids:, printer_ids:)
       jobs = file_ids.flat_map do |file_id|
-        file = FileManager::File.find(file_id)
+        file = ::FileManager::File.find(file_id)
         printer_ids.map do |printer_id|
           create_job(file, printer_id)
         end
@@ -22,10 +22,10 @@ module Mutations
     private
 
     def create_job(file, printer_id)
-      printer = Printer.find(printer_id)
+      printer = ::Printer.find(printer_id)
       print_immediately = printer.queue.size == 1
 
-      job = Printer::Job.create(
+      job = ::Printer::Job.create(
         name: "Job for file #{file.id}",
         status: 'enqueued',
         executable: file,

@@ -9,36 +9,36 @@ module Types
     # Add root-level fields here.
     # They will be entry points for queries on your schema.
 
-    field :printers, [PrinterType], null: false,
+    field :printers, [Types::Printer], null: false,
                                     description: 'asdf'
     def printers
-      Printer.all
+      ::Printer.all
     end
 
-    field :printer, PrinterType, null: true do
+    field :printer, Types::Printer, null: true do
       argument :id, ID, required: true
     end
     def printer(id:)
-      Printer.find(id)
+      ::Printer.find(id)
     end
 
-    field :files, [FileType], null: false do
+    field :files, [Types::File], null: false do
       description 'files'
     end
     def files
-      FileManager::File.with_attached_file
+      ::FileManager::File.with_attached_file
     end
 
-    field :file, FileType, null: true do
+    field :file, Types::File, null: true do
       argument :id, ID, required: true
     end
     def file(id:)
-      FileManager::File.find(id)
+      ::FileManager::File.find(id)
     end
 
     field :search_network_printers, [String], null: true
     def search_network_printers
-      PrinterScanner.new.call
+      ::PrinterScanner.new.call
     end
 
     field :octoprint_name, String, null: true do

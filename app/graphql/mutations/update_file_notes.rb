@@ -9,10 +9,10 @@ module Mutations
              String,
              required: true
 
-    field :file, Types::FileType, null: true
+    field :file, Types::File, null: true
 
     def resolve(id:, notes:)
-      file = FileManager::File.find(id)
+      file = ::FileManager::File.find(id)
 
       if file.update!(notes:)
         { file: }

@@ -8,10 +8,10 @@ module Mutations
              InputObjects::UploadFileAttributes,
              required: true
 
-    field :file, Types::FileType, null: true
+    field :file, Types::File, null: true
 
     def resolve(file_attributes:)
-      file = FileManager::File.new(file_attributes.to_h)
+      file = ::FileManager::File.new(file_attributes.to_h)
       if file.save!
         { file: }
       else

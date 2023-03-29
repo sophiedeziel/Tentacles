@@ -2,7 +2,7 @@
 
 module Subscriptions
   class PrinterSubscription < Subscriptions::BaseSubscription
-    field :printer, Types::PrinterType, null: true
+    field :printer, Types::Printer, null: true
     argument :id, ID, required: true
 
     def subscribe(id:)

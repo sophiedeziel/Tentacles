@@ -9,7 +9,7 @@ module Mutations
     field :success, Boolean, null: false
 
     def resolve(printer_id:)
-      printer = Printer.find(printer_id.to_i)
+      printer = ::Printer.find(printer_id.to_i)
 
       printer.start_print
       { success: true }
