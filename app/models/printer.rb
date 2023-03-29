@@ -5,6 +5,19 @@ class Printer < ApplicationRecord
 
   validates :name, presence: true
 
+  def current_job
+    jobs.find_by(status: 'active') || using_api do
+      data = Octoprint::Job.get
+      puts data.inspect
+      {
+        name: data.information.file[:name],
+        progress: data.progress.completion.round(1),
+      }
+    end
+  rescue StandardError
+    nil
+  end
+
   def self.table_name_prefix
     return '' if self == Printer
 

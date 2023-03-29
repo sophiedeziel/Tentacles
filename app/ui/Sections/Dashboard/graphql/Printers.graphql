@@ -8,5 +8,9 @@ query Printers {
     jobStatus
     createdAt
     updatedAt
+    currentJob {
+      progress
+      name
+    }
   }
 }

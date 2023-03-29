@@ -23,8 +23,8 @@ export default function Dashboard () {
               <Card>
                 {printer.name}<br/>
                 Status: {printer.jobStatus}<br/>
-                File: CR10s_Hook.gcode
-                <Progress percent={Math.floor(Math.random() * 100)} />
+                File: {printer.currentJob?.name}
+                <Progress percent={printer.currentJob?.progress} />
               </Card>
             </Col>
           )
