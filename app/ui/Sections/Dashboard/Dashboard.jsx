@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { Card, Progress, Row, Col } from 'antd'
+import { EditOutlined,EllipsisOutlined,SettingOutlined } from '@ant-design/icons';
 
 import { useQuery } from '@apollo/client'
 import Printers from './graphql/Printers.graphql'
@@ -15,16 +16,27 @@ export default function Dashboard () {
   const { printers } = printersData
 
   return (
-    <Row>
+    <Row gutter={[12, 12]}>
       {
         printers.map((printer) => {
           return (
-            <Col span={8} key={printer.id} >
-              <Card>
-                {printer.name}<br/>
-                Status: {printer.jobStatus}<br/>
-                File: {printer.currentJob?.name}
+            <Col span={8} key={printer.id}>
+              <Card
+                cover={<img alt="webcam" src={printer.octoprintUri + 'webcam/?action=stream'} />}
+                actions={[
+                  <SettingOutlined key="setting" />,
+                  <EditOutlined key="edit" />,
+                  <EditOutlined key="edit" />,
+                  <EditOutlined key="edit" />,
+                  <EllipsisOutlined key="ellipsis" />,
+                ]}
+              >
+              <Card.Meta
+                  title={printer.name}
+                  description={printer.jobStatus}
+                />
                 <Progress percent={printer.currentJob?.progress} />
+                {printer.currentJob?.name}
               </Card>
             </Col>
           )
