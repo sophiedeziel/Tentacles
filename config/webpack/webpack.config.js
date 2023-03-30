@@ -1,4 +1,9 @@
 const { webpackConfig: baseWebpackConfig, merge } = require('shakapacker')
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin')
+
+const path = require('path')
+const APP_DIR = path.resolve(__dirname, './app/ui')
+const MONACO_DIR = path.resolve(__dirname, './node_modules/monaco-editor')
 
 const other = {
 
@@ -10,6 +15,11 @@ const other = {
   cache: {
     type: 'filesystem'
   },
+  plugins: [
+    new MonacoWebpackPlugin({
+      languages: ['gcode']
+    })
+  ],
   module: {
     rules: [
       {
@@ -17,7 +27,6 @@ const other = {
         exclude: /node_modules/,
         loader: 'graphql-tag/loader'
       },
-      // TODO: convert me to something
       {
         test: /\.less$/,
         use: [
@@ -34,6 +43,23 @@ const other = {
             }
           }
         ]
+      },
+      {
+        test: /\.css$/,
+        include: APP_DIR,
+        use: [{
+          loader: 'style-loader'
+        }, {
+          loader: 'css-loader',
+          options: {
+            modules: true,
+            namedExport: true
+          }
+        }]
+      }, {
+        test: /\.css$/,
+        include: MONACO_DIR,
+        use: ['style-loader', 'css-loader']
       }
     ]
   }
