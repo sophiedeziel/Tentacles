@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { Card, Progress, Row, Col } from 'antd'
-import { EditOutlined,EllipsisOutlined,SettingOutlined } from '@ant-design/icons';
+import { EditOutlined, EllipsisOutlined, SettingOutlined } from '@ant-design/icons'
 
 import { useQuery } from '@apollo/client'
 import Printers from './graphql/Printers.graphql'
@@ -28,7 +28,7 @@ export default function Dashboard () {
                   <EditOutlined key="edit" />,
                   <EditOutlined key="edit" />,
                   <EditOutlined key="edit" />,
-                  <EllipsisOutlined key="ellipsis" />,
+                  <EllipsisOutlined key="ellipsis" />
                 ]}
               >
               <Card.Meta
