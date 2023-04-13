@@ -272,7 +272,7 @@ GEM
       parser (>= 3.2.1.0)
     rubocop-capybara (2.17.1)
       rubocop (~> 1.41)
-    rubocop-rails (2.18.0)
+    rubocop-rails (2.19.0)
       activesupport (>= 4.2.0)
       rack (>= 1.1)
       rubocop (>= 1.33.0, < 2.0)
@@ -365,7 +365,7 @@ DEPENDENCIES
   rspec-its
   rspec-rails
   rubocop (~> 1.50)
-  rubocop-rails (~> 2.18)
+  rubocop-rails (~> 2.19)
   rubocop-rspec
   selenium-webdriver
   shakapacker (~> 6.6)
