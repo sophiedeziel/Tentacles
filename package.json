@@ -39,7 +39,7 @@
     "react-gcode-viewer": "^2.2.3",
     "react-markdown": "^8.0.7",
     "react-on-rails": "^13.3.3",
-    "react-router-dom": "^6.10.0",
+    "react-router-dom": "^6.11.0",
     "react-sortable-hoc": "^2.0.0",
     "regenerator-runtime": "^0.13.11",
     "shakapacker": "6.6.0",
