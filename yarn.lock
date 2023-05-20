@@ -5542,6 +5542,12 @@ gaze@^1.0.0:
   dependencies:
     globule "^1.0.0"
 
+"gcode-preview@https://github.com/sophiedeziel/gcode-preview#Tentacles":
+  version "2.9.3"
+  resolved "https://github.com/sophiedeziel/gcode-preview#99518b491b198d7b71588451efb789393c8b972e"
+  dependencies:
+    three "^0.144.0"
+
 gensync@^1.0.0-beta.2:
   version "1.0.0-beta.2"
   resolved "https://registry.yarnpkg.com/gensync/-/gensync-1.0.0-beta.2.tgz#32a6ee76c3d7f52d46b2b1ae5d93fea8580a25e0"
@@ -11117,6 +11123,11 @@ three@^0.132.0:
   version "0.132.2"
   resolved "https://registry.yarnpkg.com/three/-/three-0.132.2.tgz#95eb1856147237c03e887cbbe56f964b6fb40b5e"
   integrity sha512-0wcR7LxxkXMn6Gi58gEs3QvY8WpTVXA31L2VOvpjm4ZPYFRHCZC13UqynheFoS5OXDYgtBneN0dhbaNBE8iLhQ==
+
+three@^0.144.0:
+  version "0.144.0"
+  resolved "https://registry.yarnpkg.com/three/-/three-0.144.0.tgz#2818517169f8ff94eea5f664f6ff1fcdcd436cc8"
+  integrity sha512-R8AXPuqfjfRJKkYoTQcTK7A6i3AdO9++2n8ubya/GTU+fEHhYKu1ZooRSCPkx69jbnzT7dD/xEo6eROQTt2lJw==
 
 throat@^6.0.1:
   version "6.0.1"

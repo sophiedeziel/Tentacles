@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useMatch } from 'react-router'
 import Editor from '@monaco-editor/react'
 import ReactMarkdown from 'react-markdown'
@@ -7,8 +7,9 @@ import File from './graphql/File.graphql'
 import UpdateFile from './graphql/UpdateFile.graphql'
 import GcodeDocs from './GcodeDocs/GcodeDocs.json'
 import { GCodeViewer } from 'react-gcode-viewer'
+import GCodePreviewUI from '../../../components/GCodePreviewUI'
 
-import { Col, Row, Button, Typography, Drawer, Divider, Input } from 'antd'
+import { Col, Row, Button, Typography, Drawer, Divider, Input, Card, Slider } from 'antd'
 import { PageHeader } from '@ant-design/pro-layout'
 const { Title } = Typography
 const { Search } = Input
@@ -18,7 +19,11 @@ export default function FileEditor () {
   const fileID = match.params.id
 
   const editorRef = useRef(null)
+  const gcodePreviewRef = useRef(null)
+
   const [lineContent, setLineContent] = useState()
+  const [selectedLayer, setSelectedLayer] = useState()
+  const [layerCount, setLayerCount] = useState()
   const [visible, setVisible] = useState(false)
 
   const [updateFile] = useMutation(UpdateFile)
@@ -27,11 +32,24 @@ export default function FileEditor () {
     variables: { id: fileID }
   })
 
+  useEffect(() => {
+    if (!fileData) return
+    if (!fileData.file) return
+    if (!fileData.file.fileContent) return
+    // console.log(fileData.file.fileContent.match(/;LAYER:(\d+)/g).length)
+    const layers = parseInt(fileData.file.fileContent.match(/;LAYER:(\d+)/g).length)
+    setLayerCount(layers)
+    setSelectedLayer(layers)
+    gcodePreviewRef.current?.processGCode(fileData.file.fileContent)
+    gcodePreviewRef.current?.render()
+  }, [fileData])
+
   if (error) return (<>Error!{error.message}</>)
 
   if (loading) return (<>Loading</>)
 
   const { file } = fileData
+  // gcodePreviewRef.current?.processGCode(file.fileContent)
 
   function command (line) {
     if (line.startsWith(';')) {
@@ -41,8 +59,13 @@ export default function FileEditor () {
     return (line.split(' ')[0].replace(/\s+/g, ''))
   }
 
+  function handleEditorChange (value) {
+    gcodePreviewRef.current?.replaceGCode(value)
+  }
+
   function handleEditorMount (editor) {
     editorRef.current = editor
+
     editor.onDidChangeCursorPosition((position) => {
       const model = editor.getModel()
       const content = model.getValueInRange({
@@ -213,37 +236,58 @@ export default function FileEditor () {
       <Button key="1" type="primary" onClick={showDrawer}>Docs</Button>
     ]}
     >
-      <Button type="primary" onClick={handleSave}>Save</Button>
     </PageHeader>
-    <Row >
-      <Col span={12}>
-      <Editor
-        height="calc(100vh - 250px)"
-        defaultLanguage="gcode"
-        path={file.filename}
-        defaultValue={file.fileContent}
-        onMount={handleEditorMount}
-        />
-      </Col>
-      <Col span={12}>
-        <GCodeViewer
-            orbitControls
-            showAxes
-            quality={0.2}
-            floorProps={{
-              gridWidth: 300,
-              gridLength: 300
-            }}
-            style={{
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: 'calc(100vh - 250px)'
-            }}
-            url={file.downloadUrl}
-        />
-      </Col>
-    </Row>
+      {/* <Card> */}
+        <Button type="primary" onClick={handleSave}>Save</Button>
+        <Row >
+          <Col span={12}>
+            <Editor
+              height="calc(100vh - 250px)"
+              defaultLanguage="gcode"
+              path={file.filename}
+              defaultValue={file.fileContent}
+              onMount={handleEditorMount}
+              onChange={handleEditorChange}
+              />
+          </Col>
+          <Col span={1}>
+            <Slider
+              vertical
+              value={selectedLayer}
+              max={layerCount}
+              min={1}
+              onChange={setSelectedLayer}
+              marks={{1: '1', [layerCount]: layerCount}}
+              />
+          </Col>
+          <Col span={11}>
+            {/* <GCodeViewer
+                orbitControls
+                showAxes
+                quality={0.2}
+                floorProps={{
+                  gridWidth: 300,
+                  gridLength: 300
+                }}
+                style={{
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: 'calc(100vh - 250px)'
+                }}
+                url={file.downloadUrl}
+            /> */}
+                  <GCodePreviewUI
+        ref={gcodePreviewRef}
+        topLayerColor="lime"
+        lastSegmentColor="red"
+        startLayer={1}
+        endLayer={selectedLayer + 1}
+        lineWidth={20}
+      />
+          </Col>
+        </Row>
+      {/* </Card> */}
     <Drawer
     mask={false}
     closable={true}
