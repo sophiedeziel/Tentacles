@@ -7,8 +7,9 @@ import File from './graphql/File.graphql'
 import UpdateFile from './graphql/UpdateFile.graphql'
 import GcodeDocs from './GcodeDocs/GcodeDocs.json'
 import { GCodeViewer } from 'react-gcode-viewer'
+import GCodePreviewUI from '../../../components/GCodePreviewUI'
 
-import { Card, Collapse, Col, Row, Button, Typography, Divider, Input } from 'antd'
+import { Card, Collapse, Col, Row, Button, Typography, Divider, Input, Slider } from 'antd'
 import { PageHeader } from '@ant-design/pro-layout'
 import { FileOutlined } from '@ant-design/icons'
 
@@ -26,7 +27,11 @@ export default function FileEditor () {
   const fileID = match.params.id
 
   const editorRef = useRef(null)
+  const gcodePreviewRef = useRef(null)
+
   const [lineContent, setLineContent] = useState()
+  const [selectedLayer, setSelectedLayer] = useState()
+  const [layerCount, setLayerCount] = useState()
   const [filename, setFilename] = useState(null)
 
   const [openedCollapse, setOpenedCollapse] = useState([])
@@ -48,11 +53,24 @@ export default function FileEditor () {
     variables: { id: fileID }
   })
 
+  useEffect(() => {
+    if (!fileData) return
+    if (!fileData.file) return
+    if (!fileData.file.fileContent) return
+    // console.log(fileData.file.fileContent.match(/;LAYER:(\d+)/g).length)
+    const layers = parseInt(fileData.file.fileContent.match(/;LAYER:(\d+)/g).length)
+    setLayerCount(layers)
+    setSelectedLayer(layers)
+    gcodePreviewRef.current?.processGCode(fileData.file.fileContent)
+    gcodePreviewRef.current?.render()
+  }, [fileData])
+
   if (error) return (<>Error!{error.message}</>)
 
   if (loading) return (<>Loading</>)
 
   const { file } = fileData
+  // gcodePreviewRef.current?.processGCode(file.fileContent)
 
   function command (line) {
     if (line.startsWith(';')) {
@@ -74,8 +92,13 @@ export default function FileEditor () {
     monaco.editor.defineTheme('Tomorrow', Tomorrow)
   }
 
+  function handleEditorChange (value) {
+    gcodePreviewRef.current?.replaceGCode(value)
+  }
+
   function handleEditorMount (editor) {
     editorRef.current = editor
+
     editor.onDidChangeCursorPosition((position) => {
       const model = editor.getModel()
       const content = model.getValueInRange({
@@ -269,22 +292,25 @@ export default function FileEditor () {
     {
       key: '1',
       label: 'Preview',
-      children: <GCodeViewer
-      orbitControls
-      showAxes
-      quality={0.2}
-      floorProps={{
-        gridWidth: 300,
-        gridLength: 300
-      }}
-      style={{
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '25%'
-      }}
-      url={file.downloadUrl}
-  />
+      children: <>          <Col span={1}>
+      <Slider
+        vertical
+        value={selectedLayer}
+        max={layerCount}
+        min={1}
+        onChange={setSelectedLayer}
+        marks={{ 1: '1', [layerCount]: layerCount }}
+        />
+    </Col>
+    <Col span={11}>
+      <GCodePreviewUI
+      ref={gcodePreviewRef}
+      topLayerColor="lime"
+      lastSegmentColor="red"
+      startLayer={1}
+      endLayer={selectedLayer + 1}
+      lineWidth={20}
+    /> </Col></>
     },
     {
       key: '2',
@@ -330,6 +356,7 @@ export default function FileEditor () {
             defaultValue={file.fileContent}
             onMount={handleEditorMount}
             beforeMount={handleEditorWillMount}
+            onChange={handleEditorChange}
             />
         </Card>
       </Col>
