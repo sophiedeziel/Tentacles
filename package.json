@@ -6,7 +6,7 @@
     "babel-plugin-dynamic-import-node": "2.3.3"
   },
   "dependencies": {
-    "@ant-design/pro-layout": "^7.14.0",
+    "@ant-design/pro-layout": "^7.14.2",
     "@apollo/client": "^3.7.14",
     "@babel/core": "7",
     "@babel/plugin-syntax-flow": "^7.21.4",
