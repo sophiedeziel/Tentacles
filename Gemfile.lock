@@ -188,7 +188,7 @@ GEM
       coderay (~> 1.1)
       method_source (~> 1.0)
     public_suffix (5.0.1)
-    puma (6.2.2)
+    puma (6.3.0)
       nio4r (~> 2.0)
     racc (1.6.2)
     rack (2.2.7)
@@ -362,7 +362,7 @@ DEPENDENCIES
   mysql2 (~> 0.5.5)
   octoprint!
   pry
-  puma (~> 6.2)
+  puma (~> 6.3)
   rails (~> 7.0.5)
   react_on_rails
   redis (~> 5.0)
