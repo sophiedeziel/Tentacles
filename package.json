@@ -52,6 +52,7 @@
     "webpack-merge": "5"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-object-rest-spread": "^7.20.7",
     "@webpack-cli/serve": "^1.6.1",
     "css-loader": "^6.8.1",
     "eslint": "^7.32.0",
