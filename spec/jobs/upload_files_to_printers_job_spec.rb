@@ -8,7 +8,7 @@ RSpec.describe UploadFilesToPrintersJob, type: :job do
       printer = create(:printer)
       file = create(:file_manager_file)
 
-      expect_any_instance_of(Printer).to receive(:upload).with("#{Rails.root}/tmp/#{file.filename}")
+      expect_any_instance_of(Printer).to receive(:upload).with(Rails.root.join("tmp/#{file.filename}"))
 
       UploadFilesToPrintersJob.perform_now([file.id], [printer.id])
     end
