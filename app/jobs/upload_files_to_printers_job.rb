@@ -21,7 +21,7 @@ class UploadFilesToPrintersJob < ApplicationJob
   def move_files(files)
     files.map do |file|
       file.blob.open do |temp_file|
-        temp_filename = "#{Rails.root}/tmp/#{file.filename}"
+        temp_filename = Rails.root.join("tmp/#{file.filename}")
         FileUtils.copy(temp_file.path, temp_filename)
         temp_filename
       end
