@@ -276,7 +276,7 @@ GEM
       rubocop (~> 1.41)
     rubocop-factory_bot (2.22.0)
       rubocop (~> 1.33)
-    rubocop-rails (2.19.1)
+    rubocop-rails (2.20.2)
       activesupport (>= 4.2.0)
       rack (>= 1.1)
       rubocop (>= 1.33.0, < 2.0)
@@ -370,7 +370,7 @@ DEPENDENCIES
   rspec-its
   rspec-rails
   rubocop (~> 1.52)
-  rubocop-rails (~> 2.19)
+  rubocop-rails (~> 2.20)
   rubocop-rspec
   selenium-webdriver
   shakapacker (~> 6.6)
