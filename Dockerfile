@@ -51,4 +51,4 @@ COPY . .
 EXPOSE 9000 3035 5100
 
 # Configure the main process to run when running the image
-CMD ["rails", "db:create", "db:migrate", "&&" "foreman", "start"]
+CMD ["rails", "db:create", "db:migrate", "&&", "foreman", "start"]
