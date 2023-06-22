@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "@ant-design/pro-layout": "^7.15.2",
-    "@apollo/client": "^3.7.15",
+    "@apollo/client": "^3.7.16",
     "@babel/core": "7",
     "@babel/plugin-syntax-flow": "^7.22.5",
     "@babel/plugin-transform-react-jsx": "^7.21.5",
