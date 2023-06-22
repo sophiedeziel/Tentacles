@@ -48,7 +48,9 @@ RUN bundle install
 COPY . .
 
 # Add a script to be executed every time the container starts.
-EXPOSE 9000 3035
+EXPOSE 9000 3035 5100
+
+CMD ["rails", "db:create", "db:migrate"]
 
 # Configure the main process to run when running the image
 CMD ["foreman", "start"]
