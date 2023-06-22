@@ -50,7 +50,5 @@ COPY . .
 # Add a script to be executed every time the container starts.
 EXPOSE 9000 3035 5100
 
-CMD ["rails", "db:create", "db:migrate"]
-
 # Configure the main process to run when running the image
-ENTRYPOINT ["foreman", "start"]
+CMD ["rails db:create db:migrate;", "foreman start"]
