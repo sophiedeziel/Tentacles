@@ -51,4 +51,4 @@ COPY . .
 EXPOSE 9000 3035
 
 # Configure the main process to run when running the image
-# CMD ["foreman", "start", "-b", "0.0.0.0"]
+CMD ["foreman", "start", "-b", "0.0.0.0"]
