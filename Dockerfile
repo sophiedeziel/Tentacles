@@ -11,6 +11,7 @@ RUN apt-get update -qq && apt-get install -yq --no-install-recommends \
     libvips \
     npm \
     curl \
+    nmap \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN curl -sL https://deb.nodesource.com/setup_18.x  | bash -
