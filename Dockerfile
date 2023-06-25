@@ -21,19 +21,16 @@ ENV LANG=C.UTF-8 \
   BUNDLE_JOBS=4 \
   BUNDLE_RETRY=3
 
+ENV RAILS_ENV production
+ENV RAILS_SERVE_STATIC_FILES true
+ENV RAILS_LOG_TO_STDOUT true
+
 # Install rails
 RUN gem update --system && gem install bundler
 RUN gem install rails bundler foreman
 RUN npm install -g yarn
 
 WORKDIR /usr/src/app
-
-#RUN chown -R user:user /opt/app
-
-
-
-# Run a shell
-# CMD ["/bin/sh"]
 
 COPY package.json yarn.lock ./
 ENV YARN_CACHE_FOLDER=/usr/local/yarn-cache
@@ -47,6 +44,8 @@ VOLUME /usr/local/bundle-cache
 RUN bundle install
 
 COPY . .
+
+RUN rails assets:precompile SECRET_KEY_BASE="precompile_placeholder"
 
 # Add a script to be executed every time the container starts.
 EXPOSE 9000 3035 5100
