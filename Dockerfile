@@ -32,15 +32,8 @@ RUN npm install -g yarn
 
 WORKDIR /usr/src/app
 
-COPY package.json yarn.lock ./
-ENV YARN_CACHE_FOLDER=/usr/local/yarn-cache
-VOLUME /usr/local/yarn-cache
-RUN yarn config set cache-folder $YARN_CACHE_FOLDER
+COPY package.json yarn.lock Gemfile Gemfile.lock ./
 RUN yarn install --check-files
-
-COPY Gemfile Gemfile.lock ./
-ENV BUNDLE_CACHE_PATH=/usr/local/bundle-cache
-VOLUME /usr/local/bundle-cache
 RUN bundle install
 
 COPY . .
