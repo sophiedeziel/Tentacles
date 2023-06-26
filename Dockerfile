@@ -1,44 +1,43 @@
+FROM ruby:3.2.2-alpine
 
-FROM ruby:3.1.2 AS tentacles
-
-RUN apt-get update -qq && apt-get install -yq --no-install-recommends \
-    build-essential \
-    gnupg2 \
-    less \
-    git \
-    libpq-dev \
-    default-mysql-client \
-    libvips \
-    npm \
-    curl \
-    nmap \
-  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-RUN curl -sL https://deb.nodesource.com/setup_18.x  | bash -
-RUN apt-get -y install nodejs
-
-ENV LANG=C.UTF-8 \
-  BUNDLE_JOBS=4 \
-  BUNDLE_RETRY=3
-
+ENV BUNDLE_FORCE_RUBY_PLATFORM 1
 ENV RAILS_ENV production
 ENV RAILS_SERVE_STATIC_FILES true
 ENV RAILS_LOG_TO_STDOUT true
 
-# Install rails
-RUN gem update --system && gem install bundler
-RUN gem install rails bundler foreman
-RUN npm install -g yarn
+RUN apk add --update --no-cache \
+  git \
+  build-base \
+  mysql-dev \
+  nodejs \
+  yarn \
+  vips-dev \
+  nmap \
+  && rm -rf /var/cache/apk/* \
+  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*\
+  && gem update --system \
+  && gem install foreman
 
 WORKDIR /usr/src/app
 
-COPY package.json yarn.lock Gemfile Gemfile.lock ./
-RUN yarn install --check-files
-RUN bundle install
+COPY package.json yarn.lock ./
+RUN yarn install --pure-lockfile && yarn cache clean
+
+COPY Gemfile Gemfile.lock ./
+RUN bundle update --bundler \
+  && bundle config --local without 'development test' \
+  && bundle install --jobs 4 --retry 3 \
+  && bundle clean --force \
+  && rm -rf /usr/local/bundle/cache \
+  && find /usr/local/bundle/gems/ -name "*.c" -delete \
+  && find /usr/local/bundle/gems/ -name "*.o" -delete \
+  apk del build-dependencies
 
 COPY . .
 
-RUN rails assets:precompile SECRET_KEY_BASE="precompile_placeholder"
+RUN rails assets:precompile SECRET_KEY_BASE="precompile_placeholder"\
+  && yarn cache clean \
+  && rm -rf node_modules tmp/cache/* /tmp/* yarn.lock log/production.log app/ui/* app/assets/*
 
 # Add a script to be executed every time the container starts.
 EXPOSE 9000 3035 5100
