@@ -34,7 +34,7 @@ COPY . .
 
 RUN rails assets:precompile SECRET_KEY_BASE="precompile_placeholder"\
   && yarn cache clean \
-  && rm -rf node_modules tmp/cache/* /tmp/* yarn.lock log/production.log app/ui/* app/assets/* spec
+  && rm -rf node_modules tmp/cache/* /tmp/* yarn.lock log/production.log app/ui/* spec
 
 # Add a script to be executed every time the container starts.
 EXPOSE 8030
