@@ -52,7 +52,7 @@ gem 'octoprint', github: 'sophiedeziel/octoprint', branch: 'main' # For prototyp
 
 gem 'mini_racer', platforms: :ruby
 gem 'react_on_rails'
-gem 'shakapacker', '~> 6.6'
+gem 'shakapacker', '~> 7.0'
 
 gem 'colorize'
 gem 'pry' # TODO: fix octoprint gem to not require pry
