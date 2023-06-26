@@ -3,7 +3,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '3.1.2'
+ruby '3.2.2'
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem 'rails', '~> 7.0.5'
@@ -55,6 +55,7 @@ gem 'react_on_rails'
 gem 'shakapacker', '~> 6.6'
 
 gem 'colorize'
+gem 'pry' # TODO: fix octoprint gem to not require pry
 gem 'sidekiq', '~> 7.1'
 
 group :development, :test do
@@ -82,7 +83,6 @@ group :development do
 
   # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
   # gem "spring"
-  gem 'pry'
 end
 
 group :test do
