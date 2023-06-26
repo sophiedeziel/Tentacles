@@ -15,8 +15,7 @@ RUN apk add --update --no-cache \
   tzdata \
   && rm -rf /var/cache/apk/* \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*\
-  && gem update --system \
-  && gem install foreman
+  && gem update --system
 
 WORKDIR /usr/src/app
 
@@ -35,6 +34,8 @@ COPY . .
 RUN rails assets:precompile SECRET_KEY_BASE="precompile_placeholder"\
   && yarn cache clean \
   && rm -rf node_modules tmp/cache/* /tmp/* yarn.lock log/production.log app/ui/* spec
+
+RUN gem install foreman
 
 # Add a script to be executed every time the container starts.
 EXPOSE 8030
