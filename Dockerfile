@@ -37,7 +37,7 @@ RUN rails assets:precompile SECRET_KEY_BASE="precompile_placeholder"\
   && rm -rf node_modules tmp/cache/* /tmp/* yarn.lock log/production.log app/ui/* app/assets/* spec
 
 # Add a script to be executed every time the container starts.
-EXPOSE 9000 3035 5100
+EXPOSE 8030
 
 # Configure the main process to run when running the image
-CMD rails db:create db:migrate; rm tmp/pids/server.pid; foreman start
+CMD rails db:create db:migrate; rm tmp/pids/server.pid; foreman start -f Procfile.prod
