@@ -39,7 +39,7 @@
     "shakapacker": "6.6.0",
     "terser-webpack-plugin": "5",
     "three": "^0.132.0",
-    "typescript": "^5.1.5",
+    "typescript": "^5.1.6",
     "webpack": "5",
     "webpack-assets-manifest": "5",
     "webpack-cli": "5",
