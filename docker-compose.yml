@@ -27,7 +27,7 @@ services:
       - db
       - redis
     environment:
-      WEBPACKER_DEV_SERVER_HOST: webpack
+      SHAKAPACKER_DEV_SERVER_HOST: webpack
       DB_USER: root
       DB_NAME: tentacles_development
       DB_PORT: 3306
@@ -55,7 +55,7 @@ services:
       REDIS_URL: redis://redis:6379/1
   webpack:
     build: .
-    command: ./bin/webpacker-dev-server
+    command: ./bin/shakapacker-dev-server
     volumes:
       - .:/usr/src/app
     ports:
@@ -63,7 +63,7 @@ services:
     environment:
       NODE_ENV: development
       RAILS_ENV: development
-      WEBPACKER_DEV_SERVER_HOST: 0.0.0.0
+      SHAKAPACKER_DEV_SERVER_HOST: 0.0.0.0
   redis:
     image: "redis:7-alpine"
     ports:

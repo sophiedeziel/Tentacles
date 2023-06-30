@@ -54,7 +54,7 @@ jobs:
             **/node_modules
             public/assets/
             public/packs-test/
-            tmp/webpacker
+            tmp/shakapacker
           key: ${{ runner.os }}-assets-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-assets-
@@ -68,7 +68,7 @@ jobs:
         run: yarn install
 
       - name: Compile assets (js and css)
-        run: bin/rails webpacker:compile
+        run: bin/rails shakapacker:compile
 
       - name: Run tests
         env:
@@ -107,7 +107,7 @@ jobs:
             **/node_modules
             public/assets/
             public/packs-test/
-            tmp/webpacker
+            tmp/shakapacker
           key: ${{ runner.os }}-assets-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-assets-
