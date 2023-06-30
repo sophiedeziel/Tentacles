@@ -8,7 +8,7 @@ module Types
     field :octoprint_key, String, null: true
     field :octoprint_version, String, null: true
     def octoprint_version
-      object.octoprint_version&.text
+      object.octoprint_version&.text || 'Unavailable'
     end
     field :job_status, String, null: true
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
