@@ -1,4 +1,4 @@
-const { webpackConfig: baseWebpackConfig, merge } = require('shakapacker')
+const { globalMutableWebpackConfig: baseWebpackConfig, merge } = require('shakapacker')
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin')
 
 const path = require('path')
