@@ -62,6 +62,7 @@ gem 'apollo_upload_server'
 gem 'graphql'
 gem 'octoprint', github: 'sophiedeziel/octoprint', branch: 'main' # For prototype purposes
 
+gem 'bindex' # shakapacker won't work without this
 gem 'mini_racer', platforms: :ruby
 gem 'react_on_rails', '~> 13.3.5'
 gem 'shakapacker', '~> 7.0'
