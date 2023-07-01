@@ -166,6 +166,8 @@ GEM
     mini_racer (0.8.0)
       libv8-node (~> 18.16.0.0)
     minitest (5.18.1)
+    mock_redis (0.36.0)
+      ruby2_keywords
     msgpack (1.7.1)
     multipart-post (2.3.0)
     mysql2 (0.5.5)
@@ -371,6 +373,7 @@ DEPENDENCIES
   importmap-rails
   jbuilder
   mini_racer
+  mock_redis
   mysql2 (~> 0.5.5)
   octoprint!
   pry

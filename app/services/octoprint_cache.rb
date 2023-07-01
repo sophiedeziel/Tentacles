@@ -66,6 +66,8 @@ module OctoprintCache
   end
 
   def self.store_cache(key, value, time)
+    return if time == false
+
     Rails.logger.info("Storing #{key} in cache")
     REDIS_POOL.with do |conn|
       conn.set(key, serialize(value).merge(expiration: (Time.zone.now + time).to_i).to_json)

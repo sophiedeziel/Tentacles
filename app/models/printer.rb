@@ -49,11 +49,11 @@ class Printer < ApplicationRecord
     method = caller[0][/`.*'/][1..-2]
     OctoprintCache.use_cache(id:, method:, time: cache) do
       api_client.use(&)
-    rescue StandardError => e
-      Rails.logger.error("Failed to get OctoPrint data for #{name} :\n\t#{e.message}")
-      OctoprintCache.set_disconnected(id)
-      nil
     end
+  rescue Faraday::ConnectionFailed => e
+    Rails.logger.error("Failed to get OctoPrint data for #{name} :\n\t#{e.message}")
+    OctoprintCache.set_disconnected(id)
+    nil
   end
 
   def queue
