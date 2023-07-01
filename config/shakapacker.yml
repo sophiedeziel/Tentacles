@@ -35,24 +35,24 @@ default: &default
     - .woff
     - .woff2
 
-  # extensions:
-  #   - .mjs
-  #   - .js
-  #   - .jsx
-  #   - .tsx
-  #   - .sass
-  #   - .scss
-  #   - .css
-  #   - .less
-  #   - .module.sass
-  #   - .module.scss
-  #   - .module.css
-  #   - .module.less
-  #   - .png
-  #   - .svg
-  #   - .gif
-  #   - .jpeg
-  #   - .jpg
+  extensions:
+    - .mjs
+    - .js
+    - .jsx
+    - .tsx
+    - .sass
+    - .scss
+    - .css
+    - .less
+    - .module.sass
+    - .module.scss
+    - .module.css
+    - .module.less
+    - .png
+    - .svg
+    - .gif
+    - .jpeg
+    - .jpg
 
 
 development:
