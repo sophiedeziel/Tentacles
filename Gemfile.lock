@@ -362,6 +362,15 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
+  actioncable (~> 7.0.6)
+  actionpack (~> 7.0.6)
+  actiontext (~> 7.0.6)
+  actionview (~> 7.0.6)
+  activejob (~> 7.0.6)
+  activemodel (~> 7.0.6)
+  activerecord (~> 7.0.6)
+  activestorage (~> 7.0.6)
+  activesupport (~> 7.0.6)
   apollo_upload_server
   bootsnap
   bundler-audit
@@ -379,7 +388,7 @@ DEPENDENCIES
   octoprint!
   pry
   puma (~> 6.3)
-  rails (~> 7.0.6)
+  railties (~> 7.0.6)
   react_on_rails (~> 13.3.5)
   redis (~> 5.0)
   rspec-its
