@@ -51,7 +51,7 @@ gem 'graphql'
 gem 'octoprint', github: 'sophiedeziel/octoprint', branch: 'main' # For prototype purposes
 
 gem 'mini_racer', platforms: :ruby
-gem 'react_on_rails'
+gem 'react_on_rails', '~> 13.3.5'
 gem 'shakapacker', '~> 7.0'
 
 gem 'colorize'

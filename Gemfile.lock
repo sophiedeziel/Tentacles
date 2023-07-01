@@ -380,7 +380,7 @@ DEPENDENCIES
   pry
   puma (~> 6.3)
   rails (~> 7.0.6)
-  react_on_rails
+  react_on_rails (~> 13.3.5)
   redis (~> 5.0)
   rspec-its
   rspec-rails

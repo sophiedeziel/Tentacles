@@ -2,11 +2,11 @@
 
 default: &default
   source_path: app/ui
-  source_entry_path: /packs
+  source_entry_path: packs
   public_root_path: public
   public_output_path: packs
   cache_path: tmp/shakapacker
-  webpack_compile_output: true
+  nested_entries: false
   shakapacker_precompile: false
 
   # Additional paths webpack should look up modules
@@ -35,24 +35,24 @@ default: &default
     - .woff
     - .woff2
 
-  extensions:
-    - .mjs
-    - .js
-    - .jsx
-    - .tsx
-    - .sass
-    - .scss
-    - .css
-    - .less
-    - .module.sass
-    - .module.scss
-    - .module.css
-    - .module.less
-    - .png
-    - .svg
-    - .gif
-    - .jpeg
-    - .jpg
+  # extensions:
+  #   - .mjs
+  #   - .js
+  #   - .jsx
+  #   - .tsx
+  #   - .sass
+  #   - .scss
+  #   - .css
+  #   - .less
+  #   - .module.sass
+  #   - .module.scss
+  #   - .module.css
+  #   - .module.less
+  #   - .png
+  #   - .svg
+  #   - .gif
+  #   - .jpeg
+  #   - .jpg
 
 
 development:

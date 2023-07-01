@@ -1,12 +1,13 @@
-const { globalMutableWebpackConfig: baseWebpackConfig, merge } = require('shakapacker')
+const { merge, generateWebpackConfig } = require('shakapacker')
+const webpackConfig = generateWebpackConfig()
+
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin')
 
 const path = require('path')
 const APP_DIR = path.resolve(__dirname, './app/ui')
 const MONACO_DIR = path.resolve(__dirname, './node_modules/monaco-editor')
 
-const other = {
-
+const options = {
   resolve: {
     fallback: {
       fs: false
@@ -65,4 +66,4 @@ const other = {
   }
 }
 
-module.exports = merge(baseWebpackConfig, other)
+module.exports = merge({}, webpackConfig, options)

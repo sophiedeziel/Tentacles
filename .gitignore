@@ -40,6 +40,7 @@ node_modules/
 
 /public/packs
 /public/packs-test
+/app/ui/packs
 /node_modules
 /yarn-error.log
 yarn-debug.log*
