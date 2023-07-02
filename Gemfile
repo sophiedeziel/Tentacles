@@ -6,7 +6,19 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby '3.2.2'
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem 'rails', '~> 7.0.6'
+rails_version = '~> 7.0.6'
+gem 'actionpack',    rails_version
+gem 'actionview',    rails_version
+gem 'activemodel',   rails_version
+gem 'activerecord',  rails_version
+gem 'activesupport', rails_version
+# gem "actionmailer",  rails_version
+gem 'actioncable',   rails_version
+gem 'activejob',     rails_version
+gem 'activestorage', rails_version
+# gem "actionmailbox", rails_version
+# gem 'actiontext',    rails_version
+gem 'railties',      rails_version
 
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
 # gem 'sprockets-rails'
@@ -20,10 +32,10 @@ gem 'mysql2', '~> 0.5.5'
 gem 'puma', '~> 6.3'
 
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
-gem 'importmap-rails'
+# gem 'importmap-rails'
 
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
-gem 'jbuilder'
+# gem 'jbuilder'
 
 # Use Redis adapter to run Action Cable in production
 gem 'redis', '~> 5.0'
@@ -50,6 +62,7 @@ gem 'apollo_upload_server'
 gem 'graphql'
 gem 'octoprint', github: 'sophiedeziel/octoprint', branch: 'main' # For prototype purposes
 
+gem 'bindex' # shakapacker won't work without this
 gem 'mini_racer', platforms: :ruby
 gem 'react_on_rails', '~> 13.3.5'
 gem 'shakapacker', '~> 7.0'

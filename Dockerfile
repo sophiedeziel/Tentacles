@@ -1,8 +1,8 @@
-FROM ruby:3.2.2-alpine
+FROM ruby:3.2.2-alpine AS build-env
 
-ENV RAILS_ENV production
-ENV RAILS_SERVE_STATIC_FILES true
-ENV RAILS_LOG_TO_STDOUT true
+ARG RAILS_ROOT=/usr/src/app
+
+ENV BUNDLE_APP_CONFIG="$RAILS_ROOT/.bundle"
 
 RUN apk add --update --no-cache \
   git \
@@ -10,30 +10,60 @@ RUN apk add --update --no-cache \
   mysql-dev \
   nodejs \
   yarn \
-  vips-dev \
-  nmap \
   tzdata \
   && rm -rf /var/cache/apk/* \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*\
   && gem update --system
 
-WORKDIR /usr/src/app
+WORKDIR $RAILS_ROOT
 
 COPY package.json yarn.lock ./
 RUN yarn install --pure-lockfile && yarn cache clean
 
 COPY Gemfile Gemfile.lock ./
 RUN bundle update --bundler \
+  && bundle config --global frozen 1 \
+  && bundle config set --local path 'vendor/bundle' \
   && bundle config --local without 'development test' \
   && bundle install --jobs 4 --retry 3 \
   && bundle clean --force \
-  && rm -rf /usr/local/bundle/cache
+  && rm -rf /usr/local/bundle/cache \
+  && find vendor/bundle/ruby/3.2.0/gems/ -name "*.c" -delete \
+  && find vendor/bundle/ruby/3.2.0/gems/ -name "*.o" -delete
 
 COPY . .
 
-RUN  SECRET_KEY_BASE="precompile_placeholder" bin/shakapacker\
+ENV RAILS_ENV production
+ENV NODE_ENV production
+ENV RAILS_SERVE_STATIC_FILES true
+ENV SECRET_KEY_BASE "precompile_placeholder"
+
+RUN bin/shakapacker \
   && yarn cache clean \
-  && rm -rf node_modules tmp/cache/* /tmp/* yarn.lock log/production.log app/ui/* spec
+  && rm -rf node_modules tmp/cache/* /tmp/* yarn.lock app/ui/* spec/*
+
+FROM ruby:3.2.2-alpine
+
+ARG RAILS_ROOT=/usr/src/app
+
+ENV RAILS_ENV production
+ENV NODE_ENV production
+ENV RAILS_SERVE_STATIC_FILES true
+ENV RAILS_LOG_TO_STDOUT true
+ENV BUNDLE_APP_CONFIG="$RAILS_ROOT/.bundle"
+
+WORKDIR $RAILS_ROOT
+
+RUN apk add --update --no-cache \
+  mysql-dev \
+  nodejs \
+  vips-dev \
+  nmap \
+  tzdata \
+  && rm -rf /var/cache/apk/* \
+  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+COPY --from=build-env $RAILS_ROOT $RAILS_ROOT
 
 RUN gem install foreman
 
@@ -41,4 +71,4 @@ RUN gem install foreman
 EXPOSE 8030
 
 # Configure the main process to run when running the image
-CMD rails db:create db:migrate; rm tmp/pids/server.pid; foreman start -f Procfile.prod
+CMD ["bin/docker-run.sh"]
