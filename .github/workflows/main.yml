@@ -37,16 +37,6 @@ jobs:
         with:
           bundler-cache: true
 
-      - name: Setup database
-        env:
-          RAILS_ENV: test
-          DB_USER: tentacles_test
-          DB_PASSWORD: tentacles_test
-        run: bin/rails db:schema:load
-
-      - name: Start Redis
-        uses: supercharge/redis-github-action@1.5.0
-
       - name: Restore cache
         uses: actions/cache@v3
         with:
@@ -67,8 +57,12 @@ jobs:
       - name: 'Yarn Install'
         run: yarn install
 
-      - name: Compile assets (js and css)
-        run: bin/rails shakapacker:compile
+      - name: Setup database
+        env:
+          RAILS_ENV: test
+          DB_USER: tentacles_test
+          DB_PASSWORD: tentacles_test
+        run: bin/rails db:schema:load
 
       - name: Run tests
         env:
@@ -122,3 +116,40 @@ jobs:
 
       - name: Lint Javascript files
         run: bin/yarn run eslint app/ui/**/*.jsx
+
+  assets-compile:
+    runs-on: ubuntu-latest
+    env:
+      RAILS_ENV: production
+      SECRET_KEY_BASE: precompile_placeholder
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Ruby and gems
+        uses: ruby/setup-ruby@250fcd6a742febb1123a77a841497ccaa8b9e939 # v1.92
+        with:
+          bundler-cache: true
+
+      - name: Restore cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            **/node_modules
+            public/assets/
+            public/packs-test/
+            tmp/shakapacker
+          key: ${{ runner.os }}-assets-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-assets-
+
+      - uses: actions/setup-node@v3
+        with:
+          cache: yarn
+          node-version: 18.0.0
+
+      - name: 'Yarn Install'
+        run: yarn install
+
+      - name: Compile assets (js and css)
+        run: bin/rails shakapacker:compile
