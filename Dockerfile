@@ -3,6 +3,7 @@ FROM ruby:3.2.2-alpine AS build-env
 ARG RAILS_ROOT=/usr/src/app
 
 ENV BUNDLE_APP_CONFIG="$RAILS_ROOT/.bundle"
+ENV RUBY_YJIT_ENABLE=1
 
 RUN apk add --update --no-cache \
   git \
@@ -51,6 +52,7 @@ ENV NODE_ENV production
 ENV RAILS_SERVE_STATIC_FILES true
 ENV RAILS_LOG_TO_STDOUT true
 ENV BUNDLE_APP_CONFIG="$RAILS_ROOT/.bundle"
+ENV RUBY_YJIT_ENABLE=1
 
 WORKDIR $RAILS_ROOT
 
