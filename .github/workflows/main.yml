@@ -44,9 +44,6 @@ jobs:
           DB_PASSWORD: tentacles_test
         run: bin/rails db:schema:load
 
-      - name: Start Redis
-        uses: supercharge/redis-github-action@1.5.0
-
       - name: Restore cache
         uses: actions/cache@v3
         with:
