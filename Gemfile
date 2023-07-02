@@ -17,7 +17,7 @@ gem 'actioncable',   rails_version
 gem 'activejob',     rails_version
 gem 'activestorage', rails_version
 # gem "actionmailbox", rails_version
-gem 'actiontext',    rails_version
+# gem 'actiontext',    rails_version
 gem 'railties',      rails_version
 
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
@@ -32,10 +32,10 @@ gem 'mysql2', '~> 0.5.5'
 gem 'puma', '~> 6.3'
 
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
-gem 'importmap-rails'
+# gem 'importmap-rails'
 
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
-gem 'jbuilder'
+# gem 'jbuilder'
 
 # Use Redis adapter to run Action Cable in production
 gem 'redis', '~> 5.0'

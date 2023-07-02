@@ -134,15 +134,9 @@ GEM
     hashdiff (1.0.1)
     i18n (1.14.1)
       concurrent-ruby (~> 1.0)
-    importmap-rails (1.2.1)
-      actionpack (>= 6.0.0)
-      railties (>= 6.0.0)
     io-console (0.6.0)
     irb (1.7.0)
       reline (>= 0.3.0)
-    jbuilder (2.11.5)
-      actionview (>= 5.0.0)
-      activesupport (>= 5.0.0)
     json (2.6.3)
     language_server-protocol (3.17.0.3)
     libv8-node (18.16.0.0)
@@ -364,7 +358,6 @@ PLATFORMS
 DEPENDENCIES
   actioncable (~> 7.0.6)
   actionpack (~> 7.0.6)
-  actiontext (~> 7.0.6)
   actionview (~> 7.0.6)
   activejob (~> 7.0.6)
   activemodel (~> 7.0.6)
@@ -381,8 +374,6 @@ DEPENDENCIES
   factory_bot_rails
   graphiql-rails
   graphql
-  importmap-rails
-  jbuilder
   mini_racer
   mock_redis
   mysql2 (~> 0.5.5)
