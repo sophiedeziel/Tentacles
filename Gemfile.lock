@@ -264,7 +264,7 @@ GEM
       rspec-mocks (~> 3.12)
       rspec-support (~> 3.12)
     rspec-support (3.12.1)
-    rubocop (1.54.0)
+    rubocop (1.54.1)
       json (~> 2.3)
       language_server-protocol (>= 3.17.0)
       parallel (~> 1.10)
@@ -385,7 +385,7 @@ DEPENDENCIES
   redis (~> 5.0)
   rspec-its
   rspec-rails
-  rubocop (~> 1.53)
+  rubocop (~> 1.54)
   rubocop-rails (~> 2.20)
   rubocop-rspec
   selenium-webdriver
