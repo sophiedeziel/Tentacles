@@ -1,13 +1,14 @@
 GIT
   remote: https://github.com/sophiedeziel/octoprint.git
-  revision: 3475090fcc54f25a74f4077d8e8fefdc41a5a5ac
+  revision: 05dd19f517a1cd170c122f06dc1c2d70a77216bc
   branch: main
   specs:
     octoprint (0.1.0)
       activesupport
       faraday (>= 2.2, < 2.8)
       faraday-multipart (~> 1.0.3)
-      zeitwerk (~> 2.5)
+      sorbet-runtime (~> 0.5.10908)
+      zeitwerk (~> 2.6)
 
 GEM
   remote: https://rubygems.org/
@@ -313,6 +314,7 @@ GEM
       simplecov_json_formatter (~> 0.1)
     simplecov-html (0.12.3)
     simplecov_json_formatter (0.1.4)
+    sorbet-runtime (0.5.10908)
     sprockets (4.2.0)
       concurrent-ruby (~> 1.0)
       rack (>= 2.2.4, < 4)
