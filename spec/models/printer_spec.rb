@@ -66,8 +66,8 @@ RSpec.describe Printer, :vcr, type: :model do
 
     subject { printer.upload(file_path) }
 
-    it { is_expected.to be_a(Hash) }
-    its([:done]) { is_expected.to be_truthy }
+    it { is_expected.to be_a(Octoprint::Files::OperationResult) }
+    its(:done) { is_expected.to be_truthy }
   end
 
   describe 'using_api' do
@@ -87,7 +87,7 @@ RSpec.describe Printer, :vcr, type: :model do
       let(:printer) { build(:printer, :disconnected) }
 
       it 'raises an error' do
-        expect { subject }.to raise_error(Octoprint::Exceptions::MissingCredentials)
+        expect { subject }.to raise_error(Octoprint::Exceptions::MissingCredentialsError)
       end
     end
 
