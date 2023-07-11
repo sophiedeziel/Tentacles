@@ -3,7 +3,8 @@
   "private": true,
   "sideEffects": false,
   "resolutions": {
-    "babel-plugin-dynamic-import-node": "2.3.3"
+    "babel-plugin-dynamic-import-node": "2.3.3",
+    "word-wrap": "npm:@aashutoshrathi/word-wrap"
   },
   "dependencies": {
     "@ant-design/pro-layout": "^7.16.0",
