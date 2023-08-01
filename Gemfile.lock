@@ -157,7 +157,7 @@ GEM
     matrix (0.4.2)
     method_source (1.0.0)
     mini_mime (1.1.2)
-    mini_portile2 (2.8.2)
+    mini_portile2 (2.8.4)
     mini_racer (0.8.0)
       libv8-node (~> 18.16.0.0)
     minitest (5.19.0)
@@ -166,7 +166,7 @@ GEM
     msgpack (1.7.1)
     multipart-post (2.3.0)
     mysql2 (0.5.5)
-    net-imap (0.3.6)
+    net-imap (0.3.7)
       date
       net-protocol
     net-pop (0.1.2)
@@ -176,14 +176,14 @@ GEM
     net-smtp (0.3.3)
       net-protocol
     nio4r (2.5.9)
-    nokogiri (1.15.2)
+    nokogiri (1.15.3)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
-    nokogiri (1.15.2-arm64-darwin)
+    nokogiri (1.15.3-arm64-darwin)
       racc (~> 1.4)
-    nokogiri (1.15.2-x86_64-darwin)
+    nokogiri (1.15.3-x86_64-darwin)
       racc (~> 1.4)
-    nokogiri (1.15.2-x86_64-linux)
+    nokogiri (1.15.3-x86_64-linux)
       racc (~> 1.4)
     parallel (1.23.0)
     parser (3.2.2.3)
@@ -192,11 +192,11 @@ GEM
     pry (0.14.2)
       coderay (~> 1.1)
       method_source (~> 1.0)
-    public_suffix (5.0.1)
+    public_suffix (5.0.3)
     puma (6.3.0)
       nio4r (~> 2.0)
     racc (1.7.1)
-    rack (2.2.7)
+    rack (2.2.8)
     rack-proxy (0.7.6)
       rack
     rack-test (2.1.0)
@@ -231,7 +231,7 @@ GEM
       zeitwerk (~> 2.5)
     rainbow (3.1.1)
     rake (13.0.6)
-    react_on_rails (13.3.5)
+    react_on_rails (13.4.0)
       addressable
       connection_pool
       execjs (~> 2.5)
@@ -342,7 +342,7 @@ GEM
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
     websocket (1.2.9)
-    websocket-driver (0.7.5)
+    websocket-driver (0.7.6)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
     xpath (3.2.0)
@@ -383,7 +383,7 @@ DEPENDENCIES
   pry
   puma (~> 6.3)
   railties (~> 7.0.6)
-  react_on_rails (~> 13.3.5)
+  react_on_rails (~> 13.4.0)
   redis (~> 5.0)
   rspec-its
   rspec-rails
