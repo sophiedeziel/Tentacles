@@ -59,14 +59,14 @@
     classnames "^2.2.6"
     rc-util "^5.31.1"
 
-"@ant-design/pro-layout@^7.16.6":
-  version "7.16.6"
-  resolved "https://registry.yarnpkg.com/@ant-design/pro-layout/-/pro-layout-7.16.6.tgz#9f4262226839c55965a9e7fec8758cc49ddb5929"
-  integrity sha512-mXOVYe73kQfyQ6fr1GqsCJqtl95/DQCI0RmundUdpPn+E97B1aZMRmAnd0eK1m7Vq4nHQbh7f9xxZPtL8XDIJg==
+"@ant-design/pro-layout@^7.16.7":
+  version "7.16.7"
+  resolved "https://registry.yarnpkg.com/@ant-design/pro-layout/-/pro-layout-7.16.7.tgz#12f88f47c2b735b28a13d5a7cf83d0ea97f411b8"
+  integrity sha512-JTiw3wn0eAJmVJ3ndkHWQMIiaxgPbo7vNtCcJEdc9S1tOHluiQ0VdbvvtJ6a0ImomyEbBz7RAl29Mjl+ubo0jg==
   dependencies:
     "@ant-design/icons" "^5.0.0"
     "@ant-design/pro-provider" "2.12.1"
-    "@ant-design/pro-utils" "2.12.8"
+    "@ant-design/pro-utils" "2.12.9"
     "@babel/runtime" "^7.18.0"
     "@umijs/route-utils" "^4.0.0"
     "@umijs/use-params" "^1.0.9"
@@ -91,10 +91,10 @@
     rc-util "^5.0.1"
     swr "^2.0.0"
 
-"@ant-design/pro-utils@2.12.8":
-  version "2.12.8"
-  resolved "https://registry.yarnpkg.com/@ant-design/pro-utils/-/pro-utils-2.12.8.tgz#a26a6b7d84802a20cd28fade10f727cd85e64739"
-  integrity sha512-nNyqcKbFQnH144m9vZNfodRet1ZKqvu1mqlmEo7EVbOn3yCGPOxkYIU1Iho1u0282Q/Jn9dCf25SBOBOSs3zLQ==
+"@ant-design/pro-utils@2.12.9":
+  version "2.12.9"
+  resolved "https://registry.yarnpkg.com/@ant-design/pro-utils/-/pro-utils-2.12.9.tgz#8c46fc3d59a6584180f5e07fc783be8a7175939b"
+  integrity sha512-TN/JvhkPSZJ4GzklgbhbClTdGPgy8r66+yIxtph0nTkV9ptVnZpB55/lm6AXSk6fJARVHEzqmMLcqUMJdP8JuQ==
   dependencies:
     "@ant-design/icons" "^5.0.0"
     "@ant-design/pro-provider" "2.12.1"
