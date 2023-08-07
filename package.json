@@ -8,7 +8,7 @@
     "nth-check": "npm:nth-check@2.0.1"
   },
   "dependencies": {
-    "@ant-design/pro-layout": "^7.16.6",
+    "@ant-design/pro-layout": "^7.16.7",
     "@apollo/client": "^3.7.17",
     "@babel/core": "^7.22.9",
     "@babel/runtime": "^7.22.6",
