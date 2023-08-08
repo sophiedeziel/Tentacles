@@ -37,7 +37,7 @@
     "react-on-rails": "^13.4.0",
     "react-router-dom": "^6.14.2",
     "react-sortable-hoc": "^2.0.0",
-    "regenerator-runtime": "^0.13.11",
+    "regenerator-runtime": "^0.14.0",
     "shakapacker": "7.0.2",
     "terser-webpack-plugin": "^5.3.9",
     "three": "^0.155.0",
