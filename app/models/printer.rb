@@ -39,9 +39,9 @@ class Printer < ApplicationRecord
     jobs.where(status: 'enqueued').count
   end
 
-  def upload(file, **options)
+  def upload(file, **)
     using_api do
-      Octoprint::Files.upload(file, **options)
+      Octoprint::Files.upload(file, **)
     end
   end
 
