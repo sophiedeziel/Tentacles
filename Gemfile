@@ -79,7 +79,7 @@ group :development, :test do
   gem 'graphiql-rails'
   gem 'rspec-its'
   gem 'rspec-rails'
-  gem 'rubocop', '~> 1.55', require: false
+  gem 'rubocop', '~> 1.56', require: false
   gem 'rubocop-rails', '~> 2.20', require: false
   gem 'rubocop-rspec', require: false
   gem 'simplecov', require: false
