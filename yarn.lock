@@ -59,14 +59,14 @@
     classnames "^2.2.6"
     rc-util "^5.31.1"
 
-"@ant-design/pro-layout@^7.16.10":
-  version "7.16.10"
-  resolved "https://registry.yarnpkg.com/@ant-design/pro-layout/-/pro-layout-7.16.10.tgz#03a7dcae9a91de32472d9d807142fca092fce81b"
-  integrity sha512-ZRwm4h0pf2dYt//Ikjy2ffBmdRXHma8nMXr43vKa3RK7NKuNrlmGTymdEKPWr83/QVyRUSMgbTJy1uaL9pEgGQ==
+"@ant-design/pro-layout@^7.16.11":
+  version "7.16.11"
+  resolved "https://registry.yarnpkg.com/@ant-design/pro-layout/-/pro-layout-7.16.11.tgz#e9bee6ea95786b98644ca271d5d97456f2f1d015"
+  integrity sha512-7BqsuRMavMeroWFHKHARQo46mjv9ZFdnxNREFEnoj6Zfdi+TncG5DGKUqgFR/ppliMJ7K4xEkJUlbjnP1rzmkg==
   dependencies:
     "@ant-design/icons" "^5.0.0"
     "@ant-design/pro-provider" "2.12.2"
-    "@ant-design/pro-utils" "2.14.1"
+    "@ant-design/pro-utils" "2.14.2"
     "@babel/runtime" "^7.18.0"
     "@umijs/route-utils" "^4.0.0"
     "@umijs/use-params" "^1.0.9"
@@ -77,7 +77,6 @@
     rc-resize-observer "^1.1.0"
     rc-util "^5.0.6"
     swr "^2.0.0"
-    use-json-comparison "^1.0.3"
     warning "^4.0.3"
 
 "@ant-design/pro-provider@2.12.2":
@@ -91,10 +90,10 @@
     rc-util "^5.0.1"
     swr "^2.0.0"
 
-"@ant-design/pro-utils@2.14.1":
-  version "2.14.1"
-  resolved "https://registry.yarnpkg.com/@ant-design/pro-utils/-/pro-utils-2.14.1.tgz#84ab22a0d53c6a4166666fa4218dc67e3d980aef"
-  integrity sha512-8K/GSNuy5XPGEPrEKI2eftGKboQXdefW3xBRG6pRZ5dIgZkTYJcSxbsHVlDrK+AaqswmoS4+eiGuqChFkapsMg==
+"@ant-design/pro-utils@2.14.2":
+  version "2.14.2"
+  resolved "https://registry.yarnpkg.com/@ant-design/pro-utils/-/pro-utils-2.14.2.tgz#3b136e53f25ad7c56ccddf44a126ef1616e4f47e"
+  integrity sha512-srMDRis/TbNcmPVT48UlgfV5arjITHb8kt4VTgySRXrDaV3kGzJr/xcW9LcQOLTHTfY0cbdPmXS3GooBNzMZAQ==
   dependencies:
     "@ant-design/icons" "^5.0.0"
     "@ant-design/pro-provider" "2.12.2"
@@ -103,6 +102,7 @@
     dayjs "^1.11.9"
     lodash.merge "^4.6.2"
     rc-util "^5.0.6"
+    safe-stable-stringify "^2.4.3"
     swr "^2.0.0"
 
 "@ant-design/react-slick@~1.0.0":
@@ -10505,6 +10505,11 @@ safe-regex-test@^1.0.0:
     get-intrinsic "^1.1.3"
     is-regex "^1.1.4"
 
+safe-stable-stringify@^2.4.3:
+  version "2.4.3"
+  resolved "https://registry.yarnpkg.com/safe-stable-stringify/-/safe-stable-stringify-2.4.3.tgz#138c84b6f6edb3db5f8ef3ef7115b8f55ccbf886"
+  integrity sha512-e2bDA2WJT0wxseVd4lsDP4+3ONX6HpMXQa1ZhFQ7SU+GjvORCmShbCMltrtIDfkYhVHrOcPtj+KhmDBdPdZD1g==
+
 "safer-buffer@>= 2.1.2 < 3", "safer-buffer@>= 2.1.2 < 3.0.0":
   version "2.1.2"
   resolved "https://registry.npmjs.org/safer-buffer/-/safer-buffer-2.1.2.tgz"
@@ -11866,11 +11871,6 @@ url-parse@^1.5.3:
   dependencies:
     querystringify "^2.1.1"
     requires-port "^1.0.0"
-
-use-json-comparison@^1.0.3:
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/use-json-comparison/-/use-json-comparison-1.0.6.tgz#a012bbc258ce745db1f56745dc653f575226cb21"
-  integrity sha512-xPadt5yMRbEmVfOSGFSMqjjICrq7nLbfSH3rYIXsrtcuFX7PmbYDN/ku8ObBn3v8o/yZelO1OxUS5+5TI3+fUw==
 
 use-sync-external-store@^1.2.0:
   version "1.2.0"
