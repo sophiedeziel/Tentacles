@@ -6,7 +6,7 @@ class PrinterScanner
   # rubocop:enable Layout/LineLength
 
   def call
-    uris = Printer.all.pluck(:octoprint_uri)
+    uris = Printer.pluck(:octoprint_uri)
     ips = use_cache do
       all_network_ips.select { |ip| octoprint?(ip) }
     end

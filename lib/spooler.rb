@@ -10,7 +10,7 @@ class Spooler
 
   def initialize
     @workers = {}
-    Printer.all.each do |printer|
+    Printer.find_each do |printer|
       @workers[printer.id] = Spool.new(printer)
     end
   end
