@@ -59,14 +59,14 @@
     classnames "^2.2.6"
     rc-util "^5.31.1"
 
-"@ant-design/pro-layout@^7.17.6":
-  version "7.17.6"
-  resolved "https://registry.yarnpkg.com/@ant-design/pro-layout/-/pro-layout-7.17.6.tgz#3eee8ea3f14376348a150a32588c684244a00876"
-  integrity sha512-hoFxLUbwCsH6r9MPXDbePng9nOWNILmLdqzP4Rwnii3AaUjYHeubS5ZRBF0J5KKMj2etbGRTEhQQWhiys9SANQ==
+"@ant-design/pro-layout@^7.17.7":
+  version "7.17.7"
+  resolved "https://registry.yarnpkg.com/@ant-design/pro-layout/-/pro-layout-7.17.7.tgz#39e346311b5a0b9033849fda49e193382b64b72d"
+  integrity sha512-BTAC12mKWsImM2jKKteuL9dpozF5IL1txlWUoaG0sB6ihtDicc+5OOGtLHmhOiJZvJsZqpCfBaV311cmGJkctQ==
   dependencies:
     "@ant-design/icons" "^5.0.0"
     "@ant-design/pro-provider" "2.13.1"
-    "@ant-design/pro-utils" "2.14.6"
+    "@ant-design/pro-utils" "2.14.7"
     "@babel/runtime" "^7.18.0"
     "@umijs/route-utils" "^4.0.0"
     "@umijs/use-params" "^1.0.9"
@@ -90,16 +90,16 @@
     rc-util "^5.0.1"
     swr "^2.0.0"
 
-"@ant-design/pro-utils@2.14.6":
-  version "2.14.6"
-  resolved "https://registry.yarnpkg.com/@ant-design/pro-utils/-/pro-utils-2.14.6.tgz#77c5447724f76ba581be7ca2fe932a7aaf7ddda1"
-  integrity sha512-UO3BmooJWR+qRwh5xwbRNtpCLNGZdo7dRVIkbCEB/QiA06kRTbnxB6lWL02Pfjp9xraiThEmxmq8oLSjmG/Uhg==
+"@ant-design/pro-utils@2.14.7":
+  version "2.14.7"
+  resolved "https://registry.yarnpkg.com/@ant-design/pro-utils/-/pro-utils-2.14.7.tgz#13e3df4a6e2e68fe75c811a21a7a61dafbbedc74"
+  integrity sha512-ilLo4IdFfJzlAtVinSsLweo6gU7+G0U1ykCRASwQ4pTFRKK7CHamsZaXZ2LCBvPqyKgt8Mc5wvrR8z0E+cZaPA==
   dependencies:
     "@ant-design/icons" "^5.0.0"
     "@ant-design/pro-provider" "2.13.1"
     "@babel/runtime" "^7.18.0"
     classnames "^2.3.2"
-    dayjs "^1.11.9"
+    dayjs "^1.11.10"
     lodash.merge "^4.6.2"
     rc-util "^5.0.6"
     safe-stable-stringify "^2.4.3"
@@ -4429,10 +4429,10 @@ dayjs@^1.11.1:
   resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.11.8.tgz#4282f139c8c19dd6d0c7bd571e30c2d0ba7698ea"
   integrity sha512-LcgxzFoWMEPO7ggRv1Y2N31hUf2R0Vj7fuy/m+Bg1K8rr+KAs1AEy4y9jd5DXe8pbHgX+srkHNS7TH6Q6ZhYeQ==
 
-dayjs@^1.11.9:
-  version "1.11.9"
-  resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.11.9.tgz#9ca491933fadd0a60a2c19f6c237c03517d71d1a"
-  integrity sha512-QvzAURSbQ0pKdIye2txOzNaHmxtUBXerpY0FJsFXUMKbIZeFm5ht1LS/jFsrncjnmtv8HsG0W2g6c0zUjZWmpA==
+dayjs@^1.11.10:
+  version "1.11.10"
+  resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.11.10.tgz#68acea85317a6e164457d6d6947564029a6a16a0"
+  integrity sha512-vjAczensTgRcqDERK0SR2XMwsF/tSvnvlv6VcF2GIhg6Sx4yOIt/irsr1RDJsKiIyBzJDpCoXiWWq28MqH2cnQ==
 
 debounce@^1.2.1:
   version "1.2.1"
