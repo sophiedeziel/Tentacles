@@ -13,7 +13,7 @@
     "@babel/core": "^7.23.0",
     "@babel/runtime": "^7.23.1",
     "@monaco-editor/react": "^4.6.0",
-    "@rails/actioncable": "^7.1.0",
+    "@rails/actioncable": "^7.1.1",
     "@types/react": "~18.2.28",
     "@types/react-dom": "~18.2.13",
     "antd": "^5.0.0",
