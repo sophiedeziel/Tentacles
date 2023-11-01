@@ -69,7 +69,7 @@ gem 'shakapacker', '~> 7.1'
 
 gem 'colorize'
 gem 'pry' # TODO: fix octoprint gem to not require pry
-gem 'sidekiq', '~> 7.1'
+gem 'sidekiq', '~> 7.2'
 
 group :development, :test do
   gem 'bundler-audit'
