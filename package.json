@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@ant-design/pro-layout": "^7.17.13",
-    "@apollo/client": "^3.8.6",
+    "@apollo/client": "^3.8.7",
     "@babel/core": "^7.23.2",
     "@babel/runtime": "^7.23.2",
     "@monaco-editor/react": "^4.6.0",
