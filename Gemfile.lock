@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/sophiedeziel/octoprint.git
-  revision: 935f57d78c6014c0ee0a4eac2899aa6f215d765e
+  revision: aca4ce57a654fbc86cecf8f2abe1791bb95cbf2e
   branch: main
   specs:
     octoprint (0.1.0)
@@ -84,7 +84,7 @@ GEM
       actionpack (>= 6.1.6)
       graphql (>= 1.8)
     ast (2.4.2)
-    base64 (0.1.1)
+    base64 (0.2.0)
     bindex (0.8.1)
     bootsnap (1.17.0)
       msgpack (~> 1.2)
@@ -316,7 +316,7 @@ GEM
       simplecov_json_formatter (~> 0.1)
     simplecov-html (0.12.3)
     simplecov_json_formatter (0.1.4)
-    sorbet-runtime (0.5.11104)
+    sorbet-runtime (0.5.11122)
     sprockets (4.2.0)
       concurrent-ruby (~> 1.0)
       rack (>= 2.2.4, < 4)
