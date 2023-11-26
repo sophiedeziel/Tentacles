@@ -103,10 +103,9 @@ export default function PrintersList () {
       defaultSortOrder: 'ascend',
       sorter: (a, b) => a.filename.localeCompare(b.filename),
       render: (file) => {
-        return (<Link to={'/files/' + file.id + '/print'}>{file.filename}</Link>)
+        return (<Link to={'/files/' + file.id }>{file.filename}</Link>)
       }
     },
-    Table.EXPAND_COLUMN,
     {
       title: 'Type',
       dataIndex: 'filetype',
@@ -159,7 +158,8 @@ export default function PrintersList () {
           </Space>
         )
       }
-    }
+    },
+    Table.EXPAND_COLUMN,
   ]
 
   const onChange = (pagination, filters, sorter, extra) => {
