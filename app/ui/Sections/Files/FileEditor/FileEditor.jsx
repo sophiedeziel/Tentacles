@@ -8,8 +8,9 @@ import UpdateFile from './graphql/UpdateFile.graphql'
 import GcodeDocs from './GcodeDocs/GcodeDocs.json'
 import { GCodeViewer } from 'react-gcode-viewer'
 
-import { Card, Col, Row, Button, Typography, Drawer, Divider, Input } from 'antd'
+import { Card, Collapse, Col, Row, Button, Typography, Drawer, Divider, Input } from 'antd'
 import { PageHeader } from '@ant-design/pro-layout'
+import { FileOutlined } from '@ant-design/icons'
 const { Title } = Typography
 const { Search } = Input
 
@@ -20,6 +21,7 @@ export default function FileEditor () {
   const editorRef = useRef(null)
   const [lineContent, setLineContent] = useState()
   const [visible, setVisible] = useState(false)
+  const [filename, setFilename] = useState(null)
 
   const [updateFile] = useMutation(UpdateFile)
 
@@ -57,11 +59,13 @@ export default function FileEditor () {
   }
 
   const handleSave = () => {
+    console.log(filename || file.filename)
     updateFile({
       variables: {
         input: {
           id: fileID,
-          fileContent: editorRef.current.getValue()
+          fileContent: editorRef.current.getValue(),
+          fileName: filename || file.filename
         }
       }
     }
@@ -203,21 +207,58 @@ export default function FileEditor () {
     )
   }
 
+  const items = [
+    {
+      key: '1',
+      label: 'Preview',
+      children: <GCodeViewer
+      orbitControls
+      showAxes
+      quality={0.2}
+      floorProps={{
+        gridWidth: 300,
+        gridLength: 300
+      }}
+      style={{
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '25%'
+      }}
+      url={file.downloadUrl}
+  />
+    },
+    // {
+    //   key: '2',
+    //   label: 'Documentation',
+    //   children: <p>sadf</p>,
+    // },
+    {
+      key: '3',
+      label: 'Code analysis',
+      children: <p>asdf</p>
+    }
+  ]
+
   return (<>
     <PageHeader
     className="site-page-header"
     ghost={false}
     onBack={() => window.history.back()}
-    title={file.filename}
-    extra={[
-      <Button key="1" type="primary" onClick={showDrawer}>Docs</Button>
-    ]}
+    title="GCode editor"
     >
 
     </PageHeader>
-    <Row >
+    <Row gutter={16}>
       <Col span={16}>
-        <Card title={<Button type="primary" onClick={handleSave}>Save</Button>}>
+        <Card
+        title={<Input onChange={(e) => setFilename(e.target.value)} prefix={<FileOutlined />} defaultValue={file.filename} />}
+        extra={[
+          <Button key="1" type="secondary" onClick={showDrawer}>Docs</Button>,
+          <Button key="2" type="primary" onClick={handleSave}>Save</Button>
+        ]}
+        bodyStyle={{ padding: 0 }}
+        >
           <Editor
             height="calc(100vh - 250px)"
             defaultLanguage="gcode"
@@ -228,27 +269,7 @@ export default function FileEditor () {
         </Card>
       </Col>
       <Col span={8}>
-        <Card title="Preview">
-          <GCodeViewer
-              orbitControls
-              showAxes
-              quality={0.2}
-              floorProps={{
-                gridWidth: 300,
-                gridLength: 300
-              }}
-              style={{
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '25%'
-              }}
-              url={file.downloadUrl}
-          />
-        </Card>
-        <Card title="Code analysis">
-
-        </Card>
+        <Collapse items={items} defaultActiveKey={['1', '3']} />
       </Col>
     </Row>
     <Drawer
