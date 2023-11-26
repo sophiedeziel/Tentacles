@@ -8,7 +8,7 @@ import UpdateFile from './graphql/UpdateFile.graphql'
 import GcodeDocs from './GcodeDocs/GcodeDocs.json'
 import { GCodeViewer } from 'react-gcode-viewer'
 
-import { Col, Row, Button, Typography, Drawer, Divider, Input } from 'antd'
+import { Card, Col, Row, Button, Typography, Drawer, Divider, Input } from 'antd'
 import { PageHeader } from '@ant-design/pro-layout'
 const { Title } = Typography
 const { Search } = Input
@@ -120,7 +120,7 @@ export default function FileEditor () {
         </code>
         }
         <Title level={3}>Description</Title>
-        <ReactMarkdown transformLinkUri={uriTransformer}>
+        <ReactMarkdown urlTransform={uriTransformer}>
         { mdDescription }
         </ReactMarkdown>
 
@@ -128,7 +128,7 @@ export default function FileEditor () {
           <>
             <Title level={3}>Notes</Title>
             { typeof (notes) === 'object' &&
-              <ReactMarkdown transformLinkUri={uriTransformer}>
+              <ReactMarkdown urlTransform={uriTransformer}>
                 {notes.map(
                   (note) => (
                     `- ${note}`
@@ -136,7 +136,7 @@ export default function FileEditor () {
               </ReactMarkdown>
             }
             { typeof (notes) === 'string' &&
-              <ReactMarkdown transformLinkUri={uriTransformer}>
+              <ReactMarkdown urlTransform={uriTransformer}>
                 {notes}
               </ReactMarkdown>
             }
@@ -147,7 +147,7 @@ export default function FileEditor () {
         { devnotes &&
           <>
             <Title level={3}>Developer notes</Title>
-            <ReactMarkdown transformLinkUri={uriTransformer}>
+            <ReactMarkdown urlTransform={uriTransformer}>
               {devnotes}
             </ReactMarkdown>
           </>
@@ -183,13 +183,13 @@ export default function FileEditor () {
           examples.map(
             ({ pre, post, code }, index) => (
                 <div key={index}>
-                  <ReactMarkdown transformLinkUri={uriTransformer}>
+                  <ReactMarkdown urlTransform={uriTransformer}>
                     {pre}
                   </ReactMarkdown>
                   <code>
                     {code}
                   </code>
-                  <ReactMarkdown transformLinkUri={uriTransformer}>
+                  <ReactMarkdown urlTransform={uriTransformer}>
                     {post}
                   </ReactMarkdown>
                   <Divider />
@@ -213,35 +213,42 @@ export default function FileEditor () {
       <Button key="1" type="primary" onClick={showDrawer}>Docs</Button>
     ]}
     >
-      <Button type="primary" onClick={handleSave}>Save</Button>
+
     </PageHeader>
     <Row >
-      <Col span={12}>
-      <Editor
-        height="calc(100vh - 250px)"
-        defaultLanguage="gcode"
-        path={file.filename}
-        defaultValue={file.fileContent}
-        onMount={handleEditorMount}
-        />
+      <Col span={16}>
+        <Card title={<Button type="primary" onClick={handleSave}>Save</Button>}>
+          <Editor
+            height="calc(100vh - 250px)"
+            defaultLanguage="gcode"
+            path={file.filename}
+            defaultValue={file.fileContent}
+            onMount={handleEditorMount}
+            />
+        </Card>
       </Col>
-      <Col span={12}>
-        <GCodeViewer
-            orbitControls
-            showAxes
-            quality={0.2}
-            floorProps={{
-              gridWidth: 300,
-              gridLength: 300
-            }}
-            style={{
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: 'calc(100vh - 250px)'
-            }}
-            url={file.downloadUrl}
-        />
+      <Col span={8}>
+        <Card title="Preview">
+          <GCodeViewer
+              orbitControls
+              showAxes
+              quality={0.2}
+              floorProps={{
+                gridWidth: 300,
+                gridLength: 300
+              }}
+              style={{
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '25%'
+              }}
+              url={file.downloadUrl}
+          />
+        </Card>
+        <Card title="Code analysis">
+
+        </Card>
       </Col>
     </Row>
     <Drawer
