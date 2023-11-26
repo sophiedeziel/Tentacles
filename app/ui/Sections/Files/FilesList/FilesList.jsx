@@ -167,6 +167,7 @@ export default function PrintersList () {
   }
 
   const props = {
+    height: "200px",
     name: 'upload',
     multiple: true,
     showUploadList: false,
@@ -222,16 +223,6 @@ export default function PrintersList () {
 
   return (
     <>
-      <Dragger {...props}>
-        <p className="ant-upload-drag-icon">
-          <InboxOutlined />
-        </p>
-        <p className="ant-upload-text">Click or drag file to this area to upload</p>
-        <p className="ant-upload-hint">
-          Support for a single or bulk upload. Upload your awesomest gcode or stl files.
-        </p>
-      </Dragger>
-      <br />
       <Statistic title="Number of files" value={ files.length } formatter={(value) => (value || <Spin/>)}/>
       <Tabs defaultActiveKey="1" onChange={handleTabChange}>
         <Tabs.TabPane tab="Active" key="active">
@@ -262,6 +253,16 @@ export default function PrintersList () {
       rowKey={'id'}
       rowSelection={rowSelection}
       />
+      <br />
+      <Dragger {...props}>
+        <p className="ant-upload-drag-icon">
+          <InboxOutlined />
+        </p>
+        <p className="ant-upload-text">Click or drag file to this area to upload</p>
+        <p className="ant-upload-hint">
+          Support for a single or bulk upload. Upload your awesomest gcode or stl files.
+        </p>
+      </Dragger>
     </>
   )
 }
