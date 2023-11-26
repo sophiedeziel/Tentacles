@@ -114,6 +114,7 @@ export default function FileEditor () {
           }
         </code>
         }
+        <Divider />
         <Title level={3}>Description</Title>
         <ReactMarkdown urlTransform={uriTransformer}>
           { mdDescription }
@@ -284,12 +285,13 @@ export default function FileEditor () {
         <Card
         title={<Input onChange={(e) => setFilename(e.target.value)} prefix={<FileOutlined />} defaultValue={file.filename} />}
         extra={[
-          <Button key="2" type="primary" onClick={handleSave}>Save</Button>
+          <Divider key="0" type="vertical" />,
+          <Button key="1" type="primary" onClick={handleSave}>Save</Button>
         ]}
         bodyStyle={{ padding: 0 }}
         >
           <Editor
-            height="calc(100vh - 250px)"
+            height="calc(100vh - 220px)"
             defaultLanguage="gcode"
             path={file.filename}
             defaultValue={file.fileContent}
@@ -297,8 +299,8 @@ export default function FileEditor () {
             />
         </Card>
       </Col>
-      <Col span={8} >
-        <Collapse items={items} defaultActiveKey={[1, 2, 3]} />
+      <Col span={8}>
+        <Collapse items={items} defaultActiveKey={[1, 2, 3]}  style={{overflow: 'scroll', maxHeight: "calc(100vh - 164px)"}}/>
       </Col>
     </Row>
   </>)
