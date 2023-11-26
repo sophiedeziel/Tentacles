@@ -8,7 +8,7 @@ import UpdateFile from './graphql/UpdateFile.graphql'
 import GcodeDocs from './GcodeDocs/GcodeDocs.json'
 import { GCodeViewer } from 'react-gcode-viewer'
 
-import { Card, Collapse, Col, Row, Button, Typography, Drawer, Divider, Input } from 'antd'
+import { Card, Collapse, Col, Row, Button, Typography, Divider, Input } from 'antd'
 import { PageHeader } from '@ant-design/pro-layout'
 import { FileOutlined } from '@ant-design/icons'
 const { Title } = Typography
@@ -20,7 +20,6 @@ export default function FileEditor () {
 
   const editorRef = useRef(null)
   const [lineContent, setLineContent] = useState()
-  const [visible, setVisible] = useState(false)
   const [filename, setFilename] = useState(null)
 
   const [updateFile] = useMutation(UpdateFile)
@@ -59,7 +58,6 @@ export default function FileEditor () {
   }
 
   const handleSave = () => {
-    console.log(filename || file.filename)
     updateFile({
       variables: {
         input: {
@@ -83,13 +81,6 @@ export default function FileEditor () {
 
   const uriTransformer = (text) => {
     return (null)
-  }
-
-  const showDrawer = () => {
-    setVisible(true)
-  }
-  const onClose = () => {
-    setVisible(false)
   }
 
   const ContextualDocumentation = () => {
@@ -125,7 +116,7 @@ export default function FileEditor () {
         }
         <Title level={3}>Description</Title>
         <ReactMarkdown urlTransform={uriTransformer}>
-        { mdDescription }
+          { mdDescription }
         </ReactMarkdown>
 
         { notes &&
@@ -184,18 +175,52 @@ export default function FileEditor () {
         <>
           <Title level={3}>Examples</Title>
           {
+
           examples.map(
             ({ pre, post, code }, index) => (
                 <div key={index}>
-                  <ReactMarkdown urlTransform={uriTransformer}>
-                    {pre}
-                  </ReactMarkdown>
-                  <code>
-                    {code}
-                  </code>
-                  <ReactMarkdown urlTransform={uriTransformer}>
-                    {post}
-                  </ReactMarkdown>
+                  { typeof (pre) === 'object' &&
+                    <ReactMarkdown urlTransform={uriTransformer}>
+                      {pre.map(
+                        (item) => (
+                          `${item}`
+                        )).join('\r\n')}
+                    </ReactMarkdown>
+                  }
+                  { typeof (pre) === 'string' &&
+                    <ReactMarkdown urlTransform={uriTransformer}>
+                      {pre}
+                    </ReactMarkdown>
+                  }
+
+                  { typeof (code) === 'object' &&
+                    <code>
+                      {code.map(
+                        (item) => (
+                          `${item}`
+                        )).join('\r\n')}
+                    </code>
+                  }
+
+                  { typeof (code) === 'string' &&
+                    <code>
+                      {code}
+                    </code>
+                  }
+
+                  { typeof (post) === 'object' &&
+                    <ReactMarkdown urlTransform={uriTransformer}>
+                      {post.map(
+                        (item) => (
+                          `${item}`
+                        )).join('\r\n')}
+                    </ReactMarkdown>
+                  }
+                  { typeof (post) === 'string' &&
+                    <ReactMarkdown urlTransform={uriTransformer}>
+                      {post}
+                    </ReactMarkdown>
+                  }
                   <Divider />
                 </div>
             )
@@ -228,11 +253,16 @@ export default function FileEditor () {
       url={file.downloadUrl}
   />
     },
-    // {
-    //   key: '2',
-    //   label: 'Documentation',
-    //   children: <p>sadf</p>,
-    // },
+    {
+      key: '2',
+      label: 'Documentation',
+      children:
+      <>
+        <Search placeholder="Serach a gocde command" allowClear onChange={onSearch} rootStyle={{ width: 400 }} />
+        <Divider />
+        <ContextualDocumentation />
+      </>
+    },
     {
       key: '3',
       label: 'Code analysis',
@@ -254,7 +284,6 @@ export default function FileEditor () {
         <Card
         title={<Input onChange={(e) => setFilename(e.target.value)} prefix={<FileOutlined />} defaultValue={file.filename} />}
         extra={[
-          <Button key="1" type="secondary" onClick={showDrawer}>Docs</Button>,
           <Button key="2" type="primary" onClick={handleSave}>Save</Button>
         ]}
         bodyStyle={{ padding: 0 }}
@@ -268,20 +297,9 @@ export default function FileEditor () {
             />
         </Card>
       </Col>
-      <Col span={8}>
-        <Collapse items={items} defaultActiveKey={['1', '3']} />
+      <Col span={8} >
+        <Collapse items={items} defaultActiveKey={[1, 2, 3]} />
       </Col>
     </Row>
-    <Drawer
-    mask={false}
-    closable={true}
-    open={visible}
-    size={'large'}
-    title={'Documentation'}
-    onClose={onClose}
-    extra={<Search placeholder="Serach a gocde command" allowClear onChange={onSearch} rootStyle={{ width: 400 }} />}
-    >
-      <ContextualDocumentation />
-    </Drawer>
   </>)
 }
