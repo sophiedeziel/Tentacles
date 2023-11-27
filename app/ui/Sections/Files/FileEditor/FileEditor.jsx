@@ -317,7 +317,7 @@ export default function FileEditor () {
         </Card>
       </Col>
       <Col span={8}>
-        <Collapse items={items} defaultActiveKey={[1, 2, 3]} style={{ overflow: 'scroll', maxHeight: 'calc(100vh - 164px)' }}/>
+        <Collapse size="small" items={items} defaultActiveKey={[1, 2, 3]} style={{ overflow: 'scroll', maxHeight: 'calc(100vh - 164px)' }}/>
       </Col>
     </Row>
   </>)

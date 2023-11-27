@@ -33,7 +33,7 @@ function GCodeAnalysis ({ gcodeAnalysis, onLineSelect }) {
   ]
 
   return (
-    <Collapse defaultActiveKey={['3']} items={items} />
+    <Collapse defaultActiveKey={['3']} items={items} size="small" />
   )
 }
 
