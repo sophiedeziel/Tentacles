@@ -14,7 +14,7 @@ import { FileOutlined } from '@ant-design/icons'
 
 import GCodeAnalysis from './components/GCodeAnalysis.jsx'
 import gcodeDefinition from './../../../common/gcodeDefinition.js'
-import GitHubLight from 'monaco-themes/themes/GitHub Light.json'
+import Tomorrow from 'monaco-themes/themes/Tomorrow.json'
 
 const { Title } = Typography
 const { Search } = Input
@@ -51,7 +51,7 @@ export default function FileEditor () {
   function handleEditorWillMount (monaco) {
     monaco.languages.register({ id: 'gcode' })
     monaco.languages.setMonarchTokensProvider('gcode', gcodeDefinition)
-    monaco.editor.defineTheme('GitHubLight', GitHubLight)
+    monaco.editor.defineTheme('Tomorrow', Tomorrow)
   }
 
   function handleEditorMount (editor) {
@@ -305,7 +305,7 @@ export default function FileEditor () {
           <Editor
             height="calc(100vh - 220px)"
             language="gcode"
-            theme="GitHubLight"
+            theme="Tomorrow"
             path={file.filename}
             defaultValue={file.fileContent}
             onMount={handleEditorMount}
