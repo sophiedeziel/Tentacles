@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class FileRecord
   class GcodeAnalysis
     attr_reader :hotend_temperatures, :bed_temperatures, :z_movements, :top_file_comments, :slicer
@@ -74,7 +76,7 @@ class FileRecord
       command, comment = line.split(';')
       return {} if command.blank?
 
-      tokens = command.split(' ')
+      tokens = command.split
       args = {}
       tokens[1..]&.each do |argument|
         argument_name = argument[0]

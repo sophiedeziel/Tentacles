@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class RenameFilesToFilesRecords < ActiveRecord::Migration[7.0]
   # rubocop:disable Rails/SkipsModelValidations
   def up
