@@ -29,7 +29,7 @@ class Spooler
   class Print < Operation
     def initialize(printer, job)
       super(printer, job)
-      @file = FileManager::File.find(job.executable_id)
+      @file = FileRecord.find(job.executable_id)
     end
 
     def execute

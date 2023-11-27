@@ -26,14 +26,14 @@ module RootOperations
       description 'files'
     end
     def files
-      ::FileManager::File.with_attached_file
+      ::FileRecord.with_attached_file
     end
 
     field :file, Types::File, null: true do
       argument :id, ID, required: true
     end
     def file(id:)
-      ::FileManager::File.find(id)
+      ::FileRecord.find(id)
     end
 
     field :search_network_printers, [String], null: true

@@ -4,7 +4,7 @@ class UploadFilesToPrintersJob < ApplicationJob
   queue_as :default
 
   def perform(file_ids, printer_ids, **)
-    files = FileManager::File.where(id: file_ids).map(&:file)
+    files = FileRecord.where(id: file_ids).map(&:file)
     printers = Printer.where(id: printer_ids)
 
     paths = move_files(files)

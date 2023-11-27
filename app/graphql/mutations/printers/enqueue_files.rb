@@ -12,7 +12,7 @@ module Mutations
 
       def resolve(file_ids:, printer_ids:)
         jobs = file_ids.flat_map do |file_id|
-          file = ::FileManager::File.find(file_id)
+          file = ::FileRecord.find(file_id)
           printer_ids.map do |printer_id|
             create_job(file, printer_id)
           end

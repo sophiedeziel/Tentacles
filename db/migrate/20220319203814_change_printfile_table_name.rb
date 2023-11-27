@@ -6,7 +6,7 @@ class ChangePrintfileTableName < ActiveRecord::Migration[7.0]
     rename_table :printfiles, :files
     ActiveStorage::Attachment
       .where(record_type: 'Printfile')
-      .update_all(record_type: 'FileManager::File')
+      .update_all(record_type: 'FileRecord')
   end
 
   def down

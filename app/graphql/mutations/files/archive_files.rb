@@ -12,7 +12,7 @@ module Mutations
       field :success, Boolean, null: false
 
       def resolve(file_ids:)
-        files = ::FileManager::File.where(id: file_ids)
+        files = ::FileRecord.where(id: file_ids)
 
         files.each(&:archive)
         { success: true }
