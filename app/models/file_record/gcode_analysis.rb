@@ -2,7 +2,7 @@
 
 class FileRecord
   class GcodeAnalysis
-    attr_reader :hotend_temperatures, :bed_temperatures, :z_movements, :top_file_comments, :slicer
+    attr_reader :hotend_temperatures, :bed_temperatures, :z_movements, :top_file_comments, :slicer, :layers
 
     class SLICER < T::Enum
       enums do
@@ -16,6 +16,12 @@ class FileRecord
       'M140' => :bed_temperature_changes,
       'G1' => :z_movement_changes,
       'G0' => :z_movement_changes
+    }.freeze
+
+    COMMENT_WATCHERS = {
+      # This logic doesn't work yet. There's some data found but it's not correct.
+      # Each slice has a different comment pattern and should be handled differently.
+      /\ALAYER_CHANGE/ => :layer_change
     }.freeze
 
     def initialize(file)
@@ -33,10 +39,7 @@ class FileRecord
 
       each_line do |line, index|
         parsed_command = parse(line)
-
-        if COMMAND_WATCHERS[parsed_command[:command]]
-          send(COMMAND_WATCHERS[parsed_command[:command]], parsed_command, index)
-        end
+        check_line(parsed_command, index)
       end
     end
 
@@ -52,6 +55,26 @@ class FileRecord
     end
 
     private
+
+    def check_line(parsed_command, index)
+      command = parsed_command[:command]
+
+      analyse_comment(parsed_command[:comment], index)
+
+      send(COMMAND_WATCHERS[command], parsed_command, index) if command.present? && COMMAND_WATCHERS[command]
+    end
+
+    def analyse_comment(comment, index)
+      return if comment.blank?
+
+      COMMENT_WATCHERS.find do |regex, method|
+        send(method, comment, index) if comment.match(regex)
+      end
+    end
+
+    def layer_change(_comment, index)
+      @layers << { id: @layers.count + 1, line_number: index + 1, height: @z_movements.last&.dig(:height) }
+    end
 
     def hotend_temperature_changes(command, index)
       @hotend_temperatures << { temperature: command.dig(:args, 'S').to_i, line_number: index + 1 }
@@ -74,7 +97,7 @@ class FileRecord
 
     def parse(line)
       command, comment = line.split(';')
-      return {} if command.blank?
+      return { comment: } if command.blank?
 
       tokens = command.split
       args = {}

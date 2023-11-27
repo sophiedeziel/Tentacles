@@ -22,6 +22,13 @@ function GCodeAnalysis ({ gcodeAnalysis, onLineSelect }) {
       key: '3',
       label: 'Slicer',
       children: <p>{ gcodeAnalysis.slicer }</p>
+    }, {
+      key: '4',
+      label: 'Layers',
+      children:
+      gcodeAnalysis.layers.map((layer) => (
+        <pre onClick={() => { onLineSelect(layer.lineNumber) }} key={layer.id}>Line {layer.lineNumber}: {layer.height}</pre>
+      ))
     }
   ]
 
