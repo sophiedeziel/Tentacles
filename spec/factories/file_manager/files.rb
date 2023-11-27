@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 FactoryBot.define do
-  factory :file_manager_file, class: 'FileRecord' do
+  factory :file_record, class: 'FileRecord' do
     after(:build) do |post|
       post.file.attach(
         io: Rails.root.join('spec/fixture_files/test.gcode').open,

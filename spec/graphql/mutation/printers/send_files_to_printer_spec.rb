@@ -8,7 +8,7 @@ module Mutations
       include ActiveJob::TestHelper
 
       RSpec.describe SendFilesToPrinters, type: :request do
-        let!(:files) { create_list(:file_manager_file, 2) }
+        let!(:files) { create_list(:file_record, 2) }
         let!(:printers) { create_list(:printer, 2) }
         let(:variables) do
           {
