@@ -61,7 +61,7 @@ class FileRecord
 
     def z_movement_changes(command, index)
       if command.dig(:args, 'Z')
-        @z_movement_extrusion_unchecked = { z: command.dig(:args, 'Z').to_f, line_number: index + 1 }
+        @z_movement_extrusion_unchecked = { height: command.dig(:args, 'Z').to_f, line_number: index + 1 }
       end
 
       return unless command.dig(:args, 'E').present? && @z_movement_extrusion_unchecked.present?
