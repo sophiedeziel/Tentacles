@@ -11,6 +11,11 @@ import { GCodeViewer } from 'react-gcode-viewer'
 import { Card, Collapse, Col, Row, Button, Typography, Divider, Input } from 'antd'
 import { PageHeader } from '@ant-design/pro-layout'
 import { FileOutlined } from '@ant-design/icons'
+
+import GCodeAnalysis from './components/GCodeAnalysis.jsx'
+import gcodeDefinition from './../../../common/gcodeDefinition.js'
+import GitHubLight from 'monaco-themes/themes/GitHub Light.json'
+
 const { Title } = Typography
 const { Search } = Input
 
@@ -21,6 +26,7 @@ export default function FileEditor () {
   const editorRef = useRef(null)
   const [lineContent, setLineContent] = useState()
   const [filename, setFilename] = useState(null)
+  const [jumptoLine, setJumptoLine] = useState(1)
 
   const [updateFile] = useMutation(UpdateFile)
 
@@ -40,6 +46,14 @@ export default function FileEditor () {
     }
 
     return (line.split(' ')[0].replace(/\s+/g, ''))
+  }
+
+  function handleEditorWillMount(monaco) {
+    // here is the monaco instance
+    // do something before editor is mounted
+    monaco.languages.register({ id: 'gcode' })
+    monaco.languages.setMonarchTokensProvider('gcode', gcodeDefinition)
+    monaco.editor.defineTheme('GitHubLight', GitHubLight)
   }
 
   function handleEditorMount (editor) {
@@ -267,7 +281,7 @@ export default function FileEditor () {
     {
       key: '3',
       label: 'Code analysis',
-      children: <p>asdf</p>
+      children: <GCodeAnalysis gcodeAnalysis={file.gcodeAnalysis} onLineSelect={ (num) => { setJumptoLine(num) }} />
     }
   ]
 
@@ -292,10 +306,13 @@ export default function FileEditor () {
         >
           <Editor
             height="calc(100vh - 220px)"
-            defaultLanguage="gcode"
+            language="gcode"
+            theme="GitHubLight"
             path={file.filename}
             defaultValue={file.fileContent}
             onMount={handleEditorMount}
+            beforeMount={handleEditorWillMount}
+            line={jumptoLine}
             />
         </Card>
       </Col>
