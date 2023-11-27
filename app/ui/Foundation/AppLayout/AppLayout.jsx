@@ -52,7 +52,7 @@ function AppLayout ({ children }) {
                 </Menu.Item>
               </Menu>
             </Header>
-            <Content style={{padding: 24}}>
+            <Content style={{ padding: 24 }}>
               {children}
             </Content>
           </Layout>

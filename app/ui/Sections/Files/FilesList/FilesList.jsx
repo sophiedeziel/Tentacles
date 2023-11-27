@@ -159,7 +159,7 @@ export default function PrintersList () {
         )
       }
     },
-    Table.EXPAND_COLUMN,
+    Table.EXPAND_COLUMN
   ]
 
   const onChange = (pagination, filters, sorter, extra) => {
@@ -167,7 +167,7 @@ export default function PrintersList () {
   }
 
   const props = {
-    height: "200px",
+    height: '200px',
     name: 'upload',
     multiple: true,
     showUploadList: false,
