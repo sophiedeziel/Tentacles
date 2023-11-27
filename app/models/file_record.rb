@@ -60,4 +60,8 @@ class FileRecord < ApplicationRecord
     ::File.write(temp_filename, content)
     file.attach(io: ::File.open(temp_filename), filename: new_filename || filename)
   end
+
+  def gcode_analysis
+    @gcode_analysis ||= GcodeAnalysis.new(file_content)
+  end
 end
