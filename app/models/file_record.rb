@@ -39,16 +39,7 @@ class FileRecord < ApplicationRecord
   end
 
   def top_file_comments
-    top_comments = []
-    file.blob.open do |file|
-      file.each do |line|
-        line.strip!
-        return top_comments.join("\r\n") unless line.empty? || line.starts_with?(';')
-
-        top_comments << line
-      end
-    end
-    top_comments.join("\r\n")
+    @top_file_comments ||= GcodeAnalysis.new(file).top_file_comments.join("\r\n")
   end
 
   def file_content
@@ -62,6 +53,6 @@ class FileRecord < ApplicationRecord
   end
 
   def gcode_analysis
-    @gcode_analysis ||= GcodeAnalysis.new(file_content)
+    @gcode_analysis ||= GcodeAnalysis.new(file)
   end
 end
