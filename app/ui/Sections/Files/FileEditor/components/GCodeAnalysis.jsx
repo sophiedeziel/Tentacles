@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Collapse } from 'antd'
+import { Collapse, Table } from 'antd'
 
 function GCodeAnalysis ({ gcodeAnalysis, onLineSelect }) {
   const items = [
@@ -26,9 +26,38 @@ function GCodeAnalysis ({ gcodeAnalysis, onLineSelect }) {
       key: '4',
       label: 'Layers',
       children:
-      gcodeAnalysis.layers.map((layer) => (
-        <pre onClick={() => { onLineSelect(layer.lineNumber) }} key={layer.id}>Line {layer.lineNumber}: {layer.height}</pre>
-      ))
+      <Table
+        size="small"
+        columns={[
+          {
+            title: 'Layer',
+            dataIndex: 'id',
+            key: 'id',
+          },
+          {
+            title: 'Line',
+            dataIndex: 'lineNumber',
+            key: 'lineNumber',
+            render: (lineNumber) => (
+              <pre onClick={() => { onLineSelect(lineNumber) }}><a>{lineNumber}</a></pre>
+            )
+          },
+          {
+            title: 'Height',
+            dataIndex: 'height',
+            key: 'height',
+          },
+          {
+            title: 'Z Height',
+            dataIndex: 'z',
+            key: 'z',
+          }
+        ]}
+        dataSource={gcodeAnalysis.layers}
+      />
+      // gcodeAnalysis.layers.map((layer) => (
+      //   <pre onClick={() => { onLineSelect(layer.lineNumber) }} key={layer.id}> {layer.id} Line {layer.lineNumber}: layer height: {layer.height} height: {layer.zHeight}</pre>
+      // ))
     }
   ]
 

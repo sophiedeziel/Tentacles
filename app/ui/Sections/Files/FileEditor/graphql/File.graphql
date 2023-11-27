@@ -23,6 +23,7 @@ query File($id: ID!) {
         lineNumber
         height
         id
+        z
       }
     }
   }

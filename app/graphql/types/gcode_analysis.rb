@@ -16,12 +16,13 @@ module Types
       field :id, Integer, null: false
       field :line_number, Integer, null: false
       field :height, Float, null: false
+      field :z, Float, null: false
     end
 
     field :top_file_comments, [String], null: false
     field :slicer, String, null: true
     def slicer
-      object.slicer.serialize
+      object.slicer.class.name
     end
     field :hotend_temperatures, [Temperature], null: true
     field :bed_temperatures, [Temperature], null: true
