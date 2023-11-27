@@ -49,8 +49,6 @@ export default function FileEditor () {
   }
 
   function handleEditorWillMount (monaco) {
-    // here is the monaco instance
-    // do something before editor is mounted
     monaco.languages.register({ id: 'gcode' })
     monaco.languages.setMonarchTokensProvider('gcode', gcodeDefinition)
     monaco.editor.defineTheme('GitHubLight', GitHubLight)
@@ -273,7 +271,7 @@ export default function FileEditor () {
       label: 'Documentation',
       children:
       <>
-        <Search placeholder="Serach a gocde command" allowClear onChange={onSearch} rootStyle={{ width: 400 }} />
+        <Search placeholder="Search a GCode command" allowClear onChange={onSearch} rootStyle={{ width: 400 }} />
         <Divider />
         <ContextualDocumentation />
       </>
@@ -317,7 +315,7 @@ export default function FileEditor () {
         </Card>
       </Col>
       <Col span={8}>
-        <Collapse size="small" items={items} defaultActiveKey={[1, 2, 3]} style={{ overflow: 'scroll', maxHeight: 'calc(100vh - 164px)' }}/>
+        <Collapse size="small" items={items} defaultActiveKey={[3]} style={{ overflow: 'scroll', maxHeight: 'calc(100vh - 164px)' }}/>
       </Col>
     </Row>
   </>)
