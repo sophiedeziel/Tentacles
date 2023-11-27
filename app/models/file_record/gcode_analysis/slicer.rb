@@ -19,6 +19,10 @@ class FileRecord
           end
         end
       end
+
+      def analyse_comment(comment, index)
+        # Not implemented
+      end
     end
   end
 end

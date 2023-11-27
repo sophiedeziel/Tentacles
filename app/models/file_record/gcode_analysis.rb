@@ -46,7 +46,7 @@ class FileRecord
     def check_line(parsed_command, index)
       command = parsed_command[:command]
 
-      @slicer.analyse_comment(parsed_command[:comment], index)
+      @slicer&.analyse_comment(parsed_command[:comment], index)
 
       send(COMMAND_WATCHERS[command], parsed_command, index) if command.present? && COMMAND_WATCHERS[command]
     end
