@@ -35,7 +35,7 @@ const gcodeDefinition = {
   keywords: ['abort', 'echo', 'if', 'elif', 'while', 'set'],
   noArgKeywords: ['else', 'break', 'continue'],
   varKeywords: ['global', 'var'],
-  symbols: /[=><!~?:&|+\-*#\/\^%]+/,
+  symbols: /[=><!~?:&|+\-*#/^%]+/,
   operators: [
     '*',
     '/',
@@ -80,15 +80,16 @@ const gcodeDefinition = {
       [/T[-]?\d+/, 'keyword', 'normalGcodeWithT'],
 
       // numbers
-      [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
+      [/\d*\.\d+([eE][-+]?\d+)?/, 'number.float'],
       [/0[xX][0-9a-fA-F]+/, 'number.hex'],
       [/\d+/, 'number'],
 
       // strings
-      [/"(.|\"\")*?"/, 'string'],
+      [/"(.|"")*?"/, 'string'],
 
       // comments
-      [/;.*/, 'comment']
+      [/;.*/, 'comment'],
+      [/@.*/, 'comment']
     ],
     gcode: [
       // next G/M/T-code
@@ -97,8 +98,8 @@ const gcodeDefinition = {
       [/T/, 'keyword', 'normalGcodeWithT'],
 
       // parameter letters
-      [/'?[A-Z]/, 'keyword'],
-      [/'[a-z]/, 'keyword'],
+      [/'?[A-Z]/, 'variable.name'],
+      [/'[a-z]/, 'variable.name'],
 
       // expressions
       [/{/, 'operator', '@curlyBracket'],
@@ -158,12 +159,12 @@ const gcodeDefinition = {
       [/\[/, 'operator', '@squareBracket'],
 
       // numbers
-      [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
+      [/\d*\.\d+([eE][-+]?\d+)?/, 'number.float'],
       [/0[xX][0-9a-fA-F]+/, 'number.hex'],
       [/\d+/, 'number'],
 
       // strings and chars
-      [/"(.|\"\")*?"/, 'string'],
+      [/"(.|"")*?"/, 'string'],
       [/'.'/, 'string'],
 
       // operators
@@ -179,6 +180,7 @@ const gcodeDefinition = {
 
       // comments
       [/;.*/, 'comment'],
+      [/@.*/, 'comment'],
 
       // EOL
       [/\n/, '', '@popall']
@@ -186,6 +188,7 @@ const gcodeDefinition = {
     lineExpression: [
       // comments
       [/;.*/, 'comment'],
+      [/@.*/, 'comment'],
 
       // line expressions are basically expressions
       { include: 'expression' }

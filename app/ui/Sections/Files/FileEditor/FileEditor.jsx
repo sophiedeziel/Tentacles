@@ -48,7 +48,7 @@ export default function FileEditor () {
     return (line.split(' ')[0].replace(/\s+/g, ''))
   }
 
-  function handleEditorWillMount(monaco) {
+  function handleEditorWillMount (monaco) {
     // here is the monaco instance
     // do something before editor is mounted
     monaco.languages.register({ id: 'gcode' })
