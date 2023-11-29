@@ -15,14 +15,34 @@ const { Header, Content, Footer, Sider } = Layout
 const darkTheme = {
   algorithm: [theme.darkAlgorithm],
   token: {
-    colorPrimary: '#a565ff'
+    colorPrimary: '#a565ff',
+  },
+  components: {
+    Layout: {
+      headerBg: '#110028',
+      siderBg: '#110028',
+    },
+    Menu: {
+      darkItemBg: '#110028',
+      darkSubMenuItemBg: '#080014',
+    }
   }
 }
 
 const lightTheme = {
   algorithm: [theme.defaultAlgorithm],
   token: {
-    colorPrimary: '#722ed1'
+    colorPrimary: '#722ed1',
+  },
+  components: {
+    Layout: {
+      headerBg: '#110028',
+      siderBg: '#110028',
+    },
+    Menu: {
+      darkItemBg: '#110028',
+      darkSubMenuItemBg: '#080014',
+    }
   }
 }
 
