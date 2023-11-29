@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useMatch } from 'react-router'
 import Editor from '@monaco-editor/react'
 import ReactMarkdown from 'react-markdown'
@@ -28,6 +28,19 @@ export default function FileEditor () {
   const editorRef = useRef(null)
   const [lineContent, setLineContent] = useState()
   const [filename, setFilename] = useState(null)
+
+  const [openedCollapse, setOpenedCollapse] = useState([])
+
+  useEffect(() => {
+    const openedCollapse = JSON.parse(localStorage.getItem('FileEditor.openedCollapse'))
+    if (openedCollapse) {
+      setOpenedCollapse(openedCollapse)
+    }
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem('FileEditor.openedCollapse', JSON.stringify(openedCollapse))
+  }, [openedCollapse])
 
   const [updateFile] = useMutation(UpdateFile)
 
@@ -323,7 +336,9 @@ export default function FileEditor () {
       <Col span={8}>
         <Collapse
         items={items}
-        defaultActiveKey={[3]}
+        defaultActiveKey={['1', '2', '3']}
+        activeKey={openedCollapse}
+        onChange={setOpenedCollapse}
         className={classes.Collapse}
         style={{ overflow: 'scroll', maxHeight: 'calc(100vh - 164px)' }}/>
       </Col>

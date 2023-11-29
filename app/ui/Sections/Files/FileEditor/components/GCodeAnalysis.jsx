@@ -1,8 +1,21 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { Collapse, Table, Badge } from 'antd'
 
 function GCodeAnalysis ({ gcodeAnalysis, onLineSelect }) {
+  const [openedCollapse, setOpenedCollapse] = useState([])
+
+  useEffect(() => {
+    const openedCollapse = JSON.parse(localStorage.getItem('GCodeAnalysis.openedCollapse'))
+    if (openedCollapse) {
+      setOpenedCollapse(openedCollapse)
+    }
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem('GCodeAnalysis.openedCollapse', JSON.stringify(openedCollapse))
+  }, [openedCollapse])
+
   const layersTable = () => (
     <Table
     size="small"
@@ -116,7 +129,7 @@ function GCodeAnalysis ({ gcodeAnalysis, onLineSelect }) {
   ]
 
   return (
-    <Collapse defaultActiveKey={['3']} items={items} size="small" />
+    <Collapse defaultActiveKey={[1, 2, 3, 4]} activeKey={openedCollapse} items={items} size="small" onChange={setOpenedCollapse} />
   )
 }
 
