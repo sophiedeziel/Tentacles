@@ -397,6 +397,7 @@ DEPENDENCIES
   shakapacker (~> 7.1)
   sidekiq (~> 7.2)
   simplecov
+  sprockets-rails
   tzinfo-data
   vcr (~> 6.2)
   web-console
