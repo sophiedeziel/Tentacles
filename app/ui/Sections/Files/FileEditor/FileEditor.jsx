@@ -49,10 +49,10 @@ export default function FileEditor () {
     return (line.split(' ')[0].replace(/\s+/g, ''))
   }
 
-  function jumpAndHighlight(lineNumber) {
+  function jumpAndHighlight (lineNumber) {
     editorRef.current.revealPositionInCenter({ lineNumber: lineNumber, column: 0 })
-    editorRef.current.setSelection(new monaco.Selection(lineNumber,0,lineNumber,80));
-    editorRef.current.focus();
+    editorRef.current.setSelection(new monaco.Selection(lineNumber, 0, lineNumber, 80))
+    editorRef.current.focus()
   }
 
   function handleEditorWillMount (monaco) {
@@ -322,7 +322,6 @@ export default function FileEditor () {
       </Col>
       <Col span={8}>
         <Collapse
-        size="small"
         items={items}
         defaultActiveKey={[3]}
         className={classes.Collapse}

@@ -10,7 +10,7 @@ import UnarchiveFiles from './graphql/UnarchiveFiles.graphql'
 
 import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Dropdown, Menu } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
-import FileDetails from './components/FileDetails/FileDetails'
+// import FileDetails from './components/FileDetails/FileDetails'
 
 const filesize = require('file-size')
 
