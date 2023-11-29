@@ -10,7 +10,7 @@ import SideMenu from './components/SideMenu'
 
 import classes from './AppLayout.module.less'
 
-const { Header, Content, Footer, Sider } = Layout
+const { Header, Content, Sider } = Layout
 
 const darkTheme = {
   algorithm: [theme.darkAlgorithm],
@@ -36,11 +36,11 @@ function AppLayout ({ children }) {
   return (
     <ConfigProvider theme={ lightTheme } >
       <Layout style={{ minHeight: '100vh' }}>
-      <ConfigProvider theme={darkTheme}>
-        <Sider collapsible collapsed={collapsed} onCollapse={onCollapse} trigger={null} >
-          <div className={classes.Logo} >Tentacles</div>
-          <SideMenu></SideMenu>
-        </Sider>
+        <ConfigProvider theme={darkTheme}>
+          <Sider collapsible collapsed={collapsed} onCollapse={onCollapse} trigger={null} >
+            <div className={classes.Logo} >Tentacles</div>
+            <SideMenu></SideMenu>
+          </Sider>
         </ConfigProvider>
           <Layout >
             <Header className={classes.Header} style={{ padding: 0 }}>
@@ -52,12 +52,9 @@ function AppLayout ({ children }) {
                 </Menu.Item>
               </Menu>
             </Header>
-            <Content style={{ margin: '0 16px' }}>
-              <div className={classes.siteLayoutBackground}>
-                {children}
-              </div>
+            <Content style={{ padding: 24 }}>
+              {children}
             </Content>
-            <Footer style={{ textAlign: 'center' }}>Tentacles</Footer>
           </Layout>
 
       </Layout>

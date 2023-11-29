@@ -38,7 +38,6 @@ export default function NetworkPrinters () {
         return (response.json())
       }
     }).then((data) => {
-      console.log(data?.api_key)
       if (data?.api_key) {
         octoprintTab.close()
         printerQuery({ variables: { octoprintUri: `http://${apiRequestIP}/`, octoprintKey: data.api_key } }).then(({ data: printerData }) => {

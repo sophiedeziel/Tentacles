@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useMatch } from 'react-router'
 import Editor from '@monaco-editor/react'
 import ReactMarkdown from 'react-markdown'
@@ -8,8 +8,16 @@ import UpdateFile from './graphql/UpdateFile.graphql'
 import GcodeDocs from './GcodeDocs/GcodeDocs.json'
 import { GCodeViewer } from 'react-gcode-viewer'
 
-import { Col, Row, Button, Typography, Drawer, Divider, Input } from 'antd'
+import { Card, Collapse, Col, Row, Button, Typography, Divider, Input } from 'antd'
 import { PageHeader } from '@ant-design/pro-layout'
+import { FileOutlined } from '@ant-design/icons'
+
+import GCodeAnalysis from './components/GCodeAnalysis.jsx'
+import gcodeDefinition from './../../../common/gcodeDefinition.js'
+import Tomorrow from 'monaco-themes/themes/Tomorrow.json'
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
+import classes from './FileEditor.module.less'
+
 const { Title } = Typography
 const { Search } = Input
 
@@ -19,7 +27,20 @@ export default function FileEditor () {
 
   const editorRef = useRef(null)
   const [lineContent, setLineContent] = useState()
-  const [visible, setVisible] = useState(false)
+  const [filename, setFilename] = useState(null)
+
+  const [openedCollapse, setOpenedCollapse] = useState([])
+
+  useEffect(() => {
+    const openedCollapse = JSON.parse(localStorage.getItem('FileEditor.openedCollapse'))
+    if (openedCollapse) {
+      setOpenedCollapse(openedCollapse)
+    }
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem('FileEditor.openedCollapse', JSON.stringify(openedCollapse))
+  }, [openedCollapse])
 
   const [updateFile] = useMutation(UpdateFile)
 
@@ -39,6 +60,18 @@ export default function FileEditor () {
     }
 
     return (line.split(' ')[0].replace(/\s+/g, ''))
+  }
+
+  function jumpAndHighlight (lineNumber) {
+    editorRef.current.revealPositionInCenter({ lineNumber: lineNumber, column: 0 })
+    editorRef.current.setSelection(new monaco.Selection(lineNumber, 0, lineNumber, 80))
+    editorRef.current.focus()
+  }
+
+  function handleEditorWillMount (monaco) {
+    monaco.languages.register({ id: 'gcode' })
+    monaco.languages.setMonarchTokensProvider('gcode', gcodeDefinition)
+    monaco.editor.defineTheme('Tomorrow', Tomorrow)
   }
 
   function handleEditorMount (editor) {
@@ -61,7 +94,8 @@ export default function FileEditor () {
       variables: {
         input: {
           id: fileID,
-          fileContent: editorRef.current.getValue()
+          fileContent: editorRef.current.getValue(),
+          fileName: filename || file.filename
         }
       }
     }
@@ -79,13 +113,6 @@ export default function FileEditor () {
 
   const uriTransformer = (text) => {
     return (null)
-  }
-
-  const showDrawer = () => {
-    setVisible(true)
-  }
-  const onClose = () => {
-    setVisible(false)
   }
 
   const ContextualDocumentation = () => {
@@ -119,16 +146,17 @@ export default function FileEditor () {
           }
         </code>
         }
+        <Divider />
         <Title level={3}>Description</Title>
-        <ReactMarkdown transformLinkUri={uriTransformer}>
-        { mdDescription }
+        <ReactMarkdown urlTransform={uriTransformer}>
+          { mdDescription }
         </ReactMarkdown>
 
         { notes &&
           <>
             <Title level={3}>Notes</Title>
             { typeof (notes) === 'object' &&
-              <ReactMarkdown transformLinkUri={uriTransformer}>
+              <ReactMarkdown urlTransform={uriTransformer}>
                 {notes.map(
                   (note) => (
                     `- ${note}`
@@ -136,7 +164,7 @@ export default function FileEditor () {
               </ReactMarkdown>
             }
             { typeof (notes) === 'string' &&
-              <ReactMarkdown transformLinkUri={uriTransformer}>
+              <ReactMarkdown urlTransform={uriTransformer}>
                 {notes}
               </ReactMarkdown>
             }
@@ -147,7 +175,7 @@ export default function FileEditor () {
         { devnotes &&
           <>
             <Title level={3}>Developer notes</Title>
-            <ReactMarkdown transformLinkUri={uriTransformer}>
+            <ReactMarkdown urlTransform={uriTransformer}>
               {devnotes}
             </ReactMarkdown>
           </>
@@ -180,18 +208,52 @@ export default function FileEditor () {
         <>
           <Title level={3}>Examples</Title>
           {
+
           examples.map(
             ({ pre, post, code }, index) => (
                 <div key={index}>
-                  <ReactMarkdown transformLinkUri={uriTransformer}>
-                    {pre}
-                  </ReactMarkdown>
-                  <code>
-                    {code}
-                  </code>
-                  <ReactMarkdown transformLinkUri={uriTransformer}>
-                    {post}
-                  </ReactMarkdown>
+                  { typeof (pre) === 'object' &&
+                    <ReactMarkdown urlTransform={uriTransformer}>
+                      {pre.map(
+                        (item) => (
+                          `${item}`
+                        )).join('\r\n')}
+                    </ReactMarkdown>
+                  }
+                  { typeof (pre) === 'string' &&
+                    <ReactMarkdown urlTransform={uriTransformer}>
+                      {pre}
+                    </ReactMarkdown>
+                  }
+
+                  { typeof (code) === 'object' &&
+                    <code>
+                      {code.map(
+                        (item) => (
+                          `${item}`
+                        )).join('\r\n')}
+                    </code>
+                  }
+
+                  { typeof (code) === 'string' &&
+                    <code>
+                      {code}
+                    </code>
+                  }
+
+                  { typeof (post) === 'object' &&
+                    <ReactMarkdown urlTransform={uriTransformer}>
+                      {post.map(
+                        (item) => (
+                          `${item}`
+                        )).join('\r\n')}
+                    </ReactMarkdown>
+                  }
+                  { typeof (post) === 'string' &&
+                    <ReactMarkdown urlTransform={uriTransformer}>
+                      {post}
+                    </ReactMarkdown>
+                  }
                   <Divider />
                 </div>
             )
@@ -203,57 +265,83 @@ export default function FileEditor () {
     )
   }
 
+  const items = [
+    {
+      key: '1',
+      label: 'Preview',
+      children: <GCodeViewer
+      orbitControls
+      showAxes
+      quality={0.2}
+      floorProps={{
+        gridWidth: 300,
+        gridLength: 300
+      }}
+      style={{
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '25%'
+      }}
+      url={file.downloadUrl}
+  />
+    },
+    {
+      key: '2',
+      label: 'Documentation',
+      children:
+      <>
+        <Search placeholder="Search a GCode command" allowClear onChange={onSearch} rootStyle={{ width: 400 }} />
+        <Divider />
+        <ContextualDocumentation />
+      </>
+    },
+    {
+      key: '3',
+      label: 'Code analysis',
+      style: {},
+      children: <GCodeAnalysis gcodeAnalysis={file.gcodeAnalysis} onLineSelect={ (num) => { jumpAndHighlight(num) }} />
+    }
+  ]
+
   return (<>
     <PageHeader
-    className="site-page-header"
     ghost={false}
     onBack={() => window.history.back()}
-    title={file.filename}
-    extra={[
-      <Button key="1" type="primary" onClick={showDrawer}>Docs</Button>
-    ]}
+    title="GCode editor"
     >
-      <Button type="primary" onClick={handleSave}>Save</Button>
+
     </PageHeader>
-    <Row >
-      <Col span={12}>
-      <Editor
-        height="calc(100vh - 250px)"
-        defaultLanguage="gcode"
-        path={file.filename}
-        defaultValue={file.fileContent}
-        onMount={handleEditorMount}
-        />
+    <Row gutter={16}>
+      <Col span={16}>
+        <Card
+        title={<Input onChange={(e) => setFilename(e.target.value)} prefix={<FileOutlined />} defaultValue={file.filename} />}
+        extra={[
+          <Divider key="0" type="vertical" />,
+          <Button key="1" type="primary" onClick={handleSave}>Save</Button>
+        ]}
+        bodyStyle={{ padding: 0 }}
+        >
+          <Editor
+            height="calc(100vh - 220px)"
+            language="gcode"
+            theme="Tomorrow"
+            path={file.filename}
+            defaultValue={file.fileContent}
+            onMount={handleEditorMount}
+            beforeMount={handleEditorWillMount}
+            />
+        </Card>
       </Col>
-      <Col span={12}>
-        <GCodeViewer
-            orbitControls
-            showAxes
-            quality={0.2}
-            floorProps={{
-              gridWidth: 300,
-              gridLength: 300
-            }}
-            style={{
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: 'calc(100vh - 250px)'
-            }}
-            url={file.downloadUrl}
-        />
+      <Col span={8}>
+        <Collapse
+        items={items}
+        defaultActiveKey={['1', '2', '3']}
+        activeKey={openedCollapse}
+        onChange={setOpenedCollapse}
+        className={classes.Collapse}
+        style={{ overflow: 'scroll', maxHeight: 'calc(100vh - 164px)' }}/>
       </Col>
     </Row>
-    <Drawer
-    mask={false}
-    closable={true}
-    open={visible}
-    size={'large'}
-    title={'Documentation'}
-    onClose={onClose}
-    extra={<Search placeholder="Serach a gocde command" allowClear onChange={onSearch} rootStyle={{ width: 400 }} />}
-    >
-      <ContextualDocumentation />
-    </Drawer>
   </>)
 }

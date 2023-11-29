@@ -69,7 +69,7 @@ class Spooler
 
     def build_operation(job)
       type = {
-        'FileManager::File' => Print
+        'FileRecord' => Print
       }[job.executable_type]
 
       type.new(@printer, job)

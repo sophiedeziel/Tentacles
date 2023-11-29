@@ -4,5 +4,29 @@ query File($id: ID!) {
     filename
     fileContent
     downloadUrl
+    gcodeAnalysis {
+      bedTemperatures {
+        lineNumber
+        temperature
+        layerNumber
+      }
+      hotendTemperatures {
+        lineNumber
+        temperature
+        layerNumber
+      }
+      topFileComments
+      slicer
+      zMovements {
+        height
+        lineNumber
+      }
+      layers {
+        lineNumber
+        height
+        id
+        z
+      }
+    }
   }
 }

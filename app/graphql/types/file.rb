@@ -15,5 +15,6 @@ module Types
     field :download_url, String, null: false
     field :top_file_comments, String, null: true
     field :file_content, String, null: true
+    field :gcode_analysis, Types::GcodeAnalysis, null: true
   end
 end

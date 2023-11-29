@@ -2,8 +2,8 @@
 
 require 'rails_helper'
 
-RSpec.describe FileManager::File, type: :model do
-  let(:file) { create(:file_manager_file) }
+RSpec.describe FileRecord, type: :model do
+  let(:file) { create(:file_record) }
 
   it 'has a valid factory' do
     expect(file).to be_valid
@@ -98,7 +98,7 @@ RSpec.describe FileManager::File, type: :model do
     end
 
     context 'when the file is only comments' do
-      let(:file) { create(:file_manager_file, :only_comments) }
+      let(:file) { create(:file_record, :only_comments) }
 
       it 'returns the comment lines from the top of the file' do
         expect(subject).to eq [

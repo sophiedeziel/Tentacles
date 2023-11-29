@@ -10,7 +10,7 @@ import UnarchiveFiles from './graphql/UnarchiveFiles.graphql'
 
 import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Dropdown, Menu } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
-import FileDetails from './components/FileDetails/FileDetails'
+// import FileDetails from './components/FileDetails/FileDetails'
 
 const filesize = require('file-size')
 
@@ -103,10 +103,9 @@ export default function PrintersList () {
       defaultSortOrder: 'ascend',
       sorter: (a, b) => a.filename.localeCompare(b.filename),
       render: (file) => {
-        return (<Link to={'/files/' + file.id + '/print'}>{file.filename}</Link>)
+        return (<Link to={'/files/' + file.id }>{file.filename}</Link>)
       }
     },
-    Table.EXPAND_COLUMN,
     {
       title: 'Type',
       dataIndex: 'filetype',
@@ -167,6 +166,7 @@ export default function PrintersList () {
   }
 
   const props = {
+    height: '200px',
     name: 'upload',
     multiple: true,
     showUploadList: false,
@@ -214,24 +214,14 @@ export default function PrintersList () {
     setFilesFilters(key)
   }
 
-  const expandedRow = (record) => {
-    return (
-      <FileDetails record={record} />
-    )
-  }
+  // const expandedRow = (record) => {
+  //   return (
+  //     <FileDetails record={record} />
+  //   )
+  // }
 
   return (
     <>
-      <Dragger {...props}>
-        <p className="ant-upload-drag-icon">
-          <InboxOutlined />
-        </p>
-        <p className="ant-upload-text">Click or drag file to this area to upload</p>
-        <p className="ant-upload-hint">
-          Support for a single or bulk upload. Upload your awesomest gcode or stl files.
-        </p>
-      </Dragger>
-      <br />
       <Statistic title="Number of files" value={ files.length } formatter={(value) => (value || <Spin/>)}/>
       <Tabs defaultActiveKey="1" onChange={handleTabChange}>
         <Tabs.TabPane tab="Active" key="active">
@@ -254,14 +244,24 @@ export default function PrintersList () {
       <Table
       columns={columns}
       dataSource={files}
-      expandable={{
-        expandedRowRender: expandedRow
-      }}
+      // expandable={{
+      //   expandedRowRender: expandedRow
+      // }}
       onChange={onChange}
       pagination={false}
       rowKey={'id'}
       rowSelection={rowSelection}
       />
+      <br />
+      <Dragger {...props}>
+        <p className="ant-upload-drag-icon">
+          <InboxOutlined />
+        </p>
+        <p className="ant-upload-text">Click or drag file to this area to upload</p>
+        <p className="ant-upload-hint">
+          Support for a single or bulk upload. Upload your awesomest gcode or stl files.
+        </p>
+      </Dragger>
     </>
   )
 }

@@ -1,6 +1,14 @@
-/* @import '~antd/es/style/themes/default.less'; */
 
-.docs {
-  background-color: #fff;
-  padding: 24px;
+.Collapse {
+    :global(>.ant-collapse-item >.ant-collapse-content>.ant-collapse-content-box:has(.ant-collapse)) {
+      padding: 0px;
+      :global(.ant-collapse >.ant-collapse-item >.ant-collapse-content>.ant-collapse-content-box),
+      :global(.ant-collapse-small >.ant-collapse-item >.ant-collapse-header) {
+        padding-left: 18px;
+      }
+      :global(.ant-collapse) {
+        border: none;
+        border-radius: 0px;
+      }
+    }
 }
