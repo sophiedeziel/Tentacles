@@ -2,7 +2,8 @@
 
 class FileRecord
   class GcodeAnalysis
-    attr_reader :hotend_temperatures, :bed_temperatures, :z_movements, :top_file_comments, :slicer, :layers
+    attr_reader :hotend_temperatures, :bed_temperatures, :z_movements, :top_file_comments, :slicer, :layers,
+                :z_movement_extrusion_unchecked
 
     COMMAND_WATCHERS = {
       'M104' => :hotend_temperature_changes,

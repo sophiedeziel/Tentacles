@@ -16,8 +16,8 @@ module Types
     class Layer < Base::Object
       field :id, Integer, null: false
       field :line_number, Integer, null: false
-      field :height, Float, null: false
-      field :z, Float, null: false
+      field :height, Float, null: true
+      field :z, Float, null: true
     end
 
     field :top_file_comments, [String], null: false
