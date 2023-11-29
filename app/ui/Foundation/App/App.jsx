@@ -4,7 +4,7 @@ import AppLayout from '../AppLayout/AppLayout'
 import AppSwitcher from '../AppSwitcher/AppSwitcher'
 
 import { ApolloClient, HttpLink, InMemoryCache, ApolloProvider, ApolloLink } from '@apollo/client'
-import { createUploadLink } from 'apollo-upload-client'
+import createUploadLink from 'apollo-upload-client/createUploadLink.mjs'
 import { createConsumer } from '@rails/actioncable'
 import ActionCableLink from 'graphql-ruby-client/subscriptions/ActionCableLink'
 import {
