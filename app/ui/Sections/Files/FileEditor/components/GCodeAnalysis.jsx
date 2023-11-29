@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Collapse, Table } from 'antd'
+import { Collapse, Table, Badge } from 'antd'
 
 function GCodeAnalysis ({ gcodeAnalysis, onLineSelect }) {
   const layersTable = () => (
@@ -51,6 +51,11 @@ function GCodeAnalysis ({ gcodeAnalysis, onLineSelect }) {
         title: 'Temperature',
         dataIndex: 'temperature',
         key: 'temperature'
+      },
+      {
+        title: 'Layer',
+        dataIndex: 'layerNumber',
+        key: 'layerNumber'
       }
     ]}
     dataSource={gcodeAnalysis.bedTemperatures}
@@ -73,6 +78,11 @@ function GCodeAnalysis ({ gcodeAnalysis, onLineSelect }) {
         title: 'Temperature',
         dataIndex: 'temperature',
         key: 'temperature'
+      },
+      {
+        title: 'Layer',
+        dataIndex: 'layerNumber',
+        key: 'layerNumber'
       }
     ]}
     dataSource={gcodeAnalysis.hotendTemperatures}
@@ -82,23 +92,26 @@ function GCodeAnalysis ({ gcodeAnalysis, onLineSelect }) {
   const items = [
     {
       key: '1',
-      label: 'Hotend Temperatures',
-      children: hotendTemperaturesTable()
-
+      label: 'Slicer',
+      children: <p>{ gcodeAnalysis.slicer }</p>
     },
     {
       key: '2',
-      label: 'Bed Temperatures',
-      children: bedTemperaturesTable()
+      label: 'Hotend Temperature changes',
+      children: hotendTemperaturesTable(),
+      extra: <Badge count={gcodeAnalysis.hotendTemperatures.length} overflowCount={9999} color="purple" />
     },
     {
       key: '3',
-      label: 'Slicer',
-      children: <p>{ gcodeAnalysis.slicer }</p>
-    }, {
+      label: 'Bed Temperature changes',
+      children: bedTemperaturesTable(),
+      extra: <Badge count={gcodeAnalysis.bedTemperatures.length} overflowCount={9999} color="purple" />
+    },
+    {
       key: '4',
       label: 'Layers',
-      children: layersTable()
+      children: layersTable(),
+      extra: <Badge count={gcodeAnalysis.layers.length} overflowCount={9999} color="purple" />
     }
   ]
 

@@ -3,6 +3,7 @@
 class FileRecord
   class GcodeAnalysis
     class PrusaSlicer < Slicer
+      HUMAN_NAME = 'PrusaSlicer'
       LAYER_CHANGE = /\ALAYER_CHANGE/
       LAYER_CHANGE_Z_HEIGHT = /\AZ:(.+)/
       LAYER_CHANGE_HEIGHT = /\AHEIGHT:(.+)/

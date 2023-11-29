@@ -50,7 +50,7 @@ function SideMenu () {
     openKeys={openKeys}
     onSelect={onSelect}
     selectedKeys={[getRootFromLocation(), pathname]}
-
+    theme={'dark'}
     >
     <Menu.Item key="/" icon={<PieChartOutlined />} >
       Dashboard

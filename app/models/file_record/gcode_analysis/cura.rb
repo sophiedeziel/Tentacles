@@ -3,6 +3,7 @@
 class FileRecord
   class GcodeAnalysis
     class Cura < Slicer
+      HUMAN_NAME = 'Cura'
     end
   end
 end

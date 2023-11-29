@@ -15,6 +15,8 @@ import { FileOutlined } from '@ant-design/icons'
 import GCodeAnalysis from './components/GCodeAnalysis.jsx'
 import gcodeDefinition from './../../../common/gcodeDefinition.js'
 import Tomorrow from 'monaco-themes/themes/Tomorrow.json'
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
+import classes from './FileEditor.module.less'
 
 const { Title } = Typography
 const { Search } = Input
@@ -26,7 +28,6 @@ export default function FileEditor () {
   const editorRef = useRef(null)
   const [lineContent, setLineContent] = useState()
   const [filename, setFilename] = useState(null)
-  const [jumptoLine, setJumptoLine] = useState(1)
 
   const [updateFile] = useMutation(UpdateFile)
 
@@ -46,6 +47,12 @@ export default function FileEditor () {
     }
 
     return (line.split(' ')[0].replace(/\s+/g, ''))
+  }
+
+  function jumpAndHighlight(lineNumber) {
+    editorRef.current.revealPositionInCenter({ lineNumber: lineNumber, column: 0 })
+    editorRef.current.setSelection(new monaco.Selection(lineNumber,0,lineNumber,80));
+    editorRef.current.focus();
   }
 
   function handleEditorWillMount (monaco) {
@@ -279,13 +286,13 @@ export default function FileEditor () {
     {
       key: '3',
       label: 'Code analysis',
-      children: <GCodeAnalysis gcodeAnalysis={file.gcodeAnalysis} onLineSelect={ (num) => { setJumptoLine(num) }} />
+      style: {},
+      children: <GCodeAnalysis gcodeAnalysis={file.gcodeAnalysis} onLineSelect={ (num) => { jumpAndHighlight(num) }} />
     }
   ]
 
   return (<>
     <PageHeader
-    className="site-page-header"
     ghost={false}
     onBack={() => window.history.back()}
     title="GCode editor"
@@ -310,12 +317,16 @@ export default function FileEditor () {
             defaultValue={file.fileContent}
             onMount={handleEditorMount}
             beforeMount={handleEditorWillMount}
-            line={jumptoLine}
             />
         </Card>
       </Col>
       <Col span={8}>
-        <Collapse size="small" items={items} defaultActiveKey={[3]} style={{ overflow: 'scroll', maxHeight: 'calc(100vh - 164px)' }}/>
+        <Collapse
+        size="small"
+        items={items}
+        defaultActiveKey={[3]}
+        className={classes.Collapse}
+        style={{ overflow: 'scroll', maxHeight: 'calc(100vh - 164px)' }}/>
       </Col>
     </Row>
   </>)

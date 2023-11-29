@@ -16,7 +16,7 @@
     "@rails/actioncable": "^7.1.2",
     "@types/react": "~18.2.38",
     "@types/react-dom": "~18.2.17",
-    "antd": "^5.0.0",
+    "antd": "^5.11.5",
     "apollo-upload-client": "^17.0.0",
     "array-move": "^4.0.0",
     "babel-loader": "^9.1.3",

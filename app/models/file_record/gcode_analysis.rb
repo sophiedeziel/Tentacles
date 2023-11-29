@@ -52,11 +52,13 @@ class FileRecord
     end
 
     def hotend_temperature_changes(command, index)
-      @hotend_temperatures << { temperature: command.dig(:args, 'S').to_i, line_number: index + 1 }
+      @hotend_temperatures << { temperature: command.dig(:args, 'S').to_i, line_number: index + 1,
+                                layer_number: @layers.last&.dig(:id) }
     end
 
     def bed_temperature_changes(command, index)
-      @bed_temperatures << { temperature: command.dig(:args, 'S').to_i, line_number: index + 1 }
+      @bed_temperatures << { temperature: command.dig(:args, 'S').to_i, line_number: index + 1,
+                             layer_number: @layers.last&.dig(:id) }
     end
 
     def z_movement_changes(command, index)

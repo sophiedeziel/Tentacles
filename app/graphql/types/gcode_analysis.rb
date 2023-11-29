@@ -5,6 +5,7 @@ module Types
     class Temperature < Base::Object
       field :temperature, Integer, null: false
       field :line_number, Integer, null: false
+      field :layer_number, Integer, null: true
     end
 
     class ZMovements < Base::Object
@@ -22,7 +23,7 @@ module Types
     field :top_file_comments, [String], null: false
     field :slicer, String, null: true
     def slicer
-      object.slicer.class.name
+      object.slicer.class::HUMAN_NAME
     end
     field :hotend_temperatures, [Temperature], null: true
     field :bed_temperatures, [Temperature], null: true

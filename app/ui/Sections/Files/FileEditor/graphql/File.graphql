@@ -8,10 +8,12 @@ query File($id: ID!) {
       bedTemperatures {
         lineNumber
         temperature
+        layerNumber
       }
       hotendTemperatures {
         lineNumber
         temperature
+        layerNumber
       }
       topFileComments
       slicer

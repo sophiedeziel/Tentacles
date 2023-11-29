@@ -158,8 +158,7 @@ export default function PrintersList () {
           </Space>
         )
       }
-    },
-    Table.EXPAND_COLUMN
+    }
   ]
 
   const onChange = (pagination, filters, sorter, extra) => {
@@ -215,11 +214,11 @@ export default function PrintersList () {
     setFilesFilters(key)
   }
 
-  const expandedRow = (record) => {
-    return (
-      <FileDetails record={record} />
-    )
-  }
+  // const expandedRow = (record) => {
+  //   return (
+  //     <FileDetails record={record} />
+  //   )
+  // }
 
   return (
     <>
@@ -245,9 +244,9 @@ export default function PrintersList () {
       <Table
       columns={columns}
       dataSource={files}
-      expandable={{
-        expandedRowRender: expandedRow
-      }}
+      // expandable={{
+      //   expandedRowRender: expandedRow
+      // }}
       onChange={onChange}
       pagination={false}
       rowKey={'id'}
