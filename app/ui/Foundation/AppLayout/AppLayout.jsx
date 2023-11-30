@@ -15,16 +15,16 @@ const { Header, Content, Sider } = Layout
 const darkTheme = {
   algorithm: [theme.darkAlgorithm],
   token: {
-    colorPrimary: '#a565ff',
+    colorPrimary: '#a565ff'
   },
   components: {
     Layout: {
       headerBg: '#110028',
-      siderBg: '#110028',
+      siderBg: '#110028'
     },
     Menu: {
       darkItemBg: '#110028',
-      darkSubMenuItemBg: '#080014',
+      darkSubMenuItemBg: '#080014'
     }
   }
 }
@@ -32,16 +32,16 @@ const darkTheme = {
 const lightTheme = {
   algorithm: [theme.defaultAlgorithm],
   token: {
-    colorPrimary: '#722ed1',
+    colorPrimary: '#722ed1'
   },
   components: {
     Layout: {
       headerBg: '#110028',
-      siderBg: '#110028',
+      siderBg: '#110028'
     },
     Menu: {
       darkItemBg: '#110028',
-      darkSubMenuItemBg: '#080014',
+      darkSubMenuItemBg: '#080014'
     }
   }
 }
@@ -52,6 +52,15 @@ function AppLayout ({ children }) {
   const onCollapse = () => {
     setCollaped(!collapsed)
   }
+
+  const items = [
+    {
+      label: <a href="https://github.com/sophiedeziel/Tentacles/issues" target="_blank" rel="noreferrer">
+                <BugOutlined />
+              </a>,
+      key: 'bugs'
+    }
+  ]
 
   return (
     <ConfigProvider theme={ lightTheme } >
@@ -64,13 +73,7 @@ function AppLayout ({ children }) {
         </ConfigProvider>
           <Layout >
             <Header className={classes.Header} style={{ padding: 0 }}>
-              <Menu mode="horizontal" style={{ float: 'right' }}>
-                <Menu.Item key='bugs'>
-                  <a href="https://github.com/sophiedeziel/Tentacles/issues" target="_blank" rel="noreferrer">
-                    <BugOutlined />
-                  </a>
-                </Menu.Item>
-              </Menu>
+              <Menu mode="horizontal" style={{ float: 'right' }} items={items} />
             </Header>
             <Content style={{ padding: 24 }}>
               {children}
