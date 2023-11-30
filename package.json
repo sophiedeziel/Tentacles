@@ -63,7 +63,7 @@
     "@webpack-cli/serve": "^2.0.5",
     "babel-plugin-macros": "^3.1.0",
     "css-loader": "^6.8.1",
-    "eslint": "^7.32.0",
+    "eslint": "^8.54.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.29.0",
     "eslint-plugin-n": "^16.3.1",
