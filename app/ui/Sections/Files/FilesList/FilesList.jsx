@@ -162,7 +162,7 @@ export default function PrintersList () {
   ]
 
   const onChange = (pagination, filters, sorter, extra) => {
-    console.log('params', pagination, filters, sorter, extra)
+    // console.log('params', pagination, filters, sorter, extra)
   }
 
   const props = {
@@ -173,7 +173,7 @@ export default function PrintersList () {
     customRequest ({ file, onProgress, onSuccess }) {
       const variables = {
         fileAttributes: {
-          file: file,
+          file,
           notes: 'Some notes'
         }
       }

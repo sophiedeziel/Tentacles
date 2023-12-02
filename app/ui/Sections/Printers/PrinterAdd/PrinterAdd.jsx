@@ -50,7 +50,7 @@ export default function PrinterAdd () {
   }
 
   const sendAddPrinter = (name, octoprintUri, octoprintKey) => {
-    addPrinter({ variables: { input: { name: name, octoprintUri: octoprintUri, octoprintKey: octoprintKey } } }).then(() => {
+    addPrinter({ variables: { input: { name, octoprintUri, octoprintKey } } }).then(() => {
       window.location.href = '/printers/manage'
     })
   }

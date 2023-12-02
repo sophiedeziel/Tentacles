@@ -63,7 +63,7 @@ export default function FileEditor () {
   }
 
   function jumpAndHighlight (lineNumber) {
-    editorRef.current.revealPositionInCenter({ lineNumber: lineNumber, column: 0 })
+    editorRef.current.revealPositionInCenter({ lineNumber, column: 0 })
     editorRef.current.setSelection(new monaco.Selection(lineNumber, 0, lineNumber, 80))
     editorRef.current.focus()
   }
