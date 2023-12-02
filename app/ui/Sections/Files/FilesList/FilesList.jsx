@@ -8,7 +8,7 @@ import UploadFile from './graphql/UploadFile.graphql'
 import ArchiveFiles from './graphql/ArchiveFiles.graphql'
 import UnarchiveFiles from './graphql/UnarchiveFiles.graphql'
 
-import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Dropdown, Menu } from 'antd'
+import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Dropdown } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
 // import FileDetails from './components/FileDetails/FileDetails'
 
@@ -141,18 +141,21 @@ export default function PrintersList () {
       key: 'action',
       sorter: true,
       render: (file) => {
+        const items = [
+          {
+            label: <Link to={'/files/' + file.id}>Edit</Link>,
+            key: 'edit'
+          },
+          {
+            label: 'Download',
+            key: 'download',
+            onClick: () => { saveFile(file.downloadUrl, file.filename) }
+          }
+        ]
+
         return (
           <Space size="middle">
-            <Dropdown.Button overlay={
-              <Menu>
-                <Menu.Item key="edit">
-                  <Link to={'/files/' + file.id}>Edit</Link>
-                </Menu.Item>
-                <Menu.Item key="download" onClick={ () => { saveFile(file.downloadUrl, file.filename) } }>
-                  Download
-                </Menu.Item>
-              </Menu>
-              }>
+            <Dropdown.Button menu={{ items }} >
               <Link to={'/files/' + file.id + '/print'}>Print</Link>
             </Dropdown.Button>
           </Space>
@@ -240,7 +243,7 @@ export default function PrintersList () {
             Unarchive
           </Button>
         </Form.Item>
-    },
+    }
     // {
     //   key: 'trash',
     //   label: 'Trash',
