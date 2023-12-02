@@ -25,22 +25,15 @@ export default function NetworkPrinters () {
   }, isRunning ? delay : null)
 
   useEffect(() => {
-    if (data === undefined) {
-      return
+    if (data && data.searchNetworkPrinters.length > 0) {
+      api.info({
+        message: `${printers.length} printers found on the network`,
+        // TODO: Add a link to the documentation to explain how to allow CORS
+        description:
+          'Click on the button with the IP address of the printer you want to add. You will be redirected to your octorpint instance to accept the API key request. You will have to allow CORS on Octoprint first.'
+      })
     }
-    const { searchNetworkPrinters: printers } = data
-
-    if (printers.length === 0) {
-      return
-    }
-
-    api.info({
-      message: `${printers.length} printers found on the network`,
-      // TODO: Add a link to the documentation to explain how to allow CORS
-      description:
-        'Click on the button with the IP address of the printer you want to add. You will be redirected to your octorpint instance to accept the API key request. You will have to allow CORS on Octoprint first.'
-    })
-  }, data)
+  }, [data])
 
   const [printerQuery] = useLazyQuery(PrinterName)
   const [addPrinter] = useMutation(AddPrinter)
