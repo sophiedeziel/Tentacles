@@ -18,6 +18,7 @@ export default function NetworkPrinters () {
   const [apiRequestToken, setApiRequestToken] = useState()
   const [apiRequestIP, setApiRequestIP] = useState()
   const [octoprintTab, setOctoprintTab] = useState()
+  const [api, contextHolder] = notification.useNotification()
 
   useInterval(() => {
     pollAPIKey()
@@ -51,7 +52,7 @@ export default function NetworkPrinters () {
   }
 
   const sendAddPrinter = (name, octoprintUri, octoprintKey) => {
-    addPrinter({ variables: { input: { name: name, octoprintUri: octoprintUri, octoprintKey: octoprintKey } } }).then(() => {
+    addPrinter({ variables: { input: { name, octoprintUri, octoprintKey } } }).then(() => {
       window.location.href = '/printers/manage'
     })
   }
@@ -85,7 +86,7 @@ export default function NetworkPrinters () {
   const { searchNetworkPrinters: printers } = data
 
   if (printers.length !== 0) {
-    notification.info({
+    api.info({
       message: `${printers.length} printers found on the network`,
       // TODO: Add a link to the documentation to explain how to allow CORS
       description:
@@ -96,6 +97,7 @@ export default function NetworkPrinters () {
         className={classes.pageCard}
         title="Add a printer from network scan"
       >
+        {contextHolder}
         <Space>
         {
           data.searchNetworkPrinters.map((ip) => {
