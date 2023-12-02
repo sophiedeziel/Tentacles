@@ -291,7 +291,7 @@ export default function FileEditor () {
       label: 'Documentation',
       children:
       <>
-        <Search placeholder="Search a GCode command" allowClear onChange={onSearch} rootStyle={{ width: 400 }} />
+        <Search placeholder="Search a GCode command" allowClear onChange={onSearch} rootstyle={{ width: 400 }} />
         <Divider />
         <ContextualDocumentation />
       </>
