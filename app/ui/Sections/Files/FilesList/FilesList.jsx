@@ -220,27 +220,38 @@ export default function PrintersList () {
   //   )
   // }
 
+  const items = [
+    {
+      key: 'active',
+      label: 'Active',
+      children:
+        <Form.Item label={selectedRowKeys.length + ' selected : '}>
+          <Button type="primary" onClick={handleArchiveClick} disabled={!hasSelected} loading={loading}>
+            Archive
+          </Button>
+        </Form.Item>
+    },
+    {
+      key: 'archived',
+      label: 'Archived',
+      children:
+        <Form.Item label={selectedRowKeys.length + ' selected : '}>
+          <Button type="primary" onClick={handleUnarchiveClick} disabled={!hasSelected} loading={loading}>
+            Unarchive
+          </Button>
+        </Form.Item>
+    },
+    // {
+    //   key: 'trash',
+    //   label: 'Trash',
+    //   children: <></>
+    // }
+  ]
+
   return (
     <>
       <Statistic title="Number of files" value={ files.length } formatter={(value) => (value || <Spin/>)}/>
-      <Tabs defaultActiveKey="1" onChange={handleTabChange}>
-        <Tabs.TabPane tab="Active" key="active">
-          <Form.Item label={selectedRowKeys.length + ' selected : '}>
-            <Button type="primary" onClick={handleArchiveClick} disabled={!hasSelected} loading={loading}>
-              Archive
-            </Button>
-          </Form.Item>
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Archived" key="archived">
-          <Form.Item label={selectedRowKeys.length + ' selected : '}>
-            <Button type="primary" onClick={handleUnarchiveClick} disabled={!hasSelected} loading={loading}>
-              Unarchive
-            </Button>
-          </Form.Item>
-        </Tabs.TabPane>
-        {/* <Tabs.TabPane tab="Trash" key="trash">
-        </Tabs.TabPane> */}
-      </Tabs>
+      <Tabs defaultActiveKey="1" onChange={handleTabChange} items={items} />
       <Table
       columns={columns}
       dataSource={files}
