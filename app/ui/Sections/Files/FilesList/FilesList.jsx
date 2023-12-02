@@ -8,7 +8,7 @@ import UploadFile from './graphql/UploadFile.graphql'
 import ArchiveFiles from './graphql/ArchiveFiles.graphql'
 import UnarchiveFiles from './graphql/UnarchiveFiles.graphql'
 
-import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Dropdown, Menu } from 'antd'
+import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Dropdown } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
 // import FileDetails from './components/FileDetails/FileDetails'
 
@@ -141,18 +141,21 @@ export default function PrintersList () {
       key: 'action',
       sorter: true,
       render: (file) => {
+        const items = [
+          {
+            label: <Link to={'/files/' + file.id}>Edit</Link>,
+            key: 'edit'
+          },
+          {
+            label: 'Download',
+            key: 'download',
+            onClick: () => { saveFile(file.downloadUrl, file.filename) }
+          }
+        ]
+
         return (
           <Space size="middle">
-            <Dropdown.Button overlay={
-              <Menu>
-                <Menu.Item key="edit">
-                  <Link to={'/files/' + file.id}>Edit</Link>
-                </Menu.Item>
-                <Menu.Item key="download" onClick={ () => { saveFile(file.downloadUrl, file.filename) } }>
-                  Download
-                </Menu.Item>
-              </Menu>
-              }>
+            <Dropdown.Button menu={{ items }} >
               <Link to={'/files/' + file.id + '/print'}>Print</Link>
             </Dropdown.Button>
           </Space>
@@ -162,7 +165,7 @@ export default function PrintersList () {
   ]
 
   const onChange = (pagination, filters, sorter, extra) => {
-    console.log('params', pagination, filters, sorter, extra)
+    // console.log('params', pagination, filters, sorter, extra)
   }
 
   const props = {
@@ -173,7 +176,7 @@ export default function PrintersList () {
     customRequest ({ file, onProgress, onSuccess }) {
       const variables = {
         fileAttributes: {
-          file: file,
+          file,
           notes: 'Some notes'
         }
       }
@@ -220,27 +223,38 @@ export default function PrintersList () {
   //   )
   // }
 
+  const items = [
+    {
+      key: 'active',
+      label: 'Active',
+      children:
+        <Form.Item label={selectedRowKeys.length + ' selected : '}>
+          <Button type="primary" onClick={handleArchiveClick} disabled={!hasSelected} loading={loading}>
+            Archive
+          </Button>
+        </Form.Item>
+    },
+    {
+      key: 'archived',
+      label: 'Archived',
+      children:
+        <Form.Item label={selectedRowKeys.length + ' selected : '}>
+          <Button type="primary" onClick={handleUnarchiveClick} disabled={!hasSelected} loading={loading}>
+            Unarchive
+          </Button>
+        </Form.Item>
+    }
+    // {
+    //   key: 'trash',
+    //   label: 'Trash',
+    //   children: <></>
+    // }
+  ]
+
   return (
     <>
       <Statistic title="Number of files" value={ files.length } formatter={(value) => (value || <Spin/>)}/>
-      <Tabs defaultActiveKey="1" onChange={handleTabChange}>
-        <Tabs.TabPane tab="Active" key="active">
-          <Form.Item label={selectedRowKeys.length + ' selected : '}>
-            <Button type="primary" onClick={handleArchiveClick} disabled={!hasSelected} loading={loading}>
-              Archive
-            </Button>
-          </Form.Item>
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Archived" key="archived">
-          <Form.Item label={selectedRowKeys.length + ' selected : '}>
-            <Button type="primary" onClick={handleUnarchiveClick} disabled={!hasSelected} loading={loading}>
-              Unarchive
-            </Button>
-          </Form.Item>
-        </Tabs.TabPane>
-        {/* <Tabs.TabPane tab="Trash" key="trash">
-        </Tabs.TabPane> */}
-      </Tabs>
+      <Tabs defaultActiveKey="1" onChange={handleTabChange} items={items} />
       <Table
       columns={columns}
       dataSource={files}

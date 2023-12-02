@@ -11,7 +11,6 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom'
 
 const rootSubmenuKeys = ['printers', 'macros', 'reports']
-const { SubMenu } = Menu
 
 function SideMenu () {
   const location = useLocation()
@@ -19,7 +18,8 @@ function SideMenu () {
   const navigate = useNavigate()
 
   const getRootFromLocation = (path = pathname) => {
-    return (path.split('/').filter(e => e)[0] || '/')
+    const root = '/' + (path.split('/').filter(e => e)[0] || '/')
+    return root
   }
 
   const [openKeys, setOpenKeys] = useState([getRootFromLocation()])
@@ -42,6 +42,53 @@ function SideMenu () {
     }
   }
 
+  const items = [
+    {
+      label: 'Dashboard',
+      key: '/',
+      icon: <PieChartOutlined />
+    },
+    {
+      label: 'Projects',
+      key: '/projects',
+      icon: <BookOutlined />
+    },
+    {
+      label: 'Printers',
+      key: 'printers',
+      icon: <UsbOutlined />,
+      children: [
+        {
+          label: 'Print Queues',
+          key: '/printers'
+        },
+        {
+          label: 'Manage',
+          key: '/printers/manage'
+        },
+        {
+          label: 'Operations',
+          key: '/printers/operations'
+        }
+      ]
+    },
+    {
+      label: 'Files',
+      key: '/files',
+      icon: <FileOutlined />
+    },
+    {
+      label: 'Macros',
+      key: '/macros',
+      icon: <CodeOutlined />
+    },
+    {
+      label: 'Reports',
+      key: '/reports',
+      icon: <BarChartOutlined />
+    }
+  ]
+
   return (
     <Menu
     defaultSelectedKeys={['1']}
@@ -51,28 +98,8 @@ function SideMenu () {
     onSelect={onSelect}
     selectedKeys={[getRootFromLocation(), pathname]}
     theme={'dark'}
-    >
-    <Menu.Item key="/" icon={<PieChartOutlined />} >
-      Dashboard
-    </Menu.Item>
-    <Menu.Item key="/projects" icon={<BookOutlined />}>
-      Projects
-    </Menu.Item>
-    <SubMenu key="printers" icon={<UsbOutlined />} title="Printers">
-      <Menu.Item key="/printers">Print Queues</Menu.Item>
-      <Menu.Item key="/printers/manage">Manage</Menu.Item>
-      <Menu.Item key="/printers/operations">Operations</Menu.Item>
-    </SubMenu>
-    <Menu.Item key="/files" icon={<FileOutlined />}>
-      Files
-    </Menu.Item>
-    <Menu.Item key="/macros" icon={<CodeOutlined />}>
-      Macros
-    </Menu.Item>
-    <Menu.Item key="/reports" icon={<BarChartOutlined />}>
-      Reports
-    </Menu.Item>
-    </Menu>
+    items={items}
+    />
   )
 }
 

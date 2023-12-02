@@ -63,7 +63,7 @@ export default function FileEditor () {
   }
 
   function jumpAndHighlight (lineNumber) {
-    editorRef.current.revealPositionInCenter({ lineNumber: lineNumber, column: 0 })
+    editorRef.current.revealPositionInCenter({ lineNumber, column: 0 })
     editorRef.current.setSelection(new monaco.Selection(lineNumber, 0, lineNumber, 80))
     editorRef.current.focus()
   }
@@ -291,7 +291,7 @@ export default function FileEditor () {
       label: 'Documentation',
       children:
       <>
-        <Search placeholder="Search a GCode command" allowClear onChange={onSearch} rootStyle={{ width: 400 }} />
+        <Search placeholder="Search a GCode command" allowClear onChange={onSearch} rootstyle={{ width: 400 }} />
         <Divider />
         <ContextualDocumentation />
       </>

@@ -19,6 +19,7 @@ function GCodeAnalysis ({ gcodeAnalysis, onLineSelect }) {
   const layersTable = () => (
     <Table
     size="small"
+    rowKey="lineNumber"
     columns={[
       {
         title: 'Layer',
@@ -51,6 +52,7 @@ function GCodeAnalysis ({ gcodeAnalysis, onLineSelect }) {
   const bedTemperaturesTable = () => (
     <Table
     size="small"
+    rowKey="lineNumber"
     columns={[
       {
         title: 'Line',
@@ -78,6 +80,7 @@ function GCodeAnalysis ({ gcodeAnalysis, onLineSelect }) {
   const hotendTemperaturesTable = () => (
     <Table
     size="small"
+    rowKey="lineNumber"
     columns={[
       {
         title: 'Line',
@@ -104,24 +107,24 @@ function GCodeAnalysis ({ gcodeAnalysis, onLineSelect }) {
 
   const items = [
     {
-      key: '1',
+      key: 'slicer',
       label: 'Slicer',
       children: <p>{ gcodeAnalysis.slicer }</p>
     },
     {
-      key: '2',
+      key: 'hotendTemperatures',
       label: 'Hotend Temperature changes',
       children: hotendTemperaturesTable(),
       extra: <Badge count={gcodeAnalysis.hotendTemperatures.length} overflowCount={9999} color="purple" />
     },
     {
-      key: '3',
+      key: 'bedTemperatures',
       label: 'Bed Temperature changes',
       children: bedTemperaturesTable(),
       extra: <Badge count={gcodeAnalysis.bedTemperatures.length} overflowCount={9999} color="purple" />
     },
     {
-      key: '4',
+      key: 'layers',
       label: 'Layers',
       children: layersTable(),
       extra: <Badge count={gcodeAnalysis.layers.length} overflowCount={9999} color="purple" />
@@ -129,7 +132,7 @@ function GCodeAnalysis ({ gcodeAnalysis, onLineSelect }) {
   ]
 
   return (
-    <Collapse defaultActiveKey={[1, 2, 3, 4]} activeKey={openedCollapse} items={items} size="small" onChange={setOpenedCollapse} />
+    <Collapse defaultActiveKey={['slicer']} activeKey={openedCollapse} items={items} size="small" onChange={setOpenedCollapse} />
   )
 }
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { useQuery, useLazyQuery, useMutation } from '@apollo/client'
 import { notification, Space, Button, Card } from 'antd'
@@ -18,10 +18,22 @@ export default function NetworkPrinters () {
   const [apiRequestToken, setApiRequestToken] = useState()
   const [apiRequestIP, setApiRequestIP] = useState()
   const [octoprintTab, setOctoprintTab] = useState()
+  const [api, contextHolder] = notification.useNotification()
 
   useInterval(() => {
     pollAPIKey()
   }, isRunning ? delay : null)
+
+  useEffect(() => {
+    if (data && data.searchNetworkPrinters.length > 0) {
+      api.info({
+        message: `${printers.length} printers found on the network`,
+        // TODO: Add a link to the documentation to explain how to allow CORS
+        description:
+          'Click on the button with the IP address of the printer you want to add. You will be redirected to your octorpint instance to accept the API key request. You will have to allow CORS on Octoprint first.'
+      })
+    }
+  }, [data])
 
   const [printerQuery] = useLazyQuery(PrinterName)
   const [addPrinter] = useMutation(AddPrinter)
@@ -51,7 +63,7 @@ export default function NetworkPrinters () {
   }
 
   const sendAddPrinter = (name, octoprintUri, octoprintKey) => {
-    addPrinter({ variables: { input: { name: name, octoprintUri: octoprintUri, octoprintKey: octoprintKey } } }).then(() => {
+    addPrinter({ variables: { input: { name, octoprintUri, octoprintKey } } }).then(() => {
       window.location.href = '/printers/manage'
     })
   }
@@ -85,17 +97,13 @@ export default function NetworkPrinters () {
   const { searchNetworkPrinters: printers } = data
 
   if (printers.length !== 0) {
-    notification.info({
-      message: `${printers.length} printers found on the network`,
-      // TODO: Add a link to the documentation to explain how to allow CORS
-      description:
-        'Click on the button with the IP address of the printer you want to add. You will be redirected to your octorpint instance to accept the API key request. You will have to allow CORS on Octoprint first.'
-    })
+    // setPrintersFound(true)
     return (
       <Card
         className={classes.pageCard}
         title="Add a printer from network scan"
       >
+        {contextHolder}
         <Space>
         {
           data.searchNetworkPrinters.map((ip) => {
