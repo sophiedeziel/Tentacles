@@ -4,11 +4,9 @@
   "sideEffects": false,
   "resolutions": {
     "babel-plugin-dynamic-import-node": "2.3.3",
-    "word-wrap": "npm:@aashutoshrathi/word-wrap",
     "nth-check": "npm:nth-check@2.0.1"
   },
   "dependencies": {
-    "@aashutoshrathi/word-wrap": "^1.2.6",
     "@ant-design/pro-layout": "^7.17.16",
     "@apollo/client": "^3.8.8",
     "@babel/core": "^7.23.5",
