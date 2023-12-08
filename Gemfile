@@ -71,6 +71,8 @@ gem 'colorize'
 gem 'pry' # TODO: fix octoprint gem to not require pry
 gem 'sidekiq', '~> 7.2'
 
+gem 'listen', '~> 3.8'
+
 group :development, :test do
   gem 'bundler-audit'
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
