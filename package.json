@@ -13,7 +13,7 @@
     "@babel/runtime": "^7.23.5",
     "@monaco-editor/react": "^4.6.0",
     "@rails/actioncable": "^7.1.2",
-    "@types/react": "~18.2.42",
+    "@types/react": "~18.2.43",
     "@types/react-dom": "~18.2.17",
     "antd": "^5.11.5",
     "apollo-upload-client": "^18.0.1",
