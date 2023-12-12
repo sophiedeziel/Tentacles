@@ -143,7 +143,7 @@ GEM
     irb (1.10.1)
       rdoc
       reline (>= 0.3.8)
-    json (2.7.0)
+    json (2.7.1)
     language_server-protocol (3.17.0.3)
     libv8-node (18.16.0.0)
     libv8-node (18.16.0.0-arm64-darwin)
@@ -255,7 +255,7 @@ GEM
       redis-client (>= 0.17.0)
     redis-client (0.18.0)
       connection_pool
-    regexp_parser (2.8.2)
+    regexp_parser (2.8.3)
     reline (0.4.1)
       io-console (~> 0.5)
     rexml (3.2.6)
@@ -279,7 +279,7 @@ GEM
       rspec-mocks (~> 3.12)
       rspec-support (~> 3.12)
     rspec-support (3.12.1)
-    rubocop (1.58.0)
+    rubocop (1.59.0)
       json (~> 2.3)
       language_server-protocol (>= 3.17.0)
       parallel (~> 1.10)
@@ -404,7 +404,7 @@ DEPENDENCIES
   redis (~> 5.0)
   rspec-its
   rspec-rails
-  rubocop (~> 1.58)
+  rubocop (~> 1.59)
   rubocop-rails (~> 2.22)
   rubocop-rspec
   selenium-webdriver
