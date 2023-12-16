@@ -53,6 +53,9 @@ class FileRecord < ApplicationRecord
   end
 
   def gcode_analysis
-    @gcode_analysis ||= GcodeAnalysis.new(file)
+    @gcode_analysis ||=
+      Rails.cache.fetch("#{cache_key_with_version}/gcode_analysis") do
+        GcodeAnalysis.new(file)
+      end
   end
 end
