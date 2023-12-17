@@ -6,13 +6,13 @@ import { useQuery, useMutation } from '@apollo/client'
 import File from './graphql/File.graphql'
 import UpdateFile from './graphql/UpdateFile.graphql'
 import GcodeDocs from './GcodeDocs/GcodeDocs.json'
-import { GCodeViewer } from 'react-gcode-viewer'
 
 import { Card, Collapse, Col, Row, Button, Typography, Divider, Input } from 'antd'
 import { PageHeader } from '@ant-design/pro-layout'
 import { FileOutlined } from '@ant-design/icons'
 
 import GCodeAnalysis from './components/GCodeAnalysis.jsx'
+import GCodePreview from './components/GCodePreview'
 import gcodeDefinition from './../../../common/gcodeDefinition.js'
 import Tomorrow from 'monaco-themes/themes/Tomorrow.json'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
@@ -26,6 +26,7 @@ export default function FileEditor () {
   const fileID = match.params.id
 
   const editorRef = useRef(null)
+  const gcodePreviewRef1 = useRef(null)
   const [lineContent, setLineContent] = useState()
   const [filename, setFilename] = useState(null)
 
@@ -100,6 +101,7 @@ export default function FileEditor () {
       }
     }
     )
+    gcodePreviewRef1.current.processGCode(editorRef.current.getValue())
   }
 
   const onSearch = (event) => {
@@ -269,22 +271,17 @@ export default function FileEditor () {
     {
       key: '1',
       label: 'Preview',
-      children: <GCodeViewer
-      orbitControls
-      showAxes
-      quality={0.2}
-      floorProps={{
-        gridWidth: 300,
-        gridLength: 300
-      }}
-      style={{
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '25%'
-      }}
-      url={file.downloadUrl}
-  />
+      children: <GCodePreview
+      ref={gcodePreviewRef1}
+      topLayerColor="#8f59dc"
+      lastSegmentColor="red"
+      extrusionColor='grey'
+      travelColor='black'
+      // startLayer={0}
+      // endLayer={970}
+      lineWidth={25}
+      gcode={file.fileContent}
+    />
     },
     {
       key: '2',
@@ -312,8 +309,8 @@ export default function FileEditor () {
     >
 
     </PageHeader>
-    <Row gutter={16}>
-      <Col span={16}>
+    <Row gutter={12}>
+      <Col span={12}>
         <Card
         title={<Input onChange={(e) => setFilename(e.target.value)} prefix={<FileOutlined />} defaultValue={file.filename} />}
         extra={[
@@ -333,7 +330,7 @@ export default function FileEditor () {
             />
         </Card>
       </Col>
-      <Col span={8}>
+      <Col span={12}>
         <Collapse
         items={items}
         defaultActiveKey={['1', '2', '3']}
