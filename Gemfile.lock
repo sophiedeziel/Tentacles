@@ -192,7 +192,7 @@ GEM
       racc (~> 1.4)
     nokogiri (1.15.5-x86_64-linux)
       racc (~> 1.4)
-    parallel (1.23.0)
+    parallel (1.24.0)
     parser (3.2.2.4)
       ast (~> 2.4.1)
       racc
@@ -296,7 +296,7 @@ GEM
       rubocop (~> 1.41)
     rubocop-factory_bot (2.24.0)
       rubocop (~> 1.33)
-    rubocop-rails (2.22.2)
+    rubocop-rails (2.23.0)
       activesupport (>= 4.2.0)
       rack (>= 1.1)
       rubocop (>= 1.33.0, < 2.0)
@@ -405,7 +405,7 @@ DEPENDENCIES
   rspec-its
   rspec-rails
   rubocop (~> 1.59)
-  rubocop-rails (~> 2.22)
+  rubocop-rails (~> 2.23)
   rubocop-rspec
   selenium-webdriver
   shakapacker (~> 7.1)
