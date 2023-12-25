@@ -40,7 +40,7 @@
     "regenerator-runtime": "^0.14.1",
     "shakapacker": "7.1.0",
     "terser-webpack-plugin": "^5.3.9",
-    "three": "^0.159.0",
+    "three": "^0.160.0",
     "typescript": "^5.3.3",
     "webpack": "^5.89.0",
     "webpack-assets-manifest": "^5.1.0",
