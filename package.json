@@ -39,7 +39,7 @@
     "react-sortable-hoc": "^2.0.0",
     "regenerator-runtime": "^0.14.1",
     "shakapacker": "7.1.0",
-    "terser-webpack-plugin": "^5.3.9",
+    "terser-webpack-plugin": "^5.3.10",
     "three": "^0.160.0",
     "typescript": "^5.3.3",
     "webpack": "^5.89.0",
