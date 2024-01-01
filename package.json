@@ -10,7 +10,7 @@
     "@ant-design/pro-layout": "^7.17.16",
     "@apollo/client": "^3.8.8",
     "@babel/core": "^7.23.6",
-    "@babel/runtime": "^7.23.6",
+    "@babel/runtime": "^7.23.7",
     "@monaco-editor/react": "^4.6.0",
     "@rails/actioncable": "^7.1.2",
     "@types/react": "~18.2.46",
