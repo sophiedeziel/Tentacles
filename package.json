@@ -73,7 +73,7 @@
     "less-loader": "^11.1.4",
     "mini-css-extract-plugin": "^2.7.6",
     "node-sass": "^9.0.0",
-    "postcss": "^8.4.32",
+    "postcss": "^8.4.33",
     "postcss-import": "^16.0.0",
     "react-scripts": "^5.0.1",
     "sass-loader": "^13.3.3",
