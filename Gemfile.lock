@@ -1,11 +1,11 @@
 GIT
   remote: https://github.com/sophiedeziel/octoprint.git
-  revision: aca4ce57a654fbc86cecf8f2abe1791bb95cbf2e
+  revision: 3e6043596f6b176417e924d5d9ab477745abc942
   branch: main
   specs:
     octoprint (0.1.0)
       activesupport
-      faraday (>= 2.2, < 2.8)
+      faraday (>= 2.2, < 2.10)
       faraday-multipart (~> 1.0.3)
       sorbet-runtime (~> 0.5.10908)
       zeitwerk (~> 2.6)
@@ -84,7 +84,6 @@ GEM
       actionpack (>= 6.1.6)
       graphql (>= 1.8)
     ast (2.4.2)
-    base64 (0.2.0)
     bindex (0.8.1)
     bootsnap (1.17.0)
       msgpack (~> 1.2)
@@ -121,13 +120,12 @@ GEM
     factory_bot_rails (6.4.3)
       factory_bot (~> 6.4)
       railties (>= 5.0.0)
-    faraday (2.7.11)
-      base64
-      faraday-net_http (>= 2.0, < 3.1)
-      ruby2_keywords (>= 0.0.4)
+    faraday (2.9.0)
+      faraday-net_http (>= 2.0, < 3.2)
     faraday-multipart (1.0.4)
       multipart-post (~> 2)
-    faraday-net_http (3.0.2)
+    faraday-net_http (3.1.0)
+      net-http
     ffi (1.16.3)
     globalid (1.1.0)
       activesupport (>= 5.0)
@@ -173,6 +171,8 @@ GEM
     msgpack (1.7.2)
     multipart-post (2.3.0)
     mysql2 (0.5.5)
+    net-http (0.4.1)
+      uri
     net-imap (0.3.7)
       date
       net-protocol
@@ -307,7 +307,6 @@ GEM
       rubocop-capybara (~> 2.17)
       rubocop-factory_bot (~> 2.22)
     ruby-progressbar (1.13.0)
-    ruby2_keywords (0.0.5)
     rubyzip (2.3.2)
     selenium-webdriver (4.16.0)
       rexml (~> 3.2, >= 3.2.5)
@@ -331,7 +330,7 @@ GEM
       simplecov_json_formatter (~> 0.1)
     simplecov-html (0.12.3)
     simplecov_json_formatter (0.1.4)
-    sorbet-runtime (0.5.11122)
+    sorbet-runtime (0.5.11180)
     sprockets (4.2.0)
       concurrent-ruby (~> 1.0)
       rack (>= 2.2.4, < 4)
@@ -345,6 +344,7 @@ GEM
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.5.0)
+    uri (0.13.0)
     vcr (6.2.0)
     web-console (4.2.1)
       actionview (>= 6.0.0)
