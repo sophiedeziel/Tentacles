@@ -38,7 +38,7 @@ jobs:
           bundler-cache: true
 
       - name: Restore cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             **/node_modules
@@ -95,7 +95,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Restore cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             **/node_modules
@@ -132,7 +132,7 @@ jobs:
           bundler-cache: true
 
       - name: Restore cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             **/node_modules
