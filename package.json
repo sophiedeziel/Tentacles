@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@ant-design/pro-layout": "^7.17.19",
-    "@apollo/client": "^3.8.9",
+    "@apollo/client": "^3.8.10",
     "@babel/core": "^7.23.7",
     "@babel/runtime": "^7.23.8",
     "@monaco-editor/react": "^4.6.0",
