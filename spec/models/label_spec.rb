@@ -5,6 +5,7 @@ RSpec.describe Label, type: :model do
 
   it 'has a valid factory' do
     expect(label).to be_valid
+    expect(build(:label, :with_files)).to be_valid
   end
 
   describe '#name' do
@@ -42,5 +43,19 @@ RSpec.describe Label, type: :model do
     expect(Label.new(name: 'my label', color: 'rgb(0, 155, 0)')).to_not be_valid
     expect(Label.new(name: 'my label', color: '#ff00ff')).to be_valid
     expect(Label.new(name: 'my label', color: '#f0f')).to be_valid
+  end
+
+  describe '#file_records' do
+    subject { build(:label, :with_files).file_records }
+
+    it { is_expected.to_not be_nil }
+    it { is_expected.to_not be_empty }
+
+    it 'does not have duplicate files associated to a single label' do
+      label = create(:label, :with_files)
+      label.file_records.build(labels: [label])
+
+      expect(label).to be_invalid # (same as to_not be_valid)
+    end
   end
 end

@@ -7,6 +7,7 @@ RSpec.describe FileRecord, type: :model do
 
   it 'has a valid factory' do
     expect(file).to be_valid
+    expect(build(:file_record, :with_labels)).to be_valid
   end
 
   describe '#filename' do
@@ -134,6 +135,20 @@ RSpec.describe FileRecord, type: :model do
       expect { subject }.to change {
                               file.file_content
                             }.from(Rails.root.join('spec/fixture_files/test.gcode').read).to(content)
+    end
+  end
+
+  describe '#labels' do
+    subject { build(:file_record, :with_labels).labels }
+
+    it { is_expected.to_not be_nil }
+    it { is_expected.to_not be_empty }
+
+    it 'does not have duplicate labels associated to a single file record' do
+      file_record = create(:file_record, :with_labels)
+      file_record.labels.build(file_records: [file_record])
+
+      expect(file_record).to be_invalid # (same as to_not be_valid)
     end
   end
 end
