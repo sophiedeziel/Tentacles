@@ -4,6 +4,9 @@ class FileRecord < ApplicationRecord
   has_one_attached :file
   has_many :jobs, class_name: 'Printer::Job', as: :executable, dependent: :nullify
 
+  has_many :file_labels, dependent: :destroy
+  has_many :labels, through: :file_labels
+
   validates :file, presence: true
 
   def filename
