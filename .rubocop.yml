@@ -32,3 +32,6 @@ Rails/Output:
   Exclude:
     - 'lib/spooler.rb'
     - 'lib/spooler/**/*'
+
+Rails/UniqueValidationWithoutIndex:
+  Enabled: false

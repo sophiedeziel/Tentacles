@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 RSpec.describe Label, type: :model do
@@ -27,7 +29,7 @@ RSpec.describe Label, type: :model do
   end
 
   it 'has a unique name' do
-    Label.create(name: 'My yellow label', color: '#0000ff') # same as create(:label, name: 'My yellow label', color: '#0000ff')
+    Label.create(name: 'My yellow label', color: '#0000ff')
     duplicate_label = Label.new(name: 'My yellow label', color: '#00f')
     expect(duplicate_label).to_not be_valid
   end
