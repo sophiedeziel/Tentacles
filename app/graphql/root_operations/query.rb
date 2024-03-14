@@ -33,7 +33,21 @@ module RootOperations
       argument :id, ID, required: true
     end
     def file(id:)
-      ::FileRecord.find(id)
+      ::FileRecord.find(id) if ::FileRecord.exists?(id)
+    end
+
+    field :labels, Types::Label.connection_type, null: false do
+      description 'labels'
+    end
+    def labels
+      ::Label.all
+    end
+
+    field :label, Types::Label, null: true do
+      argument :id, ID, required: true
+    end
+    def label(id:)
+      ::Label.find(id) if ::Label.exists?(id)
     end
 
     field :search_network_printers, [String], null: true
