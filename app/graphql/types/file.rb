@@ -16,5 +16,6 @@ module Types
     field :top_file_comments, String, null: true
     field :file_content, String, null: true
     field :gcode_analysis, Types::GcodeAnalysis, null: true
+    field :labels, Label.connection_type, null: false
   end
 end
