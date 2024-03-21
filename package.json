@@ -74,7 +74,7 @@
     "mini-css-extract-plugin": "^2.8.1",
     "node-sass": "^9.0.0",
     "postcss": "^8.4.37",
-    "postcss-import": "^16.0.1",
+    "postcss-import": "^16.1.0",
     "react-scripts": "^5.0.1",
     "sass-loader": "^14.1.1",
     "style-loader": "^3.3.4",
