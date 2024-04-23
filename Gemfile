@@ -64,7 +64,7 @@ gem 'octoprint', github: 'sophiedeziel/octoprint', branch: 'main' # For prototyp
 
 gem 'bindex' # shakapacker won't work without this
 gem 'mini_racer', platforms: :ruby
-gem 'react_on_rails', '~> 13.4.0'
+gem 'react_on_rails', '~> 14.0.0'
 gem 'shakapacker', '~> 7.2'
 
 gem 'colorize'
