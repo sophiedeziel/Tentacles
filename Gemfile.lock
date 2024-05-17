@@ -275,7 +275,7 @@ GEM
       redis-client (>= 0.22.0)
     redis-client (0.22.1)
       connection_pool
-    regexp_parser (2.9.0)
+    regexp_parser (2.9.2)
     reline (0.5.7)
       io-console (~> 0.5)
     rexml (3.2.8)
@@ -317,7 +317,7 @@ GEM
       rubocop (~> 1.41)
     rubocop-factory_bot (2.25.1)
       rubocop (~> 1.41)
-    rubocop-rails (2.24.1)
+    rubocop-rails (2.25.0)
       activesupport (>= 4.2.0)
       rack (>= 1.1)
       rubocop (>= 1.33.0, < 2.0)
@@ -433,7 +433,7 @@ DEPENDENCIES
   rspec-its
   rspec-rails
   rubocop (~> 1.63)
-  rubocop-rails (~> 2.24)
+  rubocop-rails (~> 2.25)
   rubocop-rspec
   selenium-webdriver
   shakapacker (~> 7.2)
