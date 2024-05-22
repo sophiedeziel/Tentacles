@@ -144,7 +144,7 @@ GEM
       activesupport (>= 6.1)
     graphiql-rails (1.10.0)
       railties
-    graphql (2.3.3)
+    graphql (2.3.4)
       base64
     hashdiff (1.1.0)
     i18n (1.14.5)
