@@ -1,4 +1,4 @@
-FROM ruby:3.2.2-alpine AS build-env
+FROM ruby:3.3.2-alpine AS build-env
 
 ARG RAILS_ROOT=/usr/src/app
 
