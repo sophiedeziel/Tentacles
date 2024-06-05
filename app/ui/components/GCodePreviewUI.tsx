@@ -54,7 +54,7 @@ function GCodePreviewUI(
 
   useImperativeHandle(ref, () => ({
     getLayerCount() {
-      return preview?.layers.length as number;
+      return preview?.layers?.length as number;
     },
     processGCode(gcode) {
       preview?.processGCode(gcode);
@@ -78,8 +78,9 @@ function GCodePreviewUI(
         topLayerColor: new THREE.Color(topLayerColor).getHex(),
         lastSegmentColor: new THREE.Color(lastSegmentColor).getHex(),
         buildVolume: { x: 250, y: 220, z: 150 },
-        initialCameraPosition: [0, 400, 450],
-        allowDragNDrop: false
+        // initialCameraPosition: [0, 400, 450],
+        allowDragNDrop: false,
+        renderTubes: true
       })
     );
 

@@ -6,7 +6,6 @@ import { useQuery, useMutation } from '@apollo/client'
 import File from './graphql/File.graphql'
 import UpdateFile from './graphql/UpdateFile.graphql'
 import GcodeDocs from './GcodeDocs/GcodeDocs.json'
-import { GCodeViewer } from 'react-gcode-viewer'
 import GCodePreviewUI from '../../../components/GCodePreviewUI'
 
 import { Card, Collapse, Col, Row, Button, Typography, Divider, Input, Slider } from 'antd'
@@ -292,7 +291,8 @@ export default function FileEditor () {
     {
       key: '1',
       label: 'Preview',
-      children: <>          <Col span={1}>
+      children: <>
+      <Col span={2}>
       <Slider
         vertical
         value={selectedLayer}
@@ -302,7 +302,7 @@ export default function FileEditor () {
         marks={{ 1: '1', [layerCount]: layerCount }}
         />
     </Col>
-    <Col span={11}>
+    <Col span={8}>
       <GCodePreviewUI
       ref={gcodePreviewRef}
       topLayerColor="lime"
@@ -310,6 +310,7 @@ export default function FileEditor () {
       startLayer={1}
       endLayer={selectedLayer + 1}
       lineWidth={20}
+      renderTubes={true}
     /> </Col></>
     },
     {

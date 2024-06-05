@@ -6039,11 +6039,12 @@ gaze@^1.0.0:
   dependencies:
     globule "^1.0.0"
 
-"gcode-preview@https://github.com/sophiedeziel/gcode-preview#Tentacles":
-  version "2.9.3"
-  resolved "https://github.com/sophiedeziel/gcode-preview#99518b491b198d7b71588451efb789393c8b972e"
+gcode-preview@^2.17:
+  version "2.17.0"
+  resolved "https://registry.yarnpkg.com/gcode-preview/-/gcode-preview-2.17.0.tgz#3caf8ccd872c9a16de655039f38eb75b681c610c"
+  integrity sha512-PUKoOb/zhaR6CBoyEJ0AV8K7StYJ1NDSTzPk7xaTn5YKXa74MsC6tpEP8qkBECtQF1ZzTluOncesegavsp3imQ==
   dependencies:
-    three "^0.144.0"
+    three "^0.155.0"
 
 gensync@^1.0.0-beta.2:
   version "1.0.0-beta.2"
@@ -12008,15 +12009,15 @@ three-stdlib@2.17.2:
     potpack "^1.0.1"
     zstddec "^0.0.2"
 
+three@^0.155.0:
+  version "0.155.0"
+  resolved "https://registry.yarnpkg.com/three/-/three-0.155.0.tgz#cca9b8ad817830c8b4fdd8f0d9a12a2e413a2672"
+  integrity sha512-sNgCYmDijnIqkD/bMfk+1pHg3YzsxW7V2ChpuP6HCQ8NiZr3RufsXQr8M3SSUMjW4hG+sUk7YbyuY0DncaDTJQ==
+
 three@^0.161.0:
   version "0.161.0"
   resolved "https://registry.yarnpkg.com/three/-/three-0.161.0.tgz#38aafaa82fe5467fde2e33933515d1b6beb17d91"
   integrity sha512-LC28VFtjbOyEu5b93K0bNRLw1rQlMJ85lilKsYj6dgTu+7i17W+JCCEbvrpmNHF1F3NAUqDSWq50UD7w9H2xQw==
-
-three@^0.144.0:
-  version "0.144.0"
-  resolved "https://registry.yarnpkg.com/three/-/three-0.144.0.tgz#2818517169f8ff94eea5f664f6ff1fcdcd436cc8"
-  integrity sha512-R8AXPuqfjfRJKkYoTQcTK7A6i3AdO9++2n8ubya/GTU+fEHhYKu1ZooRSCPkx69jbnzT7dD/xEo6eROQTt2lJw==
 
 throat@^6.0.1:
   version "6.0.1"
