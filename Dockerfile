@@ -29,8 +29,8 @@ RUN bundle update --bundler \
   && bundle install --jobs 4 --retry 3 \
   && bundle clean --force \
   && rm -rf /usr/local/bundle/cache \
-  && find vendor/bundle/ruby/3.2.0/gems/ -name "*.c" -delete \
-  && find vendor/bundle/ruby/3.2.0/gems/ -name "*.o" -delete
+  && find vendor/bundle/ruby/3.3.0/gems/ -name "*.c" -delete \
+  && find vendor/bundle/ruby/3.3.0/gems/ -name "*.o" -delete
 
 COPY . .
 
