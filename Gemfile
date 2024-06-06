@@ -6,7 +6,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby '~> 3.3'
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-rails_version = '~> 7.0'
+rails_version = '~> 7.1.3.4'
 gem 'actionpack',    rails_version
 gem 'actionview',    rails_version
 gem 'activemodel',   rails_version
