@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export SECRET_KEY_BASE="bundle exec rake secret"
+export SECRET_KEY_BASE=`bundle exec rails secret`
 if [ -f tmp/pids/server.pid ]; then
   rm tmp/pids/server.pid
 fi
