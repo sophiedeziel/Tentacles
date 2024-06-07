@@ -64,21 +64,21 @@ development:
   # Reference: https://webpack.js.org/configuration/dev-server/
   dev_server:
     stats: verbose
-    server: https
+    server: http
     host: 0.0.0.0
     port: 3035
     # Hot Module Replacement updates modules while the application is running without a full reload
-    hmr: false
+    hmr: true
     # Defaults to the inverse of hmr. Uncomment to manually set this.
     # live_reload: true
     client:
       # Should we show a full-screen overlay in the browser when there are compiler errors or warnings?
-      overlay: true
+      overlay: false
       # May also be a string
-      webSocketURL:
-       hostname: "0.0.0.0"
-       pathname: "/ws"
-       port: 8080
+      # webSocketURL:
+      #  hostname: "0.0.0.0"
+      #  pathname: "/ws"
+      #  port: 8080
     # Should we use gzip compression?
     compress: true
     # Note that apps that do not check the host are vulnerable to DNS rebinding attacks

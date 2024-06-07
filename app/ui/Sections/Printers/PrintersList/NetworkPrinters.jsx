@@ -58,7 +58,7 @@ export default function NetworkPrinters () {
         })
       }
     }).catch((error) => {
-      console.log(error)
+      console.error('pollAPIKey', error)
     })
   }
 

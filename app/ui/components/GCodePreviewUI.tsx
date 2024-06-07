@@ -8,6 +8,7 @@ import {
   useRef,
   useState
 } from 'react';
+import { render } from 'react-dom';
 import * as THREE from 'three';
 
 interface GCodePreviewProps {
@@ -16,6 +17,8 @@ interface GCodePreviewProps {
   startLayer?: number;
   endLayer?: number;
   lineWidth?: number;
+  renderTubes?: boolean;
+  gcode?: string;
 }
 
 interface GCodePreviewHandle {
@@ -34,7 +37,9 @@ function GCodePreviewUI(
     lastSegmentColor = '',
     startLayer,
     endLayer,
-    lineWidth
+    lineWidth,
+    renderTubes,
+    gcode
   } = props;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [preview, setPreview] = useState<GCodePreview.WebGLPreview>();
@@ -43,7 +48,7 @@ function GCodePreviewUI(
     if (!preview) return
     console.log("changed")
     preview.endLayer = endLayer
-    console.log(preview)
+    // console.log(preview)
     preview.render()
   }, [endLayer, startLayer, lineWidth, topLayerColor, lastSegmentColor]);
 
@@ -54,19 +59,30 @@ function GCodePreviewUI(
 
   useImperativeHandle(ref, () => ({
     getLayerCount() {
+      console.log("getLayerCount");
       return preview?.layers?.length as number;
     },
     processGCode(gcode) {
+      console.log("processGCode");
       preview?.processGCode(gcode);
     },
     replaceGCode(gcode) {
+      console.log("replaceGCode");
       preview?.clear();
       preview?.processGCode(gcode);
     },
     render() {
+      console.log("render");
       preview?.render();
     }
   }));
+
+  useEffect(() => {
+    if (!gcode) return;
+    console.log("gcode changed")
+    preview?.clear();
+    preview?.processGCode(gcode);
+}, [gcode, preview]);
 
   useEffect(() => {
     setPreview(
@@ -75,14 +91,16 @@ function GCodePreviewUI(
         startLayer,
         endLayer,
         lineWidth,
-        topLayerColor: new THREE.Color(topLayerColor).getHex(),
-        lastSegmentColor: new THREE.Color(lastSegmentColor).getHex(),
         buildVolume: { x: 250, y: 220, z: 150 },
-        // initialCameraPosition: [0, 400, 450],
+        initialCameraPosition: [0, 200, 400],
         allowDragNDrop: false,
-        renderTubes: true
+        renderTubes: renderTubes,
+        extrusionColor: "#00ff00",
       })
+
     );
+
+    preview?.resize();
 
     window.addEventListener('resize', resizePreview);
 
@@ -93,8 +111,8 @@ function GCodePreviewUI(
 
 
   return (
-    <div className="gcode-preview">
-      <canvas ref={canvasRef}></canvas>
+    <div className="gcode-preview" style={{width: '100%'}}>
+      <canvas ref={canvasRef} width="auto" height="auto" style={{width: '100%'}}></canvas>
 
       <div>
         <div>topLayerColor: {topLayerColor}</div>

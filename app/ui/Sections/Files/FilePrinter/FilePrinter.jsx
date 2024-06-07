@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useMatch } from 'react-router'
 import { useQuery, useMutation } from '@apollo/client'
 import ReactMarkdown from 'react-markdown'
-import { GCodeViewer } from 'react-gcode-viewer'
+// import { GCodeViewer } from 'react-gcode-viewer'
 
 import classes from './FilePrinter.module.less'
 
@@ -104,7 +104,7 @@ export default function FilePrinter () {
         </Col>
         <Col span={12}>
           <Card title="File Preview" >
-            <GCodeViewer
+            {/* <GCodeViewer
               orbitControls
               showAxes
               quality={0.2}
@@ -119,7 +119,7 @@ export default function FilePrinter () {
                 height: '400px'
               }}
               url={file.downloadUrl}
-            />
+            /> */}
           </Card>
           <Card title="File informations" >
             <Row>

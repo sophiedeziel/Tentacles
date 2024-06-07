@@ -52,24 +52,11 @@ export default function FileEditor () {
     variables: { id: fileID }
   })
 
-  useEffect(() => {
-    if (!fileData) return
-    if (!fileData.file) return
-    if (!fileData.file.fileContent) return
-    // console.log(fileData.file.fileContent.match(/;LAYER:(\d+)/g).length)
-    const layers = parseInt(fileData.file.fileContent.match(/;LAYER:(\d+)/g).length)
-    setLayerCount(layers)
-    setSelectedLayer(layers)
-    gcodePreviewRef.current?.processGCode(fileData.file.fileContent)
-    gcodePreviewRef.current?.render()
-  }, [fileData])
-
   if (error) return (<>Error!{error.message}</>)
 
   if (loading) return (<>Loading</>)
 
   const { file } = fileData
-  // gcodePreviewRef.current?.processGCode(file.fileContent)
 
   function command (line) {
     if (line.startsWith(';')) {
@@ -92,7 +79,7 @@ export default function FileEditor () {
   }
 
   function handleEditorChange (value) {
-    gcodePreviewRef.current?.replaceGCode(value)
+    // gcodePreviewRef.current?.replaceGCode(value)
   }
 
   function handleEditorMount (editor) {
@@ -122,6 +109,7 @@ export default function FileEditor () {
       }
     }
     )
+    gcodePreviewRef.current?.replaceGCode(editorRef.current.getValue())
   }
 
   const onSearch = (event) => {
@@ -291,27 +279,29 @@ export default function FileEditor () {
     {
       key: '1',
       label: 'Preview',
-      children: <>
-      <Col span={2}>
-      <Slider
-        vertical
-        value={selectedLayer}
-        max={layerCount}
-        min={1}
-        onChange={setSelectedLayer}
-        marks={{ 1: '1', [layerCount]: layerCount }}
-        />
-    </Col>
-    <Col span={8}>
-      <GCodePreviewUI
-      ref={gcodePreviewRef}
-      topLayerColor="lime"
-      lastSegmentColor="red"
-      startLayer={1}
-      endLayer={selectedLayer + 1}
-      lineWidth={20}
-      renderTubes={true}
-    /> </Col></>
+      children:
+      <Row>
+      <Col span={4}>
+        <Slider
+          vertical
+          value={selectedLayer}
+          max={layerCount}
+          min={1}
+          onChange={setSelectedLayer}
+          marks={{ 1: '1', [layerCount]: layerCount }}
+          />
+      </Col>
+      <Col span={20}>
+        <GCodePreviewUI
+        ref={gcodePreviewRef}
+        startLayer={1}
+        endLayer={selectedLayer + 1}
+        lineWidth={20}
+        renderTubes={true}
+        gcode={file.fileContent}
+      />
+      </Col>
+    </Row>
     },
     {
       key: '2',
