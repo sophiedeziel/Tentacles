@@ -45,7 +45,7 @@ export default function PrinterAdd () {
         })
       }
     }).catch((error) => {
-      console.log(error)
+      console.error('pollAPIKey', error)
     })
   }
 
