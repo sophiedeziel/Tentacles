@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom'
 import { saveAs } from 'file-saver'
 
 import { useQuery, useMutation } from '@apollo/client'
+
 import Files from './graphql/Files.graphql'
 import UploadFile from './graphql/UploadFile.graphql'
 import ArchiveFiles from './graphql/ArchiveFiles.graphql'
 import UnarchiveFiles from './graphql/UnarchiveFiles.graphql'
 
-import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Dropdown, Tag } from 'antd'
+import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Dropdown, Tag, Select } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
 // import FileDetails from './components/FileDetails/FileDetails'
 
@@ -93,6 +94,8 @@ export default function PrintersList () {
   if (error) return (<>Error!{error.message}</>)
 
   if (loading) return (<>Loading</>)
+
+  const labels = filesData.labels?.edges
 
   const files = filesData.files?.filter(filters[filesFilters])
 
@@ -232,15 +235,61 @@ export default function PrintersList () {
   //   )
   // }
 
+  const optionRender = ({ data }) => {
+    const { name, id, color } = data
+    const onPreventMouseDown = (event) => {
+      event.preventDefault()
+      event.stopPropagation()
+    }
+    return (
+      <>
+      { id === name && 'Create: '}
+        <Tag
+          key={id}
+          color={color}
+          onMouseDown={onPreventMouseDown}
+        >
+          {name}
+        </Tag>
+      </>
+    )
+  }
+
+  console.log('labels', labels)
+
   const items = [
     {
       key: 'active',
       label: 'Active',
       children:
         <Form.Item label={selectedRowKeys.length + ' selected : '}>
+          <Space>
           <Button type="primary" onClick={handleArchiveClick} disabled={!hasSelected} loading={loading}>
             Archive
           </Button>
+          <Select
+            mode="tags"
+            placeholder="Labels"
+            style={{
+              width: 200
+            }}
+            onChange={() => {}}
+            options={
+              labels.map(({ node }) => {
+                return { ...node }
+              })
+            }
+            disabled={!hasSelected}
+            optionRender={optionRender}
+            tagRender={() => {}}
+            fieldNames={{ label: 'name', value: 'id' }}
+            showSearch={true}
+            filterOption={(input, option) => (option?.name ?? '').includes(input)}
+            filterSort={(optionA, optionB) =>
+              (optionA?.name ?? '').toLowerCase().localeCompare((optionB?.name ?? '').toLowerCase())
+            }
+          />
+          </Space>
         </Form.Item>
     },
     {
