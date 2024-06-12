@@ -10,4 +10,13 @@ fragment FileFields on File {
   isDeleted
   archivedAt
   downloadUrl
+  labels {
+    edges {
+      node {
+        id
+        name
+        color
+      }
+    }
+  }
 }

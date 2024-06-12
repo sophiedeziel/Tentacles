@@ -8,7 +8,7 @@ import UploadFile from './graphql/UploadFile.graphql'
 import ArchiveFiles from './graphql/ArchiveFiles.graphql'
 import UnarchiveFiles from './graphql/UnarchiveFiles.graphql'
 
-import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Dropdown } from 'antd'
+import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Dropdown, Tag } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
 // import FileDetails from './components/FileDetails/FileDetails'
 
@@ -104,6 +104,15 @@ export default function PrintersList () {
       sorter: (a, b) => a.filename.localeCompare(b.filename),
       render: (file) => {
         return (<Link to={'/files/' + file.id }>{file.filename}</Link>)
+      }
+    },
+    {
+      title: 'Labels',
+      dataIndex: 'labels',
+      render: (labels) => {
+        return labels.edges.map(({ node }) => {
+          return (<Tag key={node.id} color={node.color}>{node.name}</Tag>)
+        })
       }
     },
     {
