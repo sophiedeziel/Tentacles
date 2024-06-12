@@ -1,0 +1,9 @@
+#import "./FileFragment.graphql"
+
+mutation LabelFiles($fileIds: [ID!]!, $labelIds: [ID!]!) {
+  labelFiles(input: {fileIds: $fileIds, labelIds: $labelIds}) {
+    files {
+      ...FileFields
+    }
+  }
+}

@@ -8,6 +8,7 @@ import Files from './graphql/Files.graphql'
 import UploadFile from './graphql/UploadFile.graphql'
 import ArchiveFiles from './graphql/ArchiveFiles.graphql'
 import UnarchiveFiles from './graphql/UnarchiveFiles.graphql'
+import LabelFiles from './graphql/LabelFiles.graphql'
 
 import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Dropdown, Tag, Select } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
@@ -27,6 +28,7 @@ export default function PrintersList () {
   }
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [filesFilters, setFilesFilters] = useState('active')
+  const [selectedLabels, setSelectedLabels] = useState([])
   const [uploadFile] = useMutation(UploadFile, {
     context: { hasUpload: true },
     update: (cache, { data }) => {
@@ -40,6 +42,8 @@ export default function PrintersList () {
       })
     }
   })
+
+  const [labelFiles] = useMutation(LabelFiles)
 
   const saveFile = (downloadUrl, filename) => {
     saveAs(
@@ -209,6 +213,8 @@ export default function PrintersList () {
 
   const onSelectChange = (newSelectedRowKeys) => {
     setSelectedRowKeys(newSelectedRowKeys)
+    console.log('selectedRowKeys changed: ', newSelectedRowKeys)
+    setSelectedLabels([])
   }
 
   const handleArchiveClick = () => {
@@ -227,6 +233,10 @@ export default function PrintersList () {
 
   const handleTabChange = (key) => {
     setFilesFilters(key)
+  }
+
+  const handleLabelsBlur = () => {
+    labelFiles({ variables: { fileIds: selectedRowKeys, labelIds: selectedLabels } })
   }
 
   // const expandedRow = (record) => {
@@ -255,8 +265,6 @@ export default function PrintersList () {
     )
   }
 
-  console.log('labels', labels)
-
   const items = [
     {
       key: 'active',
@@ -268,12 +276,12 @@ export default function PrintersList () {
             Archive
           </Button>
           <Select
+            value={[...selectedLabels]}
             mode="tags"
             placeholder="Labels"
             style={{
               width: 200
             }}
-            onChange={() => {}}
             options={
               labels.map(({ node }) => {
                 return { ...node }
@@ -288,6 +296,8 @@ export default function PrintersList () {
             filterSort={(optionA, optionB) =>
               (optionA?.name ?? '').toLowerCase().localeCompare((optionB?.name ?? '').toLowerCase())
             }
+            onBlur={handleLabelsBlur}
+            onChange={setSelectedLabels}
           />
           </Space>
         </Form.Item>
