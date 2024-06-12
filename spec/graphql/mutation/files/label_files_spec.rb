@@ -4,17 +4,17 @@ require 'rails_helper'
 
 module Mutations
   module Files
-    module LabelFileSpec
+    module LabelFilesSpec
       include ActiveJob::TestHelper
 
-      RSpec.describe LabelFile, type: :request do
+      RSpec.describe LabelFiles, type: :request do
         let(:file) { create(:file_record) }
         let(:label) { create(:label) }
         let(:variables) do
           {
             input: {
-              fileId: file.id,
-              labelId: label.id
+              fileIds: [file.id],
+              labelIds: [label.id]
             }
           }
         end
@@ -29,12 +29,12 @@ module Mutations
           it 'returns the label and the file' do
             post '/graphql', params: { query:, variables: }
             json = JSON.parse(response.body)
-            data = json['data']['labelFile']
+            data = json['data']['labelFiles']
 
-            expect(data['label']).to include(
+            expect(data['labels'][0]).to include(
               'id' => label.id.to_s
             )
-            expect(data['file']).to include(
+            expect(data['files'][0]).to include(
               'id' => file.id.to_s
             )
           end
@@ -43,8 +43,8 @@ module Mutations
             let(:variables) do
               {
                 input: {
-                  fileId: file.id,
-                  labelId: ''
+                  fileIds: [file.id],
+                  labelIds: ['']
                 }
               }
             end
@@ -57,29 +57,29 @@ module Mutations
             it 'returns a nil label' do
               post '/graphql', params: { query:, variables: }
               json = JSON.parse(response.body)
-              data = json['data']['labelFile']
+              data = json['data']['labelFiles']
 
-              expect(data['label']).to be_nil
+              expect(data['labels']).to be_empty
             end
 
             it 'returns a nil file' do
               post '/graphql', params: { query:, variables: }
               json = JSON.parse(response.body)
-              data = json['data']['labelFile']
+              data = json['data']['labelFiles']
 
-              expect(data['file']).to be_nil
+              expect(data['files']).to be_empty
             end
           end
         end
 
         def query
           <<~GQL
-            mutation LabelFile($input: LabelFileInput!) {
-              labelFile(input: $input) {
-                file {
+            mutation LabelFiles($input: LabelFilesInput!) {
+              labelFiles(input: $input) {
+                files {
                   id
                 }
-                label {
+                labels {
                   id
                 }
               }

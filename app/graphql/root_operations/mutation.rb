@@ -8,7 +8,7 @@ module RootOperations
     field :updateFile, mutation: Mutations::Files::UpdateFile
     field :updateFileNotes, mutation: Mutations::Files::UpdateFileNotes
     field :createLabel, mutation: Mutations::Files::CreateLabel
-    field :labelFile, mutation: Mutations::Files::LabelFile
+    field :labelFiles, mutation: Mutations::Files::LabelFiles
 
     field :addPrinter, mutation: Mutations::Printers::AddPrinter
     field :enqueueFiles, mutation: Mutations::Printers::EnqueueFiles
