@@ -9,6 +9,7 @@ import UploadFile from './graphql/UploadFile.graphql'
 import ArchiveFiles from './graphql/ArchiveFiles.graphql'
 import UnarchiveFiles from './graphql/UnarchiveFiles.graphql'
 import LabelFiles from './graphql/LabelFiles.graphql'
+import UnlabelFiles from './graphql/UnlabelFiles.graphql'
 
 import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Dropdown, Tag, Select } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
@@ -44,6 +45,7 @@ export default function PrintersList () {
   })
 
   const [labelFiles] = useMutation(LabelFiles)
+  const [unlabelFiles] = useMutation(UnlabelFiles)
 
   const saveFile = (downloadUrl, filename) => {
     saveAs(
@@ -243,6 +245,10 @@ export default function PrintersList () {
     labelFiles({ variables: { fileIds: selectedRowKeys, labelIds: [value] } })
   }
 
+  const handleLabelDeselect = (value) => {
+    unlabelFiles({ variables: { fileIds: selectedRowKeys, labelIds: [value] } })
+  }
+
   const getSelectedFilesLabels = () => {
     const labelIds = files.filter(file => selectedRowKeys.indexOf(file.id) !== -1).map(file => {
       return file.labels.edges.map(({ node }) => {
@@ -315,6 +321,7 @@ export default function PrintersList () {
             onChange={setSelectedLabels}
             onFocus={getSelectedFilesLabels}
             onSelect={handleLabelSelect}
+            onDeselect={handleLabelDeselect}
           />
           </Space>
         </Form.Item>
