@@ -239,6 +239,16 @@ export default function PrintersList () {
     labelFiles({ variables: { fileIds: selectedRowKeys, labelIds: selectedLabels } })
   }
 
+  const getSelectedFilesLabels = () => {
+    const labelIds = files.filter(file => selectedRowKeys.indexOf(file.id) !== -1).map(file => {
+      return file.labels.edges.map(({ node }) => {
+        return node.id
+      })
+    }).reduce((acc, val) => val.filter(e => acc.indexOf(e) !== -1))
+
+    setSelectedLabels(labelIds)
+  }
+
   // const expandedRow = (record) => {
   //   return (
   //     <FileDetails record={record} />
@@ -298,6 +308,7 @@ export default function PrintersList () {
             }
             onBlur={handleLabelsBlur}
             onChange={setSelectedLabels}
+            onDropdownVisibleChange={getSelectedFilesLabels}
           />
           </Space>
         </Form.Item>
