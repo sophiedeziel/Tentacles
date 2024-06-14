@@ -246,6 +246,7 @@ export default function PrintersList () {
       })
     }).reduce((acc, val) => val.filter(e => acc.indexOf(e) !== -1))
 
+    console.log('asdfsd')
     setSelectedLabels(labelIds)
   }
 
@@ -308,7 +309,7 @@ export default function PrintersList () {
             }
             onBlur={handleLabelsBlur}
             onChange={setSelectedLabels}
-            onDropdownVisibleChange={getSelectedFilesLabels}
+            onFocus={getSelectedFilesLabels}
           />
           </Space>
         </Form.Item>
