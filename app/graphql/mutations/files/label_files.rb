@@ -18,7 +18,8 @@ module Mutations
         return { labels: [], files: [] } if labels.empty? || files.empty?
 
         files.each do |file|
-          file.labels << labels if labels.any?
+          to_save = labels.reject { |label| file.labels.include?(label) }
+          file.labels << to_save if to_save.any?
           file.save!
         end
 

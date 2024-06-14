@@ -39,6 +39,25 @@ module Mutations
             )
           end
 
+          context 'when the label is already attached to the file' do
+            before do
+              file.labels << label
+            end
+
+            it 'returns the label and the file' do
+              post '/graphql', params: { query:, variables: }
+              json = JSON.parse(response.body)
+              data = json['data']['labelFiles']
+
+              expect(data['labels'][0]).to include(
+                'id' => label.id.to_s
+              )
+              expect(data['files'][0]).to include(
+                'id' => file.id.to_s
+              )
+            end
+          end
+
           context 'with invalid arguments' do
             let(:variables) do
               {

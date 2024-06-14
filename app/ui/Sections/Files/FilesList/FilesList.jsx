@@ -236,7 +236,11 @@ export default function PrintersList () {
   }
 
   const handleLabelsBlur = () => {
-    labelFiles({ variables: { fileIds: selectedRowKeys, labelIds: selectedLabels } })
+    // labelFiles({ variables: { fileIds: selectedRowKeys, labelIds: selectedLabels } })
+  }
+
+  const handleLabelSelect = (value) => {
+    labelFiles({ variables: { fileIds: selectedRowKeys, labelIds: [value] } })
   }
 
   const getSelectedFilesLabels = () => {
@@ -310,6 +314,7 @@ export default function PrintersList () {
             onBlur={handleLabelsBlur}
             onChange={setSelectedLabels}
             onFocus={getSelectedFilesLabels}
+            onSelect={handleLabelSelect}
           />
           </Space>
         </Form.Item>
