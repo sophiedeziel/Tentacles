@@ -1,0 +1,9 @@
+mutation CreateLabel($name: String!, $color: String!) {
+  createLabel(input: {name: $name, color: $color}) {
+    label {
+      id
+      name
+      color
+    }
+  }
+}

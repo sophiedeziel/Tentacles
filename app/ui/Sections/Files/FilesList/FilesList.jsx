@@ -10,6 +10,7 @@ import ArchiveFiles from './graphql/ArchiveFiles.graphql'
 import UnarchiveFiles from './graphql/UnarchiveFiles.graphql'
 import LabelFiles from './graphql/LabelFiles.graphql'
 import UnlabelFiles from './graphql/UnlabelFiles.graphql'
+import CreateLabel from './graphql/CreateLabel.graphql'
 
 import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Dropdown, Tag, Select } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
@@ -46,6 +47,22 @@ export default function PrintersList () {
 
   const [labelFiles] = useMutation(LabelFiles)
   const [unlabelFiles] = useMutation(UnlabelFiles)
+  const [createLabel] = useMutation(CreateLabel, {
+    update: (cache, { data }) => {
+      const labelsdata = cache.readQuery({ query: Files })
+
+      cache.writeQuery({
+        query: Files,
+        data: {
+          files: labelsdata.files,
+          labels: {
+            __typename: labelsdata.labels.__typename,
+            edges: [...labelsdata.labels.edges, { node: data.createLabel.label }]
+          }
+        }
+      })
+    }
+  })
 
   const saveFile = (downloadUrl, filename) => {
     saveAs(
@@ -215,7 +232,6 @@ export default function PrintersList () {
 
   const onSelectChange = (newSelectedRowKeys) => {
     setSelectedRowKeys(newSelectedRowKeys)
-    console.log('selectedRowKeys changed: ', newSelectedRowKeys)
     setSelectedLabels([])
   }
 
@@ -237,11 +253,24 @@ export default function PrintersList () {
     setFilesFilters(key)
   }
 
-  const handleLabelsBlur = () => {
-    // labelFiles({ variables: { fileIds: selectedRowKeys, labelIds: selectedLabels } })
-  }
+  async function handleLabelSelect (value) {
+    if (labels.map(({ node }) => node.id).indexOf(value) === -1) {
+      const letters = '0123456789ABCDEF'
+      let color = '#'
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)]
+      }
 
-  const handleLabelSelect = (value) => {
+      const { data } = await createLabel({
+        variables: { name: value, color }
+      })
+
+      const { createLabel: { label } } = data
+
+      labelFiles({ variables: { fileIds: selectedRowKeys, labelIds: [label.id] } })
+      setSelectedLabels([...selectedLabels.splice(selectedLabels.indexOf(value), 1), label.id])
+      return
+    }
     labelFiles({ variables: { fileIds: selectedRowKeys, labelIds: [value] } })
   }
 
@@ -256,7 +285,6 @@ export default function PrintersList () {
       })
     }).reduce((acc, val) => val.filter(e => acc.indexOf(e) !== -1))
 
-    console.log('asdfsd')
     setSelectedLabels(labelIds)
   }
 
@@ -317,7 +345,6 @@ export default function PrintersList () {
             filterSort={(optionA, optionB) =>
               (optionA?.name ?? '').toLowerCase().localeCompare((optionB?.name ?? '').toLowerCase())
             }
-            onBlur={handleLabelsBlur}
             onChange={setSelectedLabels}
             onFocus={getSelectedFilesLabels}
             onSelect={handleLabelSelect}
