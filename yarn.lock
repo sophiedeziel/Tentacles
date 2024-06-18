@@ -715,12 +715,12 @@
   dependencies:
     "@babel/helper-plugin-utils" "^7.8.3"
 
-"@babel/plugin-syntax-flow@^7.18.6", "@babel/plugin-syntax-flow@^7.24.6":
-  version "7.24.6"
-  resolved "https://registry.yarnpkg.com/@babel/plugin-syntax-flow/-/plugin-syntax-flow-7.24.6.tgz#1102a710771326b8e2f0c85ac2aecb6f52eb601e"
-  integrity sha512-gNkksSdV8RbsCoHF9sjVYrHfYACMl/8U32UfUhJ9+84/ASXw8dlx+eHyyF0m6ncQJ9IBSxfuCkB36GJqYdXTOA==
+"@babel/plugin-syntax-flow@^7.18.6", "@babel/plugin-syntax-flow@^7.24.7":
+  version "7.24.7"
+  resolved "https://registry.yarnpkg.com/@babel/plugin-syntax-flow/-/plugin-syntax-flow-7.24.7.tgz#d1759e84dd4b437cf9fae69b4c06c41d7625bfb7"
+  integrity sha512-9G8GYT/dxn/D1IIKOUBmGX0mnmj46mGH9NnZyJLwtCpgh5f7D2VbuKodb+2s9m1Yavh1s7ASQN8lf0eqrb1LTw==
   dependencies:
-    "@babel/helper-plugin-utils" "^7.24.6"
+    "@babel/helper-plugin-utils" "^7.24.7"
 
 "@babel/plugin-syntax-import-assertions@^7.24.7":
   version "7.24.7"
