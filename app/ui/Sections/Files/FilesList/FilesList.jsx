@@ -8,19 +8,17 @@ import Files from './graphql/Files.graphql'
 import UploadFile from './graphql/UploadFile.graphql'
 import ArchiveFiles from './graphql/ArchiveFiles.graphql'
 import UnarchiveFiles from './graphql/UnarchiveFiles.graphql'
-import LabelFiles from './graphql/LabelFiles.graphql'
-import UnlabelFiles from './graphql/UnlabelFiles.graphql'
-import CreateLabel from './graphql/CreateLabel.graphql'
 
-import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Dropdown, Tag, Select } from 'antd'
+import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Dropdown, Tag } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
+import LabelApplicator from './LabelApplicator'
 // import FileDetails from './components/FileDetails/FileDetails'
 
 const filesize = require('file-size')
 
 const { Dragger } = Upload
 
-export default function PrintersList () {
+export default function FilesList () {
   const filters = {
     active: (file) => {
       return (!file.isArchived && !file.isDeleted)
@@ -30,7 +28,7 @@ export default function PrintersList () {
   }
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [filesFilters, setFilesFilters] = useState('active')
-  const [selectedLabels, setSelectedLabels] = useState([])
+
   const [uploadFile] = useMutation(UploadFile, {
     context: { hasUpload: true },
     update: (cache, { data }) => {
@@ -40,25 +38,6 @@ export default function PrintersList () {
         query: Files,
         data: {
           files: [...filesdata.files, data.uploadFile.file]
-        }
-      })
-    }
-  })
-
-  const [labelFiles] = useMutation(LabelFiles)
-  const [unlabelFiles] = useMutation(UnlabelFiles)
-  const [createLabel] = useMutation(CreateLabel, {
-    update: (cache, { data }) => {
-      const labelsdata = cache.readQuery({ query: Files })
-
-      cache.writeQuery({
-        query: Files,
-        data: {
-          files: labelsdata.files,
-          labels: {
-            __typename: labelsdata.labels.__typename,
-            edges: [...labelsdata.labels.edges, { node: data.createLabel.label }]
-          }
         }
       })
     }
@@ -232,7 +211,6 @@ export default function PrintersList () {
 
   const onSelectChange = (newSelectedRowKeys) => {
     setSelectedRowKeys(newSelectedRowKeys)
-    setSelectedLabels([])
   }
 
   const handleArchiveClick = () => {
@@ -253,66 +231,11 @@ export default function PrintersList () {
     setFilesFilters(key)
   }
 
-  async function handleLabelSelect (value) {
-    if (labels.map(({ node }) => node.id).indexOf(value) === -1) {
-      const letters = '0123456789ABCDEF'
-      let color = '#'
-      for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)]
-      }
-
-      const { data } = await createLabel({
-        variables: { name: value, color }
-      })
-
-      const { createLabel: { label } } = data
-
-      labelFiles({ variables: { fileIds: selectedRowKeys, labelIds: [label.id] } })
-      setSelectedLabels([...selectedLabels.splice(selectedLabels.indexOf(value), 1), label.id])
-      return
-    }
-    labelFiles({ variables: { fileIds: selectedRowKeys, labelIds: [value] } })
-  }
-
-  const handleLabelDeselect = (value) => {
-    unlabelFiles({ variables: { fileIds: selectedRowKeys, labelIds: [value] } })
-  }
-
-  const getSelectedFilesLabels = () => {
-    const labelIds = files.filter(file => selectedRowKeys.indexOf(file.id) !== -1).map(file => {
-      return file.labels.edges.map(({ node }) => {
-        return node.id
-      })
-    }).reduce((acc, val) => val.filter(e => acc.indexOf(e) !== -1))
-
-    setSelectedLabels(labelIds)
-  }
-
   // const expandedRow = (record) => {
   //   return (
   //     <FileDetails record={record} />
   //   )
   // }
-
-  const optionRender = ({ data }) => {
-    const { name, id, color } = data
-    const onPreventMouseDown = (event) => {
-      event.preventDefault()
-      event.stopPropagation()
-    }
-    return (
-      <>
-      { id === name && 'Create: '}
-        <Tag
-          key={id}
-          color={color}
-          onMouseDown={onPreventMouseDown}
-        >
-          {name}
-        </Tag>
-      </>
-    )
-  }
 
   const items = [
     {
@@ -324,31 +247,11 @@ export default function PrintersList () {
           <Button type="primary" onClick={handleArchiveClick} disabled={!hasSelected} loading={loading}>
             Archive
           </Button>
-          <Select
-            value={[...selectedLabels]}
-            mode="tags"
-            placeholder="Labels"
-            style={{
-              width: 200
-            }}
-            options={
-              labels.map(({ node }) => {
-                return { ...node }
-              })
-            }
+          <LabelApplicator
             disabled={!hasSelected}
-            optionRender={optionRender}
-            tagRender={() => {}}
-            fieldNames={{ label: 'name', value: 'id' }}
-            showSearch={true}
-            filterOption={(input, option) => (option?.name ?? '').includes(input)}
-            filterSort={(optionA, optionB) =>
-              (optionA?.name ?? '').toLowerCase().localeCompare((optionB?.name ?? '').toLowerCase())
-            }
-            onChange={setSelectedLabels}
-            onFocus={getSelectedFilesLabels}
-            onSelect={handleLabelSelect}
-            onDeselect={handleLabelDeselect}
+            labels={labels}
+            files={files}
+            selectedRowKeys={selectedRowKeys}
           />
           </Space>
         </Form.Item>
