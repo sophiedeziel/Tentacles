@@ -4,10 +4,10 @@ require 'rails_helper'
 
 module Mutations
   module Files
-    module LabelFilesSpec
+    module UnlabelFilesSpec
       include ActiveJob::TestHelper
 
-      RSpec.describe LabelFiles, type: :request do
+      RSpec.describe UnlabelFiles, type: :request do
         let(:file) { create(:file_record) }
         let(:label) { create(:label) }
         let(:variables) do
@@ -20,16 +20,20 @@ module Mutations
         end
 
         describe '.resolve' do
-          it 'attaches the label to the file' do
+          before do
+            file.labels << label
+          end
+
+          it 'detaches the label to the file' do
             expect do
               post '/graphql', params: { query:, variables: }
-            end.to change { file.labels.count }.by(1)
+            end.to change { file.labels.count }.by(-1)
           end
 
           it 'returns the label and the file' do
             post '/graphql', params: { query:, variables: }
             json = JSON.parse(response.body)
-            data = json['data']['labelFiles']
+            data = json['data']['unlabelFiles']
 
             expect(data['labels'][0]).to include(
               'id' => label.id.to_s
@@ -39,15 +43,22 @@ module Mutations
             )
           end
 
-          context 'when the label is already attached to the file' do
+          context 'when the label is not attached to the file' do
             before do
-              file.labels << label
+              file.file_labels.destroy_all
+              file.labels << create(:label, name: 'other label')
+            end
+
+            it 'does not change other labels' do
+              expect do
+                post '/graphql', params: { query:, variables: }
+              end.to change { FileLabel.count }.by(0)
             end
 
             it 'returns the label and the file' do
               post '/graphql', params: { query:, variables: }
               json = JSON.parse(response.body)
-              data = json['data']['labelFiles']
+              data = json['data']['unlabelFiles']
 
               expect(data['labels'][0]).to include(
                 'id' => label.id.to_s
@@ -76,7 +87,7 @@ module Mutations
             it 'returns a nil label' do
               post '/graphql', params: { query:, variables: }
               json = JSON.parse(response.body)
-              data = json['data']['labelFiles']
+              data = json['data']['unlabelFiles']
 
               expect(data['labels']).to be_empty
             end
@@ -84,7 +95,7 @@ module Mutations
             it 'returns a nil file' do
               post '/graphql', params: { query:, variables: }
               json = JSON.parse(response.body)
-              data = json['data']['labelFiles']
+              data = json['data']['unlabelFiles']
 
               expect(data['files']).to be_empty
             end
@@ -94,19 +105,25 @@ module Mutations
             before do
               file.destroy
             end
-            let(:variables) do
-              {
-                input: {
-                  fileIds: [file.id],
-                  labelIds: [label.id]
-                }
-              }
+
+            it 'does not create a label' do
+              expect do
+                post '/graphql', params: { query:, variables: }
+              end.to change { Label.count }.by(0)
+            end
+
+            it 'returns a nil label' do
+              post '/graphql', params: { query:, variables: }
+              json = JSON.parse(response.body)
+              data = json['data']['unlabelFiles']
+
+              expect(data['labels']).to be_empty
             end
 
             it 'returns a nil file' do
               post '/graphql', params: { query:, variables: }
               json = JSON.parse(response.body)
-              data = json['data']['labelFiles']
+              data = json['data']['unlabelFiles']
 
               expect(data['files']).to be_empty
             end
@@ -114,14 +131,21 @@ module Mutations
 
           context 'when there is an error' do
             before do
-              file
-              allow_any_instance_of(FileRecord).to receive(:save!).and_raise(ActiveRecord::RecordInvalid)
+              allow_any_instance_of(FileLabel).to receive(:destroy!).and_raise(ActiveRecord::RecordInvalid)
+            end
+
+            it 'returns a nil label' do
+              post '/graphql', params: { query:, variables: }
+              json = JSON.parse(response.body)
+              data = json['data']['unlabelFiles']
+
+              expect(data['labels']).to be_empty
             end
 
             it 'returns a nil file' do
               post '/graphql', params: { query:, variables: }
               json = JSON.parse(response.body)
-              data = json['data']['labelFiles']
+              data = json['data']['unlabelFiles']
 
               expect(data['files']).to be_empty
             end
@@ -130,8 +154,8 @@ module Mutations
 
         def query
           <<~GQL
-            mutation LabelFiles($input: LabelFilesInput!) {
-              labelFiles(input: $input) {
+            mutation UnlabelFiles($input: UnlabelFilesInput!) {
+              unlabelFiles(input: $input) {
                 files {
                   id
                 }
