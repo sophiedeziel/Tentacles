@@ -35,3 +35,11 @@ Rails/Output:
 
 Rails/UniqueValidationWithoutIndex:
   Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Exclude:
+    - 'app/graphql/mutations/**/*'
+
+Metrics/ModuleLength:
+  Exclude:
+    - 'spec/**/*'

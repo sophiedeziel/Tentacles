@@ -3,17 +3,17 @@ import { useMatch } from 'react-router'
 import Editor from '@monaco-editor/react'
 import ReactMarkdown from 'react-markdown'
 import { useQuery, useMutation } from '@apollo/client'
-import File from './graphql/File.graphql'
-import UpdateFile from './graphql/UpdateFile.graphql'
+import File from 'graphql/File.graphql'
+import UpdateFile from 'graphql/UpdateFile.graphql'
 import GcodeDocs from './GcodeDocs/GcodeDocs.json'
-import GCodePreviewUI from '../../../components/GCodePreviewUI'
+import GCodePreviewUI from 'components/GCodePreviewUI'
 
 import { Card, Collapse, Col, Row, Button, Typography, Divider, Input, Slider } from 'antd'
 import { PageHeader } from '@ant-design/pro-layout'
 import { FileOutlined } from '@ant-design/icons'
 
 import GCodeAnalysis from './components/GCodeAnalysis.jsx'
-import gcodeDefinition from './../../../common/gcodeDefinition.js'
+import gcodeDefinition from 'common/gcodeDefinition.js'
 import Tomorrow from 'monaco-themes/themes/Tomorrow.json'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import classes from './FileEditor.module.less'
@@ -30,7 +30,6 @@ export default function FileEditor () {
 
   const [lineContent, setLineContent] = useState()
   const [selectedLayer, setSelectedLayer] = useState()
-  const [layerCount, setLayerCount] = useState()
   const [filename, setFilename] = useState(null)
 
   const [openedCollapse, setOpenedCollapse] = useState([])
@@ -285,10 +284,10 @@ export default function FileEditor () {
         <Slider
           vertical
           value={selectedLayer}
-          max={layerCount}
+          max={file.gcodeAnalysis.layerCount}
           min={1}
           onChange={setSelectedLayer}
-          marks={{ 1: '1', [layerCount]: layerCount }}
+          marks={{ 1: '1', [file.gcodeAnalysis.layerCount]: file.gcodeAnalysis.layerCount }}
           />
       </Col>
       <Col span={20}>

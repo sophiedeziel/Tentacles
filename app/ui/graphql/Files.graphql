@@ -1,0 +1,15 @@
+#import "./FileFragment.graphql"
+query Files{
+  files {
+    ...FileFields
+  }
+  labels {
+    edges {
+      node {
+        id
+        name
+        color
+      }
+    }
+  }
+}

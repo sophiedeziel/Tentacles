@@ -26,7 +26,7 @@ module RootOperations
       description 'files'
     end
     def files
-      ::FileRecord.with_attached_file
+      ::FileRecord.includes(:labels).with_attached_file
     end
 
     field :file, Types::File, null: true do

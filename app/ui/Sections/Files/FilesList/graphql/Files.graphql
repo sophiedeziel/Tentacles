@@ -1,6 +1,0 @@
-#import "./FileFragment.graphql"
-query Files{
-  files {
-    ...FileFields
-  }
-}

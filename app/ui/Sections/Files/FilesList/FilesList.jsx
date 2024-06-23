@@ -3,20 +3,22 @@ import { Link } from 'react-router-dom'
 import { saveAs } from 'file-saver'
 
 import { useQuery, useMutation } from '@apollo/client'
-import Files from './graphql/Files.graphql'
-import UploadFile from './graphql/UploadFile.graphql'
-import ArchiveFiles from './graphql/ArchiveFiles.graphql'
-import UnarchiveFiles from './graphql/UnarchiveFiles.graphql'
 
-import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Dropdown } from 'antd'
+import Files from 'graphql/Files.graphql'
+import UploadFile from 'graphql/UploadFile.graphql'
+import ArchiveFiles from 'graphql/ArchiveFiles.graphql'
+import UnarchiveFiles from 'graphql/UnarchiveFiles.graphql'
+
+import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Dropdown, Tag } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
+import LabelApplicator from './components/LabelApplicator'
 // import FileDetails from './components/FileDetails/FileDetails'
 
 const filesize = require('file-size')
 
 const { Dragger } = Upload
 
-export default function PrintersList () {
+export default function FilesList () {
   const filters = {
     active: (file) => {
       return (!file.isArchived && !file.isDeleted)
@@ -26,6 +28,7 @@ export default function PrintersList () {
   }
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const [filesFilters, setFilesFilters] = useState('active')
+
   const [uploadFile] = useMutation(UploadFile, {
     context: { hasUpload: true },
     update: (cache, { data }) => {
@@ -94,6 +97,8 @@ export default function PrintersList () {
 
   if (loading) return (<>Loading</>)
 
+  const labels = filesData.labels?.edges
+
   const files = filesData.files?.filter(filters[filesFilters])
 
   const columns = [
@@ -104,6 +109,15 @@ export default function PrintersList () {
       sorter: (a, b) => a.filename.localeCompare(b.filename),
       render: (file) => {
         return (<Link to={'/files/' + file.id }>{file.filename}</Link>)
+      }
+    },
+    {
+      title: 'Labels',
+      dataIndex: 'labels',
+      render: (labels) => {
+        return labels.edges.map(({ node }) => {
+          return (<Tag key={node.id} color={node.color}>{node.name}</Tag>)
+        })
       }
     },
     {
@@ -163,10 +177,6 @@ export default function PrintersList () {
       }
     }
   ]
-
-  const onChange = (pagination, filters, sorter, extra) => {
-    // console.log('params', pagination, filters, sorter, extra)
-  }
 
   const props = {
     height: '200px',
@@ -229,9 +239,17 @@ export default function PrintersList () {
       label: 'Active',
       children:
         <Form.Item label={selectedRowKeys.length + ' selected : '}>
+          <Space>
           <Button type="primary" onClick={handleArchiveClick} disabled={!hasSelected} loading={loading}>
             Archive
           </Button>
+          <LabelApplicator
+            disabled={!hasSelected}
+            labels={labels}
+            files={files}
+            selectedRowKeys={selectedRowKeys}
+          />
+          </Space>
         </Form.Item>
     },
     {
@@ -244,11 +262,6 @@ export default function PrintersList () {
           </Button>
         </Form.Item>
     }
-    // {
-    //   key: 'trash',
-    //   label: 'Trash',
-    //   children: <></>
-    // }
   ]
 
   return (
@@ -261,7 +274,6 @@ export default function PrintersList () {
       // expandable={{
       //   expandedRowRender: expandedRow
       // }}
-      onChange={onChange}
       pagination={false}
       rowKey={'id'}
       rowSelection={rowSelection}
