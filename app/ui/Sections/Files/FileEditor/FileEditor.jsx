@@ -350,7 +350,7 @@ export default function FileEditor () {
             />
         </Card>
       </Col>
-      <Col span={8} className={classes}>
+      <Col span={8}>
         <Collapse
         items={items}
         defaultActiveKey={['1', '2', '3']}

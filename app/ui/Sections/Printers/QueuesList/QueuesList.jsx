@@ -20,7 +20,6 @@ export default function QueuesList () {
 
   return (
     <>
-      <div className={classes}></div>
       <PageHeader
         className="site-page-header"
         ghost={false}

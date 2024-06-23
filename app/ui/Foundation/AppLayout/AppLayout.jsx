@@ -64,7 +64,7 @@ function AppLayout ({ children }) {
 
   return (
     <ConfigProvider theme={ lightTheme } >
-      <Layout style={{ minHeight: '100vh' }} className={classes}>
+      <Layout style={{ minHeight: '100vh' }}>
         <ConfigProvider theme={darkTheme}>
           <Sider collapsible collapsed={collapsed} onCollapse={onCollapse} trigger={null} >
             <div className={classes.logo} >Tentacles</div>

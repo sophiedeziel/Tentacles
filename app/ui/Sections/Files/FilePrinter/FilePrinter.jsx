@@ -72,7 +72,7 @@ export default function FilePrinter () {
   }
 
   return (
-    <div className={classes}>
+    <>
       <PageHeader
         className="site-page-header"
         ghost={false}
@@ -144,6 +144,6 @@ export default function FilePrinter () {
           </Card>
         </Col>
       </Row>
-    </div>
+    </>
   )
 }

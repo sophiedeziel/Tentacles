@@ -99,7 +99,7 @@ export default function PrinterAdd () {
   }
 
   return (
-    <div className={classes}>
+    <>
       <PageHeader
         className="site-page-header"
         ghost={false}
@@ -144,6 +144,6 @@ export default function PrinterAdd () {
 
       </Form>
       </Card>
-    </div>
+    </>
   )
 }

@@ -21,7 +21,6 @@ export default function PrintersList () {
 
   return (
     <>
-    <div className={classes}></div>
     <PageHeader
       className="site-page-header"
       ghost={false}

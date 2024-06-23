@@ -113,7 +113,6 @@ export default function NetworkPrinters () {
           })
         }
       </Space>
-      <div className={classes}></div>
     </Card>
     )
   } else {
