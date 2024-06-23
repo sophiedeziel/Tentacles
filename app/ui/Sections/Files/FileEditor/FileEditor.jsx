@@ -16,7 +16,7 @@ import GCodeAnalysis from './components/GCodeAnalysis.jsx'
 import gcodeDefinition from 'common/gcodeDefinition.js'
 import Tomorrow from 'monaco-themes/themes/Tomorrow.json'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
-import classes from './FileEditor.module.less'
+import * as classes from './FileEditor.module.less'
 
 const { Title } = Typography
 const { Search } = Input
@@ -350,13 +350,13 @@ export default function FileEditor () {
             />
         </Card>
       </Col>
-      <Col span={8}>
+      <Col span={8} className={classes}>
         <Collapse
         items={items}
         defaultActiveKey={['1', '2', '3']}
         activeKey={openedCollapse}
         onChange={setOpenedCollapse}
-        className={classes.Collapse}
+        className={classes.collapse}
         style={{ overflow: 'scroll', maxHeight: 'calc(100vh - 164px)' }}/>
       </Col>
     </Row>
