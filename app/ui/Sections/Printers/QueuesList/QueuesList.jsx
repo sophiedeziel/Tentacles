@@ -7,7 +7,7 @@ import { PageHeader } from '@ant-design/pro-layout'
 
 import Printers from './graphql/Printers.graphql'
 
-import classes from 'common/Common.module.less'
+import * as classes from 'common/Common.module.less'
 
 export default function QueuesList () {
   const { loading, error, data: printersData } = useQuery(Printers)

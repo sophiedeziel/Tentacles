@@ -8,7 +8,7 @@ import { PageHeader } from '@ant-design/pro-layout'
 import Printers from './graphql/Printers.graphql'
 import NetworkPrinters from './NetworkPrinters'
 
-import classes from 'common/Common.module.less'
+import * as classes from 'common/Common.module.less'
 
 export default function PrintersList () {
   const { loading, error, data: printersData } = useQuery(Printers)
@@ -20,7 +20,8 @@ export default function PrintersList () {
   const { printers } = printersData
 
   return (
-    <><PageHeader
+    <>
+    <PageHeader
       className="site-page-header"
       ghost={false}
       onBack={() => window.history.back()}

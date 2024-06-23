@@ -4,7 +4,7 @@ import { useQuery, useMutation } from '@apollo/client'
 import ReactMarkdown from 'react-markdown'
 // import { GCodeViewer } from 'react-gcode-viewer'
 
-import classes from './FilePrinter.module.less'
+import * as classes from './FilePrinter.module.less'
 
 import { Col, Row, Card, Checkbox, Button, List, Statistic, message } from 'antd'
 import { PageHeader } from '@ant-design/pro-layout'
