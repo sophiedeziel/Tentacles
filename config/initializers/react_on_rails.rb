@@ -3,6 +3,10 @@
 # See https://github.com/shakacode/react_on_rails/blob/master/docs/basics/configuration.md
 # for many more options.
 
+# Hack
+# https://github.com/shakacode/react_on_rails/issues/1621
+Webpacker = Shakapacker
+
 ReactOnRails.configure do |config|
   # This configures the script to run to build the production assets by webpack. Set this to nil
   # if you don't want react_on_rails building this file for you.

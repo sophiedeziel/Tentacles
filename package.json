@@ -1,5 +1,6 @@
 {
   "name": "tentacles",
+  "packageManager": "yarn@1.22.22",
   "private": true,
   "sideEffects": false,
   "resolutions": {
@@ -38,7 +39,7 @@
     "react-router-dom": "^6.23.1",
     "react-sortable-hoc": "^2.0.0",
     "regenerator-runtime": "^0.14.1",
-    "shakapacker": "7.2.3",
+    "shakapacker": "8.0.0",
     "terser-webpack-plugin": "^5.3.10",
     "three": "^0.165.0",
     "typescript": "^5.5.2",
