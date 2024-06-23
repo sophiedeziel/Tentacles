@@ -4,14 +4,14 @@ import { saveAs } from 'file-saver'
 
 import { useQuery, useMutation } from '@apollo/client'
 
-import Files from './graphql/Files.graphql'
-import UploadFile from './graphql/UploadFile.graphql'
-import ArchiveFiles from './graphql/ArchiveFiles.graphql'
-import UnarchiveFiles from './graphql/UnarchiveFiles.graphql'
+import Files from 'graphql/Files.graphql'
+import UploadFile from 'graphql/UploadFile.graphql'
+import ArchiveFiles from 'graphql/ArchiveFiles.graphql'
+import UnarchiveFiles from 'graphql/UnarchiveFiles.graphql'
 
 import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Dropdown, Tag } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
-import LabelApplicator from './LabelApplicator'
+import LabelApplicator from './components/LabelApplicator'
 // import FileDetails from './components/FileDetails/FileDetails'
 
 const filesize = require('file-size')
@@ -178,10 +178,6 @@ export default function FilesList () {
     }
   ]
 
-  const onChange = (pagination, filters, sorter, extra) => {
-    // console.log('params', pagination, filters, sorter, extra)
-  }
-
   const props = {
     height: '200px',
     name: 'upload',
@@ -266,11 +262,6 @@ export default function FilesList () {
           </Button>
         </Form.Item>
     }
-    // {
-    //   key: 'trash',
-    //   label: 'Trash',
-    //   children: <></>
-    // }
   ]
 
   return (
@@ -283,7 +274,6 @@ export default function FilesList () {
       // expandable={{
       //   expandedRowRender: expandedRow
       // }}
-      onChange={onChange}
       pagination={false}
       rowKey={'id'}
       rowSelection={rowSelection}

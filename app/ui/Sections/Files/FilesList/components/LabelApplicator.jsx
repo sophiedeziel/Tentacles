@@ -5,9 +5,9 @@ import { useMutation } from '@apollo/client'
 
 import { Select, Tag } from 'antd'
 
-import LabelFiles from './graphql/LabelFiles.graphql'
-import UnlabelFiles from './graphql/UnlabelFiles.graphql'
-import CreateLabel from './graphql/CreateLabel.graphql'
+import LabelFiles from 'graphql/LabelFiles.graphql'
+import UnlabelFiles from 'graphql/UnlabelFiles.graphql'
+import CreateLabel from 'graphql/CreateLabel.graphql'
 
 export default function LabelApplicator ({ disabled, labels, files, selectedRowKeys }) {
   const [selectedLabels, setSelectedLabels] = useState([])

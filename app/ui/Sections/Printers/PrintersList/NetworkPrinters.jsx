@@ -3,13 +3,13 @@ import React, { useEffect, useState } from 'react'
 import { useQuery, useLazyQuery, useMutation } from '@apollo/client'
 import { notification, Space, Button, Card } from 'antd'
 
-import useInterval from '../../../utils/UseInterval'
+import useInterval from 'utils/UseInterval'
 
 import SearchNetworkPrinters from './graphql/SearchNetworkPrinters.graphql'
 import PrinterName from './graphql/PrinterName.graphql'
 import AddPrinter from './graphql/AddPrinter.graphql'
 
-import classes from '../../../common/Common.module.less'
+import classes from 'common/Common.module.less'
 
 export default function NetworkPrinters () {
   const { loading, error, data } = useQuery(SearchNetworkPrinters)
