@@ -69,7 +69,7 @@ gem 'shakapacker', '~> 8.0'
 
 gem 'colorize'
 gem 'pry' # TODO: fix octoprint gem to not require pry
-gem 'sidekiq', '~> 7.2'
+gem 'sidekiq', '~> 7.3'
 
 gem 'listen', '~> 3.9'
 
