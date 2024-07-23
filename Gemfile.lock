@@ -1,11 +1,11 @@
 GIT
   remote: https://github.com/sophiedeziel/octoprint.git
-  revision: 08df4c6b0444ae280755f6830697ff99591faa83
+  revision: 482da3937a5efde9006bc6cb9d06a50239e2df66
   branch: main
   specs:
     octoprint (0.1.0)
       activesupport
-      faraday (>= 2.2, < 2.10)
+      faraday (>= 2.2, < 2.11)
       faraday-multipart (~> 1.0.3)
       sorbet-runtime (~> 0.5.10908)
       zeitwerk (~> 2.6)
@@ -133,8 +133,9 @@ GEM
     factory_bot_rails (6.4.3)
       factory_bot (~> 6.4)
       railties (>= 5.0.0)
-    faraday (2.9.2)
+    faraday (2.10.0)
       faraday-net_http (>= 2.0, < 3.2)
+      logger
     faraday-multipart (1.0.4)
       multipart-post (~> 2)
     faraday-net_http (3.1.0)
@@ -348,7 +349,7 @@ GEM
       simplecov_json_formatter (~> 0.1)
     simplecov-html (0.12.3)
     simplecov_json_formatter (0.1.4)
-    sorbet-runtime (0.5.11471)
+    sorbet-runtime (0.5.11492)
     sprockets (4.2.1)
       concurrent-ruby (~> 1.0)
       rack (>= 2.2.4, < 4)
