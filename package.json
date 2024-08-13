@@ -25,7 +25,7 @@
     "cross-fetch": "^4.0.0",
     "file-saver": "^2.0.5",
     "file-size": "^1.0.0",
-    "gcode-preview": "^2.17",
+    "gcode-preview": "^2.18",
     "graphql": "^16.9.0",
     "graphql-ruby-client": "^1.14.0",
     "js-yaml": "^4.1.0",
