@@ -85,7 +85,7 @@ group :development, :test do
   gem 'rubocop-rails', '~> 2.25', require: false
   gem 'rubocop-rspec', require: false
   gem 'simplecov', require: false
-  gem 'vcr', '~> 6.2'
+  gem 'vcr', '~> 6.3'
   gem 'webmock'
 end
 
