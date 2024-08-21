@@ -182,7 +182,7 @@ GEM
     mini_portile2 (2.8.7)
     mini_racer (0.14.1)
       libv8-node (~> 18.19.0.0)
-    minitest (5.25.0)
+    minitest (5.25.1)
     mock_redis (0.44.0)
     msgpack (1.7.2)
     multipart-post (2.4.1)
@@ -219,7 +219,7 @@ GEM
       method_source (~> 1.0)
     psych (5.1.2)
       stringio
-    public_suffix (6.0.0)
+    public_suffix (6.0.1)
     puma (6.4.2)
       nio4r (~> 2.0)
     racc (1.8.1)
@@ -269,7 +269,7 @@ GEM
       ffi (~> 1.0)
     rdoc (6.7.0)
       psych (>= 4.0.0)
-    react_on_rails (14.0.4)
+    react_on_rails (14.0.5)
       addressable
       connection_pool
       execjs (~> 2.5)
@@ -426,7 +426,7 @@ DEPENDENCIES
   pry
   puma (~> 6.4)
   railties (~> 7.1.3.4)
-  react_on_rails (~> 14.0.4)
+  react_on_rails (~> 14.0.5)
   redis (~> 5.2)
   rspec-its
   rspec-rails
