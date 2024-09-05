@@ -79,7 +79,7 @@
     "react-scripts": "^5.0.1",
     "sass-loader": "^15.0.0",
     "style-loader": "^4.0.0",
-    "webpack-dev-server": "^5.0.4"
+    "webpack-dev-server": "^5.1.0"
   },
   "babel": {
     "presets": [
