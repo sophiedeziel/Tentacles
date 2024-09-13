@@ -64,21 +64,21 @@
     classnames "^2.2.6"
     rc-util "^5.31.1"
 
-"@ant-design/pro-layout@^7.20.0":
-  version "7.20.0"
-  resolved "https://registry.yarnpkg.com/@ant-design/pro-layout/-/pro-layout-7.20.0.tgz#33e18bf24176637218d3a1e7a3f9e4b5ea763199"
-  integrity sha512-eeK7gr8jpyLMmeFgs/tAv19h7IRMypSmAq29f5Ouj588OA3MWcp4xROn8hD4VM2ivR9WtMgfVX6OzB6AO3s7/A==
+"@ant-design/pro-layout@^7.20.1":
+  version "7.20.1"
+  resolved "https://registry.yarnpkg.com/@ant-design/pro-layout/-/pro-layout-7.20.1.tgz#f1a749402dff5d4999f5be87a1bc4c0c629cc954"
+  integrity sha512-RPSifaKySvLiUakrI+X/Z96sJjGoz51aRK4imY+Lm7LlvjRD2raxO9MhIePZq74qOoRUTRxh9oqTxtRz/8gADw==
   dependencies:
     "@ant-design/icons" "^5.0.0"
     "@ant-design/pro-provider" "2.14.9"
-    "@ant-design/pro-utils" "2.15.17"
+    "@ant-design/pro-utils" "2.15.18"
     "@babel/runtime" "^7.18.0"
     "@umijs/route-utils" "^4.0.0"
     "@umijs/use-params" "^1.0.9"
     classnames "^2.3.2"
     lodash-es "^4.17.21"
     omit.js "^2.0.2"
-    path-to-regexp "2.4.0"
+    path-to-regexp "8.1.0"
     rc-resize-observer "^1.1.0"
     rc-util "^5.0.6"
     swr "^2.0.0"
@@ -95,10 +95,10 @@
     rc-util "^5.0.1"
     swr "^2.0.0"
 
-"@ant-design/pro-utils@2.15.17":
-  version "2.15.17"
-  resolved "https://registry.yarnpkg.com/@ant-design/pro-utils/-/pro-utils-2.15.17.tgz#7081ac788191ce2f055564639056c2cb0ddee60e"
-  integrity sha512-8uF1evCxI3YsEFugP5MY7Oy8HGIKL7tajXkpIRTOZmH9Az/yTX/7cAo1FnwJ1vliLm6aBPpfwNh5qRHjZQOj3g==
+"@ant-design/pro-utils@2.15.18":
+  version "2.15.18"
+  resolved "https://registry.yarnpkg.com/@ant-design/pro-utils/-/pro-utils-2.15.18.tgz#9bb67927900ddc47dcd354a032483bac243e6c0c"
+  integrity sha512-t/7i57tIYrQPlo2uIchWsXcvtQfBi72uQF9mLFS4C8f3nEKJFiEMWg2m+7JDgencTkpQmP7qmmfT1/6qXJcOvA==
   dependencies:
     "@ant-design/icons" "^5.0.0"
     "@ant-design/pro-provider" "2.14.9"
@@ -9355,10 +9355,10 @@ path-to-regexp@0.1.10:
   resolved "https://registry.yarnpkg.com/path-to-regexp/-/path-to-regexp-0.1.10.tgz#67e9108c5c0551b9e5326064387de4763c4d5f8b"
   integrity sha512-7lf7qcQidTku0Gu3YDPc8DJ1q7OOucfa/BSsIwjuh56VU7katFvuM8hULfkwB3Fns/rsVF7PwPKVw1sl5KQS9w==
 
-path-to-regexp@2.4.0:
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/path-to-regexp/-/path-to-regexp-2.4.0.tgz#35ce7f333d5616f1c1e1bfe266c3aba2e5b2e704"
-  integrity sha512-G6zHoVqC6GGTQkZwF4lkuEyMbVOjoBKAEybQUypI1WTkqinCOrq2x6U2+phkJ1XsEMTy4LjtwPI7HW+NVrRR2w==
+path-to-regexp@8.1.0:
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/path-to-regexp/-/path-to-regexp-8.1.0.tgz#4d687606ed0be8ed512ba802eb94d620cb1a86f0"
+  integrity sha512-Bqn3vc8CMHty6zuD+tG23s6v2kwxslHEhTj4eYaVKGIEB+YX/2wd0/rgXLFD9G9id9KCtbVy/3ZgmvZjpa0UdQ==
 
 path-type@^4.0.0:
   version "4.0.0"
