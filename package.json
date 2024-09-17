@@ -14,7 +14,7 @@
     "@babel/runtime": "^7.25.6",
     "@monaco-editor/react": "^4.6.0",
     "@rails/actioncable": "^7.2.100",
-    "@types/react": "~18.3.5",
+    "@types/react": "~18.3.6",
     "@types/react-dom": "~18.3.0",
     "antd": "^5.11.5",
     "apollo-upload-client": "^18.0.1",
