@@ -6410,10 +6410,10 @@ graphemer@^1.4.0:
   resolved "https://registry.yarnpkg.com/graphemer/-/graphemer-1.4.0.tgz#fb2f1d55e0e3a1849aeffc90c4fa0dd53a0e66c6"
   integrity sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==
 
-graphql-ruby-client@^1.14.0:
-  version "1.14.0"
-  resolved "https://registry.yarnpkg.com/graphql-ruby-client/-/graphql-ruby-client-1.14.0.tgz#d77b4f6c7bd4ada81e5f47aa1dc22d3eb67a2a8a"
-  integrity sha512-F45uBF9sJrF+UtPUggKq+fnYImT2w/pH4k/rpq+LrvmkxYNnNA6asX8dsSWml3MDDGFDSVWioBtsffq6f09uTg==
+graphql-ruby-client@^1.14.1:
+  version "1.14.1"
+  resolved "https://registry.yarnpkg.com/graphql-ruby-client/-/graphql-ruby-client-1.14.1.tgz#e6263c5068a61e96088eb14bf45fc6bd05a80b1f"
+  integrity sha512-RYb7QDXY7tb4rvDwuH1AZuuOsJSkbAezCV/Deuwu93RV358otSx9oI8Pfmf9O5XuUw8kJMbuBmEPKZwZHZe9AQ==
   dependencies:
     glob "^10.0.0"
     minimist "^1.2.0"
