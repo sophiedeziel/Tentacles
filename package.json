@@ -10,7 +10,7 @@
   "dependencies": {
     "@ant-design/pro-layout": "^7.20.2",
     "@apollo/client": "^3.11.8",
-    "@babel/core": "^7.25.7",
+    "@babel/core": "^7.25.8",
     "@babel/runtime": "^7.25.7",
     "@monaco-editor/react": "^4.6.0",
     "@rails/actioncable": "^7.2.100",
