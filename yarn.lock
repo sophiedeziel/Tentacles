@@ -22,31 +22,18 @@
   dependencies:
     "@ctrl/tinycolor" "^3.4.0"
 
-"@ant-design/cssinjs@^1.11.1":
-  version "1.11.1"
-  resolved "https://registry.yarnpkg.com/@ant-design/cssinjs/-/cssinjs-1.11.1.tgz#d6e12c30c60abfefa3ed3d700a67d93fb4329cc5"
-  integrity sha512-ya0wpkOzBTdQX4u2h6xpluflKPPQuq7LtvJQ9ThDXwu6t67CNFr6SJCEvkuQ9+4rU89VhYMP4IUaTaqYgtsBTQ==
+"@ant-design/cssinjs@^1.17.5", "@ant-design/cssinjs@^1.21.1":
+  version "1.21.1"
+  resolved "https://registry.yarnpkg.com/@ant-design/cssinjs/-/cssinjs-1.21.1.tgz#7320813c5f747e0cde52c388eff5198d78d57230"
+  integrity sha512-tyWnlK+XH7Bumd0byfbCiZNK43HEubMoCcu9VxwsAwiHdHTgWa+tMN0/yvxa+e8EzuFP1WdUNNPclRpVtD33lg==
   dependencies:
     "@babel/runtime" "^7.11.1"
     "@emotion/hash" "^0.8.0"
     "@emotion/unitless" "^0.7.5"
     classnames "^2.3.1"
-    csstype "^3.0.10"
-    rc-util "^5.34.1"
-    stylis "^4.0.13"
-
-"@ant-design/cssinjs@^1.17.5":
-  version "1.17.5"
-  resolved "https://registry.yarnpkg.com/@ant-design/cssinjs/-/cssinjs-1.17.5.tgz#be5bbfbf4c857e7df6e3650c9bccf7e527da7ef2"
-  integrity sha512-Ed2rruHMxZTVYGPec6QBZkrh00Df5K1FAufmBpONai5iGYxoxIkg1sRD8YdCw0NvPRAa4r1nJP5LbwICGHzGiQ==
-  dependencies:
-    "@babel/runtime" "^7.11.1"
-    "@emotion/hash" "^0.8.0"
-    "@emotion/unitless" "^0.7.5"
-    classnames "^2.3.1"
-    csstype "^3.0.10"
+    csstype "^3.1.3"
     rc-util "^5.35.0"
-    stylis "^4.0.13"
+    stylis "^4.3.3"
 
 "@ant-design/icons-svg@^4.3.0":
   version "4.3.1"
@@ -64,18 +51,20 @@
     classnames "^2.2.6"
     rc-util "^5.31.1"
 
-"@ant-design/pro-layout@^7.20.2":
-  version "7.20.2"
-  resolved "https://registry.yarnpkg.com/@ant-design/pro-layout/-/pro-layout-7.20.2.tgz#60f3c6a075148cacdd67605091d459aaff30fcf1"
-  integrity sha512-a97k8P2sbprPXcBOG8p1g/0bP5kLBiC3+GSj0oxSWjUelAKzI9Q448tLOIfLjDcokxOvPRCEcCAlRg+mCKZVPg==
+"@ant-design/pro-layout@^7.21.0":
+  version "7.21.0"
+  resolved "https://registry.yarnpkg.com/@ant-design/pro-layout/-/pro-layout-7.21.0.tgz#edae3374cb429e62e43440fe322c622b107fef86"
+  integrity sha512-SV+D2DVr3B4vV3uSXQeG8wIUofWEiZc8fbXjMWwnNYKcNfKaHf4HGUh84cDiGZi+FPsXfOMXcYzXElD5wR2bOQ==
   dependencies:
+    "@ant-design/cssinjs" "^1.21.1"
     "@ant-design/icons" "^5.0.0"
-    "@ant-design/pro-provider" "2.14.9"
-    "@ant-design/pro-utils" "2.15.18"
+    "@ant-design/pro-provider" "2.15.0"
+    "@ant-design/pro-utils" "2.16.0"
     "@babel/runtime" "^7.18.0"
     "@umijs/route-utils" "^4.0.0"
     "@umijs/use-params" "^1.0.9"
     classnames "^2.3.2"
+    lodash "^4.17.21"
     lodash-es "^4.17.21"
     omit.js "^2.0.2"
     path-to-regexp "8.0.0"
@@ -84,27 +73,29 @@
     swr "^2.0.0"
     warning "^4.0.3"
 
-"@ant-design/pro-provider@2.14.9":
-  version "2.14.9"
-  resolved "https://registry.yarnpkg.com/@ant-design/pro-provider/-/pro-provider-2.14.9.tgz#ca9c764a4eeda5ceacdd9cca817ce2764644db3a"
-  integrity sha512-4UJr6AHyWKsrhx2KfdkpRQCgjc75oDUDhMHGA2OWqQVI16sMQfeZf6KYfmeiG3Dal1QKFOtSibCdH5G2CDvWlg==
+"@ant-design/pro-provider@2.15.0":
+  version "2.15.0"
+  resolved "https://registry.yarnpkg.com/@ant-design/pro-provider/-/pro-provider-2.15.0.tgz#588c74438af84f4f24f07516fb462e3029ff722a"
+  integrity sha512-9NvjKxOg7ZUdd+hV5ex3xgM3ZZkPzChLBTHl4f7Ei/SWwjBGLG0ZBeYpsTcpqwRV2IlGdaMIW93bTOvh0XmtEA==
   dependencies:
-    "@ant-design/cssinjs" "^1.11.1"
+    "@ant-design/cssinjs" "^1.21.1"
     "@babel/runtime" "^7.18.0"
     "@ctrl/tinycolor" "^3.4.0"
+    dayjs "^1.11.10"
     rc-util "^5.0.1"
     swr "^2.0.0"
 
-"@ant-design/pro-utils@2.15.18":
-  version "2.15.18"
-  resolved "https://registry.yarnpkg.com/@ant-design/pro-utils/-/pro-utils-2.15.18.tgz#9bb67927900ddc47dcd354a032483bac243e6c0c"
-  integrity sha512-t/7i57tIYrQPlo2uIchWsXcvtQfBi72uQF9mLFS4C8f3nEKJFiEMWg2m+7JDgencTkpQmP7qmmfT1/6qXJcOvA==
+"@ant-design/pro-utils@2.16.0":
+  version "2.16.0"
+  resolved "https://registry.yarnpkg.com/@ant-design/pro-utils/-/pro-utils-2.16.0.tgz#eb6dee53298c83506222633b1807e21d70cc5471"
+  integrity sha512-fUU5nPeHxXaVm5fqSgyWFL5xV+XYftqDjX5tHS5MeVlu9muP518GdRjFHMJY9ybal1Ca4mgbz+3M9BDfnF3V4Q==
   dependencies:
     "@ant-design/icons" "^5.0.0"
-    "@ant-design/pro-provider" "2.14.9"
+    "@ant-design/pro-provider" "2.15.0"
     "@babel/runtime" "^7.18.0"
     classnames "^2.3.2"
     dayjs "^1.11.10"
+    lodash "^4.17.21"
     lodash-es "^4.17.21"
     rc-util "^5.0.6"
     safe-stable-stringify "^2.4.3"
@@ -4467,10 +4458,15 @@ cssstyle@^2.3.0:
   dependencies:
     cssom "~0.3.6"
 
-csstype@^3.0.10, csstype@^3.0.2:
+csstype@^3.0.2:
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/csstype/-/csstype-3.1.2.tgz#1d4bf9d572f11c14031f0436e1c10bc1f571f50b"
   integrity sha512-I7K1Uu0MBPzaFKg4nI5Q7Vs2t+3gWWW648spaF+Rg7pI9ds18Ugn+lvg4SHczUdKlHI5LWBXyqfS8+DufyBsgQ==
+
+csstype@^3.1.3:
+  version "3.1.3"
+  resolved "https://registry.yarnpkg.com/csstype/-/csstype-3.1.3.tgz#d80ff294d114fb0e6ac500fbf85b60137d7eff81"
+  integrity sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==
 
 damerau-levenshtein@^1.0.8:
   version "1.0.8"
@@ -11835,10 +11831,10 @@ stylehacks@^5.1.0:
     browserslist "^4.16.6"
     postcss-selector-parser "^6.0.4"
 
-stylis@^4.0.13:
-  version "4.3.0"
-  resolved "https://registry.yarnpkg.com/stylis/-/stylis-4.3.0.tgz#abe305a669fc3d8777e10eefcfc73ad861c5588c"
-  integrity sha512-E87pIogpwUsUwXw7dNyU4QDjdgVMy52m+XEOPEKUn161cCzWjjhPSQhByfd1CcNvrOLnXQ6OnnZDwnJrz/Z4YQ==
+stylis@^4.3.3:
+  version "4.3.4"
+  resolved "https://registry.yarnpkg.com/stylis/-/stylis-4.3.4.tgz#ca5c6c4a35c4784e4e93a2a24dc4e9fa075250a4"
+  integrity sha512-osIBl6BGUmSfDkyH2mB7EFvCJntXDrLhKjHTRj/rK6xLH0yuPrHULDRQzKokSOD4VoorhtKpfcfW1GAntu8now==
 
 supports-color@^5.3.0:
   version "5.5.0"
