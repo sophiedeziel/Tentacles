@@ -674,10 +674,10 @@
   dependencies:
     "@babel/helper-plugin-utils" "^7.8.3"
 
-"@babel/plugin-syntax-flow@^7.18.6", "@babel/plugin-syntax-flow@^7.25.9":
-  version "7.25.9"
-  resolved "https://registry.yarnpkg.com/@babel/plugin-syntax-flow/-/plugin-syntax-flow-7.25.9.tgz#30ddd09b4ad822f291efbbeb3bc4c5d3027af61d"
-  integrity sha512-F3FVgxwamIRS3+kfjNaPARX0DSAiH1exrQUVajXiR34hkdA9eyK+8rJbnu55DQjKL/ayuXqjNr2HDXwBEMEtFQ==
+"@babel/plugin-syntax-flow@^7.18.6", "@babel/plugin-syntax-flow@^7.26.0":
+  version "7.26.0"
+  resolved "https://registry.yarnpkg.com/@babel/plugin-syntax-flow/-/plugin-syntax-flow-7.26.0.tgz#96507595c21b45fccfc2bc758d5c45452e6164fa"
+  integrity sha512-B+O2DnPc0iG+YXFqOxv2WNuNU97ToWjOomUQ78DouOENWUaM5sVrmet9mcomUGQFwpJd//gvUagXBSdzO1fRKg==
   dependencies:
     "@babel/helper-plugin-utils" "^7.25.9"
 
