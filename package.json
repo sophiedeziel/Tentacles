@@ -72,7 +72,7 @@
     "eslint-plugin-react": "^7.37.2",
     "less": "^4.2.0",
     "less-loader": "^12.2.0",
-    "mini-css-extract-plugin": "^2.9.1",
+    "mini-css-extract-plugin": "^2.9.2",
     "node-sass": "^9.0.0",
     "postcss": "^8.4.47",
     "postcss-import": "^16.1.0",
