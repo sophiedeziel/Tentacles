@@ -52,7 +52,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           cache: yarn
-          node-version: 18.18.2
+          node-version: latest
 
       - name: 'Yarn Install'
         run: yarn install
@@ -121,7 +121,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           cache: yarn
-          node-version: 18.18.2
+          node-version: latest
 
       - name: 'Yarn Install'
         run: yarn install
@@ -158,7 +158,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           cache: yarn
-          node-version: 18.18.2
+          node-version: latest
 
       - name: 'Yarn Install'
         run: yarn install
