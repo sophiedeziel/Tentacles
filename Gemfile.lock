@@ -118,7 +118,7 @@ GEM
       rexml
     crass (1.0.6)
     date (3.3.4)
-    debug (1.9.2)
+    debug (1.10.0)
       irb (~> 1.10)
       reline (>= 0.3.8)
     diff-lcs (1.5.1)
@@ -151,8 +151,8 @@ GEM
     hashdiff (1.1.1)
     i18n (1.14.6)
       concurrent-ruby (~> 1.0)
-    io-console (0.7.2)
-    irb (1.14.1)
+    io-console (0.8.0)
+    irb (1.14.3)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     json (2.9.0)
@@ -216,7 +216,8 @@ GEM
     pry (0.15.0)
       coderay (~> 1.1)
       method_source (~> 1.0)
-    psych (5.2.0)
+    psych (5.2.2)
+      date
       stringio
     public_suffix (6.0.1)
     puma (6.5.0)
@@ -265,7 +266,7 @@ GEM
     rb-fsevent (0.11.2)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
-    rdoc (6.7.0)
+    rdoc (6.10.0)
       psych (>= 4.0.0)
     react_on_rails (14.0.5)
       addressable
@@ -278,7 +279,7 @@ GEM
     redis-client (0.23.0)
       connection_pool
     regexp_parser (2.9.3)
-    reline (0.5.11)
+    reline (0.6.0)
       io-console (~> 0.5)
     rexml (3.3.9)
     rspec-core (3.13.2)
