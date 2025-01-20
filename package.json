@@ -70,7 +70,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.6.0",
     "eslint-plugin-react": "^7.37.4",
-    "less": "^4.2.1",
+    "less": "^4.2.2",
     "less-loader": "^12.2.0",
     "mini-css-extract-plugin": "^2.9.2",
     "node-sass": "^9.0.0",
