@@ -222,7 +222,7 @@ GEM
       date
       stringio
     public_suffix (6.0.1)
-    puma (6.5.0)
+    puma (6.6.0)
       nio4r (~> 2.0)
     racc (1.8.1)
     rack (3.1.8)
@@ -419,7 +419,7 @@ DEPENDENCIES
   mysql2 (~> 0.5.6)
   octoprint!
   pry
-  puma (~> 6.5)
+  puma (~> 6.6)
   rails (~> 7.2)
   react_on_rails (~> 14.1.1)
   redis (~> 5.3)
