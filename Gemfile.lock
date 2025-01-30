@@ -145,9 +145,10 @@ GEM
       activesupport (>= 6.1)
     graphiql-rails (1.10.1)
       railties
-    graphql (2.4.8)
+    graphql (2.4.9)
       base64
       fiber-storage
+      logger
     hashdiff (1.1.1)
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
