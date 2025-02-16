@@ -7,17 +7,33 @@
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
+	"features": {
+		"ghcr.io/devcontainers-extra/features/asdf-package:1": {
+			"plugin": "nodejs"
+		}
+	},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// This can be used to network with other containers or the host.
-	"forwardPorts": [5100, 5432],
+	// "forwardPorts": [5100, 5432, 3306, 3035],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "foreman start"
+	"postCreateCommand": "./bin/setup",
+
+	"postAttachCommand": {
+		"server": "foreman start"
+	  },
 
 	// Configure tool-specific properties.
 	// "customizations": {},
+
+	"customizations": {
+		"vscode": {
+		  "extensions": [
+			"Shopify.ruby-lsp"
+		  ]
+		}
+	  }
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"
