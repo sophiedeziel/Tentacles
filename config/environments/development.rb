@@ -70,5 +70,18 @@ Rails.application.configure do
   # Uncomment if you wish to allow Action Cable access from any origin.
   # config.action_cable.disable_request_forgery_protection = true
 
+  pf_domain = ENV.fetch('GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN', nil)
+  config.action_dispatch.default_headers = {
+    'X-Frame-Options' => "ALLOW-FROM #{pf_domain}"
+  }
+  config.action_controller.forgery_protection_origin_check = false
+
   config.web_console.allowed_ips = ['172.0.0.0/8', '127.0.0.0/8', '10.0.0.0/8']
+  config.hosts = [
+    IPAddr.new('0.0.0.0/0'),
+    IPAddr.new('::/0'),
+    'localhost',
+    "#{ENV.fetch('CODESPACE_NAME', nil)}-5000.#{pf_domain}",
+    ENV.fetch('RAILS_DEVELOPMENT_HOSTS', nil).split(',')
+  ].flatten
 end

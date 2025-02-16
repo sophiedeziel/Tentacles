@@ -31,6 +31,7 @@ Naming/PredicateName:
 Metrics/BlockLength:
   Exclude:
     - 'spec/**/*'
+    - 'config/environments/development.rb'
 
 Rails/Output:
   Exclude:

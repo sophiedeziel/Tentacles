@@ -1,0 +1,71 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/ruby-rails-postgres
+{
+	"name": "Ruby on Rails & MySQL",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "app",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	"features": {
+		"ghcr.io/devcontainers-extra/features/asdf-package:1": {
+			"plugin": "nodejs"
+		},
+		"ghcr.io/devcontainers/features/github-cli:1": {
+			"version": "latest"
+		  }
+	},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// This can be used to network with other containers or the host.
+	"forwardPorts": [
+		5000,
+		3035,
+		3306,
+		6379
+	  ],
+	  "portsAttributes": {
+		"5000": {
+		  "label": "Rails server",
+		  "onAutoForward": "notify",
+		  "protocol": "http",
+		  "requireLocalPort": true
+		},
+		"3035": {
+			"label": "Webpack",
+			"onAutoForward": "silent",
+			"protocol": "http",
+			"requireLocalPort": true
+		  },
+		"3306": {
+		  "label": "MySQL",
+		  "onAutoForward": "silent",
+		  "requireLocalPort": true
+		},
+		"6379": {
+		  "label": "redis",
+		  "onAutoForward": "silent",
+		  "requireLocalPort": true
+		}
+	  },
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"onCreateCommand": "sh .devcontainer/install.sh",
+	"postAttachCommand": {
+		"server": "WEBPACK_OPTIONS=\"--client-web-socket-url wss://$CODESPACE_NAME-3035.$GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN/ws\" foreman start"
+	},
+
+	// Configure tool-specific properties.
+	// "customizations": {},
+
+	"customizations": {
+		"vscode": {
+		  "extensions": [
+			"Shopify.ruby-lsp"
+		  ]
+		}
+	  }
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
+}
