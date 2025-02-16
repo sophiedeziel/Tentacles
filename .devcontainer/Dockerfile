@@ -7,6 +7,8 @@ RUN su vscode -c "/usr/local/rvm/bin/rvm fix-permissions"
 # Default value to allow debug server to serve content over GitHub Codespace's port forwarding service
 # The value is a comma-separated list of allowed domains
 ENV RAILS_DEVELOPMENT_HOSTS=".githubpreview.dev,.preview.app.github.dev,.app.github.dev"
+# ENV PORT=3000
+ENV REDIS_URL="redis://redis:6379/1"
 
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 #     && apt-get -y install --no-install-recommends nodejs yarn tzdata

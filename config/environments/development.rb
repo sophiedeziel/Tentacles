@@ -74,14 +74,14 @@ Rails.application.configure do
   config.action_dispatch.default_headers = {
     'X-Frame-Options' => "ALLOW-FROM #{pf_domain}"
   }
+  config.action_controller.forgery_protection_origin_check = false
 
   config.web_console.allowed_ips = ['172.0.0.0/8', '127.0.0.0/8', '10.0.0.0/8']
   config.hosts = [
     IPAddr.new('0.0.0.0/0'),
     IPAddr.new('::/0'),
     'localhost',
-    "#{ENV.fetch('CODESPACE_NAME', nil)}-3000.#{pf_domain}",
-    "#{ENV.fetch('CODESPACE_NAME', nil)}-5100.#{pf_domain}",
+    "#{ENV.fetch('CODESPACE_NAME', nil)}-#{ENV.fetch('PORT', nil)}.#{pf_domain}",
     ENV.fetch('RAILS_DEVELOPMENT_HOSTS', nil).split(',')
   ].flatten
 end
