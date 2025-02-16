@@ -81,7 +81,7 @@ Rails.application.configure do
     IPAddr.new('0.0.0.0/0'),
     IPAddr.new('::/0'),
     'localhost',
-    "#{ENV.fetch('CODESPACE_NAME', nil)}-#{ENV.fetch('PORT', nil)}.#{pf_domain}",
+    "#{ENV.fetch('CODESPACE_NAME', nil)}-5000.#{pf_domain}",
     ENV.fetch('RAILS_DEVELOPMENT_HOSTS', nil).split(',')
   ].flatten
 end

@@ -10,19 +10,50 @@
 	"features": {
 		"ghcr.io/devcontainers-extra/features/asdf-package:1": {
 			"plugin": "nodejs"
-		}
+		},
+		"ghcr.io/devcontainers/features/github-cli:1": {
+			"version": "latest"
+		  }
 	},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// This can be used to network with other containers or the host.
-	// "forwardPorts": [3000],
+	"forwardPorts": [
+		5000,
+		3035,
+		3306,
+		6379
+	  ],
+	  "portsAttributes": {
+		"5000": {
+		  "label": "Rails server",
+		  "onAutoForward": "notify",
+		  "protocol": "https",
+		  "requireLocalPort": true
+		},
+		"3035": {
+			"label": "Webpack",
+			"onAutoForward": "silent",
+			"protocol": "https",
+			"requireLocalPort": true
+		  },
+		"3306": {
+		  "label": "MySQL",
+		  "onAutoForward": "silent",
+		  "requireLocalPort": true
+		},
+		"6379": {
+		  "label": "redis",
+		  "onAutoForward": "silent",
+		  "requireLocalPort": true
+		}
+	  },
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "./bin/setup",
-
+	"onCreateCommand": "sh .devcontainer/install.sh",
 	"postAttachCommand": {
-		"server": "foreman start"
-	  },
+		"server": "WEBPACK_OPTIONS=\"--client-web-socket-url wss://$CODESPACE_NAME-3035.$GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN/ws\" foreman start"
+	},
 
 	// Configure tool-specific properties.
 	// "customizations": {},
