@@ -28,13 +28,13 @@
 		"5000": {
 		  "label": "Rails server",
 		  "onAutoForward": "notify",
-		  "protocol": "https",
+		  "protocol": "http",
 		  "requireLocalPort": true
 		},
 		"3035": {
 			"label": "Webpack",
 			"onAutoForward": "silent",
-			"protocol": "https",
+			"protocol": "http",
 			"requireLocalPort": true
 		  },
 		"3306": {
