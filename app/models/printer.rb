@@ -46,7 +46,7 @@ class Printer < ApplicationRecord
   end
 
   def using_api(cache: false, &)
-    method = caller[0][/`.*'/][1..-2]
+    method = caller[0][/'.*'/][1..-2]
     OctoprintCache.use_cache(id:, method:, time: cache) do
       api_client.use(&)
     end
