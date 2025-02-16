@@ -23,6 +23,8 @@ module Types
     field :top_file_comments, [String], null: false
     field :slicer, String, null: true
     def slicer
+      return if object.slicer.nil?
+
       object.slicer.class::HUMAN_NAME
     end
     field :hotend_temperatures, [Temperature], null: true
