@@ -34,10 +34,10 @@ RUN bundle update --bundler \
 
 COPY . .
 
-ENV RAILS_ENV production
-ENV NODE_ENV production
-ENV RAILS_SERVE_STATIC_FILES true
-ENV SECRET_KEY_BASE "precompile_placeholder"
+ENV RAILS_ENV=production
+ENV NODE_ENV=production
+ENV RAILS_SERVE_STATIC_FILES=true
+ENV SECRET_KEY_BASE="precompile_placeholder"
 
 RUN bin/shakapacker \
   && yarn cache clean \
@@ -47,10 +47,10 @@ FROM ruby:3.3.2-alpine
 
 ARG RAILS_ROOT=/usr/src/app
 
-ENV RAILS_ENV production
-ENV NODE_ENV production
-ENV RAILS_SERVE_STATIC_FILES true
-ENV RAILS_LOG_TO_STDOUT true
+ENV RAILS_ENV=production
+ENV NODE_ENV=production
+ENV RAILS_SERVE_STATIC_FILES=true
+ENV RAILS_LOG_TO_STDOUT=true
 ENV BUNDLE_APP_CONFIG="$RAILS_ROOT/.bundle"
 ENV RUBY_YJIT_ENABLE=1
 
