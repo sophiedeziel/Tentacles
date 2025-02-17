@@ -33,7 +33,7 @@ module RootOperations
       argument :id, ID, required: true
     end
     def file(id:)
-      ::FileRecord.find(id) if ::FileRecord.exists?(id)
+      ::FileRecord.find_by(id: id)
     end
 
     field :labels, Types::Label.connection_type, null: false do
