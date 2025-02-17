@@ -85,6 +85,20 @@ jobs:
       - name: Lint Ruby files
         run: bin/rubocop --parallel
 
+  typecheck-ruby:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install Ruby and gems
+        uses: ruby/setup-ruby@32110d4e311bd8996b2a82bf2a43b714ccc91777 # v1.92
+        with:
+          bundler-cache: true
+      # - name: Security audit application code
+      #   run: bin/brakeman -q -w2
+      - name: Typecheck Ruby files
+        run: srb tc
+
   security-audit:
     runs-on: ubuntu-latest
     steps:
