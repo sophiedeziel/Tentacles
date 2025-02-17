@@ -97,7 +97,7 @@ jobs:
       # - name: Security audit application code
       #   run: bin/brakeman -q -w2
       - name: Typecheck Ruby files
-        run: srb tc
+        run: bin/bundle exec srb tc
 
   security-audit:
     runs-on: ubuntu-latest
