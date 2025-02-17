@@ -47,7 +47,7 @@ module RootOperations
       argument :id, ID, required: true
     end
     def label(id:)
-      ::Label.find(id) if ::Label.exists?(id)
+      ::Label.find_by(id: id)
     end
 
     field :search_network_printers, [String], null: true
