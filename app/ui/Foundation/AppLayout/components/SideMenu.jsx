@@ -8,7 +8,7 @@ import {
   PieChartOutlined,
   UsbOutlined
 } from '@ant-design/icons'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router'
 
 const rootSubmenuKeys = ['printers', 'macros', 'reports']
 
