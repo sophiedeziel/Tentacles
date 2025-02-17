@@ -1,4 +1,4 @@
-FROM ruby:3.3.2-alpine AS build-env
+FROM ruby:3.4.1-alpine AS build-env
 
 ARG RAILS_ROOT=/usr/src/app
 
@@ -29,8 +29,8 @@ RUN bundle update --bundler \
   && bundle install --jobs 4 --retry 3 \
   && bundle clean --force \
   && rm -rf /usr/local/bundle/cache \
-  && find vendor/bundle/ruby/3.3.0/gems/ -name "*.c" -delete \
-  && find vendor/bundle/ruby/3.3.0/gems/ -name "*.o" -delete
+  && find vendor/bundle/ruby/3.4.0/gems/ -name "*.c" -delete \
+  && find vendor/bundle/ruby/3.4.0/gems/ -name "*.o" -delete
 
 COPY . .
 
@@ -43,7 +43,7 @@ RUN bin/shakapacker \
   && yarn cache clean \
   && rm -rf node_modules tmp/cache/* /tmp/* yarn.lock app/ui/* spec/*
 
-FROM ruby:3.3.2-alpine
+FROM ruby:3.4.1-alpine
 
 ARG RAILS_ROOT=/usr/src/app
 
@@ -57,6 +57,7 @@ ENV RUBY_YJIT_ENABLE=1
 WORKDIR $RAILS_ROOT
 
 RUN apk add --update --no-cache \
+  python3 \
   mysql-dev \
   nodejs \
   vips-dev \
