@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { useQuery } from '@apollo/client'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { Card, List, Empty, Avatar } from 'antd'
 import { PageHeader } from '@ant-design/pro-layout'
 

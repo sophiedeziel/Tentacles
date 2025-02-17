@@ -9,7 +9,7 @@ import { createConsumer } from '@rails/actioncable'
 import ActionCableLink from 'graphql-ruby-client/subscriptions/ActionCableLink'
 import {
   BrowserRouter as Router
-} from 'react-router-dom'
+} from 'react-router'
 
 import { setContext } from '@apollo/client/link/context'
 
