@@ -4,7 +4,7 @@ import {
   Routes,
   Route,
   Outlet
-} from 'react-router-dom'
+} from 'react-router'
 
 const Dashboard = lazy(() => import('../../Sections/Dashboard/Dashboard'))
 const PrintersList = lazy(() => import('../../Sections/Printers/PrintersList/PrintersList'))
