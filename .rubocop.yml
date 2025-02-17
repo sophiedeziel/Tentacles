@@ -2,7 +2,8 @@ inherit_mode:
   merge:
     - Exclude
 
-require: rubocop-rails
+plugins: rubocop-rails
+
 AllCops:
   NewCops: enable
   Exclude:
