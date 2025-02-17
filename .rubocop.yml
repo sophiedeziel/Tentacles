@@ -12,6 +12,7 @@ AllCops:
     - 'vendor/**/*'
     - 'bin/**/*'
     - 'tmp/**/*'
+    - 'sorbet/**/*'
 
 Metrics/MethodLength:
   Exclude:
