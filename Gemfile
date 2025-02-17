@@ -60,6 +60,7 @@ gem 'pry' # TODO: fix octoprint gem to not require pry
 gem 'sidekiq', '~> 7.3'
 
 gem 'listen', '~> 3.9'
+gem 'sorbet-static-and-runtime', '~> 0.5.0'
 
 group :development, :test do
   gem 'bundler-audit'
@@ -67,12 +68,14 @@ group :development, :test do
   gem 'debug', platforms: %i[mri mingw x64_mingw]
   gem 'factory_bot_rails'
   gem 'graphiql-rails'
+  gem 'rspec', '~> 3.13.0'
   gem 'rspec-its'
   gem 'rspec-rails'
   gem 'rubocop', '~> 1.71', require: false
   gem 'rubocop-rails', '~> 2.30', require: false
   gem 'rubocop-rspec', require: false
   gem 'simplecov', require: false
+  gem 'tapioca', '~> 0.16.10', require: false
   gem 'vcr', '~> 6.3'
   gem 'webmock'
 end
