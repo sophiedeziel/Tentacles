@@ -38,7 +38,7 @@
     "react-dom": "^18.3.1",
     "react-markdown": "^9.0.3",
     "react-on-rails": "^14.1.1",
-    "react-router": "^7.1.5",
+    "react-router": "^7.2.0",
     "regenerator-runtime": "^0.14.1",
     "sass": "^1.85.0",
     "shakapacker": "8.1.0",
