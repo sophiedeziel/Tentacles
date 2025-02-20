@@ -79,6 +79,9 @@ Rails.application.configure do
   config.web_console.allowed_ips = ['172.0.0.0/8', '127.0.0.0/8', '10.0.0.0/8']
   config.hosts = [
     IPAddr.new('0.0.0.0/0'),
+    IPAddr.new('172.0.0.0/8'),
+    IPAddr.new('127.0.0.0/8'),
+    IPAddr.new('10.0.0.0/8'),
     IPAddr.new('::/0'),
     'localhost',
     "#{ENV.fetch('CODESPACE_NAME', nil)}-5000.#{pf_domain}",
