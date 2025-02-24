@@ -60,7 +60,7 @@ gem 'pry' # TODO: fix octoprint gem to not require pry
 gem 'sidekiq', '~> 7.3'
 
 gem 'listen', '~> 3.9'
-gem 'sorbet-static-and-runtime', '~> 0.5.11842'
+gem 'sorbet-static-and-runtime', '~> 0.5.11851'
 
 group :development, :test do
   gem 'bundler-audit'
