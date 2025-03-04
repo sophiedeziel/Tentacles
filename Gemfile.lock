@@ -145,7 +145,7 @@ GEM
       activesupport (>= 6.1)
     graphiql-rails (1.10.3)
       railties
-    graphql (2.4.10)
+    graphql (2.4.11)
       base64
       fiber-storage
       logger
@@ -365,14 +365,14 @@ GEM
       simplecov_json_formatter (~> 0.1)
     simplecov-html (0.12.3)
     simplecov_json_formatter (0.1.4)
-    sorbet (0.5.11862)
-      sorbet-static (= 0.5.11862)
-    sorbet-runtime (0.5.11862)
-    sorbet-static (0.5.11862-universal-darwin)
-    sorbet-static (0.5.11862-x86_64-linux)
-    sorbet-static-and-runtime (0.5.11862)
-      sorbet (= 0.5.11862)
-      sorbet-runtime (= 0.5.11862)
+    sorbet (0.5.11875)
+      sorbet-static (= 0.5.11875)
+    sorbet-runtime (0.5.11875)
+    sorbet-static (0.5.11875-universal-darwin)
+    sorbet-static (0.5.11875-x86_64-linux)
+    sorbet-static-and-runtime (0.5.11875)
+      sorbet (= 0.5.11875)
+      sorbet-runtime (= 0.5.11875)
     spoom (1.5.4)
       erubi (>= 1.10.0)
       prism (>= 0.28.0)
@@ -473,7 +473,7 @@ DEPENDENCIES
   shakapacker (~> 8.1)
   sidekiq (~> 7.3)
   simplecov
-  sorbet-static-and-runtime (~> 0.5.11862)
+  sorbet-static-and-runtime (~> 0.5.11875)
   sprockets-rails
   tapioca (~> 0.16.11)
   tzinfo-data
