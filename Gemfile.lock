@@ -277,7 +277,7 @@ GEM
       sorbet-runtime (>= 0.5.9204)
     rdoc (6.12.0)
       psych (>= 4.0.0)
-    react_on_rails (14.1.1)
+    react_on_rails (14.2.0)
       addressable
       connection_pool
       execjs (~> 2.5)
@@ -461,7 +461,7 @@ DEPENDENCIES
   pry
   puma (~> 6.6)
   rails (~> 8.0)
-  react_on_rails (~> 14.1.1)
+  react_on_rails (~> 14.2.0)
   redis (~> 5.4)
   rspec (~> 3.13.0)
   rspec-its
