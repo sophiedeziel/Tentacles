@@ -34,11 +34,7 @@ brew install yarn
 ```
 git clone https://github.com/sophiedeziel/Tentacles.git
 cd Tentacles
-asdf install
-bundle
-yarn
-
-rake db:setup
+bin/setup
 ```
 
 ### Start the servers
@@ -47,12 +43,12 @@ rake db:setup
 foreman start
 ```
 
-After compilation, the application should be available at `http://localhost:5100`
+After compilation, the application should be available at `http://localhost:5000`
 
 
 ## Update Gcode documentation
 
-Run the following script from the project's root directory: 
+Run the following script from the project's root directory:
 
 ```
 rails gcode_documentation:fetch
