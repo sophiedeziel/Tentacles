@@ -57,7 +57,7 @@ gem 'shakapacker', '~> 8.1'
 
 gem 'colorize'
 gem 'pry' # TODO: fix octoprint gem to not require pry
-gem 'sidekiq', '~> 7.3'
+gem 'sidekiq', '~> 8.0'
 
 gem 'listen', '~> 3.9'
 gem 'sorbet-static-and-runtime', '~> 0.5.11888'
