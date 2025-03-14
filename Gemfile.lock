@@ -182,7 +182,7 @@ GEM
     mini_mime (1.1.5)
     mini_racer (0.18.0)
       libv8-node (~> 23.6.1.0)
-    minitest (5.25.4)
+    minitest (5.25.5)
     mock_redis (0.49.0)
       redis (~> 5)
     msgpack (1.7.2)
@@ -347,7 +347,7 @@ GEM
       rubyzip (>= 1.2.2, < 3.0)
       websocket (~> 1.0)
     semantic_range (3.1.0)
-    shakapacker (8.1.0)
+    shakapacker (8.2.0)
       activesupport (>= 5.2)
       package_json
       rack-proxy (>= 0.6.1)
@@ -470,7 +470,7 @@ DEPENDENCIES
   rubocop-rails (~> 2.30)
   rubocop-rspec
   selenium-webdriver
-  shakapacker (~> 8.1)
+  shakapacker (~> 8.2)
   sidekiq (~> 7.3)
   simplecov
   sorbet-static-and-runtime (~> 0.5.11930)
