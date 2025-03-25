@@ -12,7 +12,7 @@
     "@apollo/client": "^3.13.5",
     "@babel/core": "^7.26.10",
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
-    "@babel/runtime": "^7.26.10",
+    "@babel/runtime": "^7.27.0",
     "@monaco-editor/react": "^4.7.0",
     "@rails/actioncable": "^7.2.200",
     "@types/react": "~18.3.12",
