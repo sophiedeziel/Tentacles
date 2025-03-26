@@ -28,7 +28,7 @@
     "file-size": "^1.0.0",
     "gcode-preview": "^2.18",
     "graphql": "^16.10.0",
-    "graphql-ruby-client": "^1.14.5",
+    "graphql-ruby-client": "^1.14.6",
     "js-yaml": "^4.1.0",
     "monaco-editor": "^0.52.2",
     "monaco-editor-webpack-plugin": "^7.1.0",
