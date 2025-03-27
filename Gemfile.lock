@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/sophiedeziel/octoprint.git
-  revision: 0230a1a7e9cf25b5188013004e826ddd79252a3f
+  revision: 403a68fbf2d3f9ae2fceb0a090ec847fb7dc0fe5
   branch: main
   specs:
     octoprint (0.1.0)
@@ -167,7 +167,7 @@ GEM
     listen (3.9.0)
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
-    logger (1.6.6)
+    logger (1.7.0)
     loofah (2.24.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.12.0)
