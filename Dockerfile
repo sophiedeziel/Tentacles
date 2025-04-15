@@ -1,4 +1,4 @@
-FROM ruby:3.4.1-alpine AS build-env
+FROM ruby:3.4.3-alpine AS build-env
 
 ARG RAILS_ROOT=/usr/src/app
 
@@ -43,7 +43,7 @@ RUN bin/shakapacker \
   && yarn cache clean \
   && rm -rf node_modules tmp/cache/* /tmp/* yarn.lock app/ui/* spec/*
 
-FROM ruby:3.4.1-alpine
+FROM ruby:3.4.3-alpine
 
 ARG RAILS_ROOT=/usr/src/app
 
