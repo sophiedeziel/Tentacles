@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Ruby and gems
-        uses: ruby/setup-ruby@84684c07c1965536eb4802c8daf1a77968df0cb1 # v1.92
+        uses: ruby/setup-ruby@cb0fda56a307b8c78d38320cd40d9eb22a3bf04e # v1.92
         with:
           bundler-cache: true
 
@@ -77,7 +77,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Install Ruby and gems
-        uses: ruby/setup-ruby@84684c07c1965536eb4802c8daf1a77968df0cb1 # v1.92
+        uses: ruby/setup-ruby@cb0fda56a307b8c78d38320cd40d9eb22a3bf04e # v1.92
         with:
           bundler-cache: true
       # - name: Security audit application code
@@ -91,7 +91,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Install Ruby and gems
-        uses: ruby/setup-ruby@84684c07c1965536eb4802c8daf1a77968df0cb1 # v1.92
+        uses: ruby/setup-ruby@cb0fda56a307b8c78d38320cd40d9eb22a3bf04e # v1.92
         with:
           bundler-cache: true
       # - name: Security audit application code
@@ -105,7 +105,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Install Ruby and gems
-        uses: ruby/setup-ruby@84684c07c1965536eb4802c8daf1a77968df0cb1 # v1.92
+        uses: ruby/setup-ruby@cb0fda56a307b8c78d38320cd40d9eb22a3bf04e # v1.92
         with:
           bundler-cache: true
       # Add or replace any other lints here
@@ -153,7 +153,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Ruby and gems
-        uses: ruby/setup-ruby@84684c07c1965536eb4802c8daf1a77968df0cb1 # v1.92
+        uses: ruby/setup-ruby@cb0fda56a307b8c78d38320cd40d9eb22a3bf04e # v1.92
         with:
           bundler-cache: true
 
