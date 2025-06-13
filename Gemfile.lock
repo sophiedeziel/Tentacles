@@ -373,7 +373,7 @@ GEM
     sorbet-static-and-runtime (0.5.12174)
       sorbet (= 0.5.12174)
       sorbet-runtime (= 0.5.12174)
-    spoom (1.7.3)
+    spoom (1.7.4)
       erubi (>= 1.10.0)
       prism (>= 0.28.0)
       rbi (>= 0.3.3)
@@ -389,7 +389,7 @@ GEM
       activesupport (>= 6.1)
       sprockets (>= 3.0.0)
     stringio (3.1.7)
-    tapioca (0.17.2)
+    tapioca (0.17.3)
       benchmark
       bundler (>= 2.2.25)
       netrc (>= 0.11.0)
@@ -474,7 +474,7 @@ DEPENDENCIES
   simplecov
   sorbet-static-and-runtime (~> 0.5.12174)
   sprockets-rails
-  tapioca (~> 0.17.2)
+  tapioca (~> 0.17.3)
   tzinfo-data
   vcr (~> 6.3)
   web-console
