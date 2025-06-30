@@ -1,11 +1,11 @@
 GIT
   remote: https://github.com/sophiedeziel/octoprint.git
-  revision: 1835de7c52f097f817406885d1b908bca1e76384
+  revision: 7a89fc5295b19d6c4dbfd445dc15a3175c8522d0
   branch: main
   specs:
     octoprint (0.1.0)
       activesupport
-      faraday (>= 2.2, < 2.13)
+      faraday (>= 2.2, < 2.14)
       faraday-multipart (>= 1.0.3, < 1.2.0)
       sorbet-runtime (~> 0.5.10908)
       zeitwerk (~> 2.6)
@@ -132,11 +132,11 @@ GEM
     factory_bot_rails (6.5.0)
       factory_bot (~> 6.5)
       railties (>= 6.1.0)
-    faraday (2.12.3)
+    faraday (2.13.1)
       faraday-net_http (>= 2.0, < 3.5)
       json
       logger
-    faraday-multipart (1.1.0)
+    faraday-multipart (1.1.1)
       multipart-post (~> 2.0)
     faraday-net_http (3.4.1)
       net-http (>= 0.5.0)
