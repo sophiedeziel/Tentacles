@@ -184,16 +184,29 @@ end
 class Octoprint::BaseResource
   # @return [BaseResource] a new instance of BaseResource
   #
-  # source://octoprint//lib/octoprint/base_resource.rb#74
+  # source://octoprint//lib/octoprint/base_resource.rb#100
   def initialize(**attrs); end
 
   class << self
+    # Sends a DELETE request to the resource's endpoint.
+    #
+    # source://octoprint//lib/octoprint/base_resource.rb#69
+    sig do
+      params(
+        path: ::String,
+        params: T::Hash[::Symbol, T.untyped],
+        headers: T::Hash[::Symbol, T.untyped],
+        options: T::Hash[::Symbol, T.untyped]
+      ).returns(T.untyped)
+    end
+    def delete(path: T.unsafe(nil), params: T.unsafe(nil), headers: T.unsafe(nil), options: T.unsafe(nil)); end
+
     # Instanciates an object from a hash. Can be overriden by child classes
     #
     # @param attrs [Hash] the object's attributes
     # @return [BaseResource]
     #
-    # source://octoprint//lib/octoprint/base_resource.rb#57
+    # source://octoprint//lib/octoprint/base_resource.rb#83
     def deserialize(attrs); end
 
     # Gets a single resource and instanciates the object.
@@ -225,7 +238,7 @@ class Octoprint::BaseResource
 
     private
 
-    # source://octoprint//lib/octoprint/base_resource.rb#66
+    # source://octoprint//lib/octoprint/base_resource.rb#92
     sig { returns(::Octoprint::Client) }
     def client; end
   end
@@ -885,29 +898,35 @@ class Octoprint::Exceptions::UnsupportedMediaTypeError < ::Octoprint::Exceptions
 #
 # Octoprint's API doc: https://docs.octoprint.org/en/master/api/files.html
 #
-# source://octoprint//lib/octoprint/files.rb#11
+# source://octoprint//lib/octoprint/files.rb#12
 class Octoprint::Files < ::Octoprint::BaseResource
   # @return [Files] a new instance of Files
   #
-  # source://octoprint//lib/octoprint/files.rb#17
+  # source://octoprint//lib/octoprint/files.rb#18
   def initialize(files:, free: T.unsafe(nil), total: T.unsafe(nil)); end
 
   # Returns the value of attribute files.
   #
-  # source://octoprint//lib/octoprint/files.rb#15
+  # source://octoprint//lib/octoprint/files.rb#16
   def files; end
 
   # Returns the value of attribute free.
   #
-  # source://octoprint//lib/octoprint/files.rb#15
+  # source://octoprint//lib/octoprint/files.rb#16
   def free; end
 
   # Returns the value of attribute total.
   #
-  # source://octoprint//lib/octoprint/files.rb#15
+  # source://octoprint//lib/octoprint/files.rb#16
   def total; end
 
   class << self
+    # Copies a file or folder
+    #
+    # source://octoprint//lib/octoprint/files.rb#218
+    sig { params(filename: ::String, destination: ::String, location: ::Octoprint::Location).returns(T.untyped) }
+    def copy(filename:, destination:, location: T.unsafe(nil)); end
+
     # Creates a folder
     #
     # @example
@@ -917,7 +936,7 @@ class Octoprint::Files < ::Octoprint::BaseResource
     #   folder.path #=> "test"
     #   folder.refs #=> {resource: "http://octoprint.local/api/files/local/test"}
     #
-    # source://octoprint//lib/octoprint/files.rb#114
+    # source://octoprint//lib/octoprint/files.rb#115
     sig do
       params(
         foldername: ::String,
@@ -928,9 +947,15 @@ class Octoprint::Files < ::Octoprint::BaseResource
     end
     def create_folder(foldername:, location: T.unsafe(nil), path: T.unsafe(nil), **_kargs); end
 
+    # Deletes a file
+    #
+    # source://octoprint//lib/octoprint/files.rb#247
+    sig { params(filename: ::String, location: ::Octoprint::Location).returns(T.untyped) }
+    def delete_file(filename:, location: T.unsafe(nil)); end
+
     # Fetches a single file or folder
     #
-    # source://octoprint//lib/octoprint/files.rb#47
+    # source://octoprint//lib/octoprint/files.rb#48
     sig do
       params(
         filename: ::String,
@@ -940,11 +965,65 @@ class Octoprint::Files < ::Octoprint::BaseResource
     end
     def get(filename:, location: T.unsafe(nil), options: T.unsafe(nil)); end
 
+    # Issues a file command
+    #
+    # @option options
+    # @option options
+    # @option options
+    #
+    # source://octoprint//lib/octoprint/files.rb#147
+    sig do
+      params(
+        filename: ::String,
+        command: ::String,
+        location: ::Octoprint::Location,
+        options: T::Hash[::Symbol, T.untyped]
+      ).returns(T.untyped)
+    end
+    def issue_command(filename:, command:, location: T.unsafe(nil), options: T.unsafe(nil)); end
+
     # Fetches the list of files at a location
     #
-    # source://octoprint//lib/octoprint/files.rb#32
+    # source://octoprint//lib/octoprint/files.rb#33
     sig { params(location: ::Octoprint::Location, options: T::Hash[::Symbol, T.untyped]).returns(::Octoprint::Files) }
     def list(location: T.unsafe(nil), options: T.unsafe(nil)); end
+
+    # Moves a file or folder
+    #
+    # source://octoprint//lib/octoprint/files.rb#233
+    sig { params(filename: ::String, destination: ::String, location: ::Octoprint::Location).returns(T.untyped) }
+    def move(filename:, destination:, location: T.unsafe(nil)); end
+
+    # Selects a file for printing
+    #
+    # source://octoprint//lib/octoprint/files.rb#164
+    sig do
+      params(
+        filename: ::String,
+        location: ::Octoprint::Location,
+        print: T.nilable(T::Boolean)
+      ).returns(T.untyped)
+    end
+    def select(filename:, location: T.unsafe(nil), print: T.unsafe(nil)); end
+
+    # Slices an STL file into GCODE
+    #
+    # source://octoprint//lib/octoprint/files.rb#200
+    sig do
+      params(
+        filename: ::String,
+        location: ::Octoprint::Location,
+        print: T.nilable(T::Boolean),
+        profile: T.nilable(T::Hash[::Symbol, T.untyped])
+      ).returns(T.untyped)
+    end
+    def slice(filename:, location: T.unsafe(nil), print: T.unsafe(nil), profile: T.unsafe(nil)); end
+
+    # Unselects the currently selected file
+    #
+    # source://octoprint//lib/octoprint/files.rb#179
+    sig { params(filename: ::String, location: ::Octoprint::Location).returns(T.untyped) }
+    def unselect(filename:, location: T.unsafe(nil)); end
 
     # Uploads a file
     #
@@ -953,7 +1032,7 @@ class Octoprint::Files < ::Octoprint::BaseResource
     # @option options
     # @option options
     #
-    # source://octoprint//lib/octoprint/files.rb#76
+    # source://octoprint//lib/octoprint/files.rb#77
     sig do
       params(
         file_path: ::String,
@@ -967,68 +1046,74 @@ end
 
 # File information
 #
-# source://octoprint//lib/octoprint/files/file.rb#9
+# source://octoprint//lib/octoprint/files/file.rb#10
 class Octoprint::Files::File
   include ::Octoprint::Deserializable
   include ::Octoprint::AutoInitializable
   extend ::Octoprint::Deserializable::ClassMethods
   extend ::Octoprint::AutoInitializable::ClassMethods
 
-  # source://octoprint//lib/octoprint/files/file.rb#34
+  # source://octoprint//lib/octoprint/files/file.rb#35
   def initialize(**kwargs); end
 
-  # source://octoprint//lib/octoprint/files/file.rb#34
+  # source://octoprint//lib/octoprint/files/file.rb#35
   def children; end
 
-  # source://octoprint//lib/octoprint/files/file.rb#34
+  # source://octoprint//lib/octoprint/files/file.rb#35
   def dashboard; end
 
-  # source://octoprint//lib/octoprint/files/file.rb#34
+  # Convert Unix timestamp to Time object
+  #
+  # source://octoprint//lib/octoprint/files/file.rb#50
+  sig { returns(T.nilable(::Time)) }
   def date; end
 
-  # source://octoprint//lib/octoprint/files/file.rb#34
+  # source://octoprint//lib/octoprint/files/file.rb#35
+  def date_timestamp; end
+
+  # source://octoprint//lib/octoprint/files/file.rb#35
   def display_layer_progress; end
 
-  # source://octoprint//lib/octoprint/files/file.rb#34
+  # source://octoprint//lib/octoprint/files/file.rb#35
   def display_name; end
 
-  # source://octoprint//lib/octoprint/files/file.rb#34
+  # source://octoprint//lib/octoprint/files/file.rb#35
   def extra; end
 
-  # source://octoprint//lib/octoprint/files/file.rb#34
+  # source://octoprint//lib/octoprint/files/file.rb#35
   def gcode_analysis; end
 
-  # source://octoprint//lib/octoprint/files/file.rb#34
+  # source://octoprint//lib/octoprint/files/file.rb#35
   def md5_hash; end
 
-  # source://octoprint//lib/octoprint/files/file.rb#34
+  # source://octoprint//lib/octoprint/files/file.rb#35
   def name; end
 
-  # source://octoprint//lib/octoprint/files/file.rb#34
+  # source://octoprint//lib/octoprint/files/file.rb#35
   def origin; end
 
-  # source://octoprint//lib/octoprint/files/file.rb#34
+  # source://octoprint//lib/octoprint/files/file.rb#35
   def path; end
 
-  # source://octoprint//lib/octoprint/files/file.rb#34
+  # source://octoprint//lib/octoprint/files/file.rb#35
   def prints; end
 
-  # source://octoprint//lib/octoprint/files/file.rb#34
+  # source://octoprint//lib/octoprint/files/file.rb#35
   def refs; end
 
-  # source://octoprint//lib/octoprint/files/file.rb#34
+  # source://octoprint//lib/octoprint/files/file.rb#35
   def size; end
 
-  # source://octoprint//lib/octoprint/files/file.rb#34
+  # source://octoprint//lib/octoprint/files/file.rb#35
   def statistics; end
 
-  # source://octoprint//lib/octoprint/files/file.rb#34
+  # source://octoprint//lib/octoprint/files/file.rb#35
   def type; end
 
-  # source://octoprint//lib/octoprint/files/file.rb#34
+  # source://octoprint//lib/octoprint/files/file.rb#35
   def type_path; end
 
-  # source://octoprint//lib/octoprint/files/file.rb#34
+  # source://octoprint//lib/octoprint/files/file.rb#35
   def userdata; end
 end
 
