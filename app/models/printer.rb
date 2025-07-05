@@ -1,6 +1,9 @@
+# typed: true
 # frozen_string_literal: true
 
 class Printer < ApplicationRecord
+  extend T::Sig
+
   has_many :jobs, class_name: 'Printer::Job', dependent: :nullify
 
   validates :name, presence: true
@@ -39,9 +42,10 @@ class Printer < ApplicationRecord
     jobs.where(status: 'enqueued').count
   end
 
-  def upload(file, **)
+  sig { params(file: String, options: T::Hash[Symbol, T.untyped]).returns(Octoprint::Files::OperationResult) }
+  def upload(file, **options)
     using_api do
-      Octoprint::Files.upload(file, **)
+      Octoprint::Files.upload(file, options:)
     end
   end
 
