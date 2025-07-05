@@ -26,7 +26,7 @@ Metrics/AbcSize:
 Style/Documentation:
   Enabled: false
 
-Naming/PredicateName:
+Naming/PredicatePrefix:
   Exclude:
     - 'app/graphql/types/**/*'
 

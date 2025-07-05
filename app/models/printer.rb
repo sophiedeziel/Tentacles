@@ -42,15 +42,15 @@ class Printer < ApplicationRecord
     jobs.where(status: 'enqueued').count
   end
 
-  sig { params(file: String, options: T::Hash[Symbol, T.untyped]).returns(Octoprint::Files::OperationResult) }
-  def upload(file, **options)
+  sig { params(file: String, options: T.untyped).returns(Octoprint::Files::OperationResult) }
+  def upload(file, options: {})
     using_api do
-      Octoprint::Files.upload(file, options:)
+      Octoprint::Files.upload(file, **options)
     end
   end
 
   def using_api(cache: false, &)
-    method = caller[0][/'.*'/][1..-2]
+    method = T.must(T.must(caller[0])[/'.*'/])[1..-2]
     OctoprintCache.use_cache(id:, method:, time: cache) do
       api_client.use(&)
     end

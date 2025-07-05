@@ -1539,6 +1539,8 @@ module Tapioca::Dsl::Compilers; end
 class Tapioca::Dsl::Compilers::AutoInitializable < ::Tapioca::Dsl::Compiler
   extend T::Generic
 
+  ConstantType = type_member { { upper: Module } }
+
   # Generates RBI content for the AutoInitializable class.
   #
   # source://octoprint//lib/tapioca/dsl/compilers/auto_initializable.rb#35

@@ -24,11 +24,11 @@ class UploadFilesToPrintersJob < ApplicationJob
 
   private
 
-  sig { params(files: T::Array[FileRecord]).returns(T::Array[Pathname]) }
+  sig { params(files: T::Array[ActiveStorage::Attached::One]).returns(T::Array[Pathname]) }
   def move_files(files)
     files.map do |file|
-      file.blob.open do |temp_file|
-        temp_filename = Rails.root.join("tmp/#{file.filename}")
+      T.unsafe(file).blob.open do |temp_file|
+        temp_filename = Rails.root.join("tmp/#{T.unsafe(file).filename}")
         FileUtils.copy(temp_file.path, temp_filename)
         temp_filename
       end
