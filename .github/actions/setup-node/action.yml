@@ -1,0 +1,25 @@
+name: 'Setup Node'
+description: 'Setup Node.js with yarn and caching'
+runs:
+  using: "composite"
+  steps:
+    - name: Restore cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          **/node_modules
+          public/assets/
+          public/packs-test/
+          tmp/shakapacker
+        key: ${{ runner.os }}-assets-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-assets-
+    
+    - uses: actions/setup-node@v4
+      with:
+        cache: yarn
+        node-version-file: .tool-versions
+    
+    - name: 'Yarn Install'
+      shell: bash
+      run: yarn install

@@ -1,0 +1,25 @@
+name: 'Setup Rails'
+description: 'Setup Rails with Ruby, Node, and database'
+inputs:
+  setup-database:
+    description: 'Whether to setup the database'
+    required: false
+    default: 'false'
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - uses: ./.github/actions/setup-ruby
+    
+    - uses: ./.github/actions/setup-node
+    
+    - name: Setup database
+      if: inputs.setup-database == 'true'
+      shell: bash
+      env:
+        RAILS_ENV: test
+        DB_USER: tentacles_test
+        DB_PASSWORD: tentacles_test
+      run: bin/rails db:schema:load

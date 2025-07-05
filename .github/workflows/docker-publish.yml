@@ -12,8 +12,34 @@ on:
     branches: [ "main" ]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
+    paths:
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'docker-compose.*.yml'
+      - 'Gemfile'
+      - 'Gemfile.lock'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'yarn.lock'
+      - 'app/**'
+      - 'bin/**'
+      - 'config/**'
+      - 'db/**'
+      - 'lib/**'
+      - 'public/**'
+      - '.dockerignore'
+      - '.github/workflows/docker-publish.yml'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'Dockerfile'
+      - 'Gemfile'
+      - 'Gemfile.lock'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'yarn.lock'
+      - '.dockerignore'
+      - '.github/workflows/docker-publish.yml'
 
 env:
   # Use docker.io for Docker Hub if empty
