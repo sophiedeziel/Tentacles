@@ -1,0 +1,9 @@
+name: 'Setup Ruby'
+description: 'Setup Ruby with caching'
+runs:
+  using: "composite"
+  steps:
+    - name: Install Ruby and gems
+      uses: ruby/setup-ruby@a4effe49ee8ee5b8b5091268c473a4628afb5651 # v1.92
+      with:
+        bundler-cache: true

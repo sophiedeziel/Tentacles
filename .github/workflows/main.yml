@@ -10,10 +10,47 @@ on:
     branches: [ 'main' ]
   pull_request:
     branches: [ main ]
-jobs:
 
-  rspec:
+jobs:
+  # Detect what files changed to conditionally run jobs
+  changes:
     runs-on: ubuntu-latest
+    outputs:
+      ruby: ${{ steps.filter.outputs.ruby }}
+      javascript: ${{ steps.filter.outputs.javascript }}
+      database: ${{ steps.filter.outputs.database }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            ruby:
+              - '**/*.rb'
+              - 'Gemfile*'
+              - '.ruby-version'
+              - 'spec/**/*'
+            javascript:
+              - '**/*.js'
+              - '**/*.jsx'
+              - '**/*.ts'
+              - '**/*.tsx'
+              - 'package*.json'
+              - 'yarn.lock'
+              - '.tool-versions'
+            database:
+              - 'db/**/*'
+              - 'config/database.yml'
+
+  # Run RSpec tests in parallel
+  rspec:
+    needs: changes
+    if: needs.changes.outputs.ruby == 'true' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [1, 2, 3]
     services:
       mysql:
         image: mysql:8
@@ -27,155 +64,99 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     env:
       RAILS_ENV: test
+      CI_NODE_TOTAL: 3
+      CI_NODE_INDEX: ${{ matrix.group }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install Ruby and gems
-        uses: ruby/setup-ruby@a4effe49ee8ee5b8b5091268c473a4628afb5651 # v1.92
+      - uses: ./.github/actions/setup-rails
         with:
-          bundler-cache: true
-
-      - name: Restore cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            **/node_modules
-            public/assets/
-            public/packs-test/
-            tmp/shakapacker
-          key: ${{ runner.os }}-assets-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-assets-
-
-      - uses: actions/setup-node@v4
-        with:
-          cache: yarn
-          node-version-file: .tool-versions
-
-      - name: 'Yarn Install'
-        run: yarn install
-
-      - name: Setup database
+          setup-database: 'true'
+      
+      - name: Run tests (Group ${{ matrix.group }})
         env:
           RAILS_ENV: test
           DB_USER: tentacles_test
           DB_PASSWORD: tentacles_test
-        run: bin/rails db:schema:load
+        run: |
+          # Split specs into groups
+          ALL_SPECS=$(find spec -name "*_spec.rb" | sort)
+          TOTAL_SPECS=$(echo "$ALL_SPECS" | wc -l)
+          SPECS_PER_GROUP=$((($TOTAL_SPECS + $CI_NODE_TOTAL - 1) / $CI_NODE_TOTAL))
+          START=$(( ($CI_NODE_INDEX - 1) * $SPECS_PER_GROUP + 1 ))
+          END=$(( $CI_NODE_INDEX * $SPECS_PER_GROUP ))
+          
+          SPECS_TO_RUN=$(echo "$ALL_SPECS" | sed -n "${START},${END}p" | tr '\n' ' ')
+          
+          if [ -n "$SPECS_TO_RUN" ]; then
+            echo "Running specs: $SPECS_TO_RUN"
+            bin/rspec $SPECS_TO_RUN
+          else
+            echo "No specs to run in this group"
+          fi
 
-      - name: Run tests
-        env:
-          RAILS_ENV: test
-          DB_USER: tentacles_test
-          DB_PASSWORD: tentacles_test
-        run: bin/rspec
-
+  # Ruby linting and type checking
   lint-ruby:
+    needs: changes
+    if: needs.changes.outputs.ruby == 'true' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Install Ruby and gems
-        uses: ruby/setup-ruby@a4effe49ee8ee5b8b5091268c473a4628afb5651 # v1.92
-        with:
-          bundler-cache: true
-      # - name: Security audit application code
-      #   run: bin/brakeman -q -w2
+      - uses: ./.github/actions/setup-ruby
       - name: Lint Ruby files
         run: bin/rubocop --parallel
 
   typecheck-ruby:
+    needs: changes
+    if: needs.changes.outputs.ruby == 'true' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Install Ruby and gems
-        uses: ruby/setup-ruby@a4effe49ee8ee5b8b5091268c473a4628afb5651 # v1.92
-        with:
-          bundler-cache: true
-      # - name: Security audit application code
-      #   run: bin/brakeman -q -w2
+      - uses: ./.github/actions/setup-ruby
       - name: Typecheck Ruby files
         run: bin/bundle exec srb tc
 
+  # Security audit (always run)
   security-audit:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Install Ruby and gems
-        uses: ruby/setup-ruby@a4effe49ee8ee5b8b5091268c473a4628afb5651 # v1.92
-        with:
-          bundler-cache: true
-      # Add or replace any other lints here
+      - uses: ./.github/actions/setup-ruby
       - name: Security audit dependencies
         run: bin/bundler-audit --update
-      # - name: Security audit application code
-      #   run: bin/brakeman -q -w2
 
-  lint-javascript:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Restore cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            **/node_modules
-            public/assets/
-            public/packs-test/
-            tmp/shakapacker
-          key: ${{ runner.os }}-assets-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-assets-
-
-      - uses: actions/setup-node@v4
-        with:
-          cache: yarn
-          node-version-file: .tool-versions
-
-      - name: 'Yarn Install'
-        run: yarn install
-
-      - name: Lint Javascript files
-        run: bin/yarn run eslint app/ui/**/*.jsx
-
-  assets-compile:
+  # JavaScript linting and asset compilation combined
+  javascript-and-assets:
+    needs: changes
+    if: needs.changes.outputs.javascript == 'true' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
       RAILS_ENV: production
       SECRET_KEY_BASE: precompile_placeholder
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install Ruby and gems
-        uses: ruby/setup-ruby@a4effe49ee8ee5b8b5091268c473a4628afb5651 # v1.92
+      - uses: ./.github/actions/setup-rails
         with:
-          bundler-cache: true
-
-      - name: Restore cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            **/node_modules
-            public/assets/
-            public/packs-test/
-            tmp/shakapacker
-          key: ${{ runner.os }}-assets-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-assets-
-
-      - uses: actions/setup-node@v4
-        with:
-          cache: yarn
-          node-version-file: .tool-versions
-
-      - name: 'Yarn Install'
-        run: yarn install
-
+          setup-database: 'false'
+      
+      - name: Lint Javascript files
+        run: bin/yarn run eslint app/ui/**/*.jsx
+      
       - name: Compile assets (js and css)
         run: bin/rails shakapacker:compile
+
+  # Final check to ensure all required jobs passed
+  ci-success:
+    needs: [rspec, lint-ruby, typecheck-ruby, security-audit, javascript-and-assets]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check CI Status
+        run: |
+          if [ "${{ contains(needs.*.result, 'failure') }}" == "true" ]; then
+            echo "One or more CI jobs failed"
+            exit 1
+          else
+            echo "All CI jobs completed successfully"
+          fi
