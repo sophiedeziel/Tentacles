@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/sophiedeziel/octoprint.git
-  revision: 0a255f06a90eb42e6a664582949f8d68d27d932f
+  revision: 53cb558a3d5beb147418c69db830d496a35a93a4
   branch: main
   specs:
     octoprint (0.1.0)
