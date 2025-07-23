@@ -396,7 +396,7 @@ GEM
       activesupport (>= 6.1)
       sprockets (>= 3.0.0)
     stringio (3.1.7)
-    tapioca (0.17.6)
+    tapioca (0.17.7)
       benchmark
       bundler (>= 2.2.25)
       netrc (>= 0.11.0)
@@ -482,7 +482,7 @@ DEPENDENCIES
   simplecov
   sorbet-static-and-runtime (~> 0.5.12219)
   sprockets-rails
-  tapioca (~> 0.17.5)
+  tapioca (~> 0.17.7)
   tzinfo-data
   vcr (~> 6.3)
   web-console
