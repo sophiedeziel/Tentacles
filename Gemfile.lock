@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/sophiedeziel/octoprint.git
-  revision: 0a255f06a90eb42e6a664582949f8d68d27d932f
+  revision: 25eb10117e3c4fa595da8a07e2ba489d30d77d37
   branch: main
   specs:
     octoprint (0.1.0)
@@ -132,7 +132,7 @@ GEM
     factory_bot_rails (6.5.0)
       factory_bot (~> 6.5)
       railties (>= 6.1.0)
-    faraday (2.13.2)
+    faraday (2.13.4)
       faraday-net_http (>= 2.0, < 3.5)
       json
       logger
@@ -161,7 +161,7 @@ GEM
       pp (>= 0.6.0)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
-    json (2.12.2)
+    json (2.13.2)
     language_server-protocol (3.17.0.5)
     libv8-node (24.1.0.0-arm64-darwin)
     libv8-node (24.1.0.0-x86_64-darwin)
