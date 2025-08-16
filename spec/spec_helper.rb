@@ -5,7 +5,7 @@ require 'simplecov'
 
 if ENV['CI_NODE_TOTAL']
   # Configure SimpleCov for parallel CI runs
-  SimpleCov.command_name "RSpec-#{ENV['CI_NODE_INDEX']}"
+  SimpleCov.command_name "RSpec-#{ENV.fetch('CI_NODE_INDEX', nil)}"
   SimpleCov.start 'rails' do
     # Don't check coverage in individual parallel runs
     coverage_dir 'coverage'
