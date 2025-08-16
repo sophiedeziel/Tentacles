@@ -96,28 +96,8 @@ jobs:
           if [ -n "$SPECS_TO_RUN" ]; then
             echo "Running specs: $SPECS_TO_RUN"
             bin/rspec $SPECS_TO_RUN
-            echo "RSpec exit code: $?"
           else
             echo "No specs to run in this group"
-          fi
-      
-      - name: Debug coverage files
-        if: always()
-        run: |
-          echo "Contents of coverage directory:"
-          ls -la coverage/ || echo "No coverage directory found"
-          echo "Looking for .resultset.json files:"
-          find . -name ".resultset.json" -ls || echo "No .resultset.json files found"
-          echo "SimpleCov environment check:"
-          echo "CI_NODE_TOTAL=$CI_NODE_TOTAL"
-          echo "CI_NODE_INDEX=$CI_NODE_INDEX"
-          if [ -f "coverage/.resultset.json" ]; then
-            echo "Coverage file exists and has size:"
-            wc -l coverage/.resultset.json
-            echo "First few lines:"
-            head -5 coverage/.resultset.json
-          else
-            echo "ERROR: coverage/.resultset.json does not exist!"
           fi
       
       - name: Upload coverage results
@@ -205,47 +185,19 @@ jobs:
       
       - name: Merge coverage reports
         run: |
-          # Debug what was downloaded
-          echo "Downloaded artifacts structure:"
-          find coverage-results -type f -ls || echo "No files in coverage-results"
-          echo "Directory structure:"
-          ls -la coverage-results/ || echo "No coverage-results directory"
-          
           # Create a clean coverage directory for merging
           rm -rf coverage
           mkdir -p coverage
           
-          # Each artifact will be in its own subdirectory (coverage-1, coverage-2, etc.)
-          # Copy all .resultset.json files from all artifact directories
+          # Copy all .resultset.json files from downloaded artifacts
           for artifact_dir in coverage-results/coverage-*; do
-            if [ -d "$artifact_dir" ]; then
-              echo "Processing artifact directory: $artifact_dir"
-              ls -la "$artifact_dir" || true
-              
-              # Copy .resultset.json from this artifact
-              if [ -f "$artifact_dir/.resultset.json" ]; then
-                cp "$artifact_dir/.resultset.json" "coverage/.resultset-$(basename $artifact_dir).json"
-                echo "Copied from $artifact_dir/.resultset.json"
-              else
-                echo "No .resultset.json found in $artifact_dir"
-              fi
+            if [ -d "$artifact_dir" ] && [ -f "$artifact_dir/.resultset.json" ]; then
+              cp "$artifact_dir/.resultset.json" "coverage/.resultset-$(basename $artifact_dir).json"
             fi
           done
           
-          # List what we have for merging
-          echo "Coverage files prepared for merging:"
-          find coverage -name "*.json" -ls
-          
-          # Only run merge if we have files
-          if [ "$(find coverage -name "*.json" | wc -l)" -gt 0 ]; then
-            echo "Running coverage merge..."
-            bundle exec bin/merge_coverage
-          else
-            echo "ERROR: No coverage files found to merge!"
-            echo "Debugging - showing all files in coverage-results:"
-            find coverage-results -type f -exec ls -la {} \;
-            exit 1
-          fi
+          # Run coverage merge
+          bundle exec bin/merge_coverage
       
       - name: Upload merged coverage report
         uses: actions/upload-artifact@v4

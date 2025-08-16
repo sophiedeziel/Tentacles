@@ -6,14 +6,12 @@ require 'simplecov'
 # Find all coverage result files
 coverage_files = Dir['coverage/.resultset*.json']
 
-puts "Found coverage files: #{coverage_files}"
-
 if coverage_files.empty?
-  puts "ERROR: No coverage result files found in coverage directory"
-  puts "Contents of coverage directory:"
-  system('ls -la coverage/')
+  puts "ERROR: No coverage result files found"
   exit 1
 end
+
+puts "Merging coverage from #{coverage_files.size} parallel job(s)..."
 
 # Merge all coverage results from parallel runs
 SimpleCov.collate coverage_files do
@@ -35,4 +33,3 @@ SimpleCov.collate coverage_files do
 end
 
 puts "Coverage reports merged successfully!"
-puts "Merged coverage report available in coverage/merged/"
