@@ -187,45 +187,33 @@ jobs:
         with:
           pattern: coverage-*
           path: coverage-results
-          merge-multiple: true
       
       - name: Merge coverage reports
         run: |
           # Debug what was downloaded
-          echo "Downloaded artifacts:"
+          echo "Downloaded artifacts structure:"
           find coverage-results -type f -ls || echo "No files in coverage-results"
+          echo "Directory structure:"
+          ls -la coverage-results/ || echo "No coverage-results directory"
           
           # Create a clean coverage directory for merging
           rm -rf coverage
           mkdir -p coverage
           
-          # Copy all .resultset.json files from downloaded artifacts
-          # The artifacts may be nested in subdirectories
-          find coverage-results -name ".resultset.json" -exec cp {} coverage/ \; 2>/dev/null || true
-          
-          # If that didn't work, try copying from any coverage directories
-          find coverage-results -path "*/coverage/.resultset.json" -exec cp {} coverage/ \; 2>/dev/null || true
-          
-          # Check if we found any files
-          resultset_count=$(find coverage -name ".resultset.json" | wc -l)
-          echo "Found $resultset_count .resultset.json files"
-          
-          if [ "$resultset_count" -eq 0 ]; then
-            echo "No .resultset.json files found. Checking for any JSON files:"
-            find coverage-results -name "*.json" -ls
-            
-            # Try to copy any JSON files that might be resultsets
-            find coverage-results -name "*.json" -exec cp {} coverage/ \; 2>/dev/null || true
-          fi
-          
-          # Rename multiple files to avoid conflicts
-          i=1
-          for file in coverage/.resultset.json; do
-            if [ -f "$file" ] && [ $i -gt 1 ]; then
-              mv "$file" "coverage/.resultset-$i.json"
-            fi
-            if [ -f "$file" ]; then
-              i=$((i + 1))
+          # Each artifact will be in its own subdirectory (coverage-1, coverage-2, etc.)
+          # Copy all .resultset.json files from all artifact directories
+          for artifact_dir in coverage-results/coverage-*; do
+            if [ -d "$artifact_dir" ]; then
+              echo "Processing artifact directory: $artifact_dir"
+              ls -la "$artifact_dir" || true
+              
+              # Copy .resultset.json from this artifact
+              if [ -f "$artifact_dir/.resultset.json" ]; then
+                cp "$artifact_dir/.resultset.json" "coverage/.resultset-$(basename $artifact_dir).json"
+                echo "Copied from $artifact_dir/.resultset.json"
+              else
+                echo "No .resultset.json found in $artifact_dir"
+              fi
             fi
           done
           
@@ -239,6 +227,8 @@ jobs:
             bin/merge_coverage
           else
             echo "ERROR: No coverage files found to merge!"
+            echo "Debugging - showing all files in coverage-results:"
+            find coverage-results -type f -exec ls -la {} \;
             exit 1
           fi
       
