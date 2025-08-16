@@ -4,7 +4,7 @@
 require 'simplecov'
 
 # Merge all coverage results from parallel runs
-SimpleCov.collate Dir['coverage/**/.resultset.json'] do
+SimpleCov.collate Dir['coverage/.resultset*.json'] do
   coverage_dir 'coverage/merged'
   
   # Apply the same filters as the main configuration

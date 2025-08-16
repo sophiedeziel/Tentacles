@@ -100,12 +100,20 @@ jobs:
             echo "No specs to run in this group"
           fi
       
+      - name: Debug coverage files
+        if: always()
+        run: |
+          echo "Contents of coverage directory:"
+          ls -la coverage/ || echo "No coverage directory found"
+          echo "Looking for .resultset.json files:"
+          find . -name ".resultset.json" -ls || echo "No .resultset.json files found"
+      
       - name: Upload coverage results
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: coverage-${{ matrix.group }}
-          path: coverage/.resultset.json
+          path: coverage/
           retention-days: 1
 
   # Ruby linting and type checking
@@ -186,12 +194,27 @@ jobs:
           # Create coverage directory structure
           mkdir -p coverage
           
+          # Debug what was downloaded
+          echo "Downloaded artifacts:"
+          find coverage-results -type f -ls || echo "No files in coverage-results"
+          
           # Copy all .resultset.json files to coverage directory
-          find coverage-results -name "*.resultset.json" -exec cp {} coverage/ \;
+          find coverage-results -name ".resultset.json" -exec cp {} coverage/ \;
+          
+          # Rename files to avoid conflicts (each should have unique command name anyway)
+          i=1
+          for file in coverage/.resultset.json; do
+            if [ -f "$file" ]; then
+              if [ $i -gt 1 ]; then
+                mv "$file" "coverage/.resultset-$i.json"
+              fi
+              i=$((i + 1))
+            fi
+          done
           
           # List files for debugging
           echo "Coverage files found:"
-          find coverage -name "*.resultset.json" -ls
+          find coverage -name "*.resultset*.json" -ls
           
           # Run coverage merge
           bin/merge_coverage
