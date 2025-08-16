@@ -9,7 +9,7 @@ if ENV['CI_NODE_TOTAL']
   SimpleCov.start 'rails' do
     # Ensure coverage is written to file
     coverage_dir 'coverage'
-    
+
     # Force writing the resultset file
     at_exit do
       SimpleCov.result.format!
