@@ -71,6 +71,9 @@ jobs:
       CI_NODE_INDEX: ${{ matrix.group }}
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      
       - uses: ./.github/actions/setup-rails
         with:
           setup-database: 'true'
@@ -139,6 +142,9 @@ jobs:
       RAILS_ENV: production
       SECRET_KEY_BASE: precompile_placeholder
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      
       - uses: ./.github/actions/setup-rails
         with:
           setup-database: 'false'
