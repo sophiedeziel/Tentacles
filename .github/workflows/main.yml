@@ -99,6 +99,15 @@ jobs:
           else
             echo "No specs to run in this group"
           fi
+      
+      - name: Upload coverage results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-${{ matrix.group }}
+          path: coverage/
+          retention-days: 1
+          include-hidden-files: true
 
   # Ruby linting and type checking
   lint-ruby:
@@ -155,9 +164,51 @@ jobs:
       - name: Compile assets (js and css)
         run: bin/rails shakapacker:compile
 
+  # Merge coverage reports from parallel runs
+  coverage:
+    needs: [changes, rspec]
+    if: needs.changes.outputs.ruby == 'true' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      
+      - uses: ./.github/actions/setup-rails
+        with:
+          setup-database: 'false'
+      
+      - name: Download coverage results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-*
+          path: coverage-results
+      
+      - name: Merge coverage reports
+        run: |
+          # Create a clean coverage directory for merging
+          rm -rf coverage
+          mkdir -p coverage
+          
+          # Copy all .resultset.json files from downloaded artifacts
+          for artifact_dir in coverage-results/coverage-*; do
+            if [ -d "$artifact_dir" ] && [ -f "$artifact_dir/.resultset.json" ]; then
+              cp "$artifact_dir/.resultset.json" "coverage/.resultset-$(basename $artifact_dir).json"
+            fi
+          done
+          
+          # Run coverage merge
+          bundle exec bin/merge_coverage
+      
+      - name: Upload merged coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: merged-coverage-report
+          path: coverage/merged/
+          retention-days: 30
+
   # Final check to ensure all required jobs passed
   ci-success:
-    needs: [rspec, lint-ruby, typecheck-ruby, security-audit, javascript-and-assets]
+    needs: [rspec, lint-ruby, typecheck-ruby, security-audit, javascript-and-assets, coverage]
     if: always()
     runs-on: ubuntu-latest
     steps:

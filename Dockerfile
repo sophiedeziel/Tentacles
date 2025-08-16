@@ -12,6 +12,7 @@ RUN apk add --update --no-cache \
   nodejs \
   yarn \
   tzdata \
+  yaml-dev \
   && rm -rf /var/cache/apk/* \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*\
   && gem update --system
@@ -63,6 +64,7 @@ RUN apk add --update --no-cache \
   vips-dev \
   nmap \
   tzdata \
+  yaml-dev \
   && rm -rf /var/cache/apk/* \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 

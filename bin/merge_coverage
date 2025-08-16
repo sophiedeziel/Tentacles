@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'simplecov'
+
+# Find all coverage result files
+coverage_files = Dir['coverage/.resultset*.json']
+
+if coverage_files.empty?
+  puts "ERROR: No coverage result files found"
+  exit 1
+end
+
+puts "Merging coverage from #{coverage_files.size} parallel job(s)..."
+
+# Merge all coverage results from parallel runs
+SimpleCov.collate coverage_files do
+  coverage_dir 'coverage/merged'
+  
+  # Apply the same filters as the main configuration
+  add_filter '/spec/'
+  add_filter '/config/'
+  add_filter '/vendor/'
+  
+  # Set minimum coverage for merged results
+  minimum_coverage 70
+  
+  # Generate merged report
+  formatter SimpleCov::Formatter::MultiFormatter.new([
+    SimpleCov::Formatter::HTMLFormatter,
+    SimpleCov::Formatter::SimpleFormatter
+  ])
+end
+
+puts "Coverage reports merged successfully!"
