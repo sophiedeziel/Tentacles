@@ -7,8 +7,13 @@ if ENV['CI_NODE_TOTAL']
   # Configure SimpleCov for parallel CI runs
   SimpleCov.command_name "RSpec-#{ENV.fetch('CI_NODE_INDEX', nil)}"
   SimpleCov.start 'rails' do
-    # Don't check coverage in individual parallel runs
+    # Ensure coverage is written to file
     coverage_dir 'coverage'
+    
+    # Force writing the resultset file
+    at_exit do
+      SimpleCov.result.format!
+    end
   end
 else
   # Local development configuration

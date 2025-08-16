@@ -96,6 +96,7 @@ jobs:
           if [ -n "$SPECS_TO_RUN" ]; then
             echo "Running specs: $SPECS_TO_RUN"
             bin/rspec $SPECS_TO_RUN
+            echo "RSpec exit code: $?"
           else
             echo "No specs to run in this group"
           fi
@@ -107,6 +108,17 @@ jobs:
           ls -la coverage/ || echo "No coverage directory found"
           echo "Looking for .resultset.json files:"
           find . -name ".resultset.json" -ls || echo "No .resultset.json files found"
+          echo "SimpleCov environment check:"
+          echo "CI_NODE_TOTAL=$CI_NODE_TOTAL"
+          echo "CI_NODE_INDEX=$CI_NODE_INDEX"
+          if [ -f "coverage/.resultset.json" ]; then
+            echo "Coverage file exists and has size:"
+            wc -l coverage/.resultset.json
+            echo "First few lines:"
+            head -5 coverage/.resultset.json
+          else
+            echo "ERROR: coverage/.resultset.json does not exist!"
+          fi
       
       - name: Upload coverage results
         uses: actions/upload-artifact@v4
