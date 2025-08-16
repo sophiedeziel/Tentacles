@@ -3,6 +3,7 @@
 module Types
   module Job
     include Base::Interface
+
     description 'A job that can be executed by a printer.'
 
     field :id, ID, null: false
