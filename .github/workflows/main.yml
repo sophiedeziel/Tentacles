@@ -127,6 +127,7 @@ jobs:
           name: coverage-${{ matrix.group }}
           path: coverage/
           retention-days: 1
+          include-hidden-files: true
 
   # Ruby linting and type checking
   lint-ruby:
