@@ -99,6 +99,14 @@ jobs:
           else
             echo "No specs to run in this group"
           fi
+      
+      - name: Upload coverage results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-${{ matrix.group }}
+          path: coverage/.resultset.json
+          retention-days: 1
 
   # Ruby linting and type checking
   lint-ruby:
@@ -155,9 +163,49 @@ jobs:
       - name: Compile assets (js and css)
         run: bin/rails shakapacker:compile
 
+  # Merge coverage reports from parallel runs
+  coverage:
+    needs: [changes, rspec]
+    if: needs.changes.outputs.ruby == 'true' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      
+      - uses: ./.github/actions/setup-ruby
+      
+      - name: Download coverage results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-*
+          path: coverage-results
+          merge-multiple: true
+      
+      - name: Merge coverage reports
+        run: |
+          # Create coverage directory structure
+          mkdir -p coverage
+          
+          # Copy all .resultset.json files to coverage directory
+          find coverage-results -name "*.resultset.json" -exec cp {} coverage/ \;
+          
+          # List files for debugging
+          echo "Coverage files found:"
+          find coverage -name "*.resultset.json" -ls
+          
+          # Run coverage merge
+          bin/merge_coverage
+      
+      - name: Upload merged coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: merged-coverage-report
+          path: coverage/merged/
+          retention-days: 30
+
   # Final check to ensure all required jobs passed
   ci-success:
-    needs: [rspec, lint-ruby, typecheck-ruby, security-audit, javascript-and-assets]
+    needs: [rspec, lint-ruby, typecheck-ruby, security-audit, javascript-and-assets, coverage]
     if: always()
     runs-on: ubuntu-latest
     steps:

@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'simplecov'
+
+# Merge all coverage results from parallel runs
+SimpleCov.collate Dir['coverage/**/.resultset.json'] do
+  coverage_dir 'coverage/merged'
+  
+  # Apply the same filters as the main configuration
+  add_filter '/spec/'
+  add_filter '/config/'
+  add_filter '/vendor/'
+  
+  # Set minimum coverage for merged results
+  minimum_coverage 70
+  
+  # Generate merged report
+  formatter SimpleCov::Formatter::MultiFormatter.new([
+    SimpleCov::Formatter::HTMLFormatter,
+    SimpleCov::Formatter::SimpleFormatter
+  ])
+end
+
+puts "Coverage reports merged successfully!"
+puts "Merged coverage report available in coverage/merged/"
