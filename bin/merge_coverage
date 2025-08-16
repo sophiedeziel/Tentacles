@@ -4,8 +4,7 @@
 require 'simplecov'
 
 # Find all coverage result files
-coverage_files = Dir['coverage/.resultset*.json'] + Dir['coverage/*.json']
-coverage_files = coverage_files.select { |f| File.basename(f).include?('resultset') || File.basename(f) == '.resultset.json' }
+coverage_files = Dir['coverage/.resultset*.json']
 
 puts "Found coverage files: #{coverage_files}"
 
