@@ -3,8 +3,21 @@
 
 require 'simplecov'
 
+# Find all coverage result files
+coverage_files = Dir['coverage/.resultset*.json'] + Dir['coverage/*.json']
+coverage_files = coverage_files.select { |f| File.basename(f).include?('resultset') || File.basename(f) == '.resultset.json' }
+
+puts "Found coverage files: #{coverage_files}"
+
+if coverage_files.empty?
+  puts "ERROR: No coverage result files found in coverage directory"
+  puts "Contents of coverage directory:"
+  system('ls -la coverage/')
+  exit 1
+end
+
 # Merge all coverage results from parallel runs
-SimpleCov.collate Dir['coverage/.resultset*.json'] do
+SimpleCov.collate coverage_files do
   coverage_dir 'coverage/merged'
   
   # Apply the same filters as the main configuration

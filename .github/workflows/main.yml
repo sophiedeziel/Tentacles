@@ -191,33 +191,56 @@ jobs:
       
       - name: Merge coverage reports
         run: |
-          # Create coverage directory structure
-          mkdir -p coverage
-          
           # Debug what was downloaded
           echo "Downloaded artifacts:"
           find coverage-results -type f -ls || echo "No files in coverage-results"
           
-          # Copy all .resultset.json files to coverage directory
-          find coverage-results -name ".resultset.json" -exec cp {} coverage/ \;
+          # Create a clean coverage directory for merging
+          rm -rf coverage
+          mkdir -p coverage
           
-          # Rename files to avoid conflicts (each should have unique command name anyway)
+          # Copy all .resultset.json files from downloaded artifacts
+          # The artifacts may be nested in subdirectories
+          find coverage-results -name ".resultset.json" -exec cp {} coverage/ \; 2>/dev/null || true
+          
+          # If that didn't work, try copying from any coverage directories
+          find coverage-results -path "*/coverage/.resultset.json" -exec cp {} coverage/ \; 2>/dev/null || true
+          
+          # Check if we found any files
+          resultset_count=$(find coverage -name ".resultset.json" | wc -l)
+          echo "Found $resultset_count .resultset.json files"
+          
+          if [ "$resultset_count" -eq 0 ]; then
+            echo "No .resultset.json files found. Checking for any JSON files:"
+            find coverage-results -name "*.json" -ls
+            
+            # Try to copy any JSON files that might be resultsets
+            find coverage-results -name "*.json" -exec cp {} coverage/ \; 2>/dev/null || true
+          fi
+          
+          # Rename multiple files to avoid conflicts
           i=1
           for file in coverage/.resultset.json; do
+            if [ -f "$file" ] && [ $i -gt 1 ]; then
+              mv "$file" "coverage/.resultset-$i.json"
+            fi
             if [ -f "$file" ]; then
-              if [ $i -gt 1 ]; then
-                mv "$file" "coverage/.resultset-$i.json"
-              fi
               i=$((i + 1))
             fi
           done
           
-          # List files for debugging
-          echo "Coverage files found:"
-          find coverage -name "*.resultset*.json" -ls
+          # List what we have for merging
+          echo "Coverage files prepared for merging:"
+          find coverage -name "*.json" -ls
           
-          # Run coverage merge
-          bin/merge_coverage
+          # Only run merge if we have files
+          if [ "$(find coverage -name "*.json" | wc -l)" -gt 0 ]; then
+            echo "Running coverage merge..."
+            bin/merge_coverage
+          else
+            echo "ERROR: No coverage files found to merge!"
+            exit 1
+          fi
       
       - name: Upload merged coverage report
         uses: actions/upload-artifact@v4
