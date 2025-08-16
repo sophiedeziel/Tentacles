@@ -239,7 +239,7 @@ jobs:
           # Only run merge if we have files
           if [ "$(find coverage -name "*.json" | wc -l)" -gt 0 ]; then
             echo "Running coverage merge..."
-            bin/merge_coverage
+            bundle exec bin/merge_coverage
           else
             echo "ERROR: No coverage files found to merge!"
             echo "Debugging - showing all files in coverage-results:"
