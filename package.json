@@ -43,7 +43,7 @@
     "sass": "^1.89.2",
     "shakapacker": "8.3.0",
     "terser-webpack-plugin": "^5.3.14",
-    "three": "^0.178.0",
+    "three": "^0.179.1",
     "typescript": "^5.8.3",
     "webpack": "^5.101.2",
     "webpack-assets-manifest": "^6.2.1",
