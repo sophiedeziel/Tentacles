@@ -11648,10 +11648,10 @@ webidl-conversions@^6.1.0:
   resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-6.1.0.tgz#9111b4d7ea80acd40f5270d666621afa78b69514"
   integrity sha512-qBIvFLGiBpLjfwmYAaHPXsn+ho5xZnGvyGvsarywGNc8VyQJUMHJ8OBKGGrPER0okBeMDaan4mNBlgBROxuI8w==
 
-webpack-assets-manifest@^6.2.1:
-  version "6.2.1"
-  resolved "https://registry.yarnpkg.com/webpack-assets-manifest/-/webpack-assets-manifest-6.2.1.tgz#a6df6f09423fbf72d987d456c99eae33059a1583"
-  integrity sha512-TwmenV4Yn6RHfeL29WhGcnGLauoldsHo4HyqMAibSGmWkgoGmZfnV1SgLOhMrRP7z8IsGwrmtf1j/DJt8XlhKg==
+webpack-assets-manifest@^6.2.2:
+  version "6.2.2"
+  resolved "https://registry.yarnpkg.com/webpack-assets-manifest/-/webpack-assets-manifest-6.2.2.tgz#4e98e88c44ec8e60ec82571dae3504f41573aca3"
+  integrity sha512-oiOnBxCf5rkwAZfslP/oTNnKaNx3mpMZCOS+rkl5vNY5o3qkMhunlpD3ORcKmVe4v5h78o/e+hM6kAvPxgBolg==
   dependencies:
     deepmerge "^4.3.1"
     lockfile "^1.0.4"
