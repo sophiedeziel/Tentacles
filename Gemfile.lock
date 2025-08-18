@@ -232,7 +232,7 @@ GEM
     puma (6.6.1)
       nio4r (~> 2.0)
     racc (1.8.1)
-    rack (3.1.16)
+    rack (3.2.0)
     rack-proxy (0.7.7)
       rack
     rack-session (2.1.1)
@@ -338,7 +338,7 @@ GEM
     rubocop-ast (1.46.0)
       parser (>= 3.3.7.2)
       prism (~> 1.4)
-    rubocop-rails (2.32.0)
+    rubocop-rails (2.33.3)
       activesupport (>= 4.2.0)
       lint_roller (~> 1.1)
       rack (>= 1.1)
@@ -479,7 +479,7 @@ DEPENDENCIES
   rspec-its
   rspec-rails
   rubocop (~> 1.79)
-  rubocop-rails (~> 2.32)
+  rubocop-rails (~> 2.33)
   rubocop-rspec
   selenium-webdriver
   shakapacker (~> 8.3)
