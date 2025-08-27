@@ -16,7 +16,7 @@
     "@monaco-editor/react": "^4.7.0",
     "@rails/actioncable": "^8.0.201",
     "@types/react": "~19.1.11",
-    "@types/react-dom": "~19.1.7",
+    "@types/react-dom": "~19.1.8",
     "antd": "^5.11.5",
     "apollo-upload-client": "^18.0.1",
     "array-move": "^4.0.0",
