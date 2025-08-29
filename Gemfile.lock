@@ -1,13 +1,13 @@
 GIT
   remote: https://github.com/sophiedeziel/octoprint.git
-  revision: 1c1b5344e892664c89cfa6c66c59c4fded2151dd
+  revision: b54388a7193810d752d950f4d0f616fc1a27a6d9
   branch: main
   specs:
     octoprint (0.1.0)
       activesupport
       faraday (>= 2.2, < 2.14)
       faraday-multipart (>= 1.0.3, < 1.2.0)
-      sorbet-runtime (~> 0.5.10908)
+      sorbet-runtime (>= 0.5.10908, < 0.7.0)
       zeitwerk (~> 2.6)
 
 GEM
