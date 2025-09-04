@@ -285,7 +285,7 @@ GEM
     rdoc (6.14.2)
       erb
       psych (>= 4.0.0)
-    react_on_rails (14.2.1)
+    react_on_rails (15.0.0)
       addressable
       connection_pool
       execjs (~> 2.5)
@@ -473,7 +473,7 @@ DEPENDENCIES
   pry
   puma (~> 6.6)
   rails (~> 8.0)
-  react_on_rails (~> 14.2.1)
+  react_on_rails (~> 15.0.0)
   redis (~> 5.4)
   rspec (~> 3.13.1)
   rspec-its
