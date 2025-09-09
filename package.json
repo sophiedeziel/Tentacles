@@ -30,7 +30,7 @@
     "graphql": "^16.11.0",
     "graphql-ruby-client": "^1.14.8",
     "js-yaml": "^4.1.0",
-    "monaco-editor": "^0.52.2",
+    "monaco-editor": "^0.53.0",
     "monaco-editor-webpack-plugin": "^7.1.0",
     "monaco-themes": "^0.4.7",
     "nth-check": "npm:nth-check@2.0.1",
