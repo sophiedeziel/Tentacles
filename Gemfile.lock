@@ -180,7 +180,7 @@ GEM
       net-imap
       net-pop
       net-smtp
-    marcel (1.0.4)
+    marcel (1.1.0)
     matrix (0.4.3)
     method_source (1.1.0)
     mini_mime (1.1.5)
@@ -194,7 +194,7 @@ GEM
     mysql2 (0.5.6)
     net-http (0.6.0)
       uri
-    net-imap (0.5.9)
+    net-imap (0.5.10)
       date
       net-protocol
     net-pop (0.1.2)
@@ -205,13 +205,13 @@ GEM
       net-protocol
     netrc (0.11.0)
     nio4r (2.7.4)
-    nokogiri (1.18.9-arm64-darwin)
+    nokogiri (1.18.10-arm64-darwin)
       racc (~> 1.4)
-    nokogiri (1.18.9-x86_64-darwin)
+    nokogiri (1.18.10-x86_64-darwin)
       racc (~> 1.4)
-    nokogiri (1.18.9-x86_64-linux-gnu)
+    nokogiri (1.18.10-x86_64-linux-gnu)
       racc (~> 1.4)
-    nokogiri (1.18.9-x86_64-linux-musl)
+    nokogiri (1.18.10-x86_64-linux-musl)
       racc (~> 1.4)
     package_json (0.1.0)
     parallel (1.27.0)
@@ -285,12 +285,13 @@ GEM
     rdoc (6.14.2)
       erb
       psych (>= 4.0.0)
-    react_on_rails (15.0.0)
+    react_on_rails (16.0.0)
       addressable
       connection_pool
       execjs (~> 2.5)
       rails (>= 5.2)
       rainbow (~> 3.0)
+      shakapacker (>= 6.0)
     redis (5.4.1)
       redis-client (>= 0.22.0)
     redis-client (0.25.2)
@@ -473,7 +474,7 @@ DEPENDENCIES
   pry
   puma (~> 6.6)
   rails (~> 8.0)
-  react_on_rails (~> 15.0.0)
+  react_on_rails (~> 16.0.0)
   redis (~> 5.4)
   rspec (~> 3.13.1)
   rspec-its
