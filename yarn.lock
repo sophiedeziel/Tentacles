@@ -9810,10 +9810,10 @@ react-markdown@^10.1.0:
     unist-util-visit "^5.0.0"
     vfile "^6.0.0"
 
-react-on-rails@^15.0.0:
-  version "15.0.0"
-  resolved "https://registry.yarnpkg.com/react-on-rails/-/react-on-rails-15.0.0.tgz#8edc78670129394cd92293842ae88c62d4cb030b"
-  integrity sha512-Uht8HWm8ZVN8OeDz03b3YLtprzHXhFTw7hb0jl8IpOjbig91DBuurBVxr4tfuymuemGwdjhQpscho33Cnw9Atg==
+react-on-rails@^16.0.0:
+  version "16.0.0"
+  resolved "https://registry.yarnpkg.com/react-on-rails/-/react-on-rails-16.0.0.tgz#8c448a40b51e54f8e235593a59108abfe73c5f11"
+  integrity sha512-FGeqtHWhcprJeOZWlpJdT2izhJj54CRNgo8avwdZI/JwPqT34kZNEPX70nX6oHqZ2QWkXOJNA5wfCYct6v32tg==
 
 react-refresh@^0.11.0:
   version "0.11.0"
