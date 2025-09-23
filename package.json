@@ -14,7 +14,7 @@
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "@babel/runtime": "^7.28.4",
     "@monaco-editor/react": "^4.7.0",
-    "@rails/actioncable": "^8.0.201",
+    "@rails/actioncable": "^8.0.300",
     "@types/react": "~19.1.13",
     "@types/react-dom": "~19.1.9",
     "antd": "^5.11.5",
