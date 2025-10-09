@@ -9820,10 +9820,10 @@ react-refresh@^0.11.0:
   resolved "https://registry.yarnpkg.com/react-refresh/-/react-refresh-0.11.0.tgz#77198b944733f0f1f1a90e791de4541f9f074046"
   integrity sha512-F27qZr8uUqwhWZboondsPx8tnC3Ct3SxZA3V5WyEvujRyyNv0VYPhoBg1gZ8/MV5tubQp76Trw8lTv9hzRBa+A==
 
-react-router@^7.9.1:
-  version "7.9.1"
-  resolved "https://registry.yarnpkg.com/react-router/-/react-router-7.9.1.tgz#b227410c31f24dd416c939ca5d0f8d5c8a1404d4"
-  integrity sha512-pfAByjcTpX55mqSDGwGnY9vDCpxqBLASg0BMNAuMmpSGESo/TaOUG6BllhAtAkCGx8Rnohik/XtaqiYUJtgW2g==
+react-router@^7.9.4:
+  version "7.9.4"
+  resolved "https://registry.yarnpkg.com/react-router/-/react-router-7.9.4.tgz#2c4249e5d0a6bb8b8f6bf0ede8f5077e4ff8024f"
+  integrity sha512-SD3G8HKviFHg9xj7dNODUKDFgpG4xqD5nhyd0mYoB5iISepuZAvzSr8ywxgxKJ52yRzf/HWtVHc9AWwoTbljvA==
   dependencies:
     cookie "^1.0.1"
     set-cookie-parser "^2.6.0"
