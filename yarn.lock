@@ -1995,10 +1995,10 @@
     schema-utils "^4.2.0"
     source-map "^0.7.3"
 
-"@rails/actioncable@^8.0.201":
-  version "8.0.201"
-  resolved "https://registry.yarnpkg.com/@rails/actioncable/-/actioncable-8.0.201.tgz#f5ac6bfa3ac6f52f8a1c37b2661b66a61d4442e4"
-  integrity sha512-WiXZodvnK7u+wlu72DZydfV75x14HhzXI84sto9xcdsW1DMOHK+jYwQuuE/Wh/hKH5yajFIw/3DUP6MHDeGrbA==
+"@rails/actioncable@^8.1.0":
+  version "8.1.0"
+  resolved "https://registry.yarnpkg.com/@rails/actioncable/-/actioncable-8.1.0.tgz#cd884d50a34af9a8c9149ec4e256fbb99a67b37f"
+  integrity sha512-9WSbN548dplVkfCFJFi/CKrJ+P4runAHZLlpXFn0xL+Y6tFJvo3zp92fr4ON9WOhNt8inetu8NJG1xDDAJ8N8g==
 
 "@rc-component/async-validator@^5.0.3":
   version "5.0.4"
