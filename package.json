@@ -45,7 +45,7 @@
     "terser-webpack-plugin": "^5.3.14",
     "three": "^0.180.0",
     "typescript": "^5.9.2",
-    "webpack": "^5.101.3",
+    "webpack": "^5.102.1",
     "webpack-assets-manifest": "^6.2.2",
     "webpack-cli": "^6.0.1",
     "webpack-merge": "^6.0.1",
