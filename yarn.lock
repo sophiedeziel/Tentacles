@@ -9652,10 +9652,10 @@ react-markdown@^10.1.0:
     unist-util-visit "^5.0.0"
     vfile "^6.0.0"
 
-react-on-rails@^16.1.1:
-  version "16.1.1"
-  resolved "https://registry.npmjs.org/react-on-rails/-/react-on-rails-16.1.1.tgz"
-  integrity sha512-Ntw/4HSB/p9QJ1V2kc0aETzK0W0Vy0suSh0Ugs3Ctfso2ovIT2YUegJJyPtFzX9jUZSR6Q/tkmkgNgzASkO0pw==
+react-on-rails@^16.1.2:
+  version "16.1.2"
+  resolved "https://registry.yarnpkg.com/react-on-rails/-/react-on-rails-16.1.2.tgz#27308d7d5806e73354eea2355c5c4036ade443d4"
+  integrity sha512-SiE168FgUtp9Sld2MAZUs2+R/D7B+SlNGX4zl9T2rB1QluzgTY042a4/i6v+ivQpBIhNjJujlVFIHYp+uVqjoQ==
 
 react-refresh@^0.11.0:
   version "0.11.0"
