@@ -40,7 +40,7 @@
     "react-on-rails": "^16.1.1",
     "react-router": "^7.9.6",
     "regenerator-runtime": "^0.14.1",
-    "sass": "^1.94.1",
+    "sass": "^1.94.2",
     "shakapacker": "8.3.0",
     "terser-webpack-plugin": "^5.3.14",
     "three": "^0.181.2",
