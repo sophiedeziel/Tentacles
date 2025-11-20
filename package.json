@@ -41,7 +41,7 @@
     "react-router": "^7.9.6",
     "regenerator-runtime": "^0.14.1",
     "sass": "^1.94.2",
-    "shakapacker": "8.3.0",
+    "shakapacker": "9.3.3",
     "terser-webpack-plugin": "^5.3.14",
     "three": "^0.181.2",
     "typescript": "^5.9.2",
