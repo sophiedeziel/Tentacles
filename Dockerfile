@@ -23,15 +23,15 @@ COPY package.json yarn.lock ./
 RUN yarn install --pure-lockfile && yarn cache clean
 
 COPY Gemfile Gemfile.lock ./
-RUN bundle update --bundler \
-  && bundle config --global frozen 1 \
+RUN bundle config --global frozen 1 \
   && bundle config set --local path 'vendor/bundle' \
   && bundle config --local without 'development test' \
-  && bundle install --jobs 4 --retry 3 \
-  && bundle clean --force \
+  && bundle install --jobs 1 --retry 3
+
+RUN bundle clean --force \
   && rm -rf /usr/local/bundle/cache \
-  && find vendor/bundle/ruby/3.4.0/gems/ -name "*.c" -delete \
-  && find vendor/bundle/ruby/3.4.0/gems/ -name "*.o" -delete
+  && find vendor/bundle -name "*.c" -delete \
+  && find vendor/bundle -name "*.o" -delete
 
 COPY . .
 
