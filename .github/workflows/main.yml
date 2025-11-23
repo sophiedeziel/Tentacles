@@ -23,7 +23,7 @@ jobs:
       javascript: ${{ steps.filter.outputs.javascript }}
       database: ${{ steps.filter.outputs.database }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: dorny/paths-filter@v3
         id: filter
         with:
@@ -72,7 +72,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       
       - uses: ./.github/actions/setup-rails
         with:
@@ -116,7 +116,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - uses: ./.github/actions/setup-ruby
       - name: Lint Ruby files
         run: bin/rubocop --parallel
@@ -127,7 +127,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - uses: ./.github/actions/setup-ruby
       - name: Typecheck Ruby files
         run: bin/bundle exec srb tc
@@ -137,7 +137,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - uses: ./.github/actions/setup-ruby
       - name: Security audit dependencies
         run: bin/bundler-audit --update
@@ -152,7 +152,7 @@ jobs:
       SECRET_KEY_BASE: precompile_placeholder
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       
       - uses: ./.github/actions/setup-rails
         with:
@@ -171,7 +171,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       
       - uses: ./.github/actions/setup-rails
         with:
