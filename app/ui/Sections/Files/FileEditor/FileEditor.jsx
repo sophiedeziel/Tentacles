@@ -14,7 +14,6 @@ import { FileOutlined } from '@ant-design/icons'
 
 import GCodeAnalysis from './components/GCodeAnalysis.jsx'
 import gcodeDefinition from 'common/gcodeDefinition.js'
-import Tomorrow from 'monaco-themes/themes/Tomorrow.json'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import * as classes from './FileEditor.module.less'
 
@@ -74,7 +73,10 @@ export default function FileEditor () {
   function handleEditorWillMount (monaco) {
     monaco.languages.register({ id: 'gcode' })
     monaco.languages.setMonarchTokensProvider('gcode', gcodeDefinition)
-    monaco.editor.defineTheme('Tomorrow', Tomorrow)
+    import('monaco-themes/themes/Tomorrow.json')
+      .then(data => {
+        monaco.editor.defineTheme('Tomorrow', data)
+      })
   }
 
   function handleEditorChange (value) {
