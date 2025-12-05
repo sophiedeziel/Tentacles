@@ -35,7 +35,7 @@
     "monaco-themes": "^0.4.7",
     "nth-check": "^2.1.1",
     "react": "^19.2.1",
-    "react-dom": "^19.1.1",
+    "react-dom": "^19.2.1",
     "react-markdown": "^10.1.0",
     "react-on-rails": "^16.1.2",
     "react-router": "^7.10.0",
