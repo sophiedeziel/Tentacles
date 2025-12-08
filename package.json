@@ -100,6 +100,9 @@
     "style-loader": "^4.0.0",
     "webpack-dev-server": "^5.2.1"
   },
+  "scripts": {
+    "preinstall": "node -e \"if (!/yarn/.test(process.env.npm_execpath || '')) { throw new Error('Please use yarn instead of npm'); }\""
+  },
   "babel": {
     "presets": [
       "@babel/preset-env",
