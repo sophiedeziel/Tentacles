@@ -60,7 +60,7 @@
     "regenerator-runtime": "^0.14.1",
     "sass": "^1.96.0",
     "shakapacker": "9.4.0",
-    "terser-webpack-plugin": "^5.3.15",
+    "terser-webpack-plugin": "^5.3.16",
     "three": "^0.182.0",
     "typescript": "^5.9.2",
     "webpack": "^5.103.0",
