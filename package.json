@@ -91,7 +91,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.6.0",
     "eslint-plugin-react": "^7.37.5",
-    "less": "^4.4.1",
+    "less": "^4.5.1",
     "less-loader": "^12.3.0",
     "mini-css-extract-plugin": "^2.9.4",
     "postcss": "^8.4.31",
