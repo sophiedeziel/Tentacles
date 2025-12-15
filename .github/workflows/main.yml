@@ -178,7 +178,7 @@ jobs:
           setup-database: 'false'
       
       - name: Download coverage results
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           pattern: coverage-*
           path: coverage-results
