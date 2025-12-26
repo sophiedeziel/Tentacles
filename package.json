@@ -50,7 +50,7 @@
     "js-yaml": "^4.1.1",
     "monaco-editor": "^0.55.1",
     "monaco-editor-webpack-plugin": "^7.1.1",
-    "monaco-themes": "^0.4.7",
+    "monaco-themes": "^0.4.8",
     "nth-check": "^2.1.1",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",

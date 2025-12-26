@@ -4900,10 +4900,10 @@ monaco-editor@^0.55.1:
     dompurify "3.2.7"
     marked "14.0.0"
 
-monaco-themes@^0.4.7:
-  version "0.4.7"
-  resolved "https://registry.npmjs.org/monaco-themes/-/monaco-themes-0.4.7.tgz"
-  integrity sha512-1RCMsoC8UMwdBMahdhLkuE48kjDcHVN1T2STHceyW4usCR4vsIPC4b6PhnZcUvx+r+RHduwgGvyoPTiqKaMd7w==
+monaco-themes@^0.4.8:
+  version "0.4.8"
+  resolved "https://registry.yarnpkg.com/monaco-themes/-/monaco-themes-0.4.8.tgz#b5df1cfa23c0886c9221e43516ff71bf7eafeda2"
+  integrity sha512-QEDCwl5XUMPPpsg8TVNfi1VKIDtMsMTJAhUfxHSZ6hzkEfZgfTK2hicwyzkDKhAhrpMkHkwMtG13ynvdztJesw==
   dependencies:
     fast-plist "^0.1.3"
 
