@@ -71,7 +71,7 @@ group :development, :test do
   gem 'rspec', '~> 3.13.1'
   gem 'rspec-its'
   gem 'rspec-rails'
-  gem 'rubocop', '~> 1.80', require: false
+  gem 'rubocop', '~> 1.82', require: false
   gem 'rubocop-rails', '~> 2.33', require: false
   gem 'rubocop-rspec', require: false
   gem 'simplecov', require: false
