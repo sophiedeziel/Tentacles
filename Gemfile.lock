@@ -1,12 +1,12 @@
 GIT
   remote: https://github.com/sophiedeziel/octoprint.git
-  revision: 15c96d697c546a42e548321a926271fab816b9ec
+  revision: 6b8829befe9c1383d3fb6b66927696080d383bb0
   branch: main
   specs:
     octoprint (0.1.0)
       activesupport
       faraday (>= 2.2, < 2.15)
-      faraday-multipart (>= 1.0.3, < 1.2.0)
+      faraday-multipart (>= 1.0.3, < 1.3.0)
       sorbet-runtime (>= 0.5.10908, < 0.7.0)
       zeitwerk (~> 2.6)
 
@@ -95,7 +95,7 @@ GEM
     ast (2.4.3)
     base64 (0.3.0)
     benchmark (0.5.0)
-    bigdecimal (3.3.1)
+    bigdecimal (4.0.1)
     bindex (0.8.1)
     bootsnap (1.18.6)
       msgpack (~> 1.2)
@@ -114,8 +114,8 @@ GEM
       xpath (~> 3.2)
     coderay (1.1.3)
     colorize (1.1.0)
-    concurrent-ruby (1.3.5)
-    connection_pool (2.5.4)
+    concurrent-ruby (1.3.6)
+    connection_pool (3.0.2)
     crack (1.0.1)
       bigdecimal
       rexml
@@ -139,10 +139,10 @@ GEM
       faraday-net_http (>= 2.0, < 3.5)
       json
       logger
-    faraday-multipart (1.1.1)
+    faraday-multipart (1.2.0)
       multipart-post (~> 2.0)
-    faraday-net_http (3.4.1)
-      net-http (>= 0.5.0)
+    faraday-net_http (3.4.2)
+      net-http (~> 0.5)
     ffi (1.17.2-arm64-darwin)
     ffi (1.17.2-x86_64-darwin)
     ffi (1.17.2-x86_64-linux-gnu)
@@ -157,7 +157,7 @@ GEM
       fiber-storage
       logger
     hashdiff (1.2.1)
-    i18n (1.14.7)
+    i18n (1.14.8)
       concurrent-ruby (~> 1.0)
     io-console (0.8.2)
     irb (1.16.0)
@@ -190,15 +190,16 @@ GEM
     mini_mime (1.1.5)
     mini_racer (0.19.2)
       libv8-node (~> 24.12.0.1)
-    minitest (5.26.0)
+    minitest (6.0.1)
+      prism (~> 1.5)
     mock_redis (0.52.0)
       redis (~> 5)
     msgpack (1.8.0)
     multipart-post (2.4.1)
     mysql2 (0.5.7)
       bigdecimal
-    net-http (0.7.0)
-      uri
+    net-http (0.9.1)
+      uri (>= 0.11.1)
     net-imap (0.5.12)
       date
       net-protocol
@@ -456,7 +457,7 @@ GEM
     yard-sorbet (0.9.0)
       sorbet-runtime
       yard
-    zeitwerk (2.7.3)
+    zeitwerk (2.7.4)
 
 PLATFORMS
   arm64-darwin-24
