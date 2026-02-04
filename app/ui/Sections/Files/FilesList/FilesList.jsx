@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Link } from 'react-router'
 import { saveAs } from 'file-saver'
 
-import { useQuery, useMutation } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client/react'
 
 import Files from 'graphql/Files.graphql'
 import UploadFile from 'graphql/UploadFile.graphql'
@@ -51,7 +51,7 @@ export default function FilesList () {
   }
 
   const [archiveFiles] = useMutation(ArchiveFiles, {
-    update: (cache, { data }) => {
+    update: (cache, { data: _data }) => {
       const filesdata = cache.readQuery({ query: Files })
       setSelectedRowKeys([])
 
@@ -72,7 +72,7 @@ export default function FilesList () {
   })
 
   const [unarchiveFiles] = useMutation(UnarchiveFiles, {
-    update: (cache, { data }) => {
+    update: (cache, { data: _data }) => {
       const filesdata = cache.readQuery({ query: Files })
       setSelectedRowKeys([])
 

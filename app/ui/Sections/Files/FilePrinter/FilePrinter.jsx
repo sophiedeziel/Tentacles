@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useMatch } from 'react-router'
-import { useQuery, useMutation } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client/react'
 import ReactMarkdown from 'react-markdown'
 // import { GCodeViewer } from 'react-gcode-viewer'
 
@@ -80,7 +80,7 @@ export default function FilePrinter () {
         title={file.filename}
       >
       </PageHeader>
-      <Row className={classes.PrintersList} gutter={8}>
+      <Row className={classes.printersList} gutter={8}>
         <Col span={12}>
           <Card title="Select printers" >
             <List

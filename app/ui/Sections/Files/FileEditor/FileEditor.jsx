@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useMatch } from 'react-router'
 import Editor from '@monaco-editor/react'
 import ReactMarkdown from 'react-markdown'
-import { useQuery, useMutation } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client/react'
 import File from 'graphql/File.graphql'
 import UpdateFile from 'graphql/UpdateFile.graphql'
 import GcodeDocs from './GcodeDocs/GcodeDocs.json'
@@ -14,6 +14,7 @@ import { FileOutlined } from '@ant-design/icons'
 
 import GCodeAnalysis from './components/GCodeAnalysis.jsx'
 import gcodeDefinition from 'common/gcodeDefinition.js'
+import TomorrowTheme from 'common/TomorrowTheme.json'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import * as classes from './FileEditor.module.less'
 
@@ -73,13 +74,10 @@ export default function FileEditor () {
   function handleEditorWillMount (monaco) {
     monaco.languages.register({ id: 'gcode' })
     monaco.languages.setMonarchTokensProvider('gcode', gcodeDefinition)
-    import('monaco-themes/themes/Tomorrow.json')
-      .then(data => {
-        monaco.editor.defineTheme('Tomorrow', data)
-      })
+    monaco.editor.defineTheme('Tomorrow', TomorrowTheme)
   }
 
-  function handleEditorChange (value) {
+  function handleEditorChange (_value) {
     // gcodePreviewRef.current?.replaceGCode(value)
   }
 
@@ -122,7 +120,7 @@ export default function FileEditor () {
     }
   }
 
-  const uriTransformer = (text) => {
+  const uriTransformer = (_text) => {
     return (null)
   }
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 
-import { useQuery, useLazyQuery, useMutation } from '@apollo/client'
+import { useQuery, useLazyQuery, useMutation } from '@apollo/client/react'
 import { notification, Space, Button, Card } from 'antd'
 
 import useInterval from 'utils/UseInterval'
