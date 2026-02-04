@@ -14,6 +14,9 @@ Bindex = Skiptrace
 class Exception
   # source://bindex//lib/skiptrace/exception_ext.rb#2
   def binding_locations; end
+
+  # source://bindex//lib/skiptrace.rb#7
+  def bindings; end
 end
 
 # source://bindex//lib/skiptrace/location.rb#1
@@ -22,6 +25,8 @@ module Skiptrace
     # Gets the current bindings for all available Ruby frames.
     #
     # Filters the internal Rubinius and Skiptrace frames.
+    #
+    # source://bindex//lib/skiptrace.rb#7
     def current_bindings; end
   end
 end

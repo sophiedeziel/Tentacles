@@ -52,14 +52,14 @@ gem 'octoprint', github: 'sophiedeziel/octoprint', branch: 'main' # For prototyp
 
 gem 'bindex' # shakapacker won't work without this
 gem 'mini_racer', platforms: :ruby
-gem 'react_on_rails', '~> 16.1.2'
-gem 'shakapacker', '~> 9.4'
+gem 'react_on_rails', '~> 16.2'
+gem 'shakapacker', '~> 9.5'
 
 gem 'colorize'
 gem 'pry' # TODO: fix octoprint gem to not require pry
 gem 'sidekiq', '~> 8.0'
 
-gem 'listen', '~> 3.9'
+gem 'listen', '~> 3.10'
 gem 'sorbet-static-and-runtime', '~> 0.6.12872'
 
 group :development, :test do
@@ -68,11 +68,11 @@ group :development, :test do
   gem 'debug', platforms: %i[mri mingw x64_mingw]
   gem 'factory_bot_rails'
   gem 'graphiql-rails'
-  gem 'rspec', '~> 3.13.1'
+  gem 'rspec', '~> 3.13'
   gem 'rspec-its'
   gem 'rspec-rails'
-  gem 'rubocop', '~> 1.82', require: false
-  gem 'rubocop-rails', '~> 2.33', require: false
+  gem 'rubocop', '~> 1.84', require: false
+  gem 'rubocop-rails', '~> 2.34', require: false
   gem 'rubocop-rspec', require: false
   gem 'simplecov', require: false
   gem 'tapioca', '~> 0.17.10', require: false

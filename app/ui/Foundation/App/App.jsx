@@ -3,8 +3,9 @@ import AppLayout from '../AppLayout/AppLayout'
 
 import AppSwitcher from '../AppSwitcher/AppSwitcher'
 
-import { ApolloClient, HttpLink, InMemoryCache, ApolloProvider, ApolloLink } from '@apollo/client'
-import createUploadLink from 'apollo-upload-client/createUploadLink.mjs'
+import { ApolloClient, HttpLink, InMemoryCache, ApolloLink } from '@apollo/client'
+import { ApolloProvider } from '@apollo/client/react'
+import UploadHttpLink from 'apollo-upload-client/UploadHttpLink.mjs'
 import { createConsumer } from '@rails/actioncable'
 import ActionCableLink from 'graphql-ruby-client/subscriptions/ActionCableLink'
 import {
@@ -28,7 +29,7 @@ const authLink = setContext((_, { headers }) => {
 
 const httpLink = ApolloLink.split(
   (operation) => operation.getContext().hasUpload,
-  createUploadLink({ uri: '/graphql' }),
+  new UploadHttpLink({ uri: '/graphql' }),
   new HttpLink({ uri: '/graphql', credentials: 'include' })
 )
 

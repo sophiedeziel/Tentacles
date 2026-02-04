@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { useQuery } from '@apollo/client'
+import { useQuery } from '@apollo/client/react'
 import { Link } from 'react-router'
 import { Empty, List, Avatar, Button, Card } from 'antd'
 import { PageHeader } from '@ant-design/pro-layout'

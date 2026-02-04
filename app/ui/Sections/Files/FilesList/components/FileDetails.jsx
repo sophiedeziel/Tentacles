@@ -6,7 +6,7 @@ import ReactMarkdown from 'react-markdown'
 import UpdateFileNotes from '../../graphql/UpdateFileNotes.graphql'
 import Files from '../../graphql/Files.graphql'
 
-import { useMutation } from '@apollo/client'
+import { useMutation } from '@apollo/client/react'
 import { EditOutlined } from '@ant-design/icons'
 
 const { TextArea } = Input

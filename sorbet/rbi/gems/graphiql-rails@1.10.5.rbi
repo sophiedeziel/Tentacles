@@ -182,6 +182,8 @@ class GraphiQL::Rails::EditorsController < ::ActionController::Base
 
     def __class_attr__helper_methods; end
     def __class_attr__helper_methods=(new_value); end
+    def __class_attr_config; end
+    def __class_attr_config=(new_value); end
     def __class_attr_middleware_stack; end
     def __class_attr_middleware_stack=(new_value); end
   end

@@ -67,7 +67,6 @@ export default function PrintTable ({ jobs }) {
   //   />
   // )
 
-  // eslint-disable-next-line react/prop-types
   // const DraggableBodyRow = ({ className, style, ...restProps }) => {
   //   // function findIndex base on Table rowKey props and should always be a right array index
   //   const index = dataSource.findIndex((x) => x.index === restProps['data-row-key'])

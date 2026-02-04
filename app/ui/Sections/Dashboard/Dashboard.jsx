@@ -3,7 +3,7 @@ import React from 'react'
 import { Card, Progress, Row, Col } from 'antd'
 import { EditOutlined, EllipsisOutlined, SettingOutlined } from '@ant-design/icons'
 
-import { useQuery } from '@apollo/client'
+import { useQuery } from '@apollo/client/react'
 import Printers from './graphql/Printers.graphql'
 
 export default function Dashboard () {

@@ -35,7 +35,7 @@ function SideMenu () {
     }
   }
 
-  const onSelect = ({ item, key, keyPath, selectedKeys, domEvent }) => {
+  const onSelect = ({ key }) => {
     navigate(key)
     if (rootSubmenuKeys.indexOf(getRootFromLocation(key)) === -1) {
       setOpenKeys([])

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useMatch } from 'react-router'
-import { useSubscription, useMutation } from '@apollo/client'
+import { useSubscription, useMutation } from '@apollo/client/react'
 
 import { Progress, Button } from 'antd'
 import { PageHeader } from '@ant-design/pro-layout'
