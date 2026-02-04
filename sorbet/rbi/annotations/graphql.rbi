@@ -38,10 +38,7 @@ class GraphQL::Schema::Resolver
   def context; end
 end
 
-module GraphQL::Schema::Member::HasFields
-  sig { params(args: T.untyped, kwargs: T.untyped, block: T.nilable(T.proc.params(field: GraphQL::Schema::Field).bind(GraphQL::Schema::Field).void)).returns(T.untyped) }
-  def field(*args, **kwargs, &block); end
-end
+# Note: GraphQL::Schema::Member::HasFields#field is defined in the gem RBI
 
 module GraphQL::Schema::Member::BaseDSLMethods
   sig { params(new_description: String).returns(T.nilable(String)) }

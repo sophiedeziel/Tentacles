@@ -5,5 +5,529 @@
 # Please instead update this file by running `bin/tapioca gem semantic_range`.
 
 
-# THIS IS AN EMPTY RBI FILE.
-# see https://github.com/Shopify/tapioca#manually-requiring-parts-of-a-gem
+# source://semantic_range//lib/semantic_range/version.rb#1
+module SemanticRange
+  class << self
+    # source://semantic_range//lib/semantic_range.rb#242
+    def clean(version, loose: T.unsafe(nil)); end
+
+    # source://semantic_range//lib/semantic_range.rb#61
+    def cmp(a, op, b, loose: T.unsafe(nil)); end
+
+    # source://semantic_range//lib/semantic_range.rb#183
+    def compare(a, b, loose: T.unsafe(nil)); end
+
+    # source://semantic_range//lib/semantic_range.rb#187
+    def compare_loose(a, b); end
+
+    # source://semantic_range//lib/semantic_range.rb#260
+    def diff(a, b); end
+
+    # @return [Boolean]
+    #
+    # source://semantic_range//lib/semantic_range.rb#285
+    def eq(a, b, loose: T.unsafe(nil)); end
+
+    # @return [Boolean]
+    #
+    # source://semantic_range//lib/semantic_range.rb#211
+    def eq?(a, b, loose: T.unsafe(nil)); end
+
+    # source://semantic_range//lib/semantic_range.rb#159
+    def filter(versions, range, loose: T.unsafe(nil), platform: T.unsafe(nil)); end
+
+    # Support for older non-inquisitive method versions
+    #
+    # @return [Boolean]
+    #
+    # source://semantic_range//lib/semantic_range.rb#279
+    def gt(a, b, loose: T.unsafe(nil)); end
+
+    # @return [Boolean]
+    #
+    # source://semantic_range//lib/semantic_range.rb#207
+    def gt?(a, b, loose: T.unsafe(nil)); end
+
+    # @return [Boolean]
+    #
+    # source://semantic_range//lib/semantic_range.rb#281
+    def gte(a, b, loose: T.unsafe(nil)); end
+
+    # @return [Boolean]
+    #
+    # source://semantic_range//lib/semantic_range.rb#219
+    def gte?(a, b, loose: T.unsafe(nil)); end
+
+    # @return [Boolean]
+    #
+    # source://semantic_range//lib/semantic_range.rb#280
+    def gtr(version, range, loose: T.unsafe(nil), platform: T.unsafe(nil)); end
+
+    # @return [Boolean]
+    #
+    # source://semantic_range//lib/semantic_range.rb#57
+    def gtr?(version, range, loose: T.unsafe(nil), platform: T.unsafe(nil)); end
+
+    # source://semantic_range//lib/semantic_range.rb#254
+    def increment!(version, release, identifier, loose: T.unsafe(nil)); end
+
+    # @return [Boolean]
+    #
+    # source://semantic_range//lib/semantic_range.rb#282
+    def lt(a, b, loose: T.unsafe(nil)); end
+
+    # @return [Boolean]
+    #
+    # source://semantic_range//lib/semantic_range.rb#203
+    def lt?(a, b, loose: T.unsafe(nil)); end
+
+    # @return [Boolean]
+    #
+    # source://semantic_range//lib/semantic_range.rb#284
+    def lte(a, b, loose: T.unsafe(nil)); end
+
+    # @return [Boolean]
+    #
+    # source://semantic_range//lib/semantic_range.rb#223
+    def lte?(a, b, loose: T.unsafe(nil)); end
+
+    # @return [Boolean]
+    #
+    # source://semantic_range//lib/semantic_range.rb#283
+    def ltr(version, range, loose: T.unsafe(nil), platform: T.unsafe(nil)); end
+
+    # @return [Boolean]
+    #
+    # source://semantic_range//lib/semantic_range.rb#53
+    def ltr?(version, range, loose: T.unsafe(nil), platform: T.unsafe(nil)); end
+
+    # source://semantic_range//lib/semantic_range.rb#165
+    def max_satisfying(versions, range, loose: T.unsafe(nil), platform: T.unsafe(nil)); end
+
+    # @return [Boolean]
+    #
+    # source://semantic_range//lib/semantic_range.rb#286
+    def neq(a, b, loose: T.unsafe(nil)); end
+
+    # @return [Boolean]
+    #
+    # source://semantic_range//lib/semantic_range.rb#215
+    def neq?(a, b, loose: T.unsafe(nil)); end
+
+    # @return [Boolean]
+    #
+    # source://semantic_range//lib/semantic_range.rb#287
+    def outside(version, range, hilo, loose: T.unsafe(nil), platform: T.unsafe(nil)); end
+
+    # @return [Boolean]
+    #
+    # source://semantic_range//lib/semantic_range.rb#88
+    def outside?(version, range, hilo, loose: T.unsafe(nil), platform: T.unsafe(nil)); end
+
+    # source://semantic_range//lib/semantic_range.rb#247
+    def parse(version, loose: T.unsafe(nil)); end
+
+    # source://semantic_range//lib/semantic_range.rb#191
+    def rcompare(a, b, loose: T.unsafe(nil)); end
+
+    # source://semantic_range//lib/semantic_range.rb#199
+    def rsort(list, loose: T.unsafe(nil)); end
+
+    # @return [Boolean]
+    #
+    # source://semantic_range//lib/semantic_range.rb#288
+    def satisfies(version, range, loose: T.unsafe(nil), platform: T.unsafe(nil)); end
+
+    # @return [Boolean]
+    #
+    # source://semantic_range//lib/semantic_range.rb#151
+    def satisfies?(version, range, loose: T.unsafe(nil), platform: T.unsafe(nil)); end
+
+    # source://semantic_range//lib/semantic_range.rb#195
+    def sort(list, loose: T.unsafe(nil)); end
+
+    # source://semantic_range//lib/semantic_range.rb#271
+    def to_comparators(range, loose: T.unsafe(nil), platform: T.unsafe(nil)); end
+
+    # source://semantic_range//lib/semantic_range.rb#237
+    def valid(version, loose: T.unsafe(nil)); end
+
+    # @return [Boolean]
+    #
+    # source://semantic_range//lib/semantic_range.rb#227
+    def valid?(version, loose: T.unsafe(nil)); end
+
+    # source://semantic_range//lib/semantic_range.rb#173
+    def valid_range(range, loose: T.unsafe(nil), platform: T.unsafe(nil)); end
+  end
+end
+
+# source://semantic_range//lib/semantic_range.rb#44
+SemanticRange::ANY = T.let(T.unsafe(nil), Hash)
+
+# source://semantic_range//lib/semantic_range.rb#8
+SemanticRange::BUILD = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#7
+SemanticRange::BUILDIDENTIFIER = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#31
+SemanticRange::CARET = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#32
+SemanticRange::CARETLOOSE = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#29
+SemanticRange::CARETTRIM = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#41
+SemanticRange::COMPARATOR = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#42
+SemanticRange::COMPARATORLOOSE = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#25
+SemanticRange::COMPARATORTRIM = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range/comparator.rb#2
+class SemanticRange::Comparator
+  # @return [Comparator] a new instance of Comparator
+  #
+  # source://semantic_range//lib/semantic_range/comparator.rb#4
+  def initialize(comp, loose); end
+
+  # Support for older non-inquisitive method versions
+  #
+  # @return [Boolean]
+  #
+  # source://semantic_range//lib/semantic_range/comparator.rb#68
+  def intersects(comp, loose: T.unsafe(nil), platform: T.unsafe(nil)); end
+
+  # @return [Boolean]
+  #
+  # source://semantic_range//lib/semantic_range/comparator.rb#33
+  def intersects?(comp, loose: T.unsafe(nil), platform: T.unsafe(nil)); end
+
+  # Returns the value of attribute operator.
+  #
+  # source://semantic_range//lib/semantic_range/comparator.rb#3
+  def operator; end
+
+  # @raise [InvalidComparator]
+  #
+  # source://semantic_range//lib/semantic_range/comparator.rb#23
+  def parse(comp); end
+
+  # @return [Boolean]
+  #
+  # source://semantic_range//lib/semantic_range/comparator.rb#69
+  def satisfies_range(range, loose: T.unsafe(nil), platform: T.unsafe(nil)); end
+
+  # @return [Boolean]
+  #
+  # source://semantic_range//lib/semantic_range/comparator.rb#57
+  def satisfies_range?(range, loose: T.unsafe(nil), platform: T.unsafe(nil)); end
+
+  # Returns the value of attribute semver.
+  #
+  # source://semantic_range//lib/semantic_range/comparator.rb#3
+  def semver; end
+
+  # source://semantic_range//lib/semantic_range/comparator.rb#17
+  def test(version); end
+
+  # source://semantic_range//lib/semantic_range/comparator.rb#13
+  def to_s; end
+
+  # Returns the value of attribute value.
+  #
+  # source://semantic_range//lib/semantic_range/comparator.rb#3
+  def value; end
+end
+
+# source://semantic_range//lib/semantic_range.rb#35
+SemanticRange::FULL = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#34
+SemanticRange::FULLPLAIN = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#24
+SemanticRange::GTLT = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#21
+SemanticRange::HYPHENRANGE = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#16
+SemanticRange::HYPHENRANGELOOSE = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#50
+class SemanticRange::InvalidComparator < ::StandardError; end
+
+# source://semantic_range//lib/semantic_range.rb#48
+class SemanticRange::InvalidIncrement < ::StandardError; end
+
+# source://semantic_range//lib/semantic_range.rb#51
+class SemanticRange::InvalidRange < ::StandardError; end
+
+# source://semantic_range//lib/semantic_range.rb#49
+class SemanticRange::InvalidVersion < ::StandardError; end
+
+# source://semantic_range//lib/semantic_range.rb#28
+SemanticRange::LONECARET = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#26
+SemanticRange::LONETILDE = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#36
+SemanticRange::LOOSE = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#23
+SemanticRange::LOOSEPLAIN = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#33
+SemanticRange::MAINVERSION = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#22
+SemanticRange::MAINVERSIONLOOSE = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#46
+SemanticRange::MAX_LENGTH = T.let(T.unsafe(nil), Integer)
+
+# source://semantic_range//lib/semantic_range.rb#11
+SemanticRange::NONNUMERICIDENTIFIER = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#9
+SemanticRange::NUMERICIDENTIFIER = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#10
+SemanticRange::NUMERICIDENTIFIERLOOSE = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#18
+SemanticRange::PRERELEASE = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#17
+SemanticRange::PRERELEASEIDENTIFIER = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#13
+SemanticRange::PRERELEASEIDENTIFIERLOOSE = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#14
+SemanticRange::PRERELEASELOOSE = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range/pre_release.rb#2
+class SemanticRange::PreRelease
+  # @return [PreRelease] a new instance of PreRelease
+  #
+  # source://semantic_range//lib/semantic_range/pre_release.rb#5
+  def initialize(input); end
+
+  # source://semantic_range//lib/semantic_range/pre_release.rb#37
+  def <=>(other); end
+
+  # source://semantic_range//lib/semantic_range/pre_release.rb#29
+  def clear!; end
+
+  # source://semantic_range//lib/semantic_range/pre_release.rb#13
+  def convert(str); end
+
+  # @return [Boolean]
+  #
+  # source://semantic_range//lib/semantic_range/pre_release.rb#21
+  def empty?; end
+
+  # source://semantic_range//lib/semantic_range/pre_release.rb#68
+  def increment!(identifier = T.unsafe(nil)); end
+
+  # source://semantic_range//lib/semantic_range/pre_release.rb#64
+  def last_number_index; end
+
+  # source://semantic_range//lib/semantic_range/pre_release.rb#17
+  def length; end
+
+  # source://semantic_range//lib/semantic_range/pre_release.rb#9
+  def parse(str); end
+
+  # Returns the value of attribute parts.
+  #
+  # source://semantic_range//lib/semantic_range/pre_release.rb#3
+  def parts; end
+
+  # source://semantic_range//lib/semantic_range/pre_release.rb#25
+  def to_s; end
+
+  # source://semantic_range//lib/semantic_range/pre_release.rb#33
+  def zero!; end
+end
+
+# source://semantic_range//lib/semantic_range/range.rb#2
+class SemanticRange::Range
+  # @raise [InvalidRange]
+  # @return [Range] a new instance of Range
+  #
+  # source://semantic_range//lib/semantic_range/range.rb#5
+  def initialize(range, loose: T.unsafe(nil), platform: T.unsafe(nil)); end
+
+  # source://semantic_range//lib/semantic_range/range.rb#25
+  def format; end
+
+  # source://semantic_range//lib/semantic_range/range.rb#247
+  def hyphen_replace(match); end
+
+  # source://semantic_range//lib/semantic_range/range.rb#286
+  def intersects(range, loose: T.unsafe(nil), platform: T.unsafe(nil)); end
+
+  # source://semantic_range//lib/semantic_range/range.rb#83
+  def isX(id); end
+
+  # Returns the value of attribute loose.
+  #
+  # source://semantic_range//lib/semantic_range/range.rb#3
+  def loose; end
+
+  # source://semantic_range//lib/semantic_range/range.rb#87
+  def parse_comparator(comp, loose); end
+
+  # source://semantic_range//lib/semantic_range/range.rb#54
+  def parse_range(range); end
+
+  # Returns the value of attribute platform.
+  #
+  # source://semantic_range//lib/semantic_range/range.rb#3
+  def platform; end
+
+  # Returns the value of attribute range.
+  #
+  # source://semantic_range//lib/semantic_range/range.rb#3
+  def range; end
+
+  # Returns the value of attribute raw.
+  #
+  # source://semantic_range//lib/semantic_range/range.rb#3
+  def raw; end
+
+  # source://semantic_range//lib/semantic_range/range.rb#100
+  def replace_caret(comp, loose); end
+
+  # source://semantic_range//lib/semantic_range/range.rb#94
+  def replace_carets(comp, loose); end
+
+  # source://semantic_range//lib/semantic_range/range.rb#243
+  def replace_stars(comp, loose); end
+
+  # source://semantic_range//lib/semantic_range/range.rb#151
+  def replace_tilde(comp, loose); end
+
+  # source://semantic_range//lib/semantic_range/range.rb#145
+  def replace_tildes(comp, loose); end
+
+  # source://semantic_range//lib/semantic_range/range.rb#185
+  def replace_x_range(comp, loose); end
+
+  # source://semantic_range//lib/semantic_range/range.rb#179
+  def replace_x_ranges(comp, loose); end
+
+  # Returns the value of attribute set.
+  #
+  # source://semantic_range//lib/semantic_range/range.rb#3
+  def set; end
+
+  # source://semantic_range//lib/semantic_range/range.rb#32
+  def test(version); end
+
+  # source://semantic_range//lib/semantic_range/range.rb#38
+  def test_set(set, version); end
+end
+
+# source://semantic_range//lib/semantic_range.rb#30
+SemanticRange::STAR = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#37
+SemanticRange::TILDE = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#38
+SemanticRange::TILDELOOSE = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#27
+SemanticRange::TILDETRIM = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range/version.rb#2
+SemanticRange::VERSION = T.let(T.unsafe(nil), String)
+
+# source://semantic_range//lib/semantic_range/version.rb#4
+class SemanticRange::Version
+  # @raise [InvalidVersion]
+  # @return [Version] a new instance of Version
+  #
+  # source://semantic_range//lib/semantic_range/version.rb#7
+  def initialize(version, loose: T.unsafe(nil)); end
+
+  # source://semantic_range//lib/semantic_range/version.rb#47
+  def compare(other); end
+
+  # source://semantic_range//lib/semantic_range/version.rb#53
+  def compare_main(other); end
+
+  # source://semantic_range//lib/semantic_range/version.rb#65
+  def compare_pre(other); end
+
+  # source://semantic_range//lib/semantic_range/version.rb#30
+  def format; end
+
+  # source://semantic_range//lib/semantic_range/version.rb#85
+  def increment!(release, identifier); end
+
+  # Returns the value of attribute major.
+  #
+  # source://semantic_range//lib/semantic_range/version.rb#5
+  def major; end
+
+  # Returns the value of attribute minor.
+  #
+  # source://semantic_range//lib/semantic_range/version.rb#5
+  def minor; end
+
+  # Returns the value of attribute patch.
+  #
+  # source://semantic_range//lib/semantic_range/version.rb#5
+  def patch; end
+
+  # Returns the value of attribute prerelease.
+  #
+  # source://semantic_range//lib/semantic_range/version.rb#5
+  def prerelease; end
+
+  # source://semantic_range//lib/semantic_range/version.rb#43
+  def raw; end
+
+  # source://semantic_range//lib/semantic_range/version.rb#35
+  def to_s; end
+
+  # source://semantic_range//lib/semantic_range/version.rb#60
+  def truthy(val); end
+
+  # source://semantic_range//lib/semantic_range/version.rb#39
+  def version; end
+
+  class << self
+    # source://semantic_range//lib/semantic_range/version.rb#69
+    def compare_identifiers(a, b); end
+  end
+end
+
+# source://semantic_range//lib/semantic_range.rb#39
+SemanticRange::XRANGE = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#19
+SemanticRange::XRANGEIDENTIFIER = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#12
+SemanticRange::XRANGEIDENTIFIERLOOSE = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#40
+SemanticRange::XRANGELOOSE = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#20
+SemanticRange::XRANGEPLAIN = T.let(T.unsafe(nil), Regexp)
+
+# source://semantic_range//lib/semantic_range.rb#15
+SemanticRange::XRANGEPLAINLOOSE = T.let(T.unsafe(nil), Regexp)
