@@ -297,7 +297,7 @@ GEM
       erb
       psych (>= 4.0.0)
       tsort
-    react_on_rails (16.2.1)
+    react_on_rails (16.3.0)
       addressable
       connection_pool
       execjs (~> 2.5)
@@ -483,7 +483,7 @@ DEPENDENCIES
   pry
   puma (~> 7.0)
   rails (~> 8.0)
-  react_on_rails (~> 16.2)
+  react_on_rails (~> 16.3)
   redis (~> 5.4)
   rspec (~> 3.13)
   rspec-its
