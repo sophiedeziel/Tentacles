@@ -4807,10 +4807,10 @@ launch-editor@^2.6.1:
     picocolors "^1.1.1"
     shell-quote "^1.8.3"
 
-less-loader@^12.3.0:
-  version "12.3.0"
-  resolved "https://registry.yarnpkg.com/less-loader/-/less-loader-12.3.0.tgz#d4a00361568be86a97da3df4f16954b0d4c15340"
-  integrity sha512-0M6+uYulvYIWs52y0LqN4+QM9TqWAohYSNTo4htE8Z7Cn3G/qQMEmktfHmyJT23k+20kU9zHH2wrfFXkxNLtVw==
+less-loader@^12.3.1:
+  version "12.3.1"
+  resolved "https://registry.yarnpkg.com/less-loader/-/less-loader-12.3.1.tgz#4b80179507d522fa3082c19a09d08e50b9495ac3"
+  integrity sha512-JZZmG7gMzoDP3VGeEG8Sh6FW5wygB5jYL7Wp29FFihuRTsIBacqO3LbRPr2yStYD11riVf13selLm/CPFRDBRQ==
 
 less@^4.5.1:
   version "4.5.1"

@@ -94,7 +94,7 @@
     "eslint-plugin-react": "^7.37.5",
     "globals": "^17.3.0",
     "less": "^4.5.1",
-    "less-loader": "^12.3.0",
+    "less-loader": "^12.3.1",
     "mini-css-extract-plugin": "^2.10.0",
     "postcss": "^8.4.31",
     "postcss-import": "^16.1.1",
