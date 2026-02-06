@@ -40,7 +40,7 @@
     "array-move": "^4.0.0",
     "babel-loader": "^10.0.0",
     "browserslist": "^4.28.1",
-    "caniuse-lite": "^1.0.30001767",
+    "caniuse-lite": "^1.0.30001768",
     "compression-webpack-plugin": "^11.1.0",
     "core-js": "^3.48.0",
     "cross-fetch": "^4.1.0",
