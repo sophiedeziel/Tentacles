@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@ant-design/pro-layout": "^7.22.7",
-    "@apollo/client": "^4.1.5",
+    "@apollo/client": "^4.1.6",
     "@babel/core": "^7.29.0",
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "@babel/runtime": "^7.28.6",
