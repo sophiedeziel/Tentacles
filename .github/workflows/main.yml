@@ -101,7 +101,7 @@ jobs:
           fi
       
       - name: Upload coverage results
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: coverage-${{ matrix.group }}
@@ -200,7 +200,7 @@ jobs:
           bundle exec bin/merge_coverage
       
       - name: Upload merged coverage report
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: merged-coverage-report
           path: coverage/merged/
