@@ -38,7 +38,7 @@
     "antd": "^6.2.3",
     "apollo-upload-client": "^19.0.0",
     "array-move": "^4.0.0",
-    "babel-loader": "^10.0.0",
+    "babel-loader": "^10.1.0",
     "browserslist": "^4.28.1",
     "caniuse-lite": "^1.0.30001776",
     "compression-webpack-plugin": "^11.1.0",
