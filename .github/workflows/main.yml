@@ -165,7 +165,6 @@ jobs:
           fi
 
           git checkout "${{ github.event.pull_request.base.sha }}" -- Gemfile.lock
-          bin/bundle lock --quiet
           bin/bundler-audit check --format json --output /tmp/base_audit.json || true
           git checkout HEAD -- Gemfile.lock
 
