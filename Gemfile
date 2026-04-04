@@ -75,7 +75,7 @@ group :development, :test do
   gem 'rubocop-rails', '~> 2.34', require: false
   gem 'rubocop-rspec', require: false
   gem 'simplecov', require: false
-  gem 'tapioca', '~> 0.17.10', require: false
+  gem 'tapioca', '~> 0.19', require: false
   gem 'vcr', '~> 6.4'
   gem 'webmock'
 end
