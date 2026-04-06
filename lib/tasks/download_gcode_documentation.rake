@@ -9,12 +9,9 @@ namespace :gcode_documentation do
     files = Dir.glob('tmp/MarlinDocumentation/_gcode/*.md')
     docs = {}
     files.each do |file|
-      content = File
-                .open(file)
-                .flat_map(&:to_s)
-                .to_a
-                .slice_after(/^---/)
-                .reject { |line| line[0].match?(/^---/) }
+      content = File.readlines(file)
+                    .slice_after(/^---/)
+                    .reject { |line| line[0].match?(/^---/) }
       parsed = YAML.safe_load(content.first.join)
       parsed['codes'].each do |code|
         docs[code] = {
