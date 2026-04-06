@@ -24,7 +24,7 @@ jobs:
       database: ${{ steps.filter.outputs.database }}
     steps:
       - uses: actions/checkout@v6
-      - uses: dorny/paths-filter@v3
+      - uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
@@ -132,15 +132,54 @@ jobs:
       - name: Typecheck Ruby files
         run: bin/bundle exec srb tc
 
-  # Security audit (always run)
+  # Security audit — on PRs, only fail for newly introduced vulnerabilities
   security-audit:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - uses: ./.github/actions/setup-ruby
+      - name: Update advisory database
+        run: bin/bundler-audit update
       - name: Security audit dependencies
-        run: bin/bundler-audit --update
+        run: |
+          bin/bundler-audit check --format json --output /tmp/pr_audit.json || true
+
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            # On main, fail if any vulnerabilities exist
+            if jq -e '.results | length > 0' /tmp/pr_audit.json > /dev/null; then
+              bin/bundler-audit check
+              exit 1
+            fi
+            exit 0
+          fi
+
+          # On PRs, compare against base branch
+          pr_cves=$(jq -r '[.results[].advisory.id] | sort | .[]' /tmp/pr_audit.json)
+
+          if [ -z "$pr_cves" ]; then
+            echo "No vulnerabilities found."
+            exit 0
+          fi
+
+          git checkout "${{ github.event.pull_request.base.sha }}" -- Gemfile.lock
+          bin/bundler-audit check --format json --output /tmp/base_audit.json || true
+          git checkout HEAD -- Gemfile.lock
+
+          new_cves=$(comm -23 \
+            <(echo "$pr_cves") \
+            <(jq -r '[.results[].advisory.id] | sort | .[]' /tmp/base_audit.json))
+
+          if [ -n "$new_cves" ]; then
+            echo "::error::This PR introduces new security vulnerabilities:"
+            echo "$new_cves"
+            bin/bundler-audit check
+            exit 1
+          fi
+
+          echo "All vulnerabilities are pre-existing — not blocking this PR."
 
   # JavaScript linting and asset compilation combined
   javascript-and-assets:
