@@ -5881,10 +5881,10 @@ react-on-rails@16.5.1:
   resolved "https://registry.yarnpkg.com/react-on-rails/-/react-on-rails-16.5.1.tgz#7fc4eb502e48445ab4f01ae039a25e2aa72447d4"
   integrity sha512-IrfmuY5z0GN596nyE27teLbBTvxcaYR+MVjMGbkmoDV79/Tm2MsWt3hdPeYqD7gXu0AQagd+oHvYuyxfSJ4RGw==
 
-react-router@^7.14.1:
-  version "7.14.1"
-  resolved "https://registry.yarnpkg.com/react-router/-/react-router-7.14.1.tgz#adf60e587ad7fb25bd8f33c443fb0e86cd4f051e"
-  integrity sha512-5BCvFskyAAVumqhEKh/iPhLOIkfxcEUz8WqFIARCkMg8hZZzDYX9CtwxXA0e+qT8zAxmMC0x3Ckb9iMONwc5jg==
+react-router@^7.14.2:
+  version "7.14.2"
+  resolved "https://registry.yarnpkg.com/react-router/-/react-router-7.14.2.tgz#d86e5b01049365b2c982363ebd2baa4928824603"
+  integrity sha512-yCqNne6I8IB6rVCH7XUvlBK7/QKyqypBFGv+8dj4QBFJiiRX+FG7/nkdAvGElyvVZ/HQP5N19wzteuTARXi5Gw==
   dependencies:
     cookie "^1.0.1"
     set-cookie-parser "^2.6.0"
