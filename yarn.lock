@@ -5876,10 +5876,10 @@ react-markdown@^10.1.0:
     unist-util-visit "^5.0.0"
     vfile "^6.0.0"
 
-react-on-rails@16.5.1:
-  version "16.5.1"
-  resolved "https://registry.yarnpkg.com/react-on-rails/-/react-on-rails-16.5.1.tgz#7fc4eb502e48445ab4f01ae039a25e2aa72447d4"
-  integrity sha512-IrfmuY5z0GN596nyE27teLbBTvxcaYR+MVjMGbkmoDV79/Tm2MsWt3hdPeYqD7gXu0AQagd+oHvYuyxfSJ4RGw==
+react-on-rails@16.6.0:
+  version "16.6.0"
+  resolved "https://registry.yarnpkg.com/react-on-rails/-/react-on-rails-16.6.0.tgz#da7f117fec14f420f7f6ffe6bdb34b7fc2e01b3a"
+  integrity sha512-LqLi7A0n0Tv5c3yMYlwS9s6rE82gvXNMj3sscmK2LOgIJ+mLQlOX65n0Jq5ZJ4Nsl9SRgxEOOQmcrfvDeB9F1g==
 
 react-router@^7.14.2:
   version "7.14.2"
