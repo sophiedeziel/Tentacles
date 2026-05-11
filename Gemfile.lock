@@ -95,7 +95,7 @@ GEM
     ast (2.4.3)
     base64 (0.3.0)
     benchmark (0.5.0)
-    bigdecimal (4.1.0)
+    bigdecimal (4.1.2)
     bindex (0.8.1)
     bootsnap (1.24.3)
       msgpack (~> 1.2)
@@ -165,7 +165,7 @@ GEM
       prism (>= 1.3.0)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
-    json (2.19.3)
+    json (2.19.5)
     language_server-protocol (3.17.0.5)
     libv8-node (24.12.0.1-arm64-darwin)
     libv8-node (24.12.0.1-x86_64-darwin)
@@ -192,7 +192,7 @@ GEM
     mini_mime (1.1.5)
     mini_racer (0.21.0)
       libv8-node (~> 24.12.0.1)
-    minitest (6.0.3)
+    minitest (6.0.6)
       drb (~> 2.0)
       prism (~> 1.5)
     mock_redis (0.53.0)
@@ -352,7 +352,7 @@ GEM
     rubocop-ast (1.49.1)
       parser (>= 3.3.7.2)
       prism (~> 1.7)
-    rubocop-rails (2.34.3)
+    rubocop-rails (2.35.0)
       activesupport (>= 4.2.0)
       lint_roller (~> 1.1)
       rack (>= 1.1)
@@ -488,7 +488,7 @@ DEPENDENCIES
   rspec-its
   rspec-rails
   rubocop (~> 1.86)
-  rubocop-rails (~> 2.34)
+  rubocop-rails (~> 2.35)
   rubocop-rspec
   selenium-webdriver
   shakapacker (~> 9.5)
