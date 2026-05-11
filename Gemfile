@@ -72,7 +72,7 @@ group :development, :test do
   gem 'rspec-its'
   gem 'rspec-rails'
   gem 'rubocop', '~> 1.86', require: false
-  gem 'rubocop-rails', '~> 2.34', require: false
+  gem 'rubocop-rails', '~> 2.35', require: false
   gem 'rubocop-rspec', require: false
   gem 'simplecov', require: false
   gem 'tapioca', '~> 0.19', require: false
