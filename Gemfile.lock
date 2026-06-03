@@ -97,7 +97,7 @@ GEM
     benchmark (0.5.0)
     bigdecimal (4.1.2)
     bindex (0.8.1)
-    bootsnap (1.24.5)
+    bootsnap (1.24.6)
       msgpack (~> 1.2)
     builder (3.3.0)
     bundler-audit (0.9.3)
@@ -197,7 +197,7 @@ GEM
       prism (~> 1.5)
     mock_redis (0.54.0)
       redis (~> 5)
-    msgpack (1.8.0)
+    msgpack (1.8.1)
     multipart-post (2.4.1)
     mysql2 (0.5.7)
       bigdecimal
