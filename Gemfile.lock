@@ -195,7 +195,7 @@ GEM
     minitest (6.0.6)
       drb (~> 2.0)
       prism (~> 1.5)
-    mock_redis (0.54.0)
+    mock_redis (0.55.0)
       redis (~> 5)
     msgpack (1.8.1)
     multipart-post (2.4.1)
