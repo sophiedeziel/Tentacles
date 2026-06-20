@@ -101,7 +101,7 @@
     "postcss-import": "^16.1.1",
     "sass-loader": "^16.0.8",
     "style-loader": "^4.0.0",
-    "webpack-dev-server": "^5.2.4"
+    "webpack-dev-server": "^5.2.5"
   },
   "scripts": {
     "preinstall": "node -e \"if (!/yarn/.test(process.env.npm_execpath || '')) { throw new Error('Please use yarn instead of npm'); }\""
