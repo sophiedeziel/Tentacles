@@ -42,25 +42,25 @@ function GCodePreviewUI(
     gcode
   } = props;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [preview, setPreview] = useState<GCodePreview.WebGLPreview>();
+  const [preview, setPreview] = useState<GCodePreview.GCodePreview>();
 
   useEffect(() => {
     if (!preview) return
     console.log("changed")
-    preview.endLayer = endLayer
+    preview.sceneManager.endLayer = endLayer
     // console.log(preview)
-    preview.render()
+    preview.sceneManager.render()
   }, [endLayer, startLayer, lineWidth, topLayerColor, lastSegmentColor]);
 
   const resizePreview = () => {
-    preview?.resize();
+    preview?.sceneManager.resize();
     console.log("resize")
   };
 
   useImperativeHandle(ref, () => ({
     getLayerCount() {
       console.log("getLayerCount");
-      return preview?.layers?.length as number;
+      return preview?.job.layers.length as number;
     },
     processGCode(gcode) {
       console.log("processGCode");
@@ -73,7 +73,7 @@ function GCodePreviewUI(
     },
     render() {
       console.log("render");
-      preview?.render();
+      preview?.sceneManager.render();
     }
   }));
 
@@ -86,21 +86,21 @@ function GCodePreviewUI(
 
   useEffect(() => {
     setPreview(
-      GCodePreview.init({
+      new GCodePreview.GCodePreview({
         canvas: canvasRef.current as HTMLCanvasElement,
         startLayer,
         endLayer,
         lineWidth,
         buildVolume: { x: 250, y: 220, z: 150 },
         initialCameraPosition: [0, 200, 400],
-        allowDragNDrop: false,
+        droppable: false,
         renderTubes: renderTubes,
         extrusionColor: "#00ff00",
       })
 
     );
 
-    preview?.resize();
+    preview?.sceneManager.resize();
 
     window.addEventListener('resize', resizePreview);
 

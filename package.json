@@ -47,7 +47,7 @@
     "dompurify": "^3.4.11",
     "file-saver": "^2.0.5",
     "file-size": "^1.0.0",
-    "gcode-preview": "^2.18",
+    "gcode-preview": "3.0.0-alpha.5",
     "glob": "^13.0.6",
     "graphql": "^16.14.0",
     "graphql-ruby-client": "^1.14.9",
