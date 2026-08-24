@@ -17,7 +17,7 @@ gem 'sprockets-rails'
 gem 'mysql2', '~> 0.5.6'
 
 # Use the Puma web server [https://github.com/puma/puma]
-gem 'puma', '~> 7.2'
+gem 'puma', '~> 8.0'
 
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
 # gem 'importmap-rails'
@@ -52,8 +52,8 @@ gem 'octoprint', github: 'sophiedeziel/octoprint', branch: 'main' # For prototyp
 
 gem 'bindex' # shakapacker won't work without this
 gem 'mini_racer', platforms: :ruby
-gem 'react_on_rails', '~> 16.3'
-gem 'shakapacker', '~> 9.5'
+gem 'react_on_rails', '~> 17.0'
+gem 'shakapacker', '~> 10.3'
 
 gem 'colorize'
 gem 'pry' # TODO: fix octoprint gem to not require pry
