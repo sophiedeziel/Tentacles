@@ -15,7 +15,7 @@ import { FileOutlined } from '@ant-design/icons'
 import GCodeAnalysis from './components/GCodeAnalysis.jsx'
 import gcodeDefinition from 'common/gcodeDefinition.js'
 import TomorrowTheme from 'common/TomorrowTheme.json'
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
+import * as monaco from 'monaco-editor/editor/editor.api.js'
 import * as classes from './FileEditor.module.less'
 
 const { Title } = Typography
