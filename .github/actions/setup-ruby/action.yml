@@ -4,6 +4,6 @@ runs:
   using: "composite"
   steps:
     - name: Install Ruby and gems
-      uses: ruby/setup-ruby@a4effe49ee8ee5b8b5091268c473a4628afb5651 # v1.92
+      uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1.338.0
       with:
         bundler-cache: true

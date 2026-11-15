@@ -1,9 +1,8 @@
 # frozen_string_literal: true
 
 class PrinterScanner
-  # rubocop:disable Layout/LineLength
+  # rubocop:disable-next Layout/LineLength
   IP_REGEX = /((?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))/
-  # rubocop:enable Layout/LineLength
 
   def call
     uris = Printer.pluck(:octoprint_uri)

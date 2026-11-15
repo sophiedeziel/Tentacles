@@ -11,13 +11,13 @@ class UploadFilesToPrintersJob
       params(
         file_ids: T.untyped,
         printer_ids: T.untyped,
-        _arg2: T.untyped,
+        "**": T.untyped,
         block: T.nilable(T.proc.params(job: UploadFilesToPrintersJob).void)
       ).returns(T.any(UploadFilesToPrintersJob, FalseClass))
     end
-    def perform_later(file_ids, printer_ids, **_arg2, &block); end
+    def perform_later(file_ids, printer_ids, **, &block); end
 
-    sig { params(file_ids: T.untyped, printer_ids: T.untyped, _arg2: T.untyped).returns(T.untyped) }
-    def perform_now(file_ids, printer_ids, **_arg2); end
+    sig { params(file_ids: T.untyped, printer_ids: T.untyped, "**": T.untyped).returns(T.untyped) }
+    def perform_now(file_ids, printer_ids, **); end
   end
 end

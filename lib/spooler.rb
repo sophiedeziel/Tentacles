@@ -27,7 +27,7 @@ class Spooler
     puts "#{' ' * (15 - 'Spooler'.size)} [ Spooler ] : #{message}"
   end
 
-  # rubocop:disable Metrics/MethodLength
+  # rubocop:disable-next Metrics/MethodLength
   def subcribe_to_commands
     REDIS_POOL.with do |conn|
       conn.subscribe('printers') do |on|
@@ -43,7 +43,6 @@ class Spooler
   rescue StandardError => e
     log e.message.red
   end
-  # rubocop:enable Metrics/MethodLength
 
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength

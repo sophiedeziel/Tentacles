@@ -11,9 +11,11 @@ class Printer < ApplicationRecord
   def current_job
     jobs.find_by(status: 'active') || using_api do
       data = Octoprint::Job.get
+      # Missing job info raises here and falls through to the rescue below (=> nil)
+      file = T.must(T.must(data.information).file)
       {
-        name: data.information.file[:name],
-        progress: data.progress.completion.round(1)
+        name: file[:name],
+        progress: T.must(T.must(data.progress).completion).round(1)
       }
     end
   rescue StandardError

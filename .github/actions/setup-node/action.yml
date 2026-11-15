@@ -4,7 +4,7 @@ runs:
   using: "composite"
   steps:
     - name: Restore cache
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: |
           **/node_modules
@@ -15,7 +15,7 @@ runs:
         restore-keys: |
           ${{ runner.os }}-assets-
     
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v7
       with:
         cache: yarn
         node-version-file: .tool-versions

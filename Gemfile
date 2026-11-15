@@ -26,7 +26,7 @@ gem 'puma', '~> 8.0'
 # gem 'jbuilder'
 
 # Use Redis adapter to run Action Cable in production
-gem 'redis', '~> 5.4'
+gem 'redis', '~> 6.0'
 
 # Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
 # gem "kredis"
@@ -35,7 +35,7 @@ gem 'redis', '~> 5.4'
 # gem "bcrypt", "~> 3.1.7"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
-gem 'tzinfo-data', platforms: %i[mingw mswin x64_mingw jruby]
+gem 'tzinfo-data', platforms: %i[windows jruby]
 
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', require: false
@@ -65,7 +65,7 @@ gem 'sorbet-static-and-runtime', '~> 0.6.13312'
 group :development, :test do
   gem 'bundler-audit'
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
-  gem 'debug', platforms: %i[mri mingw x64_mingw]
+  gem 'debug', platforms: %i[mri windows]
   gem 'factory_bot_rails'
   gem 'graphiql-rails'
   gem 'rspec', '~> 3.13'
