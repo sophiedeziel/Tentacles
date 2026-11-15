@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Polls every printer's OctoPrint and publishes their live status (see PrinterMonitor::Supervisor).
+require_relative '../config/environment'
+
+$stdout.sync = true
+# Show the monitor's logs in foreman's output (unless the logger already writes to stdout)
+unless ActiveSupport::Logger.logger_outputs_to?(Rails.logger, $stdout)
+  Rails.logger.broadcast_to(ActiveSupport::Logger.new($stdout))
+end
+# Load the app up front rather than autoloading constants from the worker threads
+Rails.application.eager_load!
+
+PrinterMonitor::Supervisor.new.run

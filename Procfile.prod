@@ -1,4 +1,5 @@
 rails: bundle exec rails server -p 8030 -b '0.0.0.0'
 sidekiq: bundle exec sidekiq
 spooler: bin/spooler
+monitor: bin/printer_monitor
 filewatcher: bin/filewatcher
