@@ -5,5 +5,6 @@ module RootOperations
     field :printerSubscription, subscription: Subscriptions::PrinterSubscription
     field :printer_status_changed, subscription: Subscriptions::PrinterStatusChanged
     field :dashboard_changed, subscription: Subscriptions::DashboardChanged
+    field :print_queue_changed, subscription: Subscriptions::PrintQueueChanged
   end
 end
