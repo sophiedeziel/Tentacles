@@ -2,8 +2,9 @@
 
 module Types
   class File < Base::Object
-    field :id, ID, null: false
-    field :filename, String, null: false
+    # Broadcastable: printerStatusChanged can select Printer.nextJob's file name
+    field :id, ID, null: false, broadcastable: true
+    field :filename, String, null: false, broadcastable: true
     field :notes, String, null: false
     field :filetype, String, null: false
     field :filesize, Integer, null: false

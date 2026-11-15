@@ -70,7 +70,7 @@ class Printer < ApplicationRecord
   end
 
   def queue
-    jobs.where(status: 'enqueued').order(created_at: :asc)
+    jobs.where(status: 'enqueued').order(created_at: :asc, id: :asc)
   end
 
   def next_job

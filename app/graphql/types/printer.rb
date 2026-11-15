@@ -38,7 +38,19 @@ module Types
       jobs_request = dataloader.with(Sources::PrinterJobsSource).request(object.id)
       state_family = status_request.load&.state_family || ::PrinterStateFamily::Offline
       jobs = jobs_request.load
-      ::Printer.start_next_allowed?(state_family:, enqueued: jobs.enqueued, active: jobs.active)
+      ::Printer.start_next_allowed?(state_family:, enqueued: jobs.enqueued?, active: jobs.active)
+    end
+
+    field :queued_count, Integer, null: false, description: 'How many jobs wait in the queue'
+    # Batched with canStartNext: one SQL query for all the printers of a query
+    def queued_count
+      dataloader.with(Sources::PrinterJobsSource).load(object.id).enqueued_count
+    end
+
+    field :next_job, Types::EnqueuedJob, null: true, description: 'The next job of the queue, null when it is empty'
+    # Batched: the same SQL query as queuedCount, then one query per association for the files
+    def next_job
+      dataloader.with(Sources::NextJobSource).load(object.id)
     end
   end
 end
