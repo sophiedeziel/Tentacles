@@ -6,6 +6,16 @@
 
 
 class Mutations::Printers::AddPrinter
-  sig { params(name: ::String, octoprint_uri: ::String, octoprint_key: ::String).returns(T.untyped) }
-  def resolve(name:, octoprint_uri:, octoprint_key:); end
+  sig do
+    params(
+      name: ::String,
+      backend: ::String,
+      uri: T.nilable(::String),
+      username: T.nilable(::String),
+      secret: T.nilable(::String),
+      octoprint_uri: T.nilable(::String),
+      octoprint_key: T.nilable(::String)
+    ).returns(T.untyped)
+  end
+  def resolve(name:, backend: T.unsafe(nil), uri: T.unsafe(nil), username: T.unsafe(nil), secret: T.unsafe(nil), octoprint_uri: T.unsafe(nil), octoprint_key: T.unsafe(nil)); end
 end

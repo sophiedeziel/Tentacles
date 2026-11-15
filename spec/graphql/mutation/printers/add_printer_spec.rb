@@ -6,67 +6,124 @@ module Mutations
   module Printers
     module AddPrinterSpec
       RSpec.describe AddPrinter, type: :request do
-        let(:variables) do
-          {
-            input: {
-              name: 'Ender 3',
-              octoprintUri: 'http://192.168.0.15',
-              octoprintKey: '12345678'
-            }
-          }
+        let(:json) { response.parsed_body }
+        let(:data) { json['data']['addPrinter'] }
+
+        def add_printer(input)
+          post '/graphql', params: { query:, variables: { input: } }
         end
 
         describe '.resolve' do
-          it 'adds a printer' do
-            expect do
-              post '/graphql', params: { query:, variables: }
-            end.to change { Printer.count }.by(1)
+          context 'with an OctoPrint printer' do
+            let(:input) { { name: 'Ender 3', uri: 'http://192.168.0.15', secret: '12345678' } }
+
+            it 'adds a printer' do
+              expect { add_printer(input) }.to change { Printer.count }.by(1)
+            end
+
+            it 'stores the credentials of an OctoPrint printer, the default backend' do
+              add_printer(input)
+
+              expect(Printer.last)
+                .to have_attributes(name: 'Ender 3', backend: 'octoprint', uri: 'http://192.168.0.15',
+                                    username: nil, secret: '12345678',
+                                    octoprint_uri: 'http://192.168.0.15', octoprint_key: '12345678')
+            end
+
+            it 'adds an OctoPrint printer when the backend is null' do
+              add_printer(input.merge(backend: nil))
+
+              expect(data['errors']).to eq([])
+              expect(Printer.last.backend).to eq('octoprint')
+            end
+
+            it 'returns the printer and no errors' do
+              add_printer(input.merge(backend: 'OCTOPRINT'))
+              printer = Printer.last
+
+              expect(json['errors']).to be_nil
+              expect(data).to eq(
+                'printer' => { 'id' => printer.id.to_s, 'jobsCount' => 0, 'name' => 'Ender 3', 'backend' => 'OCTOPRINT',
+                               'uri' => 'http://192.168.0.15', 'username' => nil },
+                'errors' => []
+              )
+            end
           end
 
-          it 'returns a printer' do
-            post '/graphql', params: { query:, variables: }
-            json = JSON.parse(response.body)
-            data = json['data']['addPrinter']
+          context 'with a PrusaLink printer' do
+            let(:input) do
+              { backend: 'PRUSALINK', name: 'Prusa MK4', uri: 'http://prusa-mk4.local', username: 'maker',
+                secret: 'printer-password' }
+            end
 
-            printer = Printer.last
+            it 'stores its credentials, without copying them into the OctoPrint columns' do
+              add_printer(input)
 
-            expect(data['printer']).to include(
-              'id' => printer.id.to_s,
-              'name' => printer.name,
-              'octoprintUri' => 'http://192.168.0.15',
-              'octoprintKey' => '12345678'
-            )
+              expect(Printer.last)
+                .to have_attributes(name: 'Prusa MK4', backend: 'prusalink', uri: 'http://prusa-mk4.local',
+                                    username: 'maker', secret: 'printer-password',
+                                    octoprint_uri: nil, octoprint_key: nil)
+            end
+
+            it 'returns the printer, never its password' do
+              add_printer(input)
+
+              expect(json['errors']).to be_nil
+              expect(data['errors']).to eq([])
+              expect(data['printer']).to include('name' => 'Prusa MK4', 'backend' => 'PRUSALINK',
+                                                 'uri' => 'http://prusa-mk4.local', 'username' => 'maker')
+              expect(response.body).not_to include('printer-password')
+            end
+
+            it 'stores a blank username as nil (the default username)' do
+              add_printer(input.merge(username: ''))
+
+              expect(Printer.last.username).to be_nil
+            end
           end
 
-          it 'stores the URI and the API key as the credentials of an OctoPrint printer' do
-            post '/graphql', params: { query:, variables: }
+          context 'with the deprecated octoprintUri and octoprintKey (OctoPrint scan flow)' do
+            let(:input) { { name: 'Ender 3', octoprintUri: 'http://192.168.0.15', octoprintKey: '12345678' } }
 
-            expect(Printer.last)
-              .to have_attributes(backend: 'octoprint', uri: 'http://192.168.0.15', secret: '12345678')
+            it 'stores them as the credentials of an OctoPrint printer' do
+              add_printer(input)
+
+              expect(json['errors']).to be_nil
+              expect(data['errors']).to eq([])
+              expect(Printer.last)
+                .to have_attributes(backend: 'octoprint', uri: 'http://192.168.0.15', secret: '12345678')
+            end
+
+            it 'prefers uri and secret when both are given' do
+              add_printer(input.merge(uri: 'http://192.168.0.16', secret: 'abcdef'))
+
+              expect(Printer.last).to have_attributes(uri: 'http://192.168.0.16', secret: 'abcdef')
+            end
           end
 
           context 'with invalid arguments' do
-            let(:variables) do
-              {
-                input: {
-                  name: '',
-                  octoprintUri: 'http://192.168.0.15',
-                  octoprintKey: '12345678'
-                }
-              }
-            end
+            let(:input) { { backend: 'PRUSALINK', name: '', uri: '', secret: '' } }
+
             it 'does not add a printer' do
-              expect do
-                post '/graphql', params: { query:, variables: }
-              end.to_not(change { Printer.count })
+              expect { add_printer(input) }.not_to(change { Printer.count })
             end
 
-            it 'returns a nil printer' do
-              post '/graphql', params: { query:, variables: }
-              json = JSON.parse(response.body)
-              data = json['data']['addPrinter']
+            it 'returns a nil printer and the validation errors' do
+              add_printer(input)
 
-              expect(data['printer']).to be_nil
+              expect(json['errors']).to be_nil
+              expect(data).to eq(
+                'printer' => nil,
+                'errors' => ["Name can't be blank", "URL can't be blank", "API key or password can't be blank"]
+              )
+            end
+          end
+
+          context 'without a URI' do
+            it 'returns the error instead of a silent nil printer' do
+              add_printer({ name: 'Ender 3', octoprintKey: '12345678' })
+
+              expect(data).to eq('printer' => nil, 'errors' => ["URL can't be blank"])
             end
           end
         end
@@ -79,9 +136,11 @@ module Mutations
                   id
                   jobsCount
                   name
-                  octoprintKey
-                  octoprintUri
+                  backend
+                  uri
+                  username
                 }
+                errors
               }
             }
           GQL

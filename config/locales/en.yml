@@ -31,3 +31,8 @@
 
 en:
   hello: "Hello world"
+  activerecord:
+    attributes:
+      printer:
+        uri: "URL"
+        secret: "API key or password"

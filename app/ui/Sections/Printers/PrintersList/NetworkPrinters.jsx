@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 
 import { useQuery, useLazyQuery, useMutation } from '@apollo/client/react'
-import { notification, Space, Button, Card } from 'antd'
+import { message, notification, Space, Button, Card } from 'antd'
 
 import useInterval from 'utils/UseInterval'
 
@@ -52,9 +52,12 @@ export default function NetworkPrinters () {
     }).then((data) => {
       if (data?.api_key) {
         octoprintTab.close()
-        printerQuery({ variables: { octoprintUri: `http://${apiRequestIP}/`, octoprintKey: data.api_key } }).then(({ data: printerData }) => {
-          const name = printerData.octoprintName
-          sendAddPrinter(name, `http://${apiRequestIP}/`, data.api_key)
+        const uri = `http://${apiRequestIP}/`
+        printerQuery({ variables: { uri, secret: data.api_key } }).then(({ data: printerData, error }) => {
+          if (error) throw error
+          sendAddPrinter(printerData.identifyPrinter.name || apiRequestIP, uri, data.api_key)
+        }).catch((error) => {
+          message.error(error.message)
         })
       }
     }).catch((error) => {
@@ -62,9 +65,17 @@ export default function NetworkPrinters () {
     })
   }
 
-  const sendAddPrinter = (name, octoprintUri, octoprintKey) => {
-    addPrinter({ variables: { input: { name, octoprintUri, octoprintKey } } }).then(() => {
+  const sendAddPrinter = (name, uri, secret) => {
+    addPrinter({ variables: { input: { name, uri, secret } } }).then(({ data, error }) => {
+      if (error) throw error
+      const { errors } = data.addPrinter
+      if (errors.length > 0) {
+        message.error(errors.join('. '))
+        return
+      }
       window.location.href = '/printers/manage'
+    }).catch((error) => {
+      message.error(error.message)
     })
   }
 
