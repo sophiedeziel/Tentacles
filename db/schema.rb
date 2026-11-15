@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_15_054242) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_15_080640) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -37,6 +37,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_054242) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "dashboard_sections", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "title"
+    t.integer "position", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "dashboard_widgets", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "dashboard_section_id", null: false
+    t.string "type", null: false
+    t.integer "width_units", null: false
+    t.integer "height_units", null: false
+    t.integer "position", null: false
+    t.bigint "printer_id"
+    t.json "options", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["dashboard_section_id", "position"], name: "index_dashboard_widgets_on_dashboard_section_id_and_position"
+    t.index ["dashboard_section_id"], name: "index_dashboard_widgets_on_dashboard_section_id"
+    t.index ["printer_id"], name: "index_dashboard_widgets_on_printer_id"
   end
 
   create_table "file_labels", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -85,6 +107,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_054242) do
   end
 
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "dashboard_widgets", "dashboard_sections", on_delete: :cascade
+  add_foreign_key "dashboard_widgets", "printers"
   add_foreign_key "file_labels", "file_records"
   add_foreign_key "file_labels", "labels"
   add_foreign_key "printer_jobs", "printers"

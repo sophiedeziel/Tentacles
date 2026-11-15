@@ -9,6 +9,7 @@ class Printer < ApplicationRecord
   UPLOAD_TIMEOUT = 120
 
   has_many :jobs, class_name: 'Printer::Job', dependent: :nullify
+  has_many :dashboard_widgets, dependent: :destroy
 
   validates :name, presence: true
 

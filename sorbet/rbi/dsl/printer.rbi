@@ -362,6 +362,20 @@ class Printer
 
   module GeneratedAssociationMethods
     sig { returns(T::Array[T.untyped]) }
+    def dashboard_widget_ids; end
+
+    sig { params(ids: T::Array[T.untyped]).returns(T::Array[T.untyped]) }
+    def dashboard_widget_ids=(ids); end
+
+    # This method is created by ActiveRecord on the `Printer` class because it declared `has_many :dashboard_widgets`.
+    # 🔗 [Rails guide for `has_many` association](https://guides.rubyonrails.org/association_basics.html#the-has-many-association)
+    sig { returns(::DashboardWidget::PrivateCollectionProxy) }
+    def dashboard_widgets; end
+
+    sig { params(value: T::Enumerable[::DashboardWidget]).void }
+    def dashboard_widgets=(value); end
+
+    sig { returns(T::Array[T.untyped]) }
     def job_ids; end
 
     sig { params(ids: T::Array[T.untyped]).returns(T::Array[T.untyped]) }
