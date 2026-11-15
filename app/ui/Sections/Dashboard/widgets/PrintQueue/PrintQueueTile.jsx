@@ -15,11 +15,15 @@ const START_NEXT = { key: 'startNext', label: 'Start Next' }
 function useQueueReloads (refetch, skip, queueVersion) {
   const reload = skip ? noop : refetch
   useRefetchWhenStale(reload)
-  // Only a new version reloads, not a new refetch function
+  // Only a version newer than the one at mount reloads (a widget added after a push loads fresh anyway), not a new
+  // refetch function
   const latest = useRef(reload)
   latest.current = reload
+  const seen = useRef(queueVersion)
   useEffect(() => {
-    if (queueVersion) latest.current()
+    if (queueVersion === seen.current) return
+    seen.current = queueVersion
+    latest.current()
   }, [queueVersion])
 }
 
@@ -46,11 +50,9 @@ export default function PrintQueueTile ({ widget, size, data }) {
   useQueueReloads(refetch, skip, data.queueVersion)
 
   // Sends the job the user confirmed, so the server refuses if another one moved to the front
-  const run = async (printer) => {
-    const { mutation, document, expectations } = ACTIONS.startNext
-    const { data: result } = await client.mutate({
-      mutation: document, variables: { printerId: printer.id, ...expectations(printer) }
-    })
+  const run = async (printer, confirmed) => {
+    const { mutation, document } = ACTIONS.startNext
+    const { data: result } = await client.mutate({ mutation: document, variables: { printerId: printer.id, ...confirmed } })
     return result[mutation].errors
   }
 
@@ -60,7 +62,8 @@ export default function PrintQueueTile ({ widget, size, data }) {
       renderStartNext={(printer) => (
         <ControlButton key={printer.id} action={START_NEXT} size="small" placement="topRight"
           view={{ name: printer.name, nextJobName: printer.nextJob?.executable?.filename }}
-          onRun={() => run(printer)} live={data.live !== false} />
+          snapshot={() => ACTIONS.startNext.expectations(printer)}
+          onRun={(_key, confirmed) => run(printer, confirmed)} live={data.live !== false} />
       )} />
   )
 }

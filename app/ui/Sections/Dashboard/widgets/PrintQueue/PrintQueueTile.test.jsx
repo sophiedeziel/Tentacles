@@ -74,6 +74,14 @@ describe('PrintQueueTile', () => {
     await waitFor(() => expect(result).toHaveBeenCalledTimes(2))
   })
 
+  it('does not reload on mount when the queue changed before it was added', async () => {
+    const { mock, result } = listsMock(variables(null, 3, 0), { printQueue: queueResult(QUEUE) })
+    renderTile(tile('M', { queueVersion: 4 }), [mock])
+    await screen.findByText('spool_holder.gcode')
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(result).toHaveBeenCalledTimes(1)
+  })
+
   it('starts the next print on the ready printer after asking, naming the job it confirmed', async () => {
     const started = vi.fn(() => ({ data: { startNextPrint: { __typename: 'StartNextPrintPayload', success: true, errors: [] } } }))
     const { mock } = listsMock(variables(null, 0, 0), {})
