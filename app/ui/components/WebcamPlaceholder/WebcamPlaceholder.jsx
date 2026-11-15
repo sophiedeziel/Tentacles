@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 
 import { BRAND_NIGHT, BRAND_PURPLE_LIGHT } from '../../Foundation/theme'
-import { SUCKERS, TENTACLE_PATH } from './tentacle'
+import { SUCKERS, TENTACLE_PATH } from '../TentacleMark/tentacle'
 
 const FILL = { position: 'absolute', inset: 0 }
 
