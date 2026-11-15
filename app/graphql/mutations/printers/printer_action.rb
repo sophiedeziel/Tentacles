@@ -96,6 +96,8 @@ module Mutations
       sig { params(printer: ::Printer, error: StandardError).returns(String) }
       def api_error_message(printer, error)
         case error
+        when PrinterBackends::UnreadableCredentials
+          "#{printer.name}'s stored OctoPrint API key can't be read, re-enter it"
         when PrinterBackends::MissingCredentials
           "#{printer.name} has no OctoPrint URL or API key"
         when URI::InvalidURIError
@@ -112,7 +114,7 @@ module Mutations
       # Never echo the API key back, whatever ends up in an error message
       sig { params(printer: ::Printer, message: String).returns(String) }
       def redact(printer, message)
-        key = printer.secret
+        key = printer.readable_secret
         key.present? ? message.gsub(key, '[FILTERED]') : message
       end
     end

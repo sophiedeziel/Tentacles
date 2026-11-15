@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+require 'support/unreadable_secret'
 
 RSpec.describe Printer, :vcr, type: :model do
   let(:printer) { build(:printer) }
@@ -312,5 +313,51 @@ RSpec.describe Printer, :vcr, type: :model do
       printer.update!(uri: 'http://octopi2.local/', secret: 'KEY2')
       expect(printer.reload).to have_attributes(octoprint_uri: 'http://octopi2.local/', octoprint_key: 'KEY2')
     end
+  end
+end
+
+RSpec.describe Printer, 'with a secret that cannot be decrypted' do
+  include UnreadableSecret
+
+  let(:printer) { make_secret_unreadable(create(:printer, name: 'Prusa MK4')) }
+  let(:redis) { MockRedis.new }
+
+  before { stub_const('REDIS_POOL', ConnectionPool::Wrapper.new(size: 1, timeout: 1) { redis }) }
+
+  it 'raises UnreadableCredentials, a MissingCredentials error, when the secret is read' do
+    expect { printer.secret }.to raise_error(PrinterBackends::UnreadableCredentials,
+                                             "Stored credentials can't be read, re-enter them")
+    expect(PrinterBackends::UnreadableCredentials).to be < PrinterBackends::MissingCredentials
+  end
+
+  it 'has no readable secret' do
+    expect(printer.readable_secret).to be_nil
+    expect(printer.api_credentials).to eq ['octoprint', 'http://10.0.1.165/', nil, nil]
+  end
+
+  it 'raises UnreadableCredentials from the API without calling the printer' do
+    allow(Octoprint::Job).to receive(:get)
+    expect { printer.api.job_status }.to raise_error(PrinterBackends::UnreadableCredentials)
+    expect(Octoprint::Job).not_to have_received(:get)
+  end
+
+  it 'returns nil from the cached API calls, without marking the printer disconnected' do
+    expect([printer.job_status, printer.version, printer.current_job]).to eq [nil, nil, nil]
+    expect(PrinterApiCache.disconnected?(printer.id)).to be false
+  end
+
+  it 'is still valid and can be saved, keeping its stored secret' do
+    stored = described_class.connection.select_value("SELECT secret FROM printers WHERE id = #{printer.id}")
+
+    printer.update!(name: 'Renamed')
+
+    expect(described_class.find(printer.id).name).to eq 'Renamed'
+    expect(described_class.connection.select_value("SELECT secret FROM printers WHERE id = #{printer.id}"))
+      .to eq stored
+  end
+
+  it 'can have its credentials entered again' do
+    printer.update!(secret: 'NEWKEY')
+    expect(described_class.find(printer.id).secret).to eq 'NEWKEY'
   end
 end

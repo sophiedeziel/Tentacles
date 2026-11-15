@@ -16,6 +16,11 @@ module PrinterBackends
   # The printer has no URI or no secret
   class MissingCredentials < Error; end
 
+  # The stored secret can't be decrypted (e.g. SECRET_KEY_BASE changed): the credentials must be entered again
+  class UnreadableCredentials < MissingCredentials
+    MESSAGE = "Stored credentials can't be read, re-enter them"
+  end
+
   class << self
     extend T::Sig
 

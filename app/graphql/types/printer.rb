@@ -13,7 +13,7 @@ module Types
     end
     field :octoprint_key, String, null: true
     def octoprint_key
-      object.secret
+      object.readable_secret
     end
     field :octoprint_version, String, null: true
     def octoprint_version

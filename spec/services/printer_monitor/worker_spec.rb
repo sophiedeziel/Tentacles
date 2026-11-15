@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+require 'support/unreadable_secret'
 
 RSpec.describe PrinterMonitor::Worker do
   include ActiveSupport::Testing::TimeHelpers
@@ -312,6 +313,21 @@ RSpec.describe PrinterMonitor::Worker do
       it 'publishes an OFFLINE snapshot' do
         expect(status).to have_attributes(state_family: PrinterStateFamily::Offline,
                                           error_text: 'Missing OctoPrint credentials')
+      end
+
+      it { expect(Octoprint::Job).not_to have_received(:get) }
+    end
+
+    context 'when the stored secret cannot be decrypted' do
+      include UnreadableSecret
+
+      let(:printer) { make_secret_unreadable(create(:printer)) }
+
+      before { worker.tick }
+
+      it 'publishes an OFFLINE snapshot asking for the credentials' do
+        expect(status).to have_attributes(state_family: PrinterStateFamily::Offline,
+                                          error_text: "Stored credentials can't be read, re-enter them")
       end
 
       it { expect(Octoprint::Job).not_to have_received(:get) }

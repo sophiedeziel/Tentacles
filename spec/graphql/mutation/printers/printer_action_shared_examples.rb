@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'support/unreadable_secret'
+
 # Shared examples for the printer action mutations (see Mutations::Printers::PrinterAction).
 #
 # OctoPrint is stubbed at the gem boundary: Octoprint::Job.get answers with `job_state`, and the commands return true.
@@ -114,6 +116,20 @@ RSpec.shared_examples 'a printer action that fails gracefully' do |commands:|
         expect(Octoprint::Job).not_to have_received(:get)
         expect_no_command(commands)
       end
+    end
+  end
+
+  context 'when the stored API key cannot be decrypted' do
+    include UnreadableSecret
+
+    let(:printer) { make_secret_unreadable(create(:printer, name: 'Prusa MK4')) }
+
+    before { run_mutation }
+
+    it 'returns the error without calling OctoPrint' do
+      expect_failure("Prusa MK4's stored OctoPrint API key can't be read, re-enter it")
+      expect(Octoprint::Job).not_to have_received(:get)
+      expect_no_command(commands)
     end
   end
 

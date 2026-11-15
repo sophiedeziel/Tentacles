@@ -11,7 +11,7 @@ module PrinterMonitor
   # are no printers, or when every printer is unreachable and their workers back off for longer than that.
   #
   #   PrinterMonitor::Supervisor.new.run # Blocks until INT or TERM
-  class Supervisor
+  class Supervisor # rubocop:disable Metrics/ClassLength -- one line over since the per-printer rescue
     extend T::Sig
 
     REFRESH_INTERVAL = 30.0
@@ -118,6 +118,10 @@ module PrinterMonitor
       @workers[printer.id] = @worker_factory.call(printer).start
       @credentials[printer.id] = credentials
       log("Monitoring #{printer.name} (##{printer.id})")
+    # One printer that can't be monitored (e.g. an unknown backend) doesn't keep the others from being monitored: it
+    # is retried on the next refresh
+    rescue StandardError => e
+      log("Failed to monitor #{printer.name} (##{printer.id}): #{e.class}: #{e.message}", level: :error)
     end
 
     sig { params(printer_ids: T::Array[Integer]).void }

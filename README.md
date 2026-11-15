@@ -49,6 +49,14 @@ foreman start
 
 After compilation, the application should be available at `http://localhost:5100`
 
+## Running with Docker
+
+The image keeps the uploaded files in `/usr/src/app/storage`. Mount a persistent volume there: it also holds the `SECRET_KEY_BASE` generated on the first start (unless you set `SECRET_KEY_BASE` yourself), which encrypts the printers' API keys and passwords. Losing it means entering the printers' credentials again.
+
+```
+docker run -v tentacles-storage:/usr/src/app/storage ...
+```
+
 
 ## Update Gcode documentation
 

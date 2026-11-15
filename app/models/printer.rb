@@ -9,8 +9,7 @@ class Printer < ApplicationRecord
   has_many :jobs, class_name: 'Printer::Job', dependent: :nullify
   has_many :dashboard_widgets, dependent: :destroy
 
-  # The OctoPrint API key, or the backend's password
-  encrypts :secret
+  include EncryptedSecret
 
   validates :name, presence: true
   validates :backend, inclusion: { in: BACKENDS }
@@ -64,13 +63,13 @@ class Printer < ApplicationRecord
 
   # Runs the block (which calls #api) unless the printer was found unreachable in the last 10 minutes, caching its
   # result for `cache` seconds. Returns nil, and remembers it for 10 minutes, when the printer can't be reached.
-  # Other errors are raised.
+  # Returns nil too when the stored secret can't be decrypted. Other errors are raised.
   def using_api(cache: false, &)
     method = T.must(T.must(caller[0])[/'.*'/])[1..-2]
     PrinterApiCache.use_cache(id:, method:, time: cache, &)
-  rescue PrinterBackends::Unreachable => e
+  rescue PrinterBackends::Unreachable, PrinterBackends::UnreadableCredentials => e
     Rails.logger.error("Failed to get #{backend} data for #{name} :\n\t#{e.message}")
-    PrinterApiCache.set_disconnected(id)
+    PrinterApiCache.set_disconnected(id) if e.is_a?(PrinterBackends::Unreachable)
     nil
   end
 
@@ -111,7 +110,7 @@ class Printer < ApplicationRecord
   # What the API adapter is built from: when they change, so does the adapter (and the monitor's worker)
   sig { returns(T::Array[T.nilable(String)]) }
   def api_credentials
-    [backend, uri, username, secret]
+    [backend, uri, username, readable_secret]
   end
 
   # Why the next job of the queue can't be started, or nil when it can: the printer must be OPERATIONAL, with

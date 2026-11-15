@@ -107,6 +107,7 @@ module PrinterMonitor
 
     sig { params(error: StandardError).returns(String) }
     def error_text(error)
+      return error.message if error.is_a?(PrinterBackends::UnreadableCredentials)
       return MISSING_CREDENTIALS_TEXT if error.is_a?(PrinterBackends::MissingCredentials)
 
       (error.message.presence || error.class.name.to_s).truncate(ERROR_TEXT_LENGTH)
