@@ -1,3 +1,5 @@
-query PrinterName($octoprintUri: String!, $octoprintKey: String!) {
-  octoprintName(octoprintUri: $octoprintUri, octoprintKey: $octoprintKey)
+query PrinterName($uri: String!, $secret: String!) {
+  identifyPrinter(backend: OCTOPRINT, uri: $uri, secret: $secret) {
+    name
+  }
 }

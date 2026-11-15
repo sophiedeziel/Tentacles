@@ -4,5 +4,6 @@ mutation AddPrinter($input: AddPrinterInput! ) {
       id
       octoprintVersion
     }
+    errors
   }
 }

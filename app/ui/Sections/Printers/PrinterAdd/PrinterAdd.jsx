@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useQuery, useLazyQuery, useMutation } from '@apollo/client/react'
-import { Card, Form, Input, Button, Space } from 'antd'
+import { Card, Form, Input, Button, Space, message } from 'antd'
 import { PageHeader } from '@ant-design/pro-layout'
 import useInterval from '../../../utils/UseInterval'
 
@@ -39,9 +39,12 @@ export default function PrinterAdd () {
     }).then((data) => {
       if (data?.api_key) {
         octoprintTab.close()
-        printerQuery({ variables: { octoprintUri: `http://${apiRequestIP}/`, octoprintKey: data.api_key } }).then(({ data: printerData }) => {
-          const name = printerData.octoprintName
-          sendAddPrinter(name, `http://${apiRequestIP}/`, data.api_key)
+        const uri = `http://${apiRequestIP}/`
+        printerQuery({ variables: { uri, secret: data.api_key } }).then(({ data: printerData, error }) => {
+          if (error) throw error
+          sendAddPrinter(printerData.identifyPrinter.name || apiRequestIP, uri, data.api_key)
+        }).catch((error) => {
+          message.error(error.message)
         })
       }
     }).catch((error) => {
@@ -49,14 +52,22 @@ export default function PrinterAdd () {
     })
   }
 
-  const sendAddPrinter = (name, octoprintUri, octoprintKey) => {
-    addPrinter({ variables: { input: { name, octoprintUri, octoprintKey } } }).then(() => {
+  const sendAddPrinter = (name, uri, secret) => {
+    addPrinter({ variables: { input: { name, uri, secret } } }).then(({ data, error }) => {
+      if (error) throw error
+      const { errors } = data.addPrinter
+      if (errors.length > 0) {
+        message.error(errors.join('. '))
+        return
+      }
       window.location.href = '/printers/manage'
+    }).catch((error) => {
+      message.error(error.message)
     })
   }
 
   const handleCreateSubmit = (values) => {
-    sendAddPrinter(values.name, values.octoprintUri, values.octoprintKey)
+    sendAddPrinter(values.name, values.uri, values.secret)
   }
 
   const requestAPIKey = (ip) => {
@@ -128,11 +139,11 @@ export default function PrinterAdd () {
             <Input />
           </Form.Item>
 
-          <Form.Item label="URI" name="octoprintUri">
+          <Form.Item label="URI" name="uri">
             <Input />
           </Form.Item>
 
-          <Form.Item label="API key" name="octoprintKey">
+          <Form.Item label="API key" name="secret">
             <Input />
           </Form.Item>
 
