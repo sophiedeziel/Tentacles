@@ -10,5 +10,11 @@ module Types
     field :executable, Types::File, null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
+
+    field :printer, Types::Printer, null: false, description: 'The printer the job runs on'
+    # Batched: one query for the printers of all the jobs of a query
+    def printer
+      dataload_record(::Printer, object.printer_id)
+    end
   end
 end

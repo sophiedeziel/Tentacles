@@ -46,7 +46,7 @@ class Printer < ApplicationRecord
   end
 
   def jobs_count
-    jobs.where(status: 'enqueued').count
+    jobs.enqueued.count
   end
 
   # Errors (including timeouts) are raised to the caller: an upload must not fail silently, nor mark the printer
@@ -70,7 +70,7 @@ class Printer < ApplicationRecord
   end
 
   def queue
-    jobs.where(status: 'enqueued').order(created_at: :asc, id: :asc)
+    jobs.enqueued.in_queue_order
   end
 
   def next_job

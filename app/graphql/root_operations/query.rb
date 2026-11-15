@@ -87,9 +87,39 @@ module RootOperations
       { sections: ::DashboardSection.build_default, updated_at: nil }
     end
 
+    # The most rows a queue or history field returns: the largest widget shows 16
+    MAX_JOB_ROWS = 50
+
+    field :print_queue, Types::PrintQueue, null: false do
+      description 'The enqueued jobs of every printer, or of one, in the order the spooler starts them'
+      argument :printer_id, ID, required: false, description: 'Only this printer\'s queue (all printers when null)'
+      argument :first, Int, required: true, description: 'How many jobs to return',
+                            validates: { numericality: { within: 0..MAX_JOB_ROWS } }
+    end
+    def print_queue(first:, printer_id: nil)
+      { scope: jobs_of(printer_id).enqueued.in_queue_order, first: }
+    end
+
+    field :job_history, [Types::EnqueuedJob], null: false do
+      description 'The finished jobs of every printer, or of one, the last finished first. The status is as ' \
+                  'stored: completed, error, ...'
+      argument :printer_id, ID, required: false, description: 'Only this printer\'s jobs (all printers when null)'
+      argument :first, Int, required: true, description: 'How many jobs to return',
+                            validates: { numericality: { within: 0..MAX_JOB_ROWS } }
+    end
+    def job_history(first:, printer_id: nil)
+      jobs_of(printer_id).finished.newest_first.limit(first).includes(executable: { file_attachment: :blob })
+    end
+
     field :monitor_healthy, Boolean, null: false,
                                      resolver_method: :monitor_healthy?,
                                      description: 'Whether the printer monitor reported in the last 15 seconds'
     delegate :monitor_healthy?, to: :PrinterStatusStore
+
+    private
+
+    def jobs_of(printer_id)
+      printer_id ? ::Printer::Job.where(printer_id:) : ::Printer::Job.all
+    end
   end
 end
