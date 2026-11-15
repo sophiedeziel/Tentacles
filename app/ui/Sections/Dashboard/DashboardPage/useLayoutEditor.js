@@ -1,4 +1,4 @@
-import { useReducer, useState } from 'react'
+import { useCallback, useReducer, useRef, useState } from 'react'
 import { useApolloClient } from '@apollo/client/react'
 
 import layoutReducer from '../layout/layoutReducer'
@@ -13,16 +13,26 @@ const UNTITLED = 'Every divider needs a title'
 // - sections / dispatch: the draft and its layoutReducer
 // - busy: 'reset' or 'save' while one runs (the draft can't change meanwhile: the page makes it inert);
 //   problem: { title, messages } when the last one failed
+// - changedElsewhere: another screen saved the layout while editing (noticeChange, on dashboardChanged). The draft
+//   stays, and Done still saves over it: the last save wins.
 export default function useLayoutEditor (dashboard) {
   const client = useApolloClient()
   const [editing, setEditing] = useState(false)
   const [sections, dispatch] = useReducer(layoutReducer, null)
   const [busy, setBusy] = useState(null)
   const [problem, setProblem] = useState(null)
+  const [changedElsewhere, setChangedElsewhere] = useState(false)
+  // A push during our own save is that save's
+  const watching = useRef(false)
+  watching.current = editing && busy !== 'save'
+  const noticeChange = useCallback(() => {
+    if (watching.current) setChangedElsewhere(true)
+  }, [])
 
   const start = () => {
     dispatch({ type: 'load', dashboard })
     setProblem(null)
+    setChangedElsewhere(false)
     setEditing(true)
   }
 
@@ -58,6 +68,7 @@ export default function useLayoutEditor (dashboard) {
         const cached = page?.dashboard?.updatedAt
         return !page || (cached && saved.updatedAt && cached > saved.updatedAt) ? page : { ...page, dashboard: saved }
       })
+      setChangedElsewhere(false)
       setEditing(false)
     } catch (error) {
       setProblem({ title: NOT_SAVED, messages: [error.message] })
@@ -66,5 +77,5 @@ export default function useLayoutEditor (dashboard) {
     }
   }
 
-  return { editing, sections, dispatch, busy, problem, start, reset, done }
+  return { editing, sections, dispatch, busy, problem, changedElsewhere, noticeChange, start, reset, done }
 }

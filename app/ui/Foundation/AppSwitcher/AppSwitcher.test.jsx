@@ -6,10 +6,10 @@ import { MockedProvider } from '@apollo/client/testing/react'
 import AppSwitcher from './AppSwitcher'
 
 describe('AppSwitcher', () => {
-  it('serves the redesigned dashboard at /dashboard-next', async () => {
+  it('serves the dashboard at /', async () => {
     render(
       <MockedProvider mocks={[]}>
-        <MemoryRouter initialEntries={['/dashboard-next']}>
+        <MemoryRouter initialEntries={['/']}>
           <AppSwitcher />
         </MemoryRouter>
       </MockedProvider>

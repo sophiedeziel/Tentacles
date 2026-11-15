@@ -1,5 +1,5 @@
 import React from 'react'
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MockedProvider } from '@apollo/client/testing/react'
@@ -52,14 +52,17 @@ const queuePush = {
   nextJob: { __typename: 'EnqueuedJob', id: 'phone_stand.gcode', executable: { __typename: 'File', id: 'phone_stand.gcode', filename: 'phone_stand.gcode' } }
 }
 
-const renderPage = (data, monitorMock = { result: { data: { monitorHealthy: data.monitorHealthy } } }, queueDelay = 60000, mocks = []) => render(
+const renderPage = (
+  data, monitorMock = { result: { data: { monitorHealthy: data.monitorHealthy } } }, queueDelay = 60000, mocks = [],
+  layoutDelay = 60000
+) => render(
   <MockedProvider
     cache={new InMemoryCache({ possibleTypes: POSSIBLE_TYPES, typePolicies: TYPE_POLICIES })}
     mocks={[
       { request: { query: DASHBOARD_PAGE }, result: { data } },
       { request: { query: MONITOR_HEALTHY }, ...monitorMock, maxUsageCount: 10 },
       { request: { query: PRINTER_STATUS_CHANGED }, result: { data: { printerStatusChanged: typed(PRINTERS.PAUSED) } }, delay: 60000 },
-      { request: { query: DASHBOARD_CHANGED }, result: { data: { dashboardChanged: data.dashboard } }, delay: 60000 },
+      { request: { query: DASHBOARD_CHANGED }, result: { data: { dashboardChanged: data.dashboard } }, delay: layoutDelay },
       { request: { query: PRINT_QUEUE_CHANGED }, result: { data: { printQueueChanged: queuePush } }, delay: queueDelay },
       ...mocks
     ]}
@@ -103,6 +106,15 @@ describe('DashboardPage', () => {
   })
 
   describe('edit mode', () => {
+    // A desktop screen: every breakpoint matches
+    const smallScreen = window.matchMedia
+    beforeEach(() => {
+      window.matchMedia = (query) => ({
+        matches: true, media: query, addListener: vi.fn(), removeListener: vi.fn(), addEventListener: vi.fn(), removeEventListener: vi.fn()
+      })
+    })
+    afterEach(() => { window.matchMedia = smallScreen })
+
     const printerInput = (id, printerId) => ({
       id, type: 'PRINTER', widthUnits: 2, heightUnits: 1, printerId, options: { printer: { ...ALL_OPTIONS, camera: false } }
     })
@@ -115,8 +127,8 @@ describe('DashboardPage', () => {
     const save = (result, delay = 0) => ({
       request: { query: SAVE_DASHBOARD, variables: { sections } }, result: { data: { saveDashboard: result } }, delay
     })
-    const editPage = async (mocks) => {
-      renderPage(page(), undefined, 60000, mocks)
+    const editPage = async (mocks, layoutDelay) => {
+      renderPage(page(), undefined, 60000, mocks, layoutDelay)
       await userEvent.click(await screen.findByRole('button', { name: /Edit Dashboard/ }))
     }
 
@@ -161,6 +173,13 @@ describe('DashboardPage', () => {
       const garage = screen.getByRole('region', { name: 'Garage' })
       expect(within(garage).getAllByRole('button', { name: /^Remove Prusa/ }).map((button) => button.getAttribute('aria-label')))
         .toEqual(['Remove Prusa Mini+', 'Remove Prusa MK4'])
+    })
+
+    it('keeps the draft when the layout changes elsewhere', async () => {
+      await editPage([], 300)
+      await userEvent.click(screen.getByRole('button', { name: 'Add Divider' }))
+      expect(await screen.findByText('Layout changed elsewhere', {}, { timeout: 3000 })).toBeInTheDocument()
+      expect(screen.getAllByRole('textbox', { name: 'Section name' })).toHaveLength(2)
     })
 
     it('clicks a widget tool with the keyboard instead of picking the widget up', async () => {
@@ -214,5 +233,11 @@ describe('DashboardPage', () => {
       write(target, 'OPERATIONAL', '2026-11-14T19:05:00Z')
       expect(read(target)).toBe('OPERATIONAL')
     })
+  })
+
+  it('offers edit mode on desktop screens only', async () => {
+    renderPage(page())
+    expect(await screen.findByText('Prusa MK4')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Edit Dashboard/ })).not.toBeInTheDocument()
   })
 })

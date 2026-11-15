@@ -28,8 +28,8 @@ describe('SideMenu', () => {
     expect(screen.queryByText('Operations')).not.toBeInTheDocument()
   })
 
-  it('selects Dashboard on the redesigned dashboard', () => {
-    renderAt('/dashboard-next')
+  it('selects Dashboard on the dashboard', () => {
+    renderAt('/')
 
     expect(screen.getByText('Dashboard').closest('li')).toHaveClass('ant-menu-item-selected')
   })
