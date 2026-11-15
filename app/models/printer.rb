@@ -86,6 +86,23 @@ class Printer < ApplicationRecord
     end
   end
 
+  # The printer's own OctoPrint client, for `printer.octoprint_client.use { Octoprint::Job.get }`.
+  # `use` sets the client for the current thread only: the gem's global configuration is never touched.
+  # Raises Octoprint::Exceptions::MissingCredentialsError when the URI or the API key is blank.
+  #
+  # Rebuilt when the URI or the API key changed (e.g. after a `reload` in the long-lived spooler).
+  sig { returns(Octoprint::Client) }
+  def octoprint_client
+    credentials = [octoprint_uri.presence, octoprint_key.presence]
+    client = @octoprint_client
+    return client if client && @octoprint_client_credentials == credentials
+
+    client = Octoprint::Client.new(host: credentials[0], api_key: credentials[1]) # Raises before anything is cached
+    @octoprint_client_credentials = T.let(credentials, T.nilable(T::Array[T.nilable(String)]))
+    @octoprint_client = T.let(client, T.nilable(Octoprint::Client))
+    client
+  end
+
   private
 
   def api_client

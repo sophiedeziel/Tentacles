@@ -71,9 +71,8 @@ module PrinterMonitor
     def publish(status)
       return if status.same_as?(@previous)
 
-      PrinterStatusStore.write(status)
+      PrinterMonitor.publish(status, printer)
       @previous = status
-      TentaclesSchema.subscriptions.trigger(:printer_status_changed, {}, printer)
     end
 
     sig { params(attributes: T::Hash[Symbol, T.untyped]).returns(PrinterStatus) }

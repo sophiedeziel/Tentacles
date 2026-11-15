@@ -101,6 +101,58 @@ RSpec.describe Printer, :vcr, type: :model do
     end
   end
 
+  describe '#octoprint_client' do
+    subject(:client) { printer.octoprint_client }
+
+    it "builds a client with the printer's URI and API key" do
+      expect(client).to be_a(Octoprint::Client)
+        .and have_attributes(host: printer.octoprint_uri, api_key: printer.octoprint_key)
+    end
+
+    it 'is memoized' do
+      expect(printer.octoprint_client).to be client
+    end
+
+    it 'is rebuilt when the URI or the API key changed' do
+      client
+      printer.octoprint_key = 'new-key'
+
+      expect(printer.octoprint_client).not_to be client
+      expect(printer.octoprint_client).to have_attributes(api_key: 'new-key')
+    end
+
+    it 'never hands out a client with stale credentials after they were blanked' do
+      client
+      printer.octoprint_key = ''
+
+      expect { printer.octoprint_client }.to raise_error(Octoprint::Exceptions::MissingCredentialsError)
+      expect { printer.octoprint_client }.to raise_error(Octoprint::Exceptions::MissingCredentialsError)
+    end
+
+    it 'sets the client for the current thread only, inside `use`' do
+      client_before = Octoprint.client
+      client_inside = client.use { Octoprint.client }
+
+      expect(client_inside).to be client
+      expect(Octoprint.client).to be client_before
+    end
+
+    [
+      ['URI', { octoprint_uri: '' }],
+      ['URI', { octoprint_uri: nil }],
+      ['API key', { octoprint_key: '' }],
+      ['API key', { octoprint_key: nil }]
+    ].each do |missing, attributes|
+      context "when the #{missing} is #{attributes.values.first.inspect}" do
+        let(:printer) { build(:printer, **attributes) }
+
+        it 'raises MissingCredentialsError' do
+          expect { client }.to raise_error(Octoprint::Exceptions::MissingCredentialsError)
+        end
+      end
+    end
+  end
+
   describe 'using_api' do
     subject do
       printer.using_api do
