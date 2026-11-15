@@ -10,8 +10,6 @@ query File($id: ID!) {
   printers {
     id
     name
-    octoprintUri
-    octoprintVersion
     jobStatus
     createdAt
     updatedAt

@@ -1,7 +1,8 @@
 query Printers {
   printers {
     id
-    octoprintUri
+    backend
+    uri
     jobsCount
     name
     jobStatus

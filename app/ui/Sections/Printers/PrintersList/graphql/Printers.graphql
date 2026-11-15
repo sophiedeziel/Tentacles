@@ -2,8 +2,9 @@ query Printers {
   printers {
     id
     name
-    octoprintUri
-    octoprintVersion
+    backend
+    uri
+    version
     createdAt
     updatedAt
   }

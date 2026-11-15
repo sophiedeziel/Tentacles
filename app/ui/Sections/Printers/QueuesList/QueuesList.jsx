@@ -2,10 +2,12 @@ import React from 'react'
 
 import { useQuery } from '@apollo/client/react'
 import { Link } from 'react-router'
-import { Card, List, Empty, Avatar } from 'antd'
+import { Card, List, Empty } from 'antd'
 import { PageHeader } from '@ant-design/pro-layout'
 
 import Printers from './graphql/Printers.graphql'
+
+import PrinterAvatar from 'components/PrinterAvatar'
 
 import * as classes from 'common/Common.module.less'
 
@@ -38,7 +40,7 @@ export default function QueuesList () {
           renderItem={printer => (
             <List.Item>
               <List.Item.Meta
-                avatar={<Avatar src={`${printer.octoprintUri}/static/img/apple-touch-icon-114x114.png`} />}
+                avatar={<PrinterAvatar printer={printer} />}
                 title={ <Link to={`/printers/${printer.id}/queue`}>{printer.name}</Link> }
                 description={`${printer.jobsCount} jobs in queue`}
               />
