@@ -58,6 +58,11 @@ module PrinterBackends
       end
     end
 
+    sig { override.returns(String) }
+    def product_name
+      'OctoPrint'
+    end
+
     sig { override.returns(T.nilable(T::Hash[Symbol, T.untyped])) }
     def current_job
       job = use { ::Octoprint::Job.get }

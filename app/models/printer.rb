@@ -68,9 +68,7 @@ class Printer < ApplicationRecord
     method = T.must(T.must(caller[0])[/'.*'/])[1..-2]
     PrinterApiCache.use_cache(id:, method:, time: cache, &)
   rescue PrinterBackends::Unreachable, PrinterBackends::UnreadableCredentials => e
-    Rails.logger.error("Failed to get #{backend} data for #{name} :\n\t#{e.message}")
-    PrinterApiCache.set_disconnected(id) if e.is_a?(PrinterBackends::Unreachable)
-    nil
+    api_unavailable(e)
   end
 
   def queue
@@ -135,6 +133,13 @@ class Printer < ApplicationRecord
   end
 
   private
+
+  sig { params(error: PrinterBackends::Error).returns(NilClass) }
+  def api_unavailable(error)
+    Rails.logger.error("Failed to get #{api.product_name} data for #{name} :\n\t#{error.message}")
+    PrinterApiCache.set_disconnected(id) if error.is_a?(PrinterBackends::Unreachable)
+    nil
+  end
 
   # Until the cleanup drops them, `octoprint_uri` and `octoprint_key` mirror `uri` and `secret`. A blank or unreadable
   # value never erases the old one: the previous release would lose credentials it could still use.

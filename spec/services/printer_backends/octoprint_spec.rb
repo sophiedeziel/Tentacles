@@ -10,6 +10,10 @@ RSpec.describe PrinterBackends::Octoprint do
     Octoprint::Job.deserialize({ state:, job: { file: }, progress: { completion: } })
   end
 
+  it 'is OctoPrint' do
+    expect(adapter.product_name).to eq 'OctoPrint'
+  end
+
   describe 'reading the printer, from the recorded OctoPrint answers' do
     it 'reads the version', vcr: { cassette_name: 'Printer/octoprint_version/1_3_1' } do
       expect(adapter.version).to eq 'OctoPrint 1.7.3'

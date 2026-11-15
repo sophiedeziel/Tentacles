@@ -19,6 +19,10 @@ module PrinterBackends
       @printer = printer
     end
 
+    # The server's name, for the messages shown to the user: "OctoPrint", "PrusaLink"
+    sig { abstract.returns(String) }
+    def product_name; end
+
     # The file and completion (in percent) of the job under way: `{ name: 'cube.gcode', progress: 42.1 }`.
     # nil when there is no job.
     sig { abstract.returns(T.nilable(T::Hash[Symbol, T.untyped])) }

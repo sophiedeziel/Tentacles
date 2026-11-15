@@ -210,6 +210,12 @@ RSpec.describe Printer, :vcr, type: :model do
           subject
           expect(PrinterApiCache.disconnected?(printer.id)).to be true
         end
+
+        it 'logs the error' do
+          allow(Rails.logger).to receive(:error).and_call_original
+          subject
+          expect(Rails.logger).to have_received(:error).with(/Failed to get OctoPrint data for Printer/)
+        end
       end
     end
 
