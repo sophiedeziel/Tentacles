@@ -30,16 +30,20 @@ class Spooler
   class Print < Operation
     # Consecutive failed polls (at least 5 minutes at WAIT_TIME) before the print stops being monitored
     MAX_POLL_FAILURES = 600
+    # OPERATIONAL polls (at least 1 minute at WAIT_TIME) to wait for the print to start once the file is uploaded.
+    # PrusaLink can still report the printer IDLE or BUSY for a moment after an upload with Print-After-Upload.
+    MAX_START_POLLS = 120
 
     def initialize(printer, job)
       super
       @file = FileRecord.find(job.executable_id)
     end
 
+    # Raises the upload's errors (PrinterBackends::Error): the print can't start
     def execute
-      log '1. Start the print: send the right gcode to octoprint'.cyan
+      log '1. Start the print: upload the file to the printer'.cyan
       update_subscribers
-      UploadFilesToPrintersJob.perform_now([@file.id], [@printer.id], select: true, print: true)
+      UploadFilesToPrintersJob.perform_now([@file.id], [@printer.id], print: true)
 
       log '2. Monitor the print'.cyan
 
@@ -58,15 +62,34 @@ class Spooler
     # API errors (e.g. a network blip during a long pause) are retried; the print stops being monitored after
     # MAX_POLL_FAILURES consecutive failures, rather than killing the spool thread with the job left active.
     def wait_for_print_to_finish
+      @started = false
+      @start_polls = 0
       failures = 0
       while failures < MAX_POLL_FAILURES
         family = poll_print
-        break if family && !family.in_progress?
+        break if family && print_over?(family)
 
         failures = family ? 0 : failures + 1
         sleep(WAIT_TIME)
       end
       log("Gave up monitoring the print after #{failures} failed polls".red) if failures >= MAX_POLL_FAILURES
+    end
+
+    # Whether the print is over: it was under way (printing, paused or cancelling) and no longer is. Until it starts,
+    # OPERATIONAL means it hasn't started yet, for up to MAX_START_POLLS polls. Any other family (ERROR, OFFLINE, ...)
+    # ends it right away.
+    def print_over?(family)
+      if family.in_progress?
+        @started = true
+        return false
+      end
+      return true if @started || family != PrinterStateFamily::Operational
+
+      @start_polls += 1
+      return false if @start_polls < MAX_START_POLLS
+
+      log("The print didn't start after #{@start_polls} polls".red)
+      true
     end
 
     # The print's state family, or nil when the printer couldn't be read. Only the first failure of a streak is logged.

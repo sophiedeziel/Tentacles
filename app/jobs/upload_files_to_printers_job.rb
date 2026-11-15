@@ -4,12 +4,17 @@
 class UploadFilesToPrintersJob < ApplicationJob
   extend T::Sig
 
-  # This job uploads files to multiple printers.
-  # It expects file_ids and printer_ids as parameters.
+  # This job uploads files to multiple printers, through each printer's API adapter (see Printer#upload).
+  # It expects file_ids and printer_ids as parameters, and `print: true` to start printing the files once uploaded.
   # The files are moved to a temporary location before uploading.
   queue_as :default
 
-  def perform(file_ids, printer_ids, **)
+  # IDs are strings when they come from GraphQL
+  sig do
+    params(file_ids: T::Array[T.any(Integer, String)], printer_ids: T::Array[T.any(Integer, String)], print: T::Boolean)
+      .void
+  end
+  def perform(file_ids, printer_ids, print: false)
     files = FileRecord.where(id: file_ids).map(&:file)
     printers = Printer.where(id: printer_ids)
 
@@ -17,7 +22,7 @@ class UploadFilesToPrintersJob < ApplicationJob
 
     printers.each do |printer|
       paths.each do |path|
-        printer.upload(path.to_s, **)
+        printer.upload(path.to_s, print:)
       end
     end
   end
