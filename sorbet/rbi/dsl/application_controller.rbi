@@ -18,6 +18,8 @@ class ApplicationController
     include ::ApplicationHelper
     include ::PrintersHelper
     include ::ReactOnRails::Utils::Required
+    include ::ReactOnRails::ProHelper
+    include ::ReactOnRails::FontHelper
     include ::ReactOnRails::Helper
     include ::ReactOnRailsHelper
   end

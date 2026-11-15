@@ -1,4 +1,4 @@
-FROM ruby:3.4.8-alpine AS build-env
+FROM ruby:3.4.12-alpine AS build-env
 
 ARG RAILS_ROOT=/usr/src/app
 
@@ -23,9 +23,9 @@ COPY package.json yarn.lock ./
 RUN yarn install --pure-lockfile && yarn cache clean
 
 COPY Gemfile Gemfile.lock ./
-RUN bundle config --global frozen 1 \
+RUN bundle config set --global frozen 1 \
   && bundle config set --local path 'vendor/bundle' \
-  && bundle config --local without 'development test' \
+  && bundle config set --local without 'development test' \
   && bundle install --jobs 1 --retry 3
 
 RUN bundle clean --force \
@@ -44,7 +44,7 @@ RUN bin/shakapacker \
   && yarn cache clean \
   && rm -rf node_modules tmp/cache/* /tmp/* yarn.lock app/ui/* spec/*
 
-FROM ruby:3.4.8-alpine
+FROM ruby:3.4.12-alpine
 
 ARG RAILS_ROOT=/usr/src/app
 
