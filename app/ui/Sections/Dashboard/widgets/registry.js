@@ -41,6 +41,7 @@ const optionsFor = (options) => (size) => options.filter((option) => option.size
 // new widget type is one new entry.
 // - sizes / defaultSize: the size names it supports
 // - optionsFor(size): the options that size shows; defaultOptions(size): the options of a new widget
+// - optionKeys: every option it saves; optionsInput: its key in saveDashboard's one-of options input
 // - Component: renders a widget of the layout from the dashboard's data ({ widget, size, data })
 // - Preview: the presentational widget, for fixture data (the gallery)
 // - SettingsForm: the gear menu's form (edit mode)
@@ -54,6 +55,8 @@ export const REGISTRY = {
     defaultOptions: (size) => ({
       camera: size === 'L' || size === 'XL', timeLeft: true, temperatures: true, upNext: true, controls: true
     }),
+    optionKeys: PRINTER_OPTIONS.map((option) => option.key),
+    optionsInput: 'printer',
     Component: PrinterTile,
     Preview: PrinterWidget,
     SettingsForm: null
@@ -64,6 +67,8 @@ export const REGISTRY = {
     defaultSize: 'L',
     optionsFor: optionsFor(PRINT_QUEUE_OPTIONS),
     defaultOptions: () => ({ nowPrinting: true, startNext: true, rowPerPrinter: false, history: false }),
+    optionKeys: PRINT_QUEUE_OPTIONS.map((option) => option.key),
+    optionsInput: 'printQueue',
     Component: PrintQueueTile,
     Preview: PrintQueueWidget,
     SettingsForm: null
