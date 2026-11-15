@@ -1,3 +1,4 @@
+# typed: true
 # frozen_string_literal: true
 
 class Spooler
@@ -27,13 +28,15 @@ class Spooler
   end
 
   class Print < Operation
+    # Consecutive failed polls (at least 5 minutes at WAIT_TIME) before the print stops being monitored
+    MAX_POLL_FAILURES = 600
+
     def initialize(printer, job)
       super
       @file = FileRecord.find(job.executable_id)
     end
 
     def execute
-      Octoprint.configure(host: @printer.octoprint_uri, api_key: @printer.octoprint_key)
       log '1. Start the print: send the right gcode to octoprint'.cyan
       update_subscribers
       UploadFilesToPrintersJob.perform_now([@file.id], [@printer.id], select: true, print: true)
@@ -51,21 +54,45 @@ class Spooler
 
     private
 
+    # Polls OctoPrint until the print is over. A paused or cancelling print is still under way: its job stays active.
+    # OctoPrint errors (e.g. a network blip during a long pause) are retried; the print stops being monitored after
+    # MAX_POLL_FAILURES consecutive failures, rather than killing the spool thread with the job left active.
     def wait_for_print_to_finish
-      printing = true
-      while printing
-        job = Octoprint::Job.get
-        printing = job.state == 'Printing'
-        printing_updates(job)
+      failures = 0
+      while failures < MAX_POLL_FAILURES
+        family = poll_print
+        break if family && !family.in_progress?
 
+        failures = family ? 0 : failures + 1
         sleep(WAIT_TIME)
       end
+      log("Gave up monitoring the print after #{failures} failed polls".red) if failures >= MAX_POLL_FAILURES
+    end
+
+    # The print's state family, or nil when OctoPrint couldn't be read. Only the first failure of a streak is logged.
+    def poll_print
+      job = current_octoprint_job
+      @poll_failing = false
+      family = PrinterStateFamily.for(job.state)
+      printing_updates(job) if family == PrinterStateFamily::Printing
+      family
+    # A server that isn't OctoPrint can answer with HTML (JSON::ParserError) or without an `error` key (KeyError)
+    rescue Octoprint::Exceptions::Error, JSON::ParserError, KeyError => e
+      log("Could not read the print's state, retrying: #{e.class}: #{e.message}".red) unless @poll_failing
+      @poll_failing = true
+      nil
+    end
+
+    # With the printer's own client: `use` sets it for the current thread only, so concurrent prints don't mix up
+    def current_octoprint_job
+      @printer.octoprint_client.use { Octoprint::Job.get }
     end
 
     def printing_updates(job)
-      return unless job.state == 'Printing'
+      completion = job.progress&.completion
+      return if completion.nil? # e.g. while OctoPrint is still "Starting" the print
 
-      progress = job.progress.completion.ceil
+      progress = completion.ceil
 
       track_progress(progress)
       log("#{progress}%")
