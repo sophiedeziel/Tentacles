@@ -52,6 +52,16 @@ RSpec.describe PrinterStatus do
 
       expect(described_class.from_json(unknown.to_json)).to eq unknown
     end
+
+    it 'stores the temperature unit by name' do
+      expect(JSON.parse(status.to_json)['hotend']).to eq('actual' => 210.3, 'target' => 210.0, 'unit' => 'CELSIUS')
+    end
+
+    it 'reads temperatures written before the unit was stored as CELSIUS' do
+      json = { printer_id: 3, state_family: 'OFFLINE', state_text: 'Offline', bed: { actual: 21.0, target: 0.0 } }
+
+      expect(described_class.from_json(json.to_json).bed&.unit).to eq(TemperatureUnit::Celsius)
+    end
   end
 
   describe '#same_as?' do

@@ -113,7 +113,7 @@ RSpec.describe Subscriptions::PrinterStatusChanged do
         'name' => 'Ender 3',
         'status' => {
           'stateFamily' => 'OPERATIONAL',
-          'hotend' => { 'actual' => 24.5 },
+          'hotend' => { 'actual' => 25.0 },
           'camera' => { 'streamUrl' => 'http://octopi.local/webcam/?action=stream' }
         }
       }

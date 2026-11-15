@@ -65,8 +65,8 @@ RSpec.describe PrinterMonitor::Worker do
       end
 
       it 'reads the temperatures' do
-        expect(status.hotend&.serialize).to eq('actual' => 200.1, 'target' => 210.0)
-        expect(status.bed&.serialize).to eq('actual' => 60.0, 'target' => 60.0)
+        expect(status.hotend&.serialize).to eq('actual' => 200.1, 'target' => 210.0, 'unit' => 'CELSIUS')
+        expect(status.bed&.serialize).to eq('actual' => 60.0, 'target' => 60.0, 'unit' => 'CELSIUS')
       end
 
       it 'excludes the SD card and state from the printer request' do

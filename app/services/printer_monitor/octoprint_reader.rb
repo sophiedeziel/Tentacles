@@ -88,7 +88,7 @@ module PrinterMonitor
     def to_temperature(data)
       return nil if data.nil?
 
-      PrinterStatus::Temperature.new(actual: data.actual&.to_f, target: data.target&.to_f)
+      PrinterStatus::Temperature.new(actual: data.actual&.to_f, target: data.target&.to_f, unit: TemperatureUnit::Celsius)
     end
 
     # OctoPrint often returns the stream URL relative to its own host ("/webcam/?action=stream")

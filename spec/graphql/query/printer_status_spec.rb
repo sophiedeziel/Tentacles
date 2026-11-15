@@ -3,6 +3,8 @@
 require 'rails_helper'
 
 RSpec.describe 'Query printers { status }', type: :request do
+  include ActiveSupport::Testing::TimeHelpers
+
   let(:redis) { MockRedis.new }
   let!(:printers) { create_list(:printer, 20) }
   let(:with_snapshot) { printers.first(15) }
@@ -17,8 +19,8 @@ RSpec.describe 'Query printers { status }', type: :request do
           id
           status {
             stateFamily stateText errorText fileName progress printTimeLeft
-            hotend { actual target }
-            bed { actual target }
+            hotend { actual target unit }
+            bed { actual target unit }
             camera { enabled streamUrl }
             lastSeenAt updatedAt
           }
@@ -75,10 +77,10 @@ RSpec.describe 'Query printers { status }', type: :request do
         'stateText' => 'Printing from SD',
         'errorText' => nil,
         'fileName' => "part_#{printer.id}.gcode",
-        'progress' => 42.5,
-        'printTimeLeft' => 3600,
-        'hotend' => { 'actual' => 210.3, 'target' => 210.0 },
-        'bed' => { 'actual' => 59.8, 'target' => 60.0 },
+        'progress' => 43,
+        'printTimeLeft' => 'PT1H',
+        'hotend' => { 'actual' => 210.0, 'target' => 210.0, 'unit' => 'CELSIUS' },
+        'bed' => { 'actual' => 60.0, 'target' => 60.0, 'unit' => 'CELSIUS' },
         'camera' => { 'enabled' => true, 'streamUrl' => 'http://octopi.local/webcam/?action=stream' },
         'lastSeenAt' => '2026-11-15T04:55:00Z',
         'updatedAt' => '2026-11-15T05:00:00Z'
@@ -101,7 +103,7 @@ RSpec.describe 'Query printers { status }', type: :request do
         'bed' => nil,
         'camera' => { 'enabled' => false, 'streamUrl' => nil },
         'lastSeenAt' => printer.reload.last_seen_at.utc.iso8601,
-        'updatedAt' => nil
+        'updatedAt' => printer.last_seen_at.utc.iso8601
       )
     end
   end
@@ -154,5 +156,68 @@ RSpec.describe 'Query printers { status }', type: :request do
 
     expect(PrinterStateFamily.values.zip(printers).map { |_family, printer| statuses[printer.id]['stateFamily'] })
       .to eq(%w[PRINTING PAUSED CANCELLING OPERATIONAL CONNECTING ERROR OFFLINE])
+  end
+  describe 'value formats' do
+    let(:printer) { with_snapshot.first }
+
+    def status_with(**attributes)
+      PrinterStatusStore.write(
+        PrinterStatus.new(printer_id: printer.id, state_family: PrinterStateFamily::Printing, state_text: 'Printing',
+                          **attributes)
+      )
+      current_status
+    end
+
+    # Several requests per example: not the memoized json
+    def current_status
+      post '/graphql', params: { query: }
+      body = response.parsed_body
+      expect(body['errors']).to be_nil
+      body.dig('data', 'printers').to_h { |each| [each['id'], each['status']] }.fetch(printer.id.to_s)
+    end
+
+    it 'rounds progress to an integer from 0 to 100' do
+      expect(status_with(progress: 99.6)['progress']).to eq(100)
+      expect(status_with(progress: 0.4)['progress']).to eq(0)
+      expect(status_with(progress: 100.2)['progress']).to eq(100)
+    end
+
+    it 'returns printTimeLeft as an ISO 8601 duration rounded to 1 minute' do
+      expect(status_with(print_time_left: 3119)['printTimeLeft']).to eq('PT52M')
+      expect(status_with(print_time_left: 4330)['printTimeLeft']).to eq('PT1H12M')
+      expect(status_with(print_time_left: 20)['printTimeLeft']).to eq('PT0S')
+      expect(status_with(print_time_left: -5)['printTimeLeft']).to eq('PT0S')
+    end
+
+    it 'returns a target of 0 when OctoPrint has none' do
+      hotend = status_with(hotend: PrinterStatus::Temperature.new(actual: 24.6, target: nil))['hotend']
+
+      expect(hotend).to eq('actual' => 25.0, 'target' => 0.0, 'unit' => 'CELSIUS')
+    end
+
+    it 'returns a null temperature without a current reading' do
+      expect(status_with(bed: PrinterStatus::Temperature.new(actual: nil, target: 60.0))['bed']).to be_nil
+    end
+
+    it 'reads snapshots written before the unit was stored as CELSIUS' do
+      snapshot = { printer_id: printer.id, state_family: 'PRINTING', state_text: 'Printing',
+                   hotend: { actual: 200.0, target: 200.0 } }
+      redis.set(PrinterStatusStore.key(printer.id), snapshot.to_json)
+
+      post '/graphql', params: { query: }
+
+      expect(statuses[printer.id]['hotend']).to eq('actual' => 200.0, 'target' => 200.0, 'unit' => 'CELSIUS')
+    end
+
+    it 'always has an updatedAt, falling back to the time of the query for printers never seen' do
+      freeze_time do
+        printer = without_snapshot.first
+        printer.update!(last_seen_at: nil)
+
+        post '/graphql', params: { query: }
+
+        expect(statuses[printer.id]['updatedAt']).to eq(Time.current.utc.iso8601)
+      end
+    end
   end
 end
