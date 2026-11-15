@@ -1,0 +1,75 @@
+# typed: strict
+# frozen_string_literal: true
+
+module PrinterBackends
+  # The interface of a printer API adapter. Adapters return plain Ruby values (strings, hashes, PrinterStateFamily),
+  # never the client gem's objects, and raise PrinterBackends::Error subclasses instead of the gem's errors.
+  # Each adapter holds its own clients: nothing global is configured.
+  class Base
+    extend T::Sig
+    extend T::Helpers
+
+    abstract!
+
+    sig { returns(Printer) }
+    attr_reader :printer
+
+    sig { params(printer: Printer).void }
+    def initialize(printer)
+      @printer = printer
+    end
+
+    # The file and completion (in percent) of the job under way: `{ name: 'cube.gcode', progress: 42.1 }`.
+    # nil when there is no job.
+    sig { abstract.returns(T.nilable(T::Hash[Symbol, T.untyped])) }
+    def current_job; end
+
+    # The printer's state, as the API words it ("Operational", "Printing", ...)
+    sig { abstract.returns(T.nilable(String)) }
+    def job_status; end
+
+    # The printer's state family
+    sig { abstract.returns(PrinterStateFamily) }
+    def state_family; end
+
+    # The state family and the completion (in percent, nil when unknown) of the job, read in a single request:
+    # `{ state_family: PrinterStateFamily::Printing, progress: 42.1 }`
+    sig { abstract.returns(T::Hash[Symbol, T.untyped]) }
+    def print_progress; end
+
+    # The server's name and version, e.g. "OctoPrint 1.11.2"
+    sig { abstract.returns(T.nilable(String)) }
+    def version; end
+
+    # The printer's name and the server version: `{ name: 'Prusa MK4', version: 'OctoPrint 1.11.2' }`.
+    # Raises Unauthorized or Unreachable, so that a form can tell why the printer can't be added.
+    sig { abstract.returns(T::Hash[Symbol, T.nilable(String)]) }
+    def identify; end
+
+    # The URL of the webcam stream, or nil when there is none
+    sig { abstract.returns(T.nilable(String)) }
+    def webcam_url; end
+
+    sig { abstract.void }
+    def pause; end
+
+    sig { abstract.void }
+    def resume; end
+
+    sig { abstract.void }
+    def cancel; end
+
+    # Connects the server to the printer
+    sig { abstract.void }
+    def connect; end
+
+    # Closes the server's connection to the printer, then opens it again
+    sig { abstract.void }
+    def reconnect; end
+
+    # Uploads a G-code file, and starts printing it when `print` is true.
+    # Errors (including timeouts) are raised: an upload must not fail silently.
+    sig { abstract.params(path: String, print: T::Boolean).void }
+    def upload(path, print: false); end
+  end
+end
