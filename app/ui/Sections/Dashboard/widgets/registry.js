@@ -41,6 +41,7 @@ const optionsFor = (options) => (size) => options.filter((option) => option.size
 // new widget type is one new entry.
 // - sizes / defaultSize: the size names it supports
 // - optionsFor(size): the options that size shows; defaultOptions(size): the options of a new widget
+// - title(printer): what edit mode calls a widget (its printer, or null)
 // - optionKeys: every option it saves; optionsInput: its key in saveDashboard's one-of options input
 // - Component: renders a widget of the layout from the dashboard's data ({ widget, size, data })
 // - Preview: the presentational widget, for fixture data (the gallery)
@@ -48,6 +49,7 @@ const optionsFor = (options) => (size) => options.filter((option) => option.size
 export const REGISTRY = {
   PRINTER: {
     name: 'Printer',
+    title: (printer) => printer?.name ?? 'Printer',
     sizes: ['S', 'M', 'L', 'XL'],
     defaultSize: 'L',
     optionsFor: optionsFor(PRINTER_OPTIONS),
@@ -63,6 +65,7 @@ export const REGISTRY = {
   },
   PRINT_QUEUE: {
     name: 'Print Queue',
+    title: (printer) => (printer ? `${printer.name} queue` : 'Print Queue'),
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     defaultSize: 'L',
     optionsFor: optionsFor(PRINT_QUEUE_OPTIONS),

@@ -2,12 +2,29 @@ import React from 'react'
 import PropTypes from 'prop-types'
 
 import WidgetFrame from '../WidgetFrame/WidgetFrame'
+import { canStep } from '../layout/layoutReducer'
 import { REGISTRY, sizeOf } from '../widgets/registry'
 import DividerRow from './DividerRow'
 import * as classes from './Section.module.less'
 
+// A widget's edit tools, wired to the draft
+function editTools (widget, size, data, { sections, dispatch }) {
+  const { key } = widget
+  const entry = REGISTRY[widget.type]
+  return {
+    title: entry.title(data.printersById?.[widget.printer?.id]),
+    sizes: entry.sizes,
+    size,
+    onResize: (to) => dispatch({ type: 'resizeWidget', key, size: to }),
+    canMoveEarlier: canStep(sections, key, -1),
+    canMoveLater: canStep(sections, key, 1),
+    onMove: (step) => dispatch({ type: 'stepWidget', key, step }),
+    onRemove: () => dispatch({ type: 'removeWidget', key })
+  }
+}
+
 // A run of widgets under an optional divider title, laid out on the section's own grid.
-// In edit mode (`editor`: the draft's { sections, dispatch }) the divider gets its edit tools.
+// In edit mode (`editor`: the draft's { sections, dispatch }) the divider and the widgets get their edit tools.
 export default function Section ({ section, data, index = 0, editor = null }) {
   const untitled = index === 0 ? 'Top of dashboard' : 'Untitled section'
   return (
@@ -29,7 +46,7 @@ export default function Section ({ section, data, index = 0, editor = null }) {
               '--width-units-md': Math.min(widget.widthUnits, 2),
               '--height-units': widget.heightUnits
             }}>
-              <WidgetFrame label={entry.name} editing={!!editor}>
+              <WidgetFrame label={entry.name} edit={editor && editTools(widget, size, data, editor)}>
                 <Component widget={widget} size={size} data={data} />
               </WidgetFrame>
             </div>
