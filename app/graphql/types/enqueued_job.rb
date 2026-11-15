@@ -4,6 +4,8 @@ module Types
   class EnqueuedJob < Base::Object
     implements Types::Job
     description 'A job enqueued on Tentacles.'
+    # No field depends on the context, so printerStatusChanged can broadcast Printer.nextJob
+    default_broadcastable true
 
     field :executable, Types::File, null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
