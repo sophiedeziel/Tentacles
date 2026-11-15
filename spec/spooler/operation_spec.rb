@@ -1,0 +1,119 @@
+# frozen_string_literal: true
+
+require 'rails_helper'
+require 'spooler'
+
+RSpec.describe Spooler::Print do
+  let(:printer) { create(:printer) }
+  let(:printer_job) { create(:printer_job, printer:, status: 'active') }
+  let(:operation) { described_class.new(printer, printer_job) }
+  let(:subscriptions) { instance_double(GraphQL::Subscriptions, trigger: nil) }
+  let(:polls) { [] }
+
+  # Makes Job.get return one job per state, in order, and records the state of each poll
+  def octoprint_states(*states, completion: 42.1)
+    jobs = states.map do |state|
+      Octoprint::Job.deserialize({ state:, job: { file: { name: 'cube.gcode' } }, progress: { completion: } })
+    end
+    allow(Octoprint::Job).to receive(:get) do
+      jobs.shift.tap { |job| polls << job.state }
+    end
+  end
+
+  before do
+    allow(TentaclesSchema).to receive(:subscriptions).and_return(subscriptions)
+    allow(UploadFilesToPrintersJob).to receive(:perform_now)
+    allow(operation).to receive(:sleep)
+    allow(operation).to receive(:log)
+  end
+
+  describe '#execute' do
+    it 'uploads the file to the printer and starts the print' do
+      octoprint_states('Operational')
+      operation.execute
+      expect(UploadFilesToPrintersJob).to have_received(:perform_now)
+        .with([printer_job.executable_id], [printer.id], select: true, print: true)
+    end
+
+    it 'keeps monitoring through a pause and a resume' do
+      octoprint_states('Printing', 'Pausing', 'Paused', 'Resuming', 'Printing', 'Finishing', 'Operational')
+      operation.execute
+      expect(polls).to eq %w[Printing Pausing Paused Resuming Printing Finishing Operational]
+    end
+
+    it 'keeps monitoring while the print is cancelling' do
+      octoprint_states('Printing', 'Cancelling', 'Cancelling', 'Operational')
+      operation.execute
+      expect(polls).to eq %w[Printing Cancelling Cancelling Operational]
+    end
+
+    it 'keeps monitoring while OctoPrint starts the print' do
+      octoprint_states('Starting', 'Printing from SD', 'Operational')
+      operation.execute
+      expect(polls).to eq ['Starting', 'Printing from SD', 'Operational']
+    end
+
+    ['Operational', 'Offline', 'Offline after error', 'Error: Printer halted', 'Connecting'].each do |state|
+      it "stops monitoring when the printer is #{state}" do
+        octoprint_states('Printing', state, 'Printing')
+        operation.execute
+        expect(polls).to eq ['Printing', state]
+      end
+    end
+
+    it 'waits WAIT_TIME between polls, not after the last one' do
+      octoprint_states('Printing', 'Paused', 'Operational')
+      operation.execute
+      expect(operation).to have_received(:sleep).with(Spooler::WAIT_TIME).twice
+    end
+
+    it 'tracks the progress only while printing' do
+      octoprint_states('Printing', 'Paused', 'Cancelling', 'Operational', completion: 42.1)
+      allow(operation).to receive(:track_progress).and_call_original
+
+      operation.execute
+
+      expect(operation).to have_received(:track_progress).with(43).once
+      expect(operation).to have_received(:log).with('43%').once
+      expect(printer_job.reload.progress).to eq 43
+    end
+
+    it 'notifies the subscribers of the progress' do
+      octoprint_states('Printing', 'Printing', 'Operational')
+      operation.execute
+      # Before the upload, once per printing poll, and at the end
+      expect(subscriptions).to have_received(:trigger).with(:printer_subscription, { id: printer.id }, {}).exactly(4)
+    end
+
+    it 'does not crash when OctoPrint has no completion yet' do
+      octoprint_states('Starting', 'Operational', completion: nil)
+      allow(operation).to receive(:track_progress)
+
+      expect { operation.execute }.not_to raise_error
+      expect(operation).not_to have_received(:track_progress)
+    end
+
+    it 'does not crash when OctoPrint has no progress at all' do
+      allow(Octoprint::Job).to receive(:get).and_return(
+        Octoprint::Job.deserialize({ state: 'Starting', job: {} }),
+        Octoprint::Job.deserialize({ state: 'Operational', job: {} })
+      )
+      expect { operation.execute }.not_to raise_error
+    end
+
+    it "uses the printer's own client without touching the global configuration" do
+      allow(Octoprint).to receive(:configure)
+      client_before = Octoprint.client
+      clients = []
+      jobs = %w[Printing Operational].map { |state| Octoprint::Job.deserialize({ state:, job: {} }) }
+      allow(Octoprint::Job).to receive(:get) { clients << Octoprint.client and jobs.shift }
+
+      operation.execute
+
+      expect(clients).to eq [printer.octoprint_client, printer.octoprint_client]
+      expect(clients.first).to have_attributes(host: printer.octoprint_uri, api_key: printer.octoprint_key)
+      expect(Octoprint).not_to have_received(:configure)
+      expect(Octoprint.client).to be client_before
+    end
+  end
+end

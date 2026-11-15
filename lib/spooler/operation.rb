@@ -1,3 +1,4 @@
+# typed: true
 # frozen_string_literal: true
 
 class Spooler
@@ -33,7 +34,6 @@ class Spooler
     end
 
     def execute
-      Octoprint.configure(host: @printer.octoprint_uri, api_key: @printer.octoprint_key)
       log '1. Start the print: send the right gcode to octoprint'.cyan
       update_subscribers
       UploadFilesToPrintersJob.perform_now([@file.id], [@printer.id], select: true, print: true)
@@ -51,21 +51,28 @@ class Spooler
 
     private
 
+    # Polls OctoPrint until the print is over. A paused or cancelling print is still under way: its job stays active.
     def wait_for_print_to_finish
-      printing = true
-      while printing
-        job = Octoprint::Job.get
-        printing = job.state == 'Printing'
-        printing_updates(job)
+      loop do
+        job = current_octoprint_job
+        family = PrinterStateFamily.for(job.state)
+        printing_updates(job) if family == PrinterStateFamily::Printing
+        break unless family.in_progress?
 
         sleep(WAIT_TIME)
       end
     end
 
-    def printing_updates(job)
-      return unless job.state == 'Printing'
+    # With the printer's own client: `use` sets it for the current thread only, so concurrent prints don't mix up
+    def current_octoprint_job
+      @printer.octoprint_client.use { Octoprint::Job.get }
+    end
 
-      progress = job.progress.completion.ceil
+    def printing_updates(job)
+      completion = job.progress&.completion
+      return if completion.nil? # e.g. while OctoPrint is still "Starting" the print
+
+      progress = completion.ceil
 
       track_progress(progress)
       log("#{progress}%")
