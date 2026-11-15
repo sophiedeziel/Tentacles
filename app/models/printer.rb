@@ -4,6 +4,10 @@
 class Printer < ApplicationRecord
   extend T::Sig
 
+  # Seconds to wait for OctoPrint when uploading G-code files
+  UPLOAD_OPEN_TIMEOUT = 5
+  UPLOAD_TIMEOUT = 120
+
   has_many :jobs, class_name: 'Printer::Job', dependent: :nullify
 
   validates :name, presence: true
@@ -44,9 +48,11 @@ class Printer < ApplicationRecord
     jobs.where(status: 'enqueued').count
   end
 
+  # Errors (including timeouts) are raised to the caller: an upload must not fail silently, nor mark the printer
+  # as disconnected, so this doesn't go through using_api and its cache.
   sig { params(file: String, options: T.untyped).returns(Octoprint::Files::OperationResult) }
   def upload(file, options: {})
-    using_api do
+    upload_client.use do
       Octoprint::Files.upload(file, **options)
     end
   end
@@ -56,7 +62,7 @@ class Printer < ApplicationRecord
     OctoprintCache.use_cache(id:, method:, time: cache) do
       api_client.use(&)
     end
-  rescue Faraday::ConnectionFailed => e
+  rescue Octoprint::Exceptions::ConnectionError => e
     Rails.logger.error("Failed to get OctoPrint data for #{name} :\n\t#{e.message}")
     OctoprintCache.set_disconnected(id)
     nil
@@ -84,5 +90,11 @@ class Printer < ApplicationRecord
 
   def api_client
     @api_client ||= Octoprint::Client.new(host: octoprint_uri, api_key: octoprint_key)
+  end
+
+  # Large G-code files take much longer to upload than the API client's 3 seconds read timeout
+  def upload_client
+    @upload_client ||= Octoprint::Client.new(host: octoprint_uri, api_key: octoprint_key,
+                                             open_timeout: UPLOAD_OPEN_TIMEOUT, timeout: UPLOAD_TIMEOUT)
   end
 end

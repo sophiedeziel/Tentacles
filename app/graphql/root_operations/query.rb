@@ -63,9 +63,13 @@ module RootOperations
       client = Octoprint::Client.new(host: octoprint_uri, api_key: octoprint_key)
       client.use do
         connection = Octoprint::Connection.get
-        default_profile = connection.options.printer_profiles.find { |p| p[:id] == '_default' }
-        default_profile[:name]
+        default_profile = connection.options&.printer_profiles&.find { |p| p[:id] == '_default' }
+        default_profile&.dig(:name)
       end
+    # JSON::ParserError and KeyError: the gem fails to read the error of a server that isn't OctoPrint
+    rescue Octoprint::Exceptions::Error, JSON::ParserError, KeyError, URI::InvalidURIError => e
+      Rails.logger.warn("[octoprintName] Could not get OctoPrint's name at #{octoprint_uri.inspect}: #{e.class}")
+      nil
     end
   end
 end
