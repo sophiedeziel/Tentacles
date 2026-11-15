@@ -8,8 +8,8 @@ name: "CI"
 on:
   push:
     branches: [ 'main' ]
+  # Every PR, whatever its base, so stacked PRs get checks too
   pull_request:
-    branches: [ main ]
 
 permissions:
   contents: read
