@@ -53,7 +53,7 @@ RSpec.describe PrinterMonitor do
           file_name: 'cube.gcode', progress: 40.0, print_time_left: 1800
         )
         expect(status).to have_attributes(state_family: PrinterStateFamily::Paused, progress: 40.0)
-        expect(status.hotend&.serialize).to eq('actual' => 200.0, 'target' => 210.0)
+        expect(status.hotend&.serialize).to eq('actual' => 200.0, 'target' => 210.0, 'unit' => 'CELSIUS')
       end
 
       it 'triggers the subscription once' do

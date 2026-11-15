@@ -33,6 +33,8 @@ class PrinterStatus < T::Struct
 
     const :actual, T.nilable(Float)
     const :target, T.nilable(Float)
+    # Snapshots written before the unit was stored are in °C, like everything OctoPrint reports
+    const :unit, TemperatureUnit, default: TemperatureUnit::Celsius
 
     # Rounded to 1°, for change detection
     sig { returns([T.nilable(Integer), T.nilable(Integer)]) }
