@@ -29,10 +29,40 @@ RSpec.describe Spooler::Print do
 
   describe '#execute' do
     it 'uploads the file to the printer and starts the print' do
-      octoprint_states('Operational')
+      octoprint_states('Printing', 'Operational')
       operation.execute
       expect(UploadFilesToPrintersJob).to have_received(:perform_now)
         .with([printer_job.executable_id], [printer.id], print: true)
+    end
+
+    it 'waits for the print to start: the printer can still be operational right after the upload' do
+      octoprint_states('Operational', 'Operational', 'Printing', 'Operational')
+      operation.execute
+      expect(polls).to eq %w[Operational Operational Printing Operational]
+    end
+
+    it 'stops waiting when the print has not started after MAX_START_POLLS polls' do
+      stub_const('Spooler::Print::MAX_START_POLLS', 3)
+      octoprint_states('Operational', 'Operational', 'Operational', 'Printing')
+      operation.execute
+      expect(polls).to eq %w[Operational Operational Operational]
+      expect(operation).to have_received(:log).with(/The print didn't start after 3 polls/)
+    end
+
+    ['Offline', 'Error: Printer halted'].each do |state|
+      it "does not wait for the print to start when the printer is #{state}" do
+        octoprint_states(state, 'Printing')
+        operation.execute
+        expect(polls).to eq [state]
+      end
+    end
+
+    it 'raises the errors of the upload: the print cannot start' do
+      allow(UploadFilesToPrintersJob).to receive(:perform_now).and_raise(PrinterBackends::Unreachable, 'timeout')
+      allow(Octoprint::Job).to receive(:get)
+
+      expect { operation.execute }.to raise_error(PrinterBackends::Unreachable, 'timeout')
+      expect(Octoprint::Job).not_to have_received(:get)
     end
 
     # On main, Spooler::Print passed `select: true, print: true`, which Printer#upload doesn't accept
