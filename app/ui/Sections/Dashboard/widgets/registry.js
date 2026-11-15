@@ -1,5 +1,7 @@
 import PrinterTile from './Printer/PrinterTile'
 import PrinterWidget from './Printer/PrinterWidget'
+import PrintQueueTile from './PrintQueue/PrintQueueTile'
+import PrintQueueWidget from './PrintQueue/PrintQueueWidget'
 
 // S to XXL are UI names for a widget's span; the API stores widthUnits and heightUnits
 export const SIZES = {
@@ -62,8 +64,8 @@ export const REGISTRY = {
     defaultSize: 'L',
     optionsFor: optionsFor(PRINT_QUEUE_OPTIONS),
     defaultOptions: () => ({ nowPrinting: true, startNext: true, rowPerPrinter: false, history: false }),
-    Component: null, // The Print Queue widget comes with #2805
-    Preview: null,
+    Component: PrintQueueTile,
+    Preview: PrintQueueWidget,
     SettingsForm: null
   }
 }

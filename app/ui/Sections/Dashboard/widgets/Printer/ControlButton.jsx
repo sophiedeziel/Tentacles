@@ -7,8 +7,8 @@ import confirmationFor from './confirmations'
 // One printer control. It confirms first when the control changes a print, then runs `onRun` (which resolves to
 // the mutation's errors) with a spinner on the button, and shows the errors it returns. A control runs once at a
 // time: double clicks and a second OK while the first runs are ignored. `live` is false when the dashboard may show
-// stale states; the confirmation says so.
-export default function ControlButton ({ action, view, onRun, live = true }) {
+// stale states; the confirmation says so. `size` and `placement` set the button's size and the Popconfirm's side.
+export default function ControlButton ({ action, view, onRun, live = true, size, placement = 'topLeft' }) {
   const { message } = App.useApp()
   const busy = useRef(false)
   const [running, setRunning] = useState(false)
@@ -32,7 +32,8 @@ export default function ControlButton ({ action, view, onRun, live = true }) {
   }
 
   const button = (onClick) => (
-    <Button danger={action.danger} disabled={action.disabled} loading={action.loading || running} onClick={onClick}>
+    <Button danger={action.danger} disabled={action.disabled} loading={action.loading || running} onClick={onClick}
+      size={size}>
       {action.label}
     </Button>
   )
@@ -41,7 +42,7 @@ export default function ControlButton ({ action, view, onRun, live = true }) {
   if (confirmation?.kind === 'popconfirm') {
     return (
       <Popconfirm title={confirmation.title} description={confirmation.body} okText={confirmation.ok}
-        cancelText={confirmation.keep} placement="topLeft" onConfirm={run} disabled={running}>
+        cancelText={confirmation.keep} placement={placement} onConfirm={run} disabled={running}>
         {button()}
       </Popconfirm>
     )
@@ -71,5 +72,7 @@ ControlButton.propTypes = {
   }).isRequired,
   view: PropTypes.object.isRequired,
   onRun: PropTypes.func.isRequired,
-  live: PropTypes.bool
+  live: PropTypes.bool,
+  size: PropTypes.oneOf(['small', 'middle', 'large']),
+  placement: PropTypes.string
 }
