@@ -557,4 +557,64 @@ RSpec.describe PrinterMonitor::Worker do
         .with(/Unexpected error while polling OctoPrint: NoMethodError: undefined method/)
     end
   end
+
+  context 'with a PrusaLink printer' do
+    let(:printer) { create(:printer, :prusalink) }
+    let(:prusalink_status) do
+      Prusalink::Status.deserialize({ printer: { state: 'PRINTING', temp_nozzle: 215.0, target_nozzle: 215.0,
+                                                 temp_bed: 60.0, target_bed: 60.0 },
+                                      job: { id: 7, progress: 42.0, time_remaining: 600 } })
+    end
+
+    before do
+      allow(Prusalink::Status).to receive(:get) { prusalink_status }
+      allow(Prusalink::Job).to receive(:get) do
+        Prusalink::Job.deserialize({ id: 7, state: 'PRINTING',
+                                     file: { name: 'CUBE~1.BGC', display_name: 'cube.bgcode' } })
+      end
+      allow(Rails.logger).to receive(:warn).and_call_original
+      allow(Rails.logger).to receive(:error).and_call_original
+    end
+
+    it 'publishes the snapshot read from PrusaLink, without a camera' do
+      worker.tick
+
+      expect(status).to have_attributes(
+        printer_id: printer.id, state_family: PrinterStateFamily::Printing, state_text: 'Printing',
+        file_name: 'cube.bgcode', progress: 42.0, print_time_left: 600,
+        camera: PrinterStatus::Camera.new(enabled: false)
+      )
+      expect(Octoprint::Job).not_to have_received(:get)
+      expect(Octoprint::Settings).not_to have_received(:webcam)
+    end
+
+    it 'publishes an OFFLINE snapshot when PrusaLink is unreachable' do
+      allow(Prusalink::Status).to receive(:get).and_raise(Prusalink::Exceptions::ConnectionError, 'Connection refused')
+      worker.tick
+
+      expect(status).to have_attributes(state_family: PrinterStateFamily::Offline, state_text: 'Unreachable',
+                                        error_text: 'Connection refused')
+    end
+
+    context 'without a password' do
+      let(:printer) { create(:printer, :prusalink, :unvalidated, secret: nil) }
+
+      it 'says the PrusaLink credentials are missing' do
+        worker.tick
+
+        expect(status).to have_attributes(state_family: PrinterStateFamily::Offline,
+                                          error_text: 'Missing PrusaLink credentials')
+        expect(Rails.logger).to have_received(:warn).with(/Unreachable: Missing PrusaLink credentials/)
+        expect(Prusalink::Status).not_to have_received(:get)
+      end
+    end
+
+    it 'names PrusaLink in the unexpected errors' do
+      allow(Prusalink::Status).to receive(:get).and_raise(NoMethodError, 'undefined method')
+      worker.tick
+
+      expect(Rails.logger).to have_received(:error)
+        .with(/Unexpected error while polling PrusaLink: NoMethodError: undefined method/)
+    end
+  end
 end

@@ -23,6 +23,16 @@ module PrinterBackends
     sig { abstract.returns(String) }
     def product_name; end
 
+    # What `printers.secret` holds, for the messages shown to the user: "API key", "password"
+    sig { abstract.returns(String) }
+    def secret_name; end
+
+    # Whether the server connects to the printer by itself, so that #connect and #reconnect make no sense
+    sig { returns(T::Boolean) }
+    def connects_on_its_own?
+      false
+    end
+
     # The file and completion (in percent) of the job under way: `{ name: 'cube.gcode', progress: 42.1 }`.
     # nil when there is no job.
     sig { abstract.returns(T.nilable(T::Hash[Symbol, T.untyped])) }
@@ -41,10 +51,11 @@ module PrinterBackends
     sig { abstract.returns(T::Hash[Symbol, T.untyped]) }
     def print_progress; end
 
-    # The state family and the file of the job under way, read together, for the printer actions:
-    # `{ state_family: PrinterStateFamily::Printing, file_name: 'cube.gcode' }`. `file_name` is the name the monitor
-    # reports (PrinterStatus#file_name), so that an action can check it against the file the user confirmed. nil when
-    # no job is loaded.
+    # The state family and the job under way, read together, for the printer actions:
+    # `{ state_family: PrinterStateFamily::Printing, file_name: 'cube.gcode', job_id: 7 }`. `file_name` is the name
+    # the monitor reports (PrinterStatus#file_name), so that an action can check it against the file the user
+    # confirmed. `job_id` is the backend's id of that job, to pass to #pause, #resume and #cancel (nil for the
+    # backends without job ids, like OctoPrint). Both are nil when no job is loaded.
     sig { abstract.returns(T::Hash[Symbol, T.untyped]) }
     def live_job; end
 
@@ -61,14 +72,16 @@ module PrinterBackends
     sig { abstract.returns(T.nilable(String)) }
     def webcam_url; end
 
-    sig { abstract.void }
-    def pause; end
+    # The job commands act on the job under way. `job_id` (from #live_job) makes them act on that job only, rather
+    # than on one that started since; without it, the backends that need an id read the current one.
+    sig { abstract.params(job_id: T.nilable(Integer)).void }
+    def pause(job_id: nil); end
 
-    sig { abstract.void }
-    def resume; end
+    sig { abstract.params(job_id: T.nilable(Integer)).void }
+    def resume(job_id: nil); end
 
-    sig { abstract.void }
-    def cancel; end
+    sig { abstract.params(job_id: T.nilable(Integer)).void }
+    def cancel(job_id: nil); end
 
     # Connects the server to the printer
     sig { abstract.void }

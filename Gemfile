@@ -49,6 +49,7 @@ gem 'bootsnap', require: false
 gem 'apollo_upload_server'
 gem 'graphql'
 gem 'octoprint', github: 'sophiedeziel/octoprint', branch: 'main' # For prototype purposes
+gem 'prusalink', '~> 0.1'
 
 gem 'bindex' # shakapacker won't work without this
 gem 'mini_racer', platforms: :ruby

@@ -204,6 +204,7 @@ GEM
     net-http (0.10.0)
       net-protocol (>= 0.3.0)
       uri (>= 0.11.1)
+    net-http-digest_auth (1.4.1)
     net-imap (0.6.8)
       date
       net-protocol
@@ -232,6 +233,12 @@ GEM
       prettyprint
     prettyprint (0.2.1)
     prism (1.9.0)
+    prusalink (0.1.1)
+      activesupport
+      faraday (>= 2.2, < 3)
+      net-http-digest_auth (~> 1.4)
+      sorbet-runtime (>= 0.5.10908, < 0.7.0)
+      zeitwerk (~> 2.6)
     pry (0.16.1)
       coderay (~> 1.1)
       method_source (~> 1.0)
@@ -473,6 +480,7 @@ DEPENDENCIES
   mock_redis
   mysql2 (~> 0.5.6)
   octoprint!
+  prusalink (~> 0.1)
   pry
   puma (~> 8.0)
   rails (~> 8.0)

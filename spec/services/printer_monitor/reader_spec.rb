@@ -9,6 +9,11 @@ RSpec.describe PrinterMonitor::Reader do
       expect(described_class.for(printer)).to be_a(PrinterMonitor::OctoprintReader).and have_attributes(printer:)
     end
 
+    it 'returns a PrusalinkReader for a PrusaLink printer' do
+      printer = build(:printer, :prusalink)
+      expect(described_class.for(printer)).to be_a(PrinterMonitor::PrusalinkReader).and have_attributes(printer:)
+    end
+
     it 'raises for an unknown backend' do
       printer = build(:printer, backend: 'repetier')
       expect { described_class.for(printer) }.to raise_error(ArgumentError, 'Unknown printer backend "repetier"')

@@ -17,7 +17,7 @@ module Mutations
       end
 
       def send_command(printer)
-        printer.api.pause
+        printer.api.pause(job_id: live_job_id)
       end
     end
   end

@@ -63,6 +63,11 @@ module PrinterBackends
       'OctoPrint'
     end
 
+    sig { override.returns(String) }
+    def secret_name
+      'API key'
+    end
+
     sig { override.returns(T.nilable(T::Hash[Symbol, T.untyped])) }
     def current_job
       job = use { ::Octoprint::Job.get }
@@ -116,18 +121,19 @@ module PrinterBackends
       self.class.stream_url(printer.uri, webcam.stream_url)
     end
 
-    sig { override.void }
-    def pause
+    # OctoPrint has a single job, without an id: the job commands ignore job_id
+    sig { override.params(job_id: T.nilable(Integer)).void }
+    def pause(job_id: nil) # rubocop:disable Lint/UnusedMethodArgument
       use { ::Octoprint::Job.pause }
     end
 
-    sig { override.void }
-    def resume
+    sig { override.params(job_id: T.nilable(Integer)).void }
+    def resume(job_id: nil) # rubocop:disable Lint/UnusedMethodArgument
       use { ::Octoprint::Job.resume }
     end
 
-    sig { override.void }
-    def cancel
+    sig { override.params(job_id: T.nilable(Integer)).void }
+    def cancel(job_id: nil) # rubocop:disable Lint/UnusedMethodArgument
       use { ::Octoprint::Job.cancel }
     end
 

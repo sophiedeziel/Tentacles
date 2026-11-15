@@ -45,6 +45,13 @@ module Mutations
       sig { abstract.params(printer: ::Printer).void }
       def send_command(printer); end
 
+      # Whether the action connects the server to the printer. Refused, without reading the state, for the backends
+      # that connect on their own (see PrinterBackends::Base#connects_on_its_own?).
+      sig { returns(T::Boolean) }
+      def connection_command?
+        false
+      end
+
       # Whether to run a monitor tick after a successful command
       sig { returns(T::Boolean) }
       def refresh_after_command?
@@ -68,11 +75,20 @@ module Mutations
       # allowed. Returns the refusal message, if any.
       sig { params(printer: ::Printer).returns(T.nilable(String)) }
       def perform(printer)
-        job = printer.api.live_job
+        api = printer.api
+        return "#{api.product_name} printers connect on their own" if connection_command? && api.connects_on_its_own?
+
+        job = api.live_job
+        @live_job_id = T.let(job[:job_id], T.nilable(Integer))
         message = refusal(printer, job.fetch(:state_family)) || unexpected_job(printer, job)
         send_command(printer) if message.nil?
         message
       end
+
+      # The id of the job #perform checked, for the job commands (`printer.api.pause(job_id: live_job_id)`): the
+      # command goes to that job, not to one that started since. nil for the backends without job ids (OctoPrint).
+      sig { returns(T.nilable(Integer)) }
+      attr_reader :live_job_id
 
       # The error message when the printer's live job isn't the one the user confirmed (`expectedFileName`, the
       # file the screen showed), or nil. A stale screen must not pause or cancel another print. `job` is
@@ -95,23 +111,27 @@ module Mutations
 
       sig { params(printer: ::Printer, error: StandardError).returns(String) }
       def api_error_message(printer, error)
+        api = printer.api
+        product = api.product_name
         case error
         when PrinterBackends::UnreadableCredentials
-          "#{printer.name}'s stored OctoPrint API key can't be read, re-enter it"
+          "#{printer.name}'s stored #{product} #{api.secret_name} can't be read, re-enter it"
         when PrinterBackends::MissingCredentials
-          "#{printer.name} has no OctoPrint URL or API key"
+          "#{printer.name} has no #{product} URL or #{api.secret_name}"
         when URI::InvalidURIError
-          "#{printer.name} has an invalid OctoPrint URL"
+          "#{printer.name} has an invalid #{product} URL"
+        when PrinterBackends::NoJob
+          "#{printer.name} has no job under way"
         when PrinterBackends::Unreachable
-          "Could not reach #{printer.name}'s OctoPrint: #{redact(printer, error.message)}"
+          "Could not reach #{printer.name}'s #{product}: #{redact(printer, error.message)}"
         when PrinterBackends::Error
-          "#{printer.name}'s OctoPrint returned an error: #{redact(printer, error.message)}"
-        else # JSON::ParserError, KeyError: the URL answers, but not like OctoPrint (e.g. an HTML page)
-          "#{printer.name}'s OctoPrint URL does not answer like an OctoPrint server"
+          "#{printer.name}'s #{product} returned an error: #{redact(printer, error.message)}"
+        else # JSON::ParserError, KeyError: the URL answers, but not like the server (e.g. an HTML page)
+          "#{printer.name}'s #{product} URL does not answer like #{product}"
         end
       end
 
-      # Never echo the API key back, whatever ends up in an error message
+      # Never echo the API key or password back, whatever ends up in an error message
       sig { params(printer: ::Printer, message: String).returns(String) }
       def redact(printer, message)
         key = printer.readable_secret

@@ -84,6 +84,53 @@ RSpec.describe PrinterStateFamily do
     end
   end
 
+  describe '.for_prusalink' do
+    # Every PrusaLink printer state, with and without a job
+    [
+      ['PRINTING', true, described_class::Printing],
+      ['PAUSED', true, described_class::Paused],
+      ['ATTENTION', true, described_class::Paused],
+      ['ATTENTION', false, described_class::Error],
+      ['IDLE', false, described_class::Operational],
+      ['READY', false, described_class::Operational],
+      ['FINISHED', true, described_class::Operational],
+      ['FINISHED', false, described_class::Operational],
+      ['STOPPED', true, described_class::Operational],
+      ['STOPPED', false, described_class::Operational],
+      ['BUSY', false, described_class::Operational],
+      ['ERROR', false, described_class::Error],
+      ['ERROR', true, described_class::Error]
+    ].each do |state, job, family|
+      it "maps #{state} #{job ? 'with' : 'without'} a job to #{family.serialize}" do
+        allow(described_class).to receive(:log_unknown)
+
+        expect(described_class.for_prusalink(state, job:)).to eq family
+        expect(described_class).not_to have_received(:log_unknown)
+      end
+    end
+
+    it 'maps nil and blank states to OFFLINE without logging' do
+      expect(Rails.logger).not_to receive(:warn)
+
+      expect(described_class.for_prusalink(nil, job: false)).to eq described_class::Offline
+      expect(described_class.for_prusalink('', job: false)).to eq described_class::Offline
+    end
+
+    context 'with an unknown state' do
+      let(:state) { "TRANSMOGRIFYING_#{SecureRandom.hex(4)}" }
+
+      it 'maps it to OFFLINE' do
+        expect(described_class.for_prusalink(state, job: false)).to eq described_class::Offline
+      end
+
+      it 'logs it once' do
+        expect(Rails.logger).to receive(:warn).with(/Unknown PrusaLink state "#{state}"/).once
+
+        2.times { described_class.for_prusalink(state, job: true) }
+      end
+    end
+  end
+
   describe '#connected?' do
     it 'is true when OctoPrint is connected to the printer' do
       connected = described_class.values.select(&:connected?)

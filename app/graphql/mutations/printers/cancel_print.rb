@@ -20,7 +20,7 @@ module Mutations
       end
 
       def send_command(printer)
-        printer.api.cancel
+        printer.api.cancel(job_id: live_job_id)
       end
     end
   end

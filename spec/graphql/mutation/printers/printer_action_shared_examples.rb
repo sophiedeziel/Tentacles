@@ -65,9 +65,9 @@ RSpec.shared_examples 'a printer action that fails gracefully' do |commands:|
     Octoprint::Exceptions::AuthenticationError.new('[403] Invalid API key') =>
       "Prusa MK4's OctoPrint returned an error: [403] Invalid API key",
     JSON::ParserError.new("unexpected token at '<html>'") =>
-      "Prusa MK4's OctoPrint URL does not answer like an OctoPrint server",
+      "Prusa MK4's OctoPrint URL does not answer like OctoPrint",
     KeyError.new('key not found: :error') =>
-      "Prusa MK4's OctoPrint URL does not answer like an OctoPrint server"
+      "Prusa MK4's OctoPrint URL does not answer like OctoPrint"
   }.each do |error, message|
     context "when reading the state fails with #{error.class}" do
       before do

@@ -15,6 +15,8 @@ module PrinterBackends
   class Unauthorized < Error; end
   # The printer has no URI or no secret
   class MissingCredentials < Error; end
+  # A job command (pause, resume, cancel) was sent while the printer has no job
+  class NoJob < Error; end
 
   # The stored secret can't be decrypted (e.g. SECRET_KEY_BASE changed): the credentials must be entered again
   class UnreadableCredentials < MissingCredentials
@@ -28,6 +30,7 @@ module PrinterBackends
     def for(printer)
       case printer.backend
       when 'octoprint' then Octoprint.new(printer)
+      when 'prusalink' then Prusalink.new(printer)
       else raise ArgumentError, "Unknown printer backend #{printer.backend.inspect}"
       end
     end
