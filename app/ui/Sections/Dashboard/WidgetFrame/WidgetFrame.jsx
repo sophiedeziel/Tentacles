@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
-import { Card } from 'antd'
-import { LeftOutlined, MinusOutlined, RightOutlined } from '@ant-design/icons'
+import { Card, Popover } from 'antd'
+import { LeftOutlined, MinusOutlined, RightOutlined, SettingOutlined } from '@ant-design/icons'
 
 import { SIZES } from '../widgets/registry'
 import * as classes from './WidgetFrame.module.less'
@@ -9,6 +9,22 @@ import * as classes from './WidgetFrame.module.less'
 const STYLES = {
   root: { height: '100%' },
   body: { height: '100%', padding: 12, display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }
+}
+
+// The menu renders outside the widget, but React still bubbles its events to the widget: they mustn't start a drag
+const stop = (event) => event.stopPropagation()
+
+// The gear, opening the widget's settings form in a popover
+function Gear ({ title, settings }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <Popover trigger="click" placement="bottom" arrow={false} open={open} onOpenChange={setOpen}
+      content={<div onPointerDown={stop} onKeyDown={stop}>{settings}</div>}>
+      <button type="button" className={classes.tool} aria-label={`Settings for ${title}`} aria-expanded={open}>
+        <SettingOutlined />
+      </button>
+    </Popover>
+  )
 }
 
 // Edit mode's tools around a widget: remove (−) at the top left, and a toolbar with the sizes its type supports,
@@ -33,7 +49,7 @@ function EditTools ({ edit }) {
             onClick={() => edit.onMove(-1)}><LeftOutlined /></button>
           <button type="button" className={classes.tool} aria-label="Move later" disabled={!edit.canMoveLater}
             onClick={() => edit.onMove(1)}><RightOutlined /></button>
-          {edit.gear}
+          {edit.settings && <Gear title={edit.title} settings={edit.settings} />}
         </div>
       </div>
     </>
@@ -64,7 +80,7 @@ const editShape = PropTypes.shape({
   canMoveLater: PropTypes.bool,
   onMove: PropTypes.func.isRequired,
   onRemove: PropTypes.func.isRequired,
-  gear: PropTypes.node
+  settings: PropTypes.node
 })
 
 WidgetFrame.propTypes = {
@@ -74,3 +90,4 @@ WidgetFrame.propTypes = {
 }
 
 EditTools.propTypes = { edit: editShape.isRequired }
+Gear.propTypes = { title: PropTypes.string.isRequired, settings: PropTypes.node.isRequired }

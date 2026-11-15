@@ -6,22 +6,28 @@ import { SortableContext } from '@dnd-kit/sortable'
 import WidgetFrame from '../WidgetFrame/WidgetFrame'
 import { canStep } from '../layout/layoutReducer'
 import { useDragType, useSectionEnd, useSortableItem } from '../LayoutDnd/LayoutDnd'
-import { REGISTRY, sizeOf } from '../widgets/registry'
+import { REGISTRY, SIZES, sizeOf } from '../widgets/registry'
 import DividerRow from './DividerRow'
 import * as classes from './Section.module.less'
 
 // A widget's edit tools, wired to the draft
-function editTools (widget, size, title, { sections, dispatch }) {
+function editTools (widget, size, title, data, { sections, dispatch }) {
   const { key } = widget
+  const entry = REGISTRY[widget.type]
+  const { SettingsForm } = entry
   return {
     title,
-    sizes: REGISTRY[widget.type].sizes,
+    sizes: entry.sizes,
     size,
     onResize: (to) => dispatch({ type: 'resizeWidget', key, size: to }),
     canMoveEarlier: canStep(sections, key, -1),
     canMoveLater: canStep(sections, key, 1),
     onMove: (step) => dispatch({ type: 'stepWidget', key, step }),
-    onRemove: () => dispatch({ type: 'removeWidget', key })
+    onRemove: () => dispatch({ type: 'removeWidget', key }),
+    settings: SettingsForm && (
+      <SettingsForm entry={entry} widget={widget} size={size} printers={data.printers || []} dispatch={dispatch}
+        sizeLabel={`${SIZES[size].label} · ${widget.widthUnits}×${widget.heightUnits}`} />
+    )
   }
 }
 
@@ -88,7 +94,7 @@ export default function Section ({ section, data, index = 0, editor = null, sort
     const title = entry.title(data.printersById?.[widget.printer?.id])
     return (
       <SortableCell key={widget.key} widget={widget} size={size} title={title}>
-        <WidgetFrame label={entry.name} edit={editTools(widget, size, title, editor)}>{content}</WidgetFrame>
+        <WidgetFrame label={entry.name} edit={editTools(widget, size, title, data, editor)}>{content}</WidgetFrame>
       </SortableCell>
     )
   })

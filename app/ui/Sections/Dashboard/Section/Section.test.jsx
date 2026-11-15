@@ -92,5 +92,13 @@ describe('Section', () => {
       await userEvent.click(later[1])
       expect(dispatch).toHaveBeenCalledWith({ type: 'stepWidget', key: 'widget-w2', step: 1 })
     })
+
+    it("opens a widget's settings for its size from the gear", async () => {
+      renderEdit(0)
+      const [gear] = screen.getAllByRole('button', { name: 'Settings for Prusa MK4' })
+      await userEvent.click(gear)
+      expect(await screen.findByText('Printer settings')).toBeInTheDocument()
+      expect(screen.getByText('Medium · 2×1')).toBeInTheDocument()
+    })
   })
 })

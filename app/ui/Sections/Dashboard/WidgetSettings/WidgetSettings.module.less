@@ -1,0 +1,65 @@
+// The gear menu, as on the mockup's queue settings board
+@secondary: rgba(0, 0, 0, 0.65);
+
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 232px;
+  color: rgba(0, 0, 0, 0.88);
+  text-align: left;
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+.secondary {
+  color: @secondary;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  color: @secondary;
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+.select {
+  width: 100%;
+}
+
+.show {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.toggle {
+  display: flex;
+  flex-direction: column;
+}
+
+.hint {
+  padding-left: 24px;
+  color: @secondary;
+  font-size: 12px;
+  line-height: 18px;
+}

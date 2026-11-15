@@ -47,4 +47,18 @@ describe('WidgetFrame', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Remove Prusa MK4' }))
     expect(tools.onRemove).toHaveBeenCalled()
   })
+
+  it('opens the settings from the gear', async () => {
+    render(<WidgetFrame label="Printer" edit={edit({ settings: <span>Printer settings</span> })}>widget</WidgetFrame>)
+    const gear = screen.getByRole('button', { name: 'Settings for Prusa MK4' })
+    expect(gear).toHaveAttribute('aria-expanded', 'false')
+    await userEvent.click(gear)
+    expect(await screen.findByText('Printer settings')).toBeInTheDocument()
+    expect(gear).toHaveAttribute('aria-expanded', 'true')
+  })
+
+  it('has no gear for a widget without settings', () => {
+    render(<WidgetFrame label="Printer" edit={edit()}>widget</WidgetFrame>)
+    expect(screen.queryByRole('button', { name: /Settings for/ })).not.toBeInTheDocument()
+  })
 })

@@ -2,6 +2,7 @@ import PrinterTile from './Printer/PrinterTile'
 import PrinterWidget from './Printer/PrinterWidget'
 import PrintQueueTile from './PrintQueue/PrintQueueTile'
 import PrintQueueWidget from './PrintQueue/PrintQueueWidget'
+import WidgetSettings from '../WidgetSettings/WidgetSettings'
 
 // S to XXL are UI names for a widget's span; the API stores widthUnits and heightUnits
 export const SIZES = {
@@ -45,7 +46,7 @@ const optionsFor = (options) => (size) => options.filter((option) => option.size
 // - optionKeys: every option it saves; optionsInput: its key in saveDashboard's one-of options input
 // - Component: renders a widget of the layout from the dashboard's data ({ widget, size, data })
 // - Preview: the presentational widget, for fixture data (the gallery)
-// - SettingsForm: the gear menu's form (edit mode)
+// - SettingsForm: the gear menu's form (edit mode), named by `settings` ({ title, pickerLabel, allPrinters })
 export const REGISTRY = {
   PRINTER: {
     name: 'Printer',
@@ -61,7 +62,8 @@ export const REGISTRY = {
     optionsInput: 'printer',
     Component: PrinterTile,
     Preview: PrinterWidget,
-    SettingsForm: null
+    SettingsForm: WidgetSettings,
+    settings: { title: 'Printer settings', pickerLabel: 'Printer', allPrinters: false }
   },
   PRINT_QUEUE: {
     name: 'Print Queue',
@@ -74,6 +76,7 @@ export const REGISTRY = {
     optionsInput: 'printQueue',
     Component: PrintQueueTile,
     Preview: PrintQueueWidget,
-    SettingsForm: null
+    SettingsForm: WidgetSettings,
+    settings: { title: 'Print queue settings', pickerLabel: 'Queue', allPrinters: true }
   }
 }
