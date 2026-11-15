@@ -71,5 +71,10 @@ module RootOperations
       Rails.logger.warn("[octoprintName] Could not get OctoPrint's name at #{octoprint_uri.inspect}: #{e.class}")
       nil
     end
+
+    field :monitor_healthy, Boolean, null: false,
+                                     resolver_method: :monitor_healthy?,
+                                     description: 'Whether the printer monitor reported in the last 15 seconds'
+    delegate :monitor_healthy?, to: :PrinterStatusStore
   end
 end
