@@ -27,5 +27,18 @@ module Types
       dataloader.with(Sources::PrinterStatusSource).load(object.id) ||
         ::PrinterStatus.unknown(printer_id: object.id, last_seen_at: object.last_seen_at)
     end
+
+    field :can_start_next, Boolean,
+          null: false, resolver_method: :can_start_next?,
+          description: 'Whether startNextPrint would start the next job of the queue: the printer is OPERATIONAL ' \
+                       '(as last reported by the printer monitor), its queue is not empty and it has no active job'
+    # Batched: one Redis MGET and one grouped SQL query for all the printers of a query, never OctoPrint
+    def can_start_next?
+      status_request = dataloader.with(Sources::PrinterStatusSource).request(object.id)
+      jobs_request = dataloader.with(Sources::PrinterJobsSource).request(object.id)
+      state_family = status_request.load&.state_family || ::PrinterStateFamily::Offline
+      jobs = jobs_request.load
+      ::Printer.start_next_allowed?(state_family:, enqueued: jobs.enqueued, active: jobs.active)
+    end
   end
 end

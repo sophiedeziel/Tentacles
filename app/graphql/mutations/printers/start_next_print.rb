@@ -1,21 +1,41 @@
+# typed: true
 # frozen_string_literal: true
 
 module Mutations
   module Printers
-    class StartNextPrint < Base::Mutation
+    # Asks the spooler to start the next job of a printer's queue, when Printer.start_next_allowed? with the LIVE
+    # state read from OctoPrint (Printer.canStartNext uses the monitor's last snapshot instead).
+    class StartNextPrint < PrinterAction
       description 'Mutation to start the next print in the queue for a printer'
 
-      argument :printer_id, ID, required: true
+      private
 
-      field :success, Boolean, null: false
+      def refusal(printer, family)
+        blocker = ::Printer.start_next_blocker(state_family: family, enqueued: printer.queue.exists?,
+                                               active: printer.jobs.exists?(status: 'active'))
+        case blocker
+        when :active_job then "#{printer.name} already has an active job"
+        when :empty_queue then "#{printer.name} has nothing in its queue"
+        when :not_ready then "#{printer.name} is not ready to print"
+        end
+      end
 
-      def resolve(printer_id:)
-        printer = ::Printer.find(printer_id.to_i)
-
+      # The spooler starts the job asynchronously (and publishes the new state), so this only queues the command
+      def send_command(printer)
         printer.start_print
-        { success: true }
-      rescue StandardError
-        { success: false }
+      end
+
+      # The printer is still OPERATIONAL until the spooler uploads the file and starts it: a tick wouldn't show anything
+      def refresh_after_command?
+        false
+      end
+
+      # Publishing to the spooler goes through Redis rather than OctoPrint
+      def run(printer)
+        super
+      rescue Redis::BaseError => e
+        Rails.logger.error("[StartNextPrint] Could not publish start_print for printer #{printer.id}: #{e.message}")
+        failure(printer, "Could not ask the spooler to start #{printer.name}'s next print")
       end
     end
   end

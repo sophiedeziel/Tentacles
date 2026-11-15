@@ -103,6 +103,27 @@ class Printer < ApplicationRecord
     client
   end
 
+  # Why the next job of the queue can't be started, or nil when it can: the printer must be OPERATIONAL, with
+  # something in its queue and no active job. The single rule behind Printer.canStartNext and startNextPrint.
+  #
+  #   Printer.start_next_blocker(state_family: PrinterStateFamily::Printing, enqueued: true, active: false)
+  #   # => :not_ready
+  sig do
+    params(state_family: PrinterStateFamily, enqueued: T::Boolean, active: T::Boolean).returns(T.nilable(Symbol))
+  end
+  def self.start_next_blocker(state_family:, enqueued:, active:)
+    return :active_job if active
+    return :empty_queue unless enqueued
+    return :not_ready unless state_family == PrinterStateFamily::Operational
+
+    nil
+  end
+
+  sig { params(state_family: PrinterStateFamily, enqueued: T::Boolean, active: T::Boolean).returns(T::Boolean) }
+  def self.start_next_allowed?(state_family:, enqueued:, active:)
+    start_next_blocker(state_family:, enqueued:, active:).nil?
+  end
+
   private
 
   def api_client
