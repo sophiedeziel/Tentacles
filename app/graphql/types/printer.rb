@@ -7,17 +7,29 @@ module Types
 
     field :id, ID, null: false
     field :name, String, null: false
-    field :octoprint_uri, String, null: true
+    field :backend, Types::PrinterBackend, null: false
+    field :uri, String, null: true, description: "The URL of the printer's server"
+    field :username, String, null: true, description: 'The username, for the backends that use one (PrusaLink)'
+    field :version, String, null: true,
+                            description: 'The server and its version, e.g. "OctoPrint 1.11.2", or "Unavailable"'
+    def version
+      object.version || 'Unavailable'
+    end
+
+    field :octoprint_uri, String, null: true, deprecation_reason: 'Use `uri`'
     def octoprint_uri
       object.uri
     end
-    field :octoprint_key, String, null: true
+    # Never the PrusaLink password: only an OctoPrint printer's API key, until the field is removed
+    field :octoprint_key, String, null: true,
+                                  deprecation_reason: 'Secrets are no longer sent to the browser. ' \
+                                                      'Always null for the printers that are not OctoPrint printers.'
     def octoprint_key
-      object.readable_secret
+      object.backend == 'octoprint' ? object.readable_secret : nil
     end
-    field :octoprint_version, String, null: true
+    field :octoprint_version, String, null: true, deprecation_reason: 'Use `version`'
     def octoprint_version
-      object.version || 'Unavailable'
+      version
     end
     field :job_status, String, null: true
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false

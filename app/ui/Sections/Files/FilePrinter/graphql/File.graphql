@@ -11,7 +11,6 @@ query File($id: ID!) {
     id
     name
     octoprintUri
-    octoprintKey
     octoprintVersion
     jobStatus
     createdAt
