@@ -42,6 +42,7 @@
     "compression-webpack-plugin": "^12.0.0",
     "core-js": "^3.48.0",
     "cross-fetch": "^4.1.0",
+    "dayjs": "^1.11.11",
     "dompurify": "^3.3.0",
     "file-saver": "^2.0.5",
     "file-size": "^1.0.0",
