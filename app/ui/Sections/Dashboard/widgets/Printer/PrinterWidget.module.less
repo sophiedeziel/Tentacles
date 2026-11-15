@@ -173,3 +173,134 @@
   bottom: 0;
   height: 3px;
 }
+
+// Large and Extra Large
+.large {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+}
+
+.cameraBox {
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #1f1f1f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cameraOff {
+  composes: cameraBox;
+  background: #110028;
+  > div {
+    width: 100%;
+  }
+}
+
+.livePill {
+  composes: statePill;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.xlName {
+  composes: name;
+  font-size: 18px;
+  line-height: 26px;
+}
+
+.summary {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.largeVisual {
+  composes: visual;
+  width: 96px;
+  height: 96px;
+}
+
+.temps {
+  display: flex;
+  gap: 8px;
+}
+
+.temp {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+.tempLabel {
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 400;
+  color: @muted;
+}
+
+.next {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 20px;
+  color: @muted;
+}
+
+.actions {
+  margin-top: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.extraLarge {
+  display: flex;
+  gap: 16px;
+  height: 100%;
+}
+
+.xlVisual {
+  flex: 0 0 50%;
+  min-width: 0;
+  height: 100%;
+  > div {
+    height: 100%;
+  }
+}
+
+.xlRing {
+  height: 100%;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.xlDetails {
+  composes: large;
+  flex: 1 1 0;
+  min-width: 0;
+}
