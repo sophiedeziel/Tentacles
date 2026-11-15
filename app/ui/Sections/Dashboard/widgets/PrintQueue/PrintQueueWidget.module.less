@@ -1,0 +1,234 @@
+// The Print Queue widget, as in the mockup's "Print queue widget" board
+
+@muted: rgba(0, 0, 0, 0.65);
+@line: #f0f0f0;
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  min-height: 0;
+}
+
+.small {
+  composes: column;
+  gap: 4px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-size: 12px;
+  line-height: 20px;
+  color: @muted;
+}
+
+.title {
+  composes: ellipsis;
+  flex-grow: 1;
+  font-weight: 600;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.smallCount {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  strong {
+    font-size: 56px;
+    line-height: 64px;
+    font-weight: 600;
+  }
+
+  span {
+    font-size: 14px;
+    line-height: 22px;
+  }
+}
+
+.label {
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 600;
+  color: @muted;
+  flex-shrink: 0;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  border-bottom: 1px solid @line;
+  font-size: 14px;
+  min-width: 0;
+}
+
+.tallRow {
+  composes: row;
+  height: 36px;
+}
+
+.file {
+  composes: ellipsis;
+  flex-grow: 1;
+}
+
+.side {
+  composes: ellipsis;
+  flex-shrink: 0;
+  max-width: 50%;
+  font-size: 12px;
+  color: @muted;
+}
+
+.position {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #f5f5f5;
+  font-size: 12px;
+  line-height: 20px;
+  text-align: center;
+  color: @muted;
+}
+
+.nowDot {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+}
+
+.nowItem {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  min-width: 0;
+
+  // antd's small line Progress keeps its own margin; the item spacing comes from the column gap
+  :global(.ant-progress) {
+    margin: 0;
+    line-height: 18px;
+  }
+}
+
+.nowLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 22px;
+  min-width: 0;
+}
+
+.meta {
+  font-size: 12px;
+  line-height: 18px;
+  color: @muted;
+}
+
+.more {
+  font-size: 12px;
+  line-height: 20px;
+  color: @muted;
+  flex-shrink: 0;
+}
+
+.readyBar {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 6px 8px 6px 12px;
+  border-radius: 6px;
+  background: #f6ffed;
+  border: 1px solid #d9f7be;
+}
+
+.readyLabel {
+  composes: ellipsis;
+  flex-grow: 1;
+  font-size: 12px;
+  line-height: 20px;
+  color: rgba(0, 0, 0, 0.88);
+}
+
+.emptyText {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+
+  strong {
+    font-size: 16px;
+    line-height: 22px;
+    font-weight: 600;
+  }
+
+  span {
+    font-size: 12px;
+    line-height: 20px;
+    color: @muted;
+  }
+}
+
+.emptyIllustration {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  overflow: hidden;
+  text-align: center;
+
+  svg {
+    margin-bottom: 12px;
+  }
+
+  strong {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+  }
+
+  span {
+    font-size: 14px;
+    line-height: 22px;
+    color: rgba(0, 0, 0, 0.45);
+  }
+}
