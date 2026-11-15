@@ -27,3 +27,14 @@ CameraStream.propTypes = {
   name: PropTypes.string.isRequired,
   onError: PropTypes.func.isRequired
 }
+
+const PLACEHOLDER = {
+  ...FILL, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255, 255, 255, 0.65)', fontSize: 12
+}
+
+// Stands in for the stream where cameras never stream: edit mode and the Add Widget gallery
+export function CameraPlaceholder () {
+  return (
+    <div style={PLACEHOLDER}>Webcam stream</div>
+  )
+}

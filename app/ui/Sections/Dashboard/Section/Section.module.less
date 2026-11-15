@@ -25,6 +25,54 @@
   }
 }
 
+// A divider in edit mode
+.dividerEdit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 6px 8px;
+  border: 1px dashed #d9d9d9;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.handle {
+  display: flex;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 16px;
+  cursor: grab;
+}
+
+.titleInput {
+  width: 240px;
+  max-width: 100%;
+}
+
+.dividerLine {
+  flex: 1 1 40px;
+  height: 1px;
+  background: #d9d9d9;
+}
+
+// Where widgets go in an empty section
+.dropTile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border: 2px dashed #d3adf7;
+  border-radius: 8px;
+  background: #fcf8ff;
+  color: #531dab;
+  font-size: 12px;
+  text-align: center;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

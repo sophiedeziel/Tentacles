@@ -10,12 +10,12 @@ import { ACTIONS } from '../../graphql/actions'
 import { StreamVisibilityProvider } from '../../utils/useStreamWhenVisible'
 import { ALL_OPTIONS, FIXTURE_NOW, PRINTERS } from './fixtures'
 
-const renderTile = (family, mocks = []) => render(
+const renderTile = (family, mocks = [], extra = {}) => render(
   <MockedProvider mocks={mocks}>
     <App>
       <StreamVisibilityProvider>
         <PrinterTile size="L" widget={{ printer: { id: PRINTERS[family].id }, options: ALL_OPTIONS }}
-          data={{ printersById: { [PRINTERS[family].id]: PRINTERS[family] }, now: FIXTURE_NOW.getTime() }} />
+          data={{ printersById: { [PRINTERS[family].id]: PRINTERS[family] }, now: FIXTURE_NOW.getTime(), ...extra }} />
       </StreamVisibilityProvider>
     </App>
   </MockedProvider>
@@ -31,17 +31,28 @@ describe('PrinterTile', () => {
     expect(await screen.findByText('Kobra 2 is not reachable')).toBeInTheDocument()
   })
 
+  // Every camera is in the viewport
+  const stubVisible = () => vi.stubGlobal('IntersectionObserver', class {
+    constructor (callback) { this.callback = callback }
+    observe (target) { this.callback([{ target, isIntersecting: true }]) }
+    unobserve () {}
+    disconnect () {}
+  })
+
   it('says the camera is offline when its stream fails', () => {
-    vi.stubGlobal('IntersectionObserver', class {
-      constructor (callback) { this.callback = callback }
-      observe (target) { this.callback([{ target, isIntersecting: true }]) }
-      unobserve () {}
-      disconnect () {}
-    })
+    stubVisible()
     renderTile('PRINTING')
     fireEvent.error(screen.getByRole('img', { name: 'Prusa MK4 webcam' }))
     expect(screen.getByText('Camera offline')).toBeInTheDocument()
     expect(screen.queryByText('Live')).not.toBeInTheDocument()
+    vi.unstubAllGlobals()
+  })
+
+  it('never streams in edit mode', () => {
+    stubVisible()
+    renderTile('PRINTING', [], { editing: true })
+    expect(screen.queryByRole('img', { name: 'Prusa MK4 webcam' })).not.toBeInTheDocument()
+    expect(screen.getByText('Webcam stream')).toBeInTheDocument()
     vi.unstubAllGlobals()
   })
 

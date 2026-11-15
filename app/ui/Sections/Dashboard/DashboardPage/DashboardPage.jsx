@@ -2,6 +2,7 @@ import React, { useMemo } from 'react'
 import { Alert, App, Skeleton, Typography } from 'antd'
 import { useQuery, useSubscription } from '@apollo/client/react'
 
+import EditBar, { EditNotice } from '../EditBar/EditBar'
 import Section from '../Section/Section'
 import useDebouncedCounter from '../utils/useDebouncedCounter'
 import useNow from '../utils/useNow'
@@ -14,10 +15,13 @@ import {
   PRINT_QUEUE_CHANGED,
   PRINTER_STATUS_CHANGED
 } from '../graphql/dashboard'
+import useLayoutEditor from './useLayoutEditor'
 
 const MONITOR_POLL_INTERVAL = 15000
 // Queue widgets reload their lists this long after the last queue change
 const QUEUE_RELOAD_DELAY = 500
+
+const HEADER = { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between' }
 
 const plural = (count, one, many) => `${count} ${count === 1 ? one : many}`
 
@@ -29,8 +33,9 @@ export function summary (printers) {
     plural(queued, 'job queued', 'jobs queued')].join(' · ')
 }
 
-// The redesigned dashboard, served at /dashboard-next until it replaces the one at /. View mode only.
+// The redesigned dashboard, served at /dashboard-next until it replaces the one at /.
 // One query loads the layout and every printer; pushes keep them live, and reloads catch up on missed pushes.
+// Edit mode arranges a draft of the layout (useLayoutEditor) and saves it on Done.
 export default function DashboardPage () {
   // cache-and-network: coming back to the page never shows (and acts on) statuses cached earlier
   const { data, error, refetch } = useQuery(DASHBOARD_PAGE, { fetchPolicy: 'cache-and-network' })
@@ -59,6 +64,7 @@ export default function DashboardPage () {
     }
   })
   const now = useNow()
+  const editor = useLayoutEditor(data?.dashboard)
 
   const printers = data?.printers
   const printersById = useMemo(
@@ -72,21 +78,37 @@ export default function DashboardPage () {
   // Live: the last reloads worked and the monitor is reporting. Otherwise the controls warn that states may be old.
   const unreachable = !!(error || monitor.error)
   const live = !unreachable && (monitor.data?.monitorHealthy ?? data.monitorHealthy)
-  const widgetData = { printers, printersById, now, live, queueVersion }
+  // Cameras never stream in edit mode
+  const widgetData = { printers, printersById, now, live, queueVersion, editing: editor.editing }
+  // An untitled first section with no widgets has nothing to show
+  const sections = editor.editing
+    ? editor.sections
+    : data.dashboard.sections.filter((section) => section.title || section.widgets.length > 0)
   return (
     <App>
       <StreamVisibilityProvider>
-        <Typography.Title level={3} style={{ margin: 0 }}>Dashboard</Typography.Title>
-        <Typography.Text style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{summary(printers)}</Typography.Text>
+        <div style={HEADER}>
+          <div>
+            <Typography.Title level={3} style={{ margin: 0 }}>Dashboard</Typography.Title>
+            <Typography.Text style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{summary(printers)}</Typography.Text>
+          </div>
+          <EditBar editing={editor.editing} busy={editor.busy} onEdit={editor.start} onReset={editor.reset}
+            onAddDivider={() => editor.dispatch({ type: 'addDivider' })} onDone={editor.done} />
+        </div>
+        {editor.editing && <EditNotice />}
+        {editor.problem && (
+          <Alert type="error" showIcon style={{ marginTop: 16 }} title={editor.problem.title}
+            description={editor.problem.messages.map((message) => <div key={message}>{message}</div>)} />
+        )}
         {!live && (
           <Alert type="warning" showIcon style={{ marginTop: 16 }} title="Live data paused"
             description={unreachable
               ? "Tentacles can't be reached, so printer states may be out of date."
               : "The printer monitor isn't reporting, so printer states may be out of date."} />
         )}
-        {/* An untitled first section with no widgets has nothing to show */}
-        {data.dashboard.sections.filter((section) => section.title || section.widgets.length > 0).map((section, index) => (
-          <Section key={section.id || index} section={section} data={widgetData} />
+        {sections.map((section, index) => (
+          <Section key={section.key || section.id || index} section={section} index={index} data={widgetData}
+            editor={editor.editing ? editor : null} />
         ))}
       </StreamVisibilityProvider>
     </App>

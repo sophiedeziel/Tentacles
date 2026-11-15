@@ -1,8 +1,10 @@
 import React from 'react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { render as renderElement, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MockedProvider } from '@apollo/client/testing/react'
 import Section from './Section'
+import { draftFrom } from '../layout/layoutReducer'
 import { ALL_OPTIONS, FIXTURE_NOW, PRINTERS } from '../widgets/Printer/fixtures'
 
 // Printer tiles run their controls through Apollo
@@ -39,5 +41,42 @@ describe('Section', () => {
     expect(screen.getByText('Print Queue')).toBeInTheDocument()
     expect(screen.getByText('3')).toBeInTheDocument()
     expect(screen.queryByText('· Coming soon')).not.toBeInTheDocument()
+  })
+
+  describe('in edit mode', () => {
+    const draft = draftFrom({
+      sections: [
+        { id: '1', title: null, widgets: [printerWidget('w1', 2, 1), printerWidget('w2', 2, 1)] },
+        { id: '2', title: 'Workshop', widgets: [] },
+        { id: '3', title: 'Garage', widgets: [] }
+      ]
+    })
+    const renderEdit = (index) => {
+      const dispatch = vi.fn()
+      render(<Section data={data} section={draft[index]} index={index} editor={{ sections: draft, dispatch }} />)
+      return dispatch
+    }
+
+    it('edits a divider: its title, ▲ ▼ and Remove Divider', async () => {
+      const dispatch = renderEdit(1)
+      expect(screen.getByRole('button', { name: 'Move divider earlier' })).toBeDisabled()
+      await userEvent.type(screen.getByRole('textbox', { name: 'Section name' }), 's')
+      expect(dispatch).toHaveBeenCalledWith({ type: 'renameDivider', key: 'section-2', title: 'Workshops' })
+      await userEvent.click(screen.getByRole('button', { name: 'Move divider later' }))
+      expect(dispatch).toHaveBeenCalledWith({ type: 'stepDivider', key: 'section-2', step: 1 })
+      await userEvent.click(screen.getByRole('button', { name: 'Remove Divider' }))
+      expect(dispatch).toHaveBeenCalledWith({ type: 'removeDivider', key: 'section-2' })
+    })
+
+    it('can only move the last divider earlier', () => {
+      renderEdit(2)
+      expect(screen.getByRole('button', { name: 'Move divider earlier' })).toBeEnabled()
+      expect(screen.getByRole('button', { name: 'Move divider later' })).toBeDisabled()
+    })
+
+    it('shows where widgets go in an empty section', () => {
+      renderEdit(1)
+      expect(screen.getByText('Drag widgets here')).toBeInTheDocument()
+    })
   })
 })

@@ -3,14 +3,14 @@ import PropTypes from 'prop-types'
 import { useApolloClient } from '@apollo/client/react'
 
 import { ACTIONS } from '../../graphql/actions'
-import CameraStream from './CameraStream'
+import CameraStream, { CameraPlaceholder } from './CameraStream'
 import ControlButton from './ControlButton'
 import PrinterWidget from './PrinterWidget'
 
 const STREAM_RETRY_DELAY = 30000
 
 // A Printer widget of the layout: picks its printer out of the dashboard's data, streams its camera while it is
-// visible and wires its controls to the printer mutations
+// visible (never in edit mode) and wires its controls to the printer mutations
 export default function PrinterTile ({ widget, size, data }) {
   const client = useApolloClient()
   const printer = data.printersById[widget.printer?.id]
@@ -35,9 +35,12 @@ export default function PrinterTile ({ widget, size, data }) {
     return result[mutation].errors
   }
 
+  const cameraStream = data.editing
+    ? <CameraPlaceholder />
+    : streamUrl && <CameraStream url={streamUrl} name={printer.name} onError={() => setStreamFailed(true)} />
   return (
     <PrinterWidget printer={printer} size={size} options={widget.options} now={data.now} streamFailed={streamFailed}
-      cameraStream={streamUrl && <CameraStream url={streamUrl} name={printer.name} onError={() => setStreamFailed(true)} />}
+      cameraStream={cameraStream}
       renderAction={(action, view) => (
         <ControlButton key={action.key} action={action} view={view} onRun={run} live={data.live !== false}
           snapshot={() => ACTIONS[action.key]?.expectations?.(printer)} />
@@ -49,6 +52,6 @@ PrinterTile.propTypes = {
   widget: PropTypes.shape({ printer: PropTypes.shape({ id: PropTypes.string }), options: PropTypes.object }).isRequired,
   size: PropTypes.string.isRequired,
   data: PropTypes.shape({
-    printersById: PropTypes.object.isRequired, now: PropTypes.number.isRequired, live: PropTypes.bool
+    printersById: PropTypes.object.isRequired, now: PropTypes.number.isRequired, live: PropTypes.bool, editing: PropTypes.bool
   }).isRequired
 }
