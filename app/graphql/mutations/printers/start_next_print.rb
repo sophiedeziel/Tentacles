@@ -8,6 +8,10 @@ module Mutations
     class StartNextPrint < PrinterAction
       description 'Mutation to start the next print in the queue for a printer'
 
+      argument :expected_job_id, ID, required: false,
+                                     description: 'The next job the user confirmed for: refuses when the queue ' \
+                                                  'has another job first'
+
       private
 
       def refusal(printer, family)
@@ -18,6 +22,18 @@ module Mutations
         when :empty_queue then "#{printer.name} has nothing in its queue"
         when :not_ready then "#{printer.name} is not ready to print"
         end
+      end
+
+      # The next job changed since the user confirmed (enqueued, removed or reordered): don't start another file
+      def unexpected_job(printer, _job)
+        expected = @expected_job_id
+        return if expected.nil?
+
+        next_job = printer.next_job
+        return "#{printer.name} has nothing in its queue" if next_job.nil?
+        return if next_job.id.to_s == expected.to_s
+
+        "#{printer.name}'s next job is now #{next_job.executable.try(:filename) || next_job.name}"
       end
 
       # The spooler starts the job asynchronously (and publishes the new state), so this only queues the command

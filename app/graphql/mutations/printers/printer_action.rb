@@ -26,7 +26,10 @@ module Mutations
       field :errors, [String], null: false
       field :printer, Types::Printer, null: true
 
-      def resolve(printer_id:)
+      # The expectations are only passed by the subclasses that declare them (see unexpected_job)
+      def resolve(printer_id:, expected_file_name: nil, expected_job_id: nil)
+        @expected_file_name = T.let(expected_file_name, T.nilable(String))
+        @expected_job_id = T.let(expected_job_id, T.nilable(String))
         run(::Printer.find(printer_id))
       rescue ActiveRecord::RecordNotFound
         { success: false, errors: ['Printer not found'], printer: nil }
@@ -61,13 +64,27 @@ module Mutations
         failure(printer, octoprint_error_message(printer, e))
       end
 
-      # Checks the live state, then sends the command when it's allowed. Returns the refusal message, if any.
+      # Checks the live state (and the job the user confirmed, when given), then sends the command when it's
+      # allowed. Returns the refusal message, if any.
       sig { params(printer: ::Printer).returns(T.nilable(String)) }
       def perform(printer)
-        family = PrinterStateFamily.for(Octoprint::Job.get.state)
-        message = refusal(printer, family)
+        job = Octoprint::Job.get
+        message = refusal(printer, PrinterStateFamily.for(job.state)) || unexpected_job(printer, job)
         send_command(printer) if message.nil?
         message
+      end
+
+      # The error message when the printer's live job isn't the one the user confirmed (`expectedFileName`, the
+      # file the screen showed), or nil. A stale screen must not pause or cancel another print.
+      sig { params(printer: ::Printer, job: Octoprint::Job).returns(T.nilable(String)) }
+      def unexpected_job(printer, job)
+        expected = @expected_file_name
+        return if expected.nil?
+
+        current = job.information&.file&.[](:name)
+        return if current == expected
+
+        current ? "#{printer.name} is now printing #{current}" : "#{printer.name} is no longer printing #{expected}"
       end
 
       sig { params(printer: ::Printer, error: String).returns(T::Hash[Symbol, T.untyped]) }
