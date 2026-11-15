@@ -5,13 +5,13 @@ module PrinterMonitor
   # Runs one Worker per printer and keeps the workers in sync with the printers table.
   #
   # The printer list is re-read every 30 seconds: workers are started for new printers, stopped for removed ones
-  # (their snapshots are deleted) and restarted when a printer's OctoPrint URI or API key changed.
+  # (their snapshots are deleted) and restarted when a printer's backend or credentials changed.
   #
   # The supervisor also writes the monitor's heartbeat every 5 seconds, so that the monitor looks healthy when there
   # are no printers, or when every printer is unreachable and their workers back off for longer than that.
   #
   #   PrinterMonitor::Supervisor.new.run # Blocks until INT or TERM
-  class Supervisor
+  class Supervisor # rubocop:disable Metrics/ClassLength -- one line over since the per-printer rescue
     extend T::Sig
 
     REFRESH_INTERVAL = 30.0
@@ -31,8 +31,8 @@ module PrinterMonitor
       @steps = T.let(0, Integer)
       @heartbeat = T.let(Heartbeat.new, Heartbeat)
       @workers = T.let({}, T::Hash[Integer, Worker])
-      # The OctoPrint credentials each worker was started with
-      @credentials = T.let({}, T::Hash[Integer, [T.nilable(String), T.nilable(String)]])
+      # The credentials each worker was started with (see Printer#api_credentials)
+      @credentials = T.let({}, T::Hash[Integer, T::Array[T.nilable(String)]])
       @stop_signal = T.let(Thread::Queue.new, Thread::Queue)
     end
 
@@ -103,21 +103,25 @@ module PrinterMonitor
 
     sig { params(printer: Printer).void }
     def sync_worker(printer)
-      credentials = [printer.octoprint_uri, printer.octoprint_key]
+      credentials = printer.api_credentials
       return if @workers.key?(printer.id) && @credentials[printer.id] == credentials
 
       if @workers.key?(printer.id)
-        log("Restarting the worker of #{printer.name} (##{printer.id}), its OctoPrint credentials changed")
+        log("Restarting the worker of #{printer.name} (##{printer.id}), its credentials changed")
         stop_workers([printer.id])
       end
       start_worker(printer, credentials)
     end
 
-    sig { params(printer: Printer, credentials: [T.nilable(String), T.nilable(String)]).void }
+    sig { params(printer: Printer, credentials: T::Array[T.nilable(String)]).void }
     def start_worker(printer, credentials)
       @workers[printer.id] = @worker_factory.call(printer).start
       @credentials[printer.id] = credentials
       log("Monitoring #{printer.name} (##{printer.id})")
+    # One printer that can't be monitored (e.g. an unknown backend) doesn't keep the others from being monitored: it
+    # is retried on the next refresh
+    rescue StandardError => e
+      log("Failed to monitor #{printer.name} (##{printer.id}): #{e.class}: #{e.message}", level: :error)
     end
 
     sig { params(printer_ids: T::Array[Integer]).void }

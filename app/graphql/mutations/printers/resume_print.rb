@@ -16,8 +16,8 @@ module Mutations
         "#{printer.name} is no longer paused" unless family == PrinterStateFamily::Paused
       end
 
-      def send_command(_printer)
-        Octoprint::Job.resume
+      def send_command(printer)
+        printer.api.resume
       end
     end
   end

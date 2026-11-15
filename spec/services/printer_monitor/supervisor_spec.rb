@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+require 'support/unreadable_secret'
 
 RSpec.describe PrinterMonitor::Supervisor do
+  include UnreadableSecret
+
   let(:redis) { MockRedis.new }
   let(:started) { [] }
   let(:worker_factory) do
@@ -32,6 +35,30 @@ RSpec.describe PrinterMonitor::Supervisor do
 
       expect(supervisor.workers.keys).to contain_exactly(printer.id, other.id)
       expect(started).to all(have_received(:start))
+    end
+
+    it 'keeps starting the other workers when one printer fails' do
+      other = create(:printer, name: 'Other')
+      factory = worker_factory
+      failing = lambda do |p|
+        raise ArgumentError, 'Unknown printer backend' if p.id == printer.id
+
+        factory.call(p)
+      end
+      allow(Rails.logger).to receive(:error).and_call_original
+
+      supervisor = described_class.new(worker_factory: failing)
+      supervisor.refresh
+
+      expect(supervisor.workers.keys).to eq [other.id]
+      expect(Rails.logger).to have_received(:error).with(/Failed to monitor Printer \(##{printer.id}\): ArgumentError/)
+    end
+
+    it 'starts the worker of a printer whose secret cannot be decrypted' do
+      unreadable = make_secret_unreadable(create(:printer, name: 'Unreadable'))
+      supervisor.refresh
+
+      expect(supervisor.workers.keys).to contain_exactly(printer.id, unreadable.id)
     end
 
     it 'does not restart workers when nothing changed' do
@@ -76,7 +103,7 @@ RSpec.describe PrinterMonitor::Supervisor do
       end
     end
 
-    %i[octoprint_uri octoprint_key].each do |attribute|
+    %i[uri secret].each do |attribute|
       context "when the printer's #{attribute} changed" do
         before do
           supervisor.refresh

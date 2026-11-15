@@ -33,9 +33,16 @@ module Mutations
             expect(data['printer']).to include(
               'id' => printer.id.to_s,
               'name' => printer.name,
-              'octoprintUri' => printer.octoprint_uri,
-              'octoprintKey' => printer.octoprint_key
+              'octoprintUri' => 'http://192.168.0.15',
+              'octoprintKey' => '12345678'
             )
+          end
+
+          it 'stores the URI and the API key as the credentials of an OctoPrint printer' do
+            post '/graphql', params: { query:, variables: }
+
+            expect(Printer.last)
+              .to have_attributes(backend: 'octoprint', uri: 'http://192.168.0.15', secret: '12345678')
           end
 
           context 'with invalid arguments' do

@@ -8,10 +8,16 @@ module Types
     field :id, ID, null: false
     field :name, String, null: false
     field :octoprint_uri, String, null: true
+    def octoprint_uri
+      object.uri
+    end
     field :octoprint_key, String, null: true
+    def octoprint_key
+      object.readable_secret
+    end
     field :octoprint_version, String, null: true
     def octoprint_version
-      object.octoprint_version&.text || 'Unavailable'
+      object.version || 'Unavailable'
     end
     field :job_status, String, null: true
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false

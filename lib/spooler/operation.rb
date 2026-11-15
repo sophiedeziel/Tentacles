@@ -54,8 +54,8 @@ class Spooler
 
     private
 
-    # Polls OctoPrint until the print is over. A paused or cancelling print is still under way: its job stays active.
-    # OctoPrint errors (e.g. a network blip during a long pause) are retried; the print stops being monitored after
+    # Polls the printer until the print is over. A paused or cancelling print is still under way: its job stays active.
+    # API errors (e.g. a network blip during a long pause) are retried; the print stops being monitored after
     # MAX_POLL_FAILURES consecutive failures, rather than killing the spool thread with the job left active.
     def wait_for_print_to_finish
       failures = 0
@@ -69,27 +69,22 @@ class Spooler
       log("Gave up monitoring the print after #{failures} failed polls".red) if failures >= MAX_POLL_FAILURES
     end
 
-    # The print's state family, or nil when OctoPrint couldn't be read. Only the first failure of a streak is logged.
+    # The print's state family, or nil when the printer couldn't be read. Only the first failure of a streak is logged.
+    # Reads the state and the progress with a single request.
     def poll_print
-      job = current_octoprint_job
+      progress = @printer.api.print_progress
       @poll_failing = false
-      family = PrinterStateFamily.for(job.state)
-      printing_updates(job) if family == PrinterStateFamily::Printing
+      family = progress[:state_family]
+      printing_updates(progress[:progress]) if family == PrinterStateFamily::Printing
       family
     # A server that isn't OctoPrint can answer with HTML (JSON::ParserError) or without an `error` key (KeyError)
-    rescue Octoprint::Exceptions::Error, JSON::ParserError, KeyError => e
+    rescue PrinterBackends::Error, JSON::ParserError, KeyError => e
       log("Could not read the print's state, retrying: #{e.class}: #{e.message}".red) unless @poll_failing
       @poll_failing = true
       nil
     end
 
-    # With the printer's own client: `use` sets it for the current thread only, so concurrent prints don't mix up
-    def current_octoprint_job
-      @printer.octoprint_client.use { Octoprint::Job.get }
-    end
-
-    def printing_updates(job)
-      completion = job.progress&.completion
+    def printing_updates(completion)
       return if completion.nil? # e.g. while OctoPrint is still "Starting" the print
 
       progress = completion.ceil

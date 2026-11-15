@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'support/unreadable_secret'
+
 # Shared examples for the printer action mutations (see Mutations::Printers::PrinterAction).
 #
 # OctoPrint is stubbed at the gem boundary: Octoprint::Job.get answers with `job_state`, and the commands return true.
@@ -96,16 +98,16 @@ RSpec.shared_examples 'a printer action that fails gracefully' do |commands:|
   context 'when an error message contains the API key' do
     before do
       allow(Octoprint::Job).to receive(:get)
-        .and_raise(Octoprint::Exceptions::ConnectionError, "Failed with key #{printer.octoprint_key}")
+        .and_raise(Octoprint::Exceptions::ConnectionError, "Failed with key #{printer.secret}")
       run_mutation
     end
 
     it { expect_failure("Could not reach Prusa MK4's OctoPrint: Failed with key [FILTERED]") }
   end
 
-  [{ octoprint_key: nil }, { octoprint_key: '' }, { octoprint_uri: '' }].each do |attributes|
+  [{ secret: nil }, { secret: '' }, { uri: '' }].each do |attributes|
     context "when the printer has no OctoPrint credentials (#{attributes})" do
-      let(:printer) { create(:printer, name: 'Prusa MK4', **attributes) }
+      let(:printer) { create(:printer, :unvalidated, name: 'Prusa MK4', **attributes) }
 
       before { run_mutation }
 
@@ -117,8 +119,22 @@ RSpec.shared_examples 'a printer action that fails gracefully' do |commands:|
     end
   end
 
+  context 'when the stored API key cannot be decrypted' do
+    include UnreadableSecret
+
+    let(:printer) { make_secret_unreadable(create(:printer, name: 'Prusa MK4')) }
+
+    before { run_mutation }
+
+    it 'returns the error without calling OctoPrint' do
+      expect_failure("Prusa MK4's stored OctoPrint API key can't be read, re-enter it")
+      expect(Octoprint::Job).not_to have_received(:get)
+      expect_no_command(commands)
+    end
+  end
+
   context 'when the printer has a malformed OctoPrint URL' do
-    let(:printer) { create(:printer, name: 'Prusa MK4', octoprint_uri: 'http://octo pi.local') }
+    let(:printer) { create(:printer, name: 'Prusa MK4', uri: 'http://octo pi.local') }
 
     before do
       allow(Octoprint::Job).to receive(:get).and_call_original

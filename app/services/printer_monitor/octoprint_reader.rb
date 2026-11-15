@@ -2,12 +2,14 @@
 # frozen_string_literal: true
 
 module PrinterMonitor
-  # Reads a printer's state from its OctoPrint with the printer's own client.
+  # Reads a printer's state from its OctoPrint with the printer's own client (see PrinterBackends::Octoprint#client).
   #
-  # Every call runs in `client.use` (see Printer#octoprint_client), which sets the client for the current thread only.
+  # Every call runs in `client.use`, which sets the client for the current thread only. The OctoPrint errors that
+  # escape #status_attributes and #camera are raised as PrinterBackends errors.
   class OctoprintReader
     extend T::Sig
     include Logging
+    include Reader
 
     Temperatures = T.type_alias { [T.nilable(PrinterStatus::Temperature), T.nilable(PrinterStatus::Temperature)] }
     # Longest text kept from OctoPrint (state, error, file name)
@@ -23,21 +25,24 @@ module PrinterMonitor
     end
 
     # The job and temperatures, as PrinterStatus attributes.
-    # Raises Octoprint::Exceptions::Error (e.g. ConnectionError) when OctoPrint can't be reached.
-    sig { returns(T::Hash[Symbol, T.untyped]) }
+    # Raises PrinterBackends::Error (e.g. Unreachable) when OctoPrint can't be reached.
+    sig { override.returns(T::Hash[Symbol, T.untyped]) }
     def status_attributes
-      job = api { Octoprint::Job.get }
-      state_family = PrinterStateFamily.for(job.state)
-      hotend, bed = temperatures(state_family)
+      PrinterBackends::Octoprint.translate_errors do
+        job = api { Octoprint::Job.get }
+        state_family = PrinterStateFamily.for(job.state)
+        hotend, bed = temperatures(state_family)
 
-      job_attributes(job).merge(state_family:, hotend:, bed:)
+        job_attributes(job).merge(state_family:, hotend:, bed:)
+      end
     end
 
-    # Raises Octoprint::Exceptions::Error when the settings can't be read
-    sig { returns(PrinterStatus::Camera) }
+    # Raises PrinterBackends::Error when the settings can't be read
+    sig { override.returns(PrinterStatus::Camera) }
     def camera
-      webcam = api { Octoprint::Settings.webcam }
-      PrinterStatus::Camera.new(enabled: webcam.enabled, stream_url: stream_url(webcam.stream_url))
+      webcam = PrinterBackends::Octoprint.translate_errors { api { Octoprint::Settings.webcam } }
+      PrinterStatus::Camera.new(enabled: webcam.enabled,
+                                stream_url: PrinterBackends::Octoprint.stream_url(printer.uri, webcam.stream_url))
     end
 
     private
@@ -91,22 +96,6 @@ module PrinterMonitor
       PrinterStatus::Temperature.new(actual: data.actual&.to_f, target: data.target&.to_f, unit: TemperatureUnit::Celsius)
     end
 
-    # OctoPrint often returns the stream URL relative to its own host ("/webcam/?action=stream")
-    sig { params(url: T.nilable(String)).returns(T.nilable(String)) }
-    def stream_url(url)
-      return nil if url.blank?
-
-      base = printer.octoprint_uri.to_s
-      base = "#{base}/" unless base.end_with?('/')
-      resolved = URI.join(base, url)
-      return nil unless resolved.is_a?(URI::HTTP) # URI::HTTPS is a URI::HTTP
-
-      resolved.user = nil # Never hand the OctoPrint credentials (user:password@) to the browser
-      resolved.to_s
-    rescue URI::Error
-      nil
-    end
-
     sig { params(value: T.untyped).returns(T.nilable(String)) }
     def text(value)
       value.to_s.presence&.truncate(MAX_TEXT_LENGTH)
@@ -122,7 +111,7 @@ module PrinterMonitor
     # Raises Octoprint::Exceptions::MissingCredentialsError when the URI or the API key is blank
     sig { returns(Octoprint::Client) }
     def client
-      printer.octoprint_client
+      T.cast(printer.api, PrinterBackends::Octoprint).client
     end
   end
 end

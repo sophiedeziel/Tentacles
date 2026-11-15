@@ -8,12 +8,6 @@ module Mutations
     class ConnectPrinter < PrinterAction
       description 'Connects OctoPrint to an OFFLINE printer (autodetected port and baudrate, default profile)'
 
-      # A new hash on every call: Octoprint::Connection.connect adds the command to the hash it's given
-      sig { returns(T::Hash[Symbol, T.untyped]) }
-      def self.connection_params
-        { port: 'AUTO', baudrate: 0 }
-      end
-
       private
 
       def refusal(printer, family)
@@ -25,8 +19,8 @@ module Mutations
         end
       end
 
-      def send_command(_printer)
-        Octoprint::Connection.connect(self.class.connection_params)
+      def send_command(printer)
+        printer.api.connect
       end
     end
   end

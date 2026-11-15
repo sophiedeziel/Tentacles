@@ -78,7 +78,7 @@ RSpec.describe PrinterMonitor do
 
         refresh
 
-        expect(clients).to eq [printer.octoprint_client]
+        expect(clients).to eq [printer.api.client]
         expect(Octoprint).not_to have_received(:configure)
       end
     end
@@ -119,12 +119,12 @@ RSpec.describe PrinterMonitor do
       it 'logs a warning' do
         allow(Rails.logger).to receive(:warn).and_call_original
         refresh
-        expect(Rails.logger).to have_received(:warn).with(/Inline refresh failed: .*ConnectionError: Failed/)
+        expect(Rails.logger).to have_received(:warn).with(/Inline refresh failed: .*Unreachable: Failed/)
       end
     end
 
     context 'when the printer has no OctoPrint credentials' do
-      let(:printer) { create(:printer, octoprint_uri: '', octoprint_key: nil) }
+      let(:printer) { create(:printer, :unvalidated, uri: '', secret: nil) }
 
       it 'returns nil without raising' do
         expect(refresh).to be_nil

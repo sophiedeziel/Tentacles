@@ -36,7 +36,7 @@ module PrinterMonitor
     sig { params(printer: Printer, interval: Float).void }
     def initialize(printer, interval: self.class.default_interval)
       @printer = printer
-      @reader = T.let(OctoprintReader.new(printer), OctoprintReader)
+      @reader = T.let(Reader.for(printer), Reader)
       @webcam = T.let(WebcamTracker.new(printer, @reader), WebcamTracker)
       @connectivity = T.let(Connectivity.new(printer, interval:), Connectivity)
       @previous = T.let(nil, T.nilable(PrinterStatus))
@@ -107,7 +107,8 @@ module PrinterMonitor
 
     sig { params(error: StandardError).returns(String) }
     def error_text(error)
-      return MISSING_CREDENTIALS_TEXT if error.is_a?(Octoprint::Exceptions::MissingCredentialsError)
+      return error.message if error.is_a?(PrinterBackends::UnreadableCredentials)
+      return MISSING_CREDENTIALS_TEXT if error.is_a?(PrinterBackends::MissingCredentials)
 
       (error.message.presence || error.class.name.to_s).truncate(ERROR_TEXT_LENGTH)
     end
@@ -115,7 +116,7 @@ module PrinterMonitor
     # Only the first failure of a streak is logged, so unreachable printers don't flood the logs
     sig { params(error: StandardError).void }
     def log_failure(error)
-      if error.is_a?(Octoprint::Exceptions::Error)
+      if error.is_a?(PrinterBackends::Error)
         log(:warn, "Unreachable: #{error_text(error)}")
       else
         log_exception('Unexpected error while polling OctoPrint', error)

@@ -72,6 +72,9 @@ COPY --from=build-env $RAILS_ROOT $RAILS_ROOT
 
 RUN gem install foreman
 
+# Uploaded files and the generated SECRET_KEY_BASE (see bin/docker-run.sh): must outlive the container
+VOLUME $RAILS_ROOT/storage
+
 # Add a script to be executed every time the container starts.
 EXPOSE 8030
 

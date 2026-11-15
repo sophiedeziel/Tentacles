@@ -4,24 +4,27 @@
 class Printer < ApplicationRecord
   extend T::Sig
 
-  # Seconds to wait for OctoPrint when uploading G-code files
-  UPLOAD_OPEN_TIMEOUT = 5
-  UPLOAD_TIMEOUT = 120
+  BACKENDS = %w[octoprint].freeze
 
   has_many :jobs, class_name: 'Printer::Job', dependent: :nullify
   has_many :dashboard_widgets, dependent: :destroy
 
-  validates :name, presence: true
+  include EncryptedSecret
 
+  validates :name, presence: true
+  validates :backend, inclusion: { in: BACKENDS }
+  # Printers saved before `uri` and `secret` existed may lack them: the monitor reports their missing credentials
+  validates :uri, :secret, presence: true, on: :create
+
+  # Keeps the old columns in sync until they are dropped, so that the previous release still works after a rollback
+  before_save :mirror_octoprint_credentials
+
+  # The job under way: the active job of the queue, or the job the printer reports (`{ name:, progress: }`).
+  # nil when there is none or when it can't be read.
   def current_job
     jobs.find_by(status: 'active') || using_api do
-      data = Octoprint::Job.get
-      # Missing job info raises here and falls through to the rescue below (=> nil)
-      file = T.must(T.must(data.information).file)
-      {
-        name: file[:name],
-        progress: T.must(T.must(data.progress).completion).round(1)
-      }
+      job = api.current_job
+      job&.merge(progress: job[:progress].round(1))
     end
   rescue StandardError
     nil
@@ -33,15 +36,17 @@ class Printer < ApplicationRecord
     'printer_'
   end
 
-  def octoprint_version
+  # e.g. "OctoPrint 1.11.2", cached for 2 hours
+  def version
     using_api(cache: 2.hours) do
-      Octoprint::ServerVersion.get
+      api.version
     end
   end
+  alias octoprint_version version
 
   def job_status
     using_api do
-      Octoprint::Job.get.state
+      api.job_status
     end
   end
 
@@ -51,22 +56,19 @@ class Printer < ApplicationRecord
 
   # Errors (including timeouts) are raised to the caller: an upload must not fail silently, nor mark the printer
   # as disconnected, so this doesn't go through using_api and its cache.
-  sig { params(file: String, options: T.untyped).returns(Octoprint::Files::OperationResult) }
-  def upload(file, options: {})
-    upload_client.use do
-      Octoprint::Files.upload(file, **options)
-    end
+  sig { params(path: String, print: T::Boolean).void }
+  def upload(path, print: false)
+    api.upload(path, print:)
   end
 
+  # Runs the block (which calls #api) unless the printer was found unreachable in the last 10 minutes, caching its
+  # result for `cache` seconds. Returns nil, and remembers it for 10 minutes, when the printer can't be reached.
+  # Returns nil too when the stored secret can't be decrypted. Other errors are raised.
   def using_api(cache: false, &)
     method = T.must(T.must(caller[0])[/'.*'/])[1..-2]
-    OctoprintCache.use_cache(id:, method:, time: cache) do
-      api_client.use(&)
-    end
-  rescue Octoprint::Exceptions::ConnectionError => e
-    Rails.logger.error("Failed to get OctoPrint data for #{name} :\n\t#{e.message}")
-    OctoprintCache.set_disconnected(id)
-    nil
+    PrinterApiCache.use_cache(id:, method:, time: cache, &)
+  rescue PrinterBackends::Unreachable, PrinterBackends::UnreadableCredentials => e
+    api_unavailable(e)
   end
 
   def queue
@@ -87,21 +89,26 @@ class Printer < ApplicationRecord
     end
   end
 
-  # The printer's own OctoPrint client, for `printer.octoprint_client.use { Octoprint::Job.get }`.
-  # `use` sets the client for the current thread only: the gem's global configuration is never touched.
-  # Raises Octoprint::Exceptions::MissingCredentialsError when the URI or the API key is blank.
+  # The printer's API adapter (see PrinterBackends::Base): `printer.api.pause`, `printer.api.state_family`, ...
+  # The adapter holds the printer's own clients: the client gems' global configuration is never touched.
   #
-  # Rebuilt when the URI or the API key changed (e.g. after a `reload` in the long-lived spooler).
-  sig { returns(Octoprint::Client) }
-  def octoprint_client
-    credentials = [octoprint_uri.presence, octoprint_key.presence]
-    client = @octoprint_client
-    return client if client && @octoprint_client_credentials == credentials
+  # Rebuilt when the backend or the credentials changed (e.g. after a `reload` in the long-lived spooler).
+  sig { returns(PrinterBackends::Base) }
+  def api
+    credentials = api_credentials
+    adapter = @api
+    return adapter if adapter && @api_credentials == credentials
 
-    client = Octoprint::Client.new(host: credentials[0], api_key: credentials[1]) # Raises before anything is cached
-    @octoprint_client_credentials = T.let(credentials, T.nilable(T::Array[T.nilable(String)]))
-    @octoprint_client = T.let(client, T.nilable(Octoprint::Client))
-    client
+    adapter = PrinterBackends.for(self)
+    @api_credentials = T.let(credentials, T.nilable(T::Array[T.nilable(String)]))
+    @api = T.let(adapter, T.nilable(PrinterBackends::Base))
+    adapter
+  end
+
+  # What the API adapter is built from: when they change, so does the adapter (and the monitor's worker)
+  sig { returns(T::Array[T.nilable(String)]) }
+  def api_credentials
+    [backend, uri, username, readable_secret]
   end
 
   # Why the next job of the queue can't be started, or nil when it can: the printer must be OPERATIONAL, with
@@ -127,13 +134,21 @@ class Printer < ApplicationRecord
 
   private
 
-  def api_client
-    @api_client ||= Octoprint::Client.new(host: octoprint_uri, api_key: octoprint_key)
+  sig { params(error: PrinterBackends::Error).returns(NilClass) }
+  def api_unavailable(error)
+    Rails.logger.error("Failed to get #{api.product_name} data for #{name} :\n\t#{error.message}")
+    PrinterApiCache.set_disconnected(id) if error.is_a?(PrinterBackends::Unreachable)
+    nil
   end
 
-  # Large G-code files take much longer to upload than the API client's 3 seconds read timeout
-  def upload_client
-    @upload_client ||= Octoprint::Client.new(host: octoprint_uri, api_key: octoprint_key,
-                                             open_timeout: UPLOAD_OPEN_TIMEOUT, timeout: UPLOAD_TIMEOUT)
+  # Until the cleanup drops them, `octoprint_uri` and `octoprint_key` mirror `uri` and `secret`. A blank or unreadable
+  # value never erases the old one: the previous release would lose credentials it could still use.
+  sig { void }
+  def mirror_octoprint_credentials
+    return unless backend == 'octoprint'
+
+    self.octoprint_uri = uri if uri.present?
+    key = readable_secret
+    self.octoprint_key = key if key.present?
   end
 end

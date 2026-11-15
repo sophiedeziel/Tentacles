@@ -16,7 +16,7 @@ module PrinterMonitor
     sig { returns(PrinterStatus::Camera) }
     attr_reader :camera
 
-    sig { params(printer: Printer, reader: OctoprintReader).void }
+    sig { params(printer: Printer, reader: Reader).void }
     def initialize(printer, reader)
       @printer = printer
       @reader = reader
@@ -24,7 +24,7 @@ module PrinterMonitor
       @fetched_at = T.let(nil, T.nilable(PrinterStatus::TimeLike))
     end
 
-    # Fetches the webcam settings when they are due. Never raises an OctoPrint error or a bad response error.
+    # Fetches the webcam settings when they are due. Never raises a printer API error or a bad response error.
     sig { void }
     def refresh
       return unless due?
@@ -32,7 +32,7 @@ module PrinterMonitor
       @fetched_at = Time.current
       @camera = @reader.camera
     # A server that isn't OctoPrint can answer with HTML (JSON::ParserError) or without an `error` key (KeyError)
-    rescue Octoprint::Exceptions::Error, JSON::ParserError, KeyError => e
+    rescue PrinterBackends::Error, JSON::ParserError, KeyError => e
       log_exception('Failed to read the webcam settings', e)
     end
 

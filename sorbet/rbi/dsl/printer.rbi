@@ -540,6 +540,51 @@ class Printer
   end
 
   module GeneratedAttributeMethods
+    sig { returns(::String) }
+    def backend; end
+
+    sig { params(value: ::String).returns(::String) }
+    def backend=(value); end
+
+    sig { returns(T::Boolean) }
+    def backend?; end
+
+    sig { returns(T.nilable(::String)) }
+    def backend_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def backend_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def backend_came_from_user?; end
+
+    sig { returns(T.nilable([::String, ::String])) }
+    def backend_change; end
+
+    sig { returns(T.nilable([::String, ::String])) }
+    def backend_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def backend_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def backend_in_database; end
+
+    sig { returns(T.nilable([::String, ::String])) }
+    def backend_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def backend_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def backend_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def backend_was; end
+
+    sig { void }
+    def backend_will_change!; end
+
     sig { returns(::ActiveSupport::TimeWithZone) }
     def created_at; end
 
@@ -856,6 +901,9 @@ class Printer
     def octoprint_uri_will_change!; end
 
     sig { void }
+    def restore_backend!; end
+
+    sig { void }
     def restore_created_at!; end
 
     sig { void }
@@ -877,7 +925,22 @@ class Printer
     def restore_octoprint_uri!; end
 
     sig { void }
+    def restore_secret!; end
+
+    sig { void }
     def restore_updated_at!; end
+
+    sig { void }
+    def restore_uri!; end
+
+    sig { void }
+    def restore_username!; end
+
+    sig { returns(T.nilable([::String, ::String])) }
+    def saved_change_to_backend; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_backend?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { returns(T.nilable([::ActiveSupport::TimeWithZone, ::ActiveSupport::TimeWithZone])) }
     def saved_change_to_created_at; end
@@ -921,11 +984,74 @@ class Printer
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def saved_change_to_octoprint_uri?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_secret; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_secret?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
     sig { returns(T.nilable([::ActiveSupport::TimeWithZone, ::ActiveSupport::TimeWithZone])) }
     def saved_change_to_updated_at; end
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def saved_change_to_updated_at?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_uri; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_uri?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_username; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_username?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def secret; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def secret=(value); end
+
+    sig { returns(T::Boolean) }
+    def secret?; end
+
+    sig { returns(T.nilable(::String)) }
+    def secret_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def secret_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def secret_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def secret_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def secret_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def secret_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def secret_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def secret_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def secret_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def secret_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def secret_was; end
+
+    sig { void }
+    def secret_will_change!; end
 
     sig { returns(::ActiveSupport::TimeWithZone) }
     def updated_at; end
@@ -972,6 +1098,99 @@ class Printer
     sig { void }
     def updated_at_will_change!; end
 
+    sig { returns(T.nilable(::String)) }
+    def uri; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def uri=(value); end
+
+    sig { returns(T::Boolean) }
+    def uri?; end
+
+    sig { returns(T.nilable(::String)) }
+    def uri_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def uri_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def uri_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def uri_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def uri_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def uri_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def uri_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def uri_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def uri_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def uri_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def uri_was; end
+
+    sig { void }
+    def uri_will_change!; end
+
+    sig { returns(T.nilable(::String)) }
+    def username; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def username=(value); end
+
+    sig { returns(T::Boolean) }
+    def username?; end
+
+    sig { returns(T.nilable(::String)) }
+    def username_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def username_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def username_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def username_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def username_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def username_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def username_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def username_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def username_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def username_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def username_was; end
+
+    sig { void }
+    def username_will_change!; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_backend?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def will_save_change_to_created_at?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
@@ -994,7 +1213,16 @@ class Printer
     def will_save_change_to_octoprint_uri?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_secret?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def will_save_change_to_updated_at?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_uri?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_username?(from: T.unsafe(nil), to: T.unsafe(nil)); end
   end
 
   module GeneratedRelationMethods

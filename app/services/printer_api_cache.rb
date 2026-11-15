@@ -1,10 +1,15 @@
 # frozen_string_literal: true
 
-module OctoprintCache
+# Caches printer API answers in Redis (see Printer#using_api), and remembers for 10 minutes that a printer couldn't
+# be reached so that the API isn't called again in the meantime.
+#
+# Only JSON values are cached (strings, numbers, hashes, arrays, nil): they come back as they were stored, with
+# symbolized hash keys.
+module PrinterApiCache
   def self.use_cache(id:, method:, time:, &)
     return Rails.logger.info("Printer #{id} is disconnected, not calling API") && nil if disconnected?(id)
 
-    key = "printer_#{id}_#{method}"
+    key = "printer_api_#{id}_#{method}"
     return Rails.logger.info("Not using cache for #{key}") && yield if time.nil?
 
     cached = get_cache(key)
@@ -39,23 +44,15 @@ module OctoprintCache
     end
   end
 
-  def self.serialize(object)
-    { value: object, object_type: object.class }
+  def self.serialize(value, time)
+    { value:, expiration: (Time.zone.now + time).to_i }.to_json
   end
 
   def self.deserialize(json)
     result = JSON.parse(json).deep_symbolize_keys
+    return nil unless result.present? && result[:expiration].to_i > Time.now.to_i
 
-    if result.present? && result[:expiration] > Time.now.to_i
-      case result[:object_type]
-      when 'NilClass'
-        return result[:value]
-      else
-        return result[:object_type].constantize.new(**result[:value])
-      end
-    end
-
-    nil
+    result[:value]
   end
 
   def self.get_cache(key)
@@ -70,7 +67,7 @@ module OctoprintCache
 
     Rails.logger.info("Storing #{key} in cache")
     REDIS_POOL.with do |conn|
-      conn.set(key, serialize(value).merge(expiration: (Time.zone.now + time).to_i).to_json)
+      conn.set(key, serialize(value, time))
     end
   end
 

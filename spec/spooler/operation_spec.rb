@@ -138,8 +138,8 @@ RSpec.describe Spooler::Print do
 
       operation.execute
 
-      expect(clients).to eq [printer.octoprint_client, printer.octoprint_client]
-      expect(clients.first).to have_attributes(host: printer.octoprint_uri, api_key: printer.octoprint_key)
+      expect(clients).to eq [printer.api.client, printer.api.client]
+      expect(clients.first).to have_attributes(host: printer.uri, api_key: printer.secret)
       expect(Octoprint).not_to have_received(:configure)
       expect(Octoprint.client).to be client_before
     end
