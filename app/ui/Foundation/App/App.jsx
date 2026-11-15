@@ -13,6 +13,7 @@ import {
 } from 'react-router'
 
 import { setContext } from '@apollo/client/link/context'
+import { POSSIBLE_TYPES, TYPE_POLICIES } from '../../Sections/Dashboard/graphql/dashboard'
 
 const cable = createConsumer()
 
@@ -47,7 +48,7 @@ const link = ApolloLink.split(
 
 const client = new ApolloClient({
   link,
-  cache: new InMemoryCache()
+  cache: new InMemoryCache({ possibleTypes: POSSIBLE_TYPES, typePolicies: TYPE_POLICIES })
 })
 
 function App () {
