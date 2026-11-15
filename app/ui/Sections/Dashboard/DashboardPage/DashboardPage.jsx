@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Alert, App, Skeleton, Typography } from 'antd'
 import { useQuery, useSubscription } from '@apollo/client/react'
 
+import AddWidgetModal from '../AddWidget/AddWidgetModal'
 import EditBar, { EditNotice } from '../EditBar/EditBar'
 import Section from '../Section/Section'
 import EditableSections from './EditableSections'
@@ -66,6 +67,7 @@ export default function DashboardPage () {
   })
   const now = useNow()
   const editor = useLayoutEditor(data?.dashboard)
+  const [gallery, setGallery] = useState(false)
 
   const printers = data?.printers
   const printersById = useMemo(
@@ -92,7 +94,8 @@ export default function DashboardPage () {
             <Typography.Text style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{summary(printers)}</Typography.Text>
           </div>
           <EditBar editing={editor.editing} busy={editor.busy} onEdit={editor.start} onReset={editor.reset}
-            onAddDivider={() => editor.dispatch({ type: 'addDivider' })} onDone={editor.done} />
+            onAddDivider={() => editor.dispatch({ type: 'addDivider' })} onAddWidget={() => setGallery(true)}
+            onDone={editor.done} />
         </div>
         {editor.editing && <EditNotice />}
         {editor.problem && (
@@ -113,6 +116,8 @@ export default function DashboardPage () {
               <Section key={section.id || index} section={section} index={index} data={widgetData} />
             ))}
         </div>
+        <AddWidgetModal open={editor.editing && gallery} printers={printers} dispatch={editor.dispatch}
+          onClose={() => setGallery(false)} />
       </StreamVisibilityProvider>
     </App>
   )

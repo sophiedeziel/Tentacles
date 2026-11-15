@@ -1,0 +1,133 @@
+// The Add Widget gallery, as on the mockup's gallery board
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.entry {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 0;
+  border-top: 1px solid #f0f0f0;
+}
+
+.name {
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+.sizes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 20px;
+}
+
+.choice {
+  position: relative;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+
+    .scaled {
+      filter: drop-shadow(0 6px 12px rgba(17, 0, 40, 0.12));
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid #722ed1;
+    outline-offset: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+// The widget at full size, scaled down
+.scaled {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  text-align: left;
+  transform: scale(0.6);
+  transform-origin: top left;
+  pointer-events: none;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 209px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(0, 0, 0, 0.88);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid #722ed1;
+    outline-offset: 4px;
+  }
+}
+
+.line {
+  flex-grow: 1;
+  height: 1px;
+  background: #d9d9d9;
+}
+
+.question {
+  margin: 0 0 8px;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.printer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 12px;
+  border: 0;
+  border-top: 1px solid #f0f0f0;
+  background: #fff;
+  color: rgba(0, 0, 0, 0.88);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: #f9f0ff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #722ed1;
+    outline-offset: -2px;
+  }
+}
+
+.back {
+  margin-top: 12px;
+}
