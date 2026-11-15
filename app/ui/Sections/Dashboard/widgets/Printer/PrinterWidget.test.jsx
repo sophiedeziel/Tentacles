@@ -93,6 +93,16 @@ describe('PrinterWidget', () => {
       expect(screen.getByRole('button', { name: 'Reconnect' })).toBeInTheDocument()
     })
 
+    it('says a PrusaLink printer has no camera, without pointing to OctoPrint or offering Reconnect', () => {
+      render(
+        <PrinterWidget printer={{ ...PRINTERS.ERROR, backend: 'PRUSALINK' }} size="L" options={ALL_OPTIONS}
+          now={FIXTURE_NOW} />
+      )
+      expect(screen.getByText('No camera')).toBeInTheDocument()
+      expect(screen.queryByText(/OctoPrint/)).not.toBeInTheDocument()
+      expect(screen.queryByRole('button')).not.toBeInTheDocument()
+    })
+
     it.each([
       ['PAUSED', ['Resume', 'Cancel']],
       ['OPERATIONAL', ['Start Next']],
