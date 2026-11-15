@@ -1,6 +1,6 @@
 import React from 'react'
 import { describe, expect, it } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MockedProvider } from '@apollo/client/testing/react'
 import { InMemoryCache, gql } from '@apollo/client'
@@ -151,6 +151,16 @@ describe('DashboardPage', () => {
       expect(screen.getByText("Section 3: Title can't be blank")).toBeInTheDocument()
       // Still editing (antd keeps the loading icon until its exit animation, which jsdom never ends)
       expect(screen.getByRole('button', { name: /Done/ })).toBeInTheDocument()
+    })
+
+    it('adds a widget from the gallery at the end of the last section', async () => {
+      await editPage([])
+      await userEvent.click(screen.getByRole('button', { name: /Add Widget/ }))
+      await userEvent.click(await screen.findByRole('button', { name: 'Choose Printer, Small' }))
+      await userEvent.click(screen.getByRole('button', { name: 'Add Printer (Small) widget for Prusa MK4' }))
+      const garage = screen.getByRole('region', { name: 'Garage' })
+      expect(within(garage).getAllByRole('button', { name: /^Remove Prusa/ }).map((button) => button.getAttribute('aria-label')))
+        .toEqual(['Remove Prusa Mini+', 'Remove Prusa MK4'])
     })
 
     it('clicks a widget tool with the keyboard instead of picking the widget up', async () => {
