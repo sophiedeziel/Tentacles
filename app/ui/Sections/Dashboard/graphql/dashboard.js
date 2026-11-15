@@ -50,6 +50,25 @@ export const DASHBOARD_PAGE = gql`
   ${PRINTER_FIELDS}
 `
 
+// Reset Layout: the default layout, unsaved (every id is null)
+export const DEFAULT_DASHBOARD = gql`
+  query DashboardDefault {
+    defaultDashboard { ...DashboardLayoutFields }
+  }
+  ${LAYOUT_FIELDS}
+`
+
+// Done: replaces the whole layout. `dashboard` is null and `errors` says why when nothing was saved.
+export const SAVE_DASHBOARD = gql`
+  mutation SaveDashboard($sections: [DashboardSectionInput!]!) {
+    saveDashboard(input: { sections: $sections }) {
+      dashboard { ...DashboardLayoutFields }
+      errors
+    }
+  }
+  ${LAYOUT_FIELDS}
+`
+
 // Polled, so the "Live data paused" banner shows up when the monitor stops after the page loaded
 export const MONITOR_HEALTHY = gql`
   query DashboardMonitorHealthy {

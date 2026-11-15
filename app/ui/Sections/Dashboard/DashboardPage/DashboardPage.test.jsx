@@ -1,13 +1,14 @@
 import React from 'react'
 import { describe, expect, it } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MockedProvider } from '@apollo/client/testing/react'
 import { InMemoryCache, gql } from '@apollo/client'
 
 import DashboardPage, { summary } from './DashboardPage'
 import {
-  DASHBOARD_CHANGED, DASHBOARD_PAGE, MONITOR_HEALTHY, POSSIBLE_TYPES, PRINT_QUEUE_CHANGED, PRINTER_STATUS_CHANGED,
-  TYPE_POLICIES
+  DASHBOARD_CHANGED, DASHBOARD_PAGE, DEFAULT_DASHBOARD, MONITOR_HEALTHY, POSSIBLE_TYPES, PRINT_QUEUE_CHANGED,
+  PRINTER_STATUS_CHANGED, SAVE_DASHBOARD, TYPE_POLICIES
 } from '../graphql/dashboard'
 import { ALL_OPTIONS, PRINTERS } from '../widgets/Printer/fixtures'
 
@@ -51,7 +52,7 @@ const queuePush = {
   nextJob: { __typename: 'EnqueuedJob', id: 'phone_stand.gcode', executable: { __typename: 'File', id: 'phone_stand.gcode', filename: 'phone_stand.gcode' } }
 }
 
-const renderPage = (data, monitorMock = { result: { data: { monitorHealthy: data.monitorHealthy } } }, queueDelay = 60000) => render(
+const renderPage = (data, monitorMock = { result: { data: { monitorHealthy: data.monitorHealthy } } }, queueDelay = 60000, mocks = []) => render(
   <MockedProvider
     cache={new InMemoryCache({ possibleTypes: POSSIBLE_TYPES, typePolicies: TYPE_POLICIES })}
     mocks={[
@@ -59,7 +60,8 @@ const renderPage = (data, monitorMock = { result: { data: { monitorHealthy: data
       { request: { query: MONITOR_HEALTHY }, ...monitorMock, maxUsageCount: 10 },
       { request: { query: PRINTER_STATUS_CHANGED }, result: { data: { printerStatusChanged: typed(PRINTERS.PAUSED) } }, delay: 60000 },
       { request: { query: DASHBOARD_CHANGED }, result: { data: { dashboardChanged: data.dashboard } }, delay: 60000 },
-      { request: { query: PRINT_QUEUE_CHANGED }, result: { data: { printQueueChanged: queuePush } }, delay: queueDelay }
+      { request: { query: PRINT_QUEUE_CHANGED }, result: { data: { printQueueChanged: queuePush } }, delay: queueDelay },
+      ...mocks
     ]}
   >
     <DashboardPage />
@@ -98,6 +100,72 @@ describe('DashboardPage', () => {
     expect(await screen.findByText('2 printers · 1 printing · 5 jobs queued')).toBeInTheDocument()
     expect(await screen.findByText('2 printers · 1 printing · 4 jobs queued')).toBeInTheDocument()
     expect(screen.getByText('Up next: phone_stand.gcode')).toBeInTheDocument()
+  })
+
+  describe('edit mode', () => {
+    const printerInput = (id, printerId) => ({
+      id, type: 'PRINTER', widthUnits: 2, heightUnits: 1, printerId, options: { printer: { ...ALL_OPTIONS, camera: false } }
+    })
+    // The page's layout with a divider added
+    const sections = [
+      { id: '1', title: null, widgets: [printerInput('w1', '1')] },
+      { id: '2', title: 'Garage', widgets: [printerInput('w2', '4')] },
+      { id: null, title: 'New Section', widgets: [] }
+    ]
+    const save = (result, delay = 0) => ({
+      request: { query: SAVE_DASHBOARD, variables: { sections } }, result: { data: { saveDashboard: result } }, delay
+    })
+    const editPage = async (mocks) => {
+      renderPage(page(), undefined, 60000, mocks)
+      await userEvent.click(await screen.findByRole('button', { name: /Edit Dashboard/ }))
+    }
+
+    it('saves the draft on Done and leaves edit mode', async () => {
+      const saved = page().dashboard
+      saved.sections.push({ __typename: 'DashboardSection', id: '3', title: 'New Section', widgets: [] })
+      await editPage([save({ __typename: 'SaveDashboardPayload', dashboard: saved, errors: [] }, 200)])
+      expect(screen.getByText(/Drag a widget and the dashboard rearranges/)).toBeInTheDocument()
+      await userEvent.click(screen.getByRole('button', { name: 'Add Divider' }))
+      expect(screen.getAllByRole('textbox', { name: 'Section name' }).map((input) => input.value)).toEqual(['Garage', 'New Section'])
+      await userEvent.click(screen.getByRole('button', { name: 'Done' }))
+      // The draft can't change while it saves
+      expect(screen.getByRole('region', { name: 'Garage' }).closest('[inert]')).not.toBeNull()
+      expect(await screen.findByRole('button', { name: /Edit Dashboard/ })).toBeInTheDocument()
+      expect(screen.getByText('New Section')).toBeInTheDocument()
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+    })
+
+    it('asks for a title on every divider before saving', async () => {
+      await editPage([])
+      await userEvent.clear(screen.getByRole('textbox', { name: 'Section name' }))
+      await userEvent.click(screen.getByRole('button', { name: 'Done' }))
+      expect(screen.getByText('Every divider needs a title')).toBeInTheDocument()
+      expect(screen.getByRole('textbox', { name: 'Section name' })).toHaveClass('ant-input-status-error')
+    })
+
+    it('shows why the layout was not saved and keeps editing', async () => {
+      await editPage([save({ __typename: 'SaveDashboardPayload', dashboard: null, errors: ["Section 3: Title can't be blank"] })])
+      await userEvent.click(screen.getByRole('button', { name: 'Add Divider' }))
+      await userEvent.click(screen.getByRole('button', { name: 'Done' }))
+      expect(await screen.findByText("The layout wasn't saved")).toBeInTheDocument()
+      expect(screen.getByText("Section 3: Title can't be blank")).toBeInTheDocument()
+      // Still editing (antd keeps the loading icon until its exit animation, which jsdom never ends)
+      expect(screen.getByRole('button', { name: /Done/ })).toBeInTheDocument()
+    })
+
+    it('loads the default layout into the draft on Reset Layout', async () => {
+      const defaults = {
+        __typename: 'Dashboard',
+        updatedAt: null,
+        sections: [{ __typename: 'DashboardSection', id: null, title: null, widgets: [{ ...widget(null, '4', 2, 1) }] }]
+      }
+      await editPage([{ request: { query: DEFAULT_DASHBOARD }, result: { data: { defaultDashboard: defaults } } }])
+      expect(screen.getByRole('textbox', { name: 'Section name' })).toBeInTheDocument()
+      await userEvent.click(screen.getByRole('button', { name: 'Reset Layout' }))
+      await waitFor(() => expect(screen.queryByRole('textbox', { name: 'Section name' })).not.toBeInTheDocument())
+      expect(screen.getByText('Prusa Mini+')).toBeInTheDocument()
+      expect(screen.queryByText('Prusa MK4')).not.toBeInTheDocument()
+    })
   })
 
   describe('cache', () => {
