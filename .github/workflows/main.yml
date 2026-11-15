@@ -35,6 +35,7 @@ jobs:
               - 'spec/**/*'
             javascript:
               - '**/*.js'
+              - '**/*.mjs'
               - '**/*.jsx'
               - '**/*.ts'
               - '**/*.tsx'
@@ -181,7 +182,7 @@ jobs:
 
           echo "All vulnerabilities are pre-existing — not blocking this PR."
 
-  # JavaScript linting and asset compilation combined
+  # JavaScript linting, tests and asset compilation combined
   javascript-and-assets:
     needs: changes
     if: needs.changes.outputs.javascript == 'true' || github.ref == 'refs/heads/main'
@@ -199,6 +200,9 @@ jobs:
       
       - name: Lint Javascript files
         run: bin/yarn run eslint app/ui/**/*.jsx
+
+      - name: Run Javascript tests
+        run: bin/yarn test
       
       - name: Compile assets (js and css)
         run: bin/rails shakapacker:compile

@@ -7,6 +7,7 @@ import {
 } from 'react-router'
 
 const Dashboard = lazy(() => import('../../Sections/Dashboard/Dashboard'))
+const DashboardPage = lazy(() => import('../../Sections/Dashboard/DashboardPage/DashboardPage'))
 const PrintersList = lazy(() => import('../../Sections/Printers/PrintersList/PrintersList'))
 const PrinterAdd = lazy(() => import('../../Sections/Printers/PrinterAdd/PrinterAdd'))
 const QueuesList = lazy(() => import('../../Sections/Printers/QueuesList/QueuesList'))
@@ -20,6 +21,7 @@ export default function AppSwithcer () {
     <Suspense fallback={<div>Loading...</div>}>
       <Routes>
           <Route path="/" element={<Dashboard />}/>
+          <Route path="dashboard-next" element={<DashboardPage />}/>
           <Route path="printers" element={<Outlet />}>
             <Route index element={<QueuesList />} />
             <Route path=":id/queue" element={<Queue />} />
