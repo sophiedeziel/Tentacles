@@ -22,6 +22,10 @@ Closes #
 flowchart LR
 ```
 
+## What it looks like
+
+<!-- Screenshots (before/after), a sample GraphQL query and response, log lines, HTTP requests, or a sample record: whatever shows what's new. Use real output, or label it "Example". No secrets. Skip it if nothing is visible. -->
+
 ## Decisions
 
 <!-- - **Decision.** **Why:** … (the alternative it beat) **Impact:** … -->

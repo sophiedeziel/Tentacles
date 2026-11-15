@@ -44,7 +44,24 @@ Mermaid diagrams that show the structure of the change. Required when the PR add
   - Put one or two sentences under each diagram saying what to notice.
   - Render each diagram before posting, and look at the result. Mermaid fails silently on GitHub. `npx @mermaid-js/mermaid-cli -i diagram.mmd -o diagram.png` works locally.
 
-#### 4. Decisions
+#### 4. What it looks like
+
+Show what's new whenever you can, so a reviewer doesn't have to run the branch to picture it. Pick whatever fits the change:
+
+| Change | Show |
+|---|---|
+| UI | Screenshots, before and after when something existing changed. Include the empty, error and loading states the PR adds. |
+| GraphQL | A sample query or mutation with its response, including an error response if the PR adds error codes. |
+| Background work, logs, CLI | The log lines or output a person will actually see. |
+| HTTP to printers or other services | The requests sent: method, path and the headers that matter. |
+| Data | A sample record or Redis value, before and after a migration. |
+
+- Use real output: capture it from the running app or a console session. If you construct an example from the code instead, label it "Example".
+- Never paste secrets, API keys or real hostnames. Replace them with placeholders.
+- Screenshots: drag them into the PR description on GitHub, which hosts them. Crop to the part that changed.
+- Skip this section when nothing is visible: a pure refactor, for example. The Architecture diagrams already cover that.
+
+#### 5. Decisions
 
 Every choice a reviewer might question or want to revisit. Each one gets the decision, **why** it was made (and the alternative it beat), and its **impact**.
 
@@ -54,7 +71,7 @@ Every choice a reviewer might question or want to revisit. Each one gets the dec
 
 Impact means what changes for users, deployers, data, performance or later work. "None" is a valid answer.
 
-#### 5. Review focus
+#### 6. Review focus
 
 Where the reviewer's attention matters most, riskiest first.
 
