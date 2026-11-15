@@ -3,6 +3,7 @@ import { Alert, App, Skeleton, Typography } from 'antd'
 import { useQuery, useSubscription } from '@apollo/client/react'
 
 import Section from '../Section/Section'
+import useDebouncedCounter from '../utils/useDebouncedCounter'
 import useNow from '../utils/useNow'
 import useRefetchWhenStale from '../utils/useRefetchWhenStale'
 import { StreamVisibilityProvider } from '../utils/useStreamWhenVisible'
@@ -10,10 +11,13 @@ import {
   DASHBOARD_CHANGED,
   DASHBOARD_PAGE,
   MONITOR_HEALTHY,
+  PRINT_QUEUE_CHANGED,
   PRINTER_STATUS_CHANGED
 } from '../graphql/dashboard'
 
 const MONITOR_POLL_INTERVAL = 15000
+// Queue widgets reload their lists this long after the last queue change
+const QUEUE_RELOAD_DELAY = 500
 
 const plural = (count, one, many) => `${count} ${count === 1 ? one : many}`
 
@@ -34,6 +38,10 @@ export default function DashboardPage () {
   const monitor = useQuery(MONITOR_HEALTHY, { pollInterval: MONITOR_POLL_INTERVAL, fetchPolicy: 'no-cache' })
   useRefetchWhenStale(refetch)
   useSubscription(PRINTER_STATUS_CHANGED)
+  // The push refreshes its printer's queuedCount, nextJob and canStartNext; queueVersion tells queue widgets to
+  // reload their lists, once per burst of changes
+  const [queueVersion, queueChanged] = useDebouncedCounter(QUEUE_RELOAD_DELAY)
+  useSubscription(PRINT_QUEUE_CHANGED, { onData: queueChanged })
   useSubscription(DASHBOARD_CHANGED, {
     onData: ({ client, data: pushed }) => {
       const dashboard = pushed.data?.dashboardChanged
@@ -64,7 +72,7 @@ export default function DashboardPage () {
   // Live: the last reloads worked and the monitor is reporting. Otherwise the controls warn that states may be old.
   const unreachable = !!(error || monitor.error)
   const live = !unreachable && (monitor.data?.monitorHealthy ?? data.monitorHealthy)
-  const widgetData = { printersById, now, live }
+  const widgetData = { printers, printersById, now, live, queueVersion }
   return (
     <App>
       <StreamVisibilityProvider>

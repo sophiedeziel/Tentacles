@@ -6,7 +6,8 @@ import { InMemoryCache, gql } from '@apollo/client'
 
 import DashboardPage, { summary } from './DashboardPage'
 import {
-  DASHBOARD_CHANGED, DASHBOARD_PAGE, MONITOR_HEALTHY, POSSIBLE_TYPES, PRINTER_STATUS_CHANGED, TYPE_POLICIES
+  DASHBOARD_CHANGED, DASHBOARD_PAGE, MONITOR_HEALTHY, POSSIBLE_TYPES, PRINT_QUEUE_CHANGED, PRINTER_STATUS_CHANGED,
+  TYPE_POLICIES
 } from '../graphql/dashboard'
 import { ALL_OPTIONS, PRINTERS } from '../widgets/Printer/fixtures'
 
@@ -44,14 +45,21 @@ const page = (monitorHealthy = true) => ({
   printers: [typed(PRINTERS.PRINTING), typed(PRINTERS.OPERATIONAL)]
 })
 
-const renderPage = (data, monitorMock = { result: { data: { monitorHealthy: data.monitorHealthy } } }) => render(
+// Prusa Mini+ started its next job: one job left, nothing to start
+const queuePush = {
+  __typename: 'Printer', id: '4', canStartNext: false, queuedCount: 1,
+  nextJob: { __typename: 'EnqueuedJob', id: 'phone_stand.gcode', executable: { __typename: 'File', id: 'phone_stand.gcode', filename: 'phone_stand.gcode' } }
+}
+
+const renderPage = (data, monitorMock = { result: { data: { monitorHealthy: data.monitorHealthy } } }, queueDelay = 60000) => render(
   <MockedProvider
     cache={new InMemoryCache({ possibleTypes: POSSIBLE_TYPES, typePolicies: TYPE_POLICIES })}
     mocks={[
       { request: { query: DASHBOARD_PAGE }, result: { data } },
       { request: { query: MONITOR_HEALTHY }, ...monitorMock, maxUsageCount: 10 },
       { request: { query: PRINTER_STATUS_CHANGED }, result: { data: { printerStatusChanged: typed(PRINTERS.PAUSED) } }, delay: 60000 },
-      { request: { query: DASHBOARD_CHANGED }, result: { data: { dashboardChanged: data.dashboard } }, delay: 60000 }
+      { request: { query: DASHBOARD_CHANGED }, result: { data: { dashboardChanged: data.dashboard } }, delay: 60000 },
+      { request: { query: PRINT_QUEUE_CHANGED }, result: { data: { printQueueChanged: queuePush } }, delay: queueDelay }
     ]}
   >
     <DashboardPage />
@@ -83,6 +91,13 @@ describe('DashboardPage', () => {
     renderPage(page(), { error: new Error('Network error') })
     expect(await screen.findByText('Live data paused')).toBeInTheDocument()
     expect(screen.getByText("Tentacles can't be reached, so printer states may be out of date.")).toBeInTheDocument()
+  })
+
+  it('refreshes a printer\'s queue fields when its queue changes', async () => {
+    renderPage(page(), undefined, 50)
+    expect(await screen.findByText('2 printers · 1 printing · 5 jobs queued')).toBeInTheDocument()
+    expect(await screen.findByText('2 printers · 1 printing · 4 jobs queued')).toBeInTheDocument()
+    expect(screen.getByText('Up next: phone_stand.gcode')).toBeInTheDocument()
   })
 
   describe('cache', () => {

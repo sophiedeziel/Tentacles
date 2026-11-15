@@ -65,6 +65,14 @@ export const PRINTER_STATUS_CHANGED = gql`
   ${PRINTER_FIELDS}
 `
 
+// A job was enqueued, removed or changed status: the push carries its printer's queue fields, which Apollo merges
+// by id. Queue widgets reload their lists on top of it.
+export const PRINT_QUEUE_CHANGED = gql`
+  subscription DashboardPrintQueueChanged {
+    printQueueChanged { id canStartNext queuedCount nextJob { id executable { id filename } } }
+  }
+`
+
 export const DASHBOARD_CHANGED = gql`
   subscription DashboardLayoutChanged {
     dashboardChanged { ...DashboardLayoutFields }
