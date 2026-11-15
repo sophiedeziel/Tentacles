@@ -1,8 +1,12 @@
 import React from 'react'
 import { describe, expect, it } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render as renderElement, screen } from '@testing-library/react'
+import { MockedProvider } from '@apollo/client/testing/react'
 import Section from './Section'
 import { ALL_OPTIONS, FIXTURE_NOW, PRINTERS } from '../widgets/Printer/fixtures'
+
+// Printer tiles run their controls through Apollo
+const render = (element) => renderElement(<MockedProvider mocks={[]}>{element}</MockedProvider>)
 
 const data = { printersById: { 1: PRINTERS.PRINTING }, now: FIXTURE_NOW.getTime() }
 const printerWidget = (id, widthUnits, heightUnits) => ({

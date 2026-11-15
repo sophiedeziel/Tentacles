@@ -10,7 +10,7 @@ const setTabVisibility = (state) => {
 describe('useRefetchWhenStale', () => {
   afterEach(() => {
     vi.useRealTimers()
-    setTabVisibility('visible')
+    delete document.visibilityState // back to jsdom's own
   })
 
   it('reloads when the tab becomes visible again', () => {

@@ -1,10 +1,11 @@
 import React, { useMemo } from 'react'
-import { Alert, Skeleton, Typography } from 'antd'
+import { Alert, App, Skeleton, Typography } from 'antd'
 import { useQuery, useSubscription } from '@apollo/client/react'
 
 import Section from '../Section/Section'
 import useNow from '../utils/useNow'
 import useRefetchWhenStale from '../utils/useRefetchWhenStale'
+import { StreamVisibilityProvider } from '../utils/useStreamWhenVisible'
 import {
   DASHBOARD_CHANGED,
   DASHBOARD_PAGE,
@@ -65,19 +66,21 @@ export default function DashboardPage () {
   const live = !unreachable && (monitor.data?.monitorHealthy ?? data.monitorHealthy)
   const widgetData = { printersById, now, live }
   return (
-    <div>
-      <Typography.Title level={3} style={{ margin: 0 }}>Dashboard</Typography.Title>
-      <Typography.Text style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{summary(printers)}</Typography.Text>
-      {!live && (
-        <Alert type="warning" showIcon style={{ marginTop: 16 }} title="Live data paused"
-          description={unreachable
-            ? "Tentacles can't be reached, so printer states may be out of date."
-            : "The printer monitor isn't reporting, so printer states may be out of date."} />
-      )}
-      {/* An untitled first section with no widgets has nothing to show */}
-      {data.dashboard.sections.filter((section) => section.title || section.widgets.length > 0).map((section, index) => (
-        <Section key={section.id || index} section={section} data={widgetData} />
-      ))}
-    </div>
+    <App>
+      <StreamVisibilityProvider>
+        <Typography.Title level={3} style={{ margin: 0 }}>Dashboard</Typography.Title>
+        <Typography.Text style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{summary(printers)}</Typography.Text>
+        {!live && (
+          <Alert type="warning" showIcon style={{ marginTop: 16 }} title="Live data paused"
+            description={unreachable
+              ? "Tentacles can't be reached, so printer states may be out of date."
+              : "The printer monitor isn't reporting, so printer states may be out of date."} />
+        )}
+        {/* An untitled first section with no widgets has nothing to show */}
+        {data.dashboard.sections.filter((section) => section.title || section.widgets.length > 0).map((section, index) => (
+          <Section key={section.id || index} section={section} data={widgetData} />
+        ))}
+      </StreamVisibilityProvider>
+    </App>
   )
 }

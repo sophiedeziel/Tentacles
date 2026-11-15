@@ -22,3 +22,21 @@ if (!window.matchMedia) {
     }))
   })
 }
+
+// Nor ResizeObserver, which antd's popups use
+if (!window.ResizeObserver) {
+  window.ResizeObserver = class {
+    observe () {}
+    unobserve () {}
+    disconnect () {}
+  }
+}
+
+// Nor IntersectionObserver: by default nothing is ever in the viewport (tests stub it to say otherwise)
+if (!window.IntersectionObserver) {
+  window.IntersectionObserver = class {
+    observe () {}
+    unobserve () {}
+    disconnect () {}
+  }
+}

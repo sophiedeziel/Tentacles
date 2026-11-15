@@ -63,9 +63,13 @@ const LAYOUTS = { S: SmallLayout, M: MediumLayout, L: LargeLayout, XL: ExtraLarg
 // - printer: { id, name, status, canStartNext, nextJob } as the dashboard query returns it
 // - size: 'S', 'M', 'L' or 'XL'; options: the widget's options; now: the dashboard's clock (re-renders the times)
 // - cameraStream: the live stream element, shown when the camera is on and the printer reachable
-// - renderAction: renders one control ({ key, label, danger, disabled, loading }); plain buttons by default
-export default function PrinterWidget ({ printer, size, options, now, cameraStream = null, renderAction }) {
-  const view = printerView({ printer, size, options, now })
+// - streamFailed: the camera stream failed to load (shows "Camera offline")
+// - renderAction(action, view): renders one control ({ key, label, danger, disabled, loading }); plain buttons by
+//   default
+export default function PrinterWidget ({
+  printer, size, options, now, cameraStream = null, streamFailed = false, renderAction
+}) {
+  const view = printerView({ printer, size, options, now, streamFailed })
   if (size === 'M' && view.camera) return <MediumCameraLayout view={view} cameraStream={cameraStream} />
 
   const Layout = LAYOUTS[size] || MediumLayout
@@ -90,6 +94,7 @@ PrinterWidget.propTypes = {
   }).isRequired,
   now: PropTypes.oneOfType([PropTypes.instanceOf(Date), PropTypes.number]).isRequired,
   cameraStream: PropTypes.node,
+  streamFailed: PropTypes.bool,
   renderAction: PropTypes.func
 }
 
