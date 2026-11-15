@@ -153,6 +153,25 @@ describe('DashboardPage', () => {
       expect(screen.getByRole('button', { name: /Done/ })).toBeInTheDocument()
     })
 
+    it('clicks a widget tool with the keyboard instead of picking the widget up', async () => {
+      await editPage([])
+      screen.getByRole('button', { name: 'Remove Prusa MK4' }).focus()
+      await userEvent.keyboard('{Enter}')
+      expect(screen.queryByRole('button', { name: 'Remove Prusa MK4' })).not.toBeInTheDocument()
+      expect(screen.queryByText('Drop at the end of this row')).not.toBeInTheDocument()
+    })
+
+    it('picks a widget up with the keyboard and puts it back on Esc', async () => {
+      await editPage([])
+      const cell = screen.getByRole('button', { name: 'Prusa MK4' })
+      cell.focus()
+      await userEvent.keyboard(' ')
+      expect(await screen.findAllByText('Drop at the end of this row')).toHaveLength(2)
+      await userEvent.keyboard('{Escape}')
+      await waitFor(() => expect(screen.queryByText('Drop at the end of this row')).not.toBeInTheDocument())
+      expect(screen.getByRole('button', { name: 'Prusa MK4' })).toBeInTheDocument()
+    })
+
     it('loads the default layout into the draft on Reset Layout', async () => {
       const defaults = {
         __typename: 'Dashboard',

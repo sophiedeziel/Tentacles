@@ -106,3 +106,55 @@
     grid-column: span 1;
   }
 }
+
+// While dragging: the widget's place in the grid, the drop target under the pointer, and what follows the pointer
+.cellDragging {
+  composes: cell;
+  border-radius: 8px;
+  outline: 2px dashed #722ed1;
+  outline-offset: 2px;
+  background: #f9f0ff;
+
+  > * {
+    opacity: 0.35;
+  }
+}
+
+.dropTileOver {
+  composes: dropTile;
+  border-color: #722ed1;
+  background: #f9f0ff;
+}
+
+.sectionDragging {
+  composes: section;
+
+  .dividerEdit {
+    outline: 2px dashed #722ed1;
+    outline-offset: 2px;
+    background: #f9f0ff;
+  }
+
+  .grid {
+    opacity: 0.35;
+  }
+}
+
+.overlay {
+  height: 100%;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+  cursor: grabbing;
+}
+
+.dividerOverlay {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px dashed #722ed1;
+  border-radius: 8px;
+  background: #fff;
+  font-weight: 600;
+  cursor: grabbing;
+}
