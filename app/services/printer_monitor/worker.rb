@@ -2,10 +2,11 @@
 # frozen_string_literal: true
 
 module PrinterMonitor
-  # Polls one printer's OctoPrint in its own thread and publishes a PrinterStatus snapshot when its state changes.
+  # Polls one printer's API (OctoPrint, PrusaLink) in its own thread and publishes a PrinterStatus snapshot when
+  # its state changes.
   #
-  # Every tick reads the job (and the temperatures when OctoPrint is connected to the printer). The snapshot is
-  # stored in Redis and the GraphQL subscribers are notified only when it differs from the last one written.
+  # Every tick reads the job and the temperatures through the printer's Reader. The snapshot is stored in Redis and
+  # the GraphQL subscribers are notified only when it differs from the last one written.
   # Unreachable printers are reported as OFFLINE and polled less and less often (see Connectivity#delay).
   #
   #   worker = PrinterMonitor::Worker.new(printer).start
@@ -17,7 +18,6 @@ module PrinterMonitor
 
     DEFAULT_INTERVAL = 2.0
     UNREACHABLE_STATE_TEXT = 'Unreachable'
-    MISSING_CREDENTIALS_TEXT = 'Missing OctoPrint credentials'
     ERROR_TEXT_LENGTH = 200
 
     sig { override.returns(Printer) }
@@ -42,7 +42,7 @@ module PrinterMonitor
       @previous = T.let(nil, T.nilable(PrinterStatus))
     end
 
-    # Polls OctoPrint once, publishes the snapshot if it changed and writes the heartbeat. Never raises.
+    # Polls the printer once, publishes the snapshot if it changed and writes the heartbeat. Never raises.
     sig { override.void }
     def tick
       # The heartbeat is written even when publishing failed (e.g. the GraphQL trigger raised)
@@ -108,7 +108,7 @@ module PrinterMonitor
     sig { params(error: StandardError).returns(String) }
     def error_text(error)
       return error.message if error.is_a?(PrinterBackends::UnreadableCredentials)
-      return MISSING_CREDENTIALS_TEXT if error.is_a?(PrinterBackends::MissingCredentials)
+      return "Missing #{product_name} credentials" if error.is_a?(PrinterBackends::MissingCredentials)
 
       (error.message.presence || error.class.name.to_s).truncate(ERROR_TEXT_LENGTH)
     end
@@ -119,8 +119,14 @@ module PrinterMonitor
       if error.is_a?(PrinterBackends::Error)
         log(:warn, "Unreachable: #{error_text(error)}")
       else
-        log_exception('Unexpected error while polling OctoPrint', error)
+        log_exception("Unexpected error while polling #{product_name}", error)
       end
+    end
+
+    # "OctoPrint", "PrusaLink"
+    sig { returns(String) }
+    def product_name
+      printer.api.product_name
     end
   end
 end

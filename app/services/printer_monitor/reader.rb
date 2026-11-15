@@ -25,6 +25,7 @@ module PrinterMonitor
     def self.for(printer)
       case printer.backend
       when 'octoprint' then OctoprintReader.new(printer)
+      when 'prusalink' then PrusalinkReader.new(printer)
       else raise ArgumentError, "Unknown printer backend #{printer.backend.inspect}"
       end
     end
