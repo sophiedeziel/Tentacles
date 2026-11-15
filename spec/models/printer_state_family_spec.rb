@@ -4,27 +4,52 @@ require 'rails_helper'
 
 RSpec.describe PrinterStateFamily do
   describe '.for' do
+    # Every text OctoPrint 1.11.8's MachineCom#getStateString can return
     {
-      'Starting' => described_class::Printing,
-      'Printing' => described_class::Printing,
-      'Printing from SD' => described_class::Printing,
-      'Sending file to SD' => described_class::Printing,
-      'Resuming' => described_class::Printing,
-      'Finishing' => described_class::Printing,
-      'Pausing' => described_class::Paused,
-      'Paused' => described_class::Paused,
-      'Cancelling' => described_class::Cancelling,
-      'Operational' => described_class::Operational,
+      'Offline' => described_class::Offline,
       'Opening serial connection' => described_class::Connecting,
       'Detecting serial connection' => described_class::Connecting,
       'Connecting' => described_class::Connecting,
+      'Operational' => described_class::Operational,
+      'Starting print from SD' => described_class::Printing,
+      'Starting to send file to SD' => described_class::Printing,
+      'Starting' => described_class::Printing,
+      'Printing from SD' => described_class::Printing,
+      'Sending file to SD' => described_class::Printing,
+      'Printing' => described_class::Printing,
+      'Cancelling' => described_class::Cancelling,
+      'Pausing' => described_class::Paused,
+      'Paused' => described_class::Paused,
+      'Resuming' => described_class::Printing,
+      'Finishing' => described_class::Printing,
       'Error' => described_class::Error,
       'Offline after error' => described_class::Error,
-      'Offline' => described_class::Offline,
-      'Unknown' => described_class::Offline
+      'Transferring file to SD' => described_class::Printing,
+      'Unknown State (16)' => described_class::Offline
     }.each do |state_text, family|
-      it "maps #{state_text.inspect} to #{family.serialize}" do
+      it "maps OctoPrint 1.11's #{state_text.inspect} to #{family.serialize}" do
+        allow(described_class).to receive(:log_unknown) # Unknown texts map to OFFLINE too: make sure it's a match
+
         expect(described_class.for(state_text)).to eq family
+        expect(described_class).not_to have_received(:log_unknown)
+      end
+    end
+
+    # Texts of older OctoPrint releases (1.3/1.4), the "Closed" connection state and our own unknown state text
+    {
+      'Opening serial port' => described_class::Connecting,
+      'Detecting serial port' => described_class::Connecting,
+      'Detecting baudrate' => described_class::Connecting,
+      'Error: Printer halted' => described_class::Error,
+      'Offline (Error: Too many consecutive timeouts)' => described_class::Error,
+      'Closed' => described_class::Offline,
+      PrinterStatus::UNKNOWN_STATE_TEXT => described_class::Offline
+    }.each do |state_text, family|
+      it "maps the older #{state_text.inspect} to #{family.serialize}" do
+        allow(described_class).to receive(:log_unknown) # Unknown texts map to OFFLINE too: make sure it's a match
+
+        expect(described_class.for(state_text)).to eq family
+        expect(described_class).not_to have_received(:log_unknown)
       end
     end
 
@@ -65,6 +90,24 @@ RSpec.describe PrinterStateFamily do
 
       expect(connected).to contain_exactly(described_class::Printing, described_class::Paused,
                                            described_class::Cancelling, described_class::Operational)
+    end
+  end
+
+  describe '#in_progress?' do
+    it 'is true while a print is under way (printing, paused or cancelling)' do
+      in_progress = described_class.values.select(&:in_progress?)
+
+      expect(in_progress).to contain_exactly(described_class::Printing, described_class::Paused,
+                                             described_class::Cancelling)
+    end
+
+    it 'is true for a print that is pausing, resuming or finishing' do
+      expect(%w[Pausing Resuming Finishing].map { |text| described_class.for(text).in_progress? }).to all(be true)
+    end
+
+    it 'is false once the print is over or the printer is gone' do
+      states = ['Operational', 'Offline', 'Error', 'Offline after error', 'Connecting', 'Unknown State (16)']
+      expect(states.map { |text| described_class.for(text).in_progress? }).to all(be false)
     end
   end
 end

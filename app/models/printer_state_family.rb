@@ -20,15 +20,24 @@ class PrinterStateFamily < T::Enum
   end
 
   # OctoPrint state texts per family. A state text belongs to a family when it starts with one of these.
+  #
+  # Built from OctoPrint's `MachineCom#getStateString` (src/octoprint/util/comm.py) in the current release (1.11),
+  # plus the texts of older releases still in use (1.3/1.4: "Opening serial port", "Detecting baudrate",
+  # "Error: <message>", "Offline (Error: <message>)") and the "Closed" connection state.
   STATE_TEXTS = T.let(
     {
-      Printing => ['Starting', 'Printing', 'Printing from SD', 'Sending file to SD', 'Resuming', 'Finishing'],
+      # "Starting" also covers "Starting print from SD" and "Starting to send file to SD"
+      Printing => ['Starting', 'Printing', 'Printing from SD', 'Sending file to SD', 'Transferring file to SD',
+                   'Resuming', 'Finishing'],
       Paused => %w[Pausing Paused],
       Cancelling => ['Cancelling'],
       Operational => ['Operational'],
-      Connecting => ['Opening serial connection', 'Detecting serial connection', 'Connecting'],
-      Error => ['Error', 'Offline after error'],
-      Offline => %w[Offline Unknown]
+      Connecting => ['Opening serial connection', 'Opening serial port', 'Detecting serial connection',
+                     'Detecting serial port', 'Detecting baudrate', 'Connecting'],
+      # "Error" also covers the older "Error: <message>"
+      Error => ['Error', 'Offline after error', 'Offline (Error'],
+      # "Unknown" covers PrinterStatus::UNKNOWN_STATE_TEXT as well as OctoPrint's "Unknown State (<n>)"
+      Offline => ['Offline', 'Closed', 'Unknown State', 'Unknown']
     }.freeze,
     T::Hash[PrinterStateFamily, T::Array[String]]
   )
@@ -44,6 +53,9 @@ class PrinterStateFamily < T::Enum
 
   # Families in which OctoPrint is connected to the printer and can report temperatures
   CONNECTED = T.let([Printing, Paused, Cancelling, Operational].freeze, T::Array[PrinterStateFamily])
+
+  # Families in which a print is under way: its job stays active and the spooler keeps monitoring it
+  IN_PROGRESS = T.let([Printing, Paused, Cancelling].freeze, T::Array[PrinterStateFamily])
 
   # Bounds the memory used to log each unknown state text only once
   MAX_LOGGED_UNKNOWN_TEXTS = 100
@@ -81,5 +93,11 @@ class PrinterStateFamily < T::Enum
   sig { returns(T::Boolean) }
   def connected?
     CONNECTED.include?(self)
+  end
+
+  # Whether a print is under way (printing, paused or being cancelled)
+  sig { returns(T::Boolean) }
+  def in_progress?
+    IN_PROGRESS.include?(self)
   end
 end
