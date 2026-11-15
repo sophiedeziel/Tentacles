@@ -55,7 +55,9 @@ module RootOperations
       ::PrinterScanner.new.call
     end
 
-    field :octoprint_name, String, null: true do
+    field :identify_printer, resolver: Resolvers::IdentifyPrinter
+
+    field :octoprint_name, String, null: true, deprecation_reason: 'Use `identifyPrinter`' do
       argument :octoprint_uri, String, required: true
       argument :octoprint_key, String, required: true
     end
