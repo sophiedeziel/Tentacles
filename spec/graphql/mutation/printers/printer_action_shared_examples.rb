@@ -117,6 +117,20 @@ RSpec.shared_examples 'a printer action that fails gracefully' do |commands:|
     end
   end
 
+  context 'when the printer has a malformed OctoPrint URL' do
+    let(:printer) { create(:printer, name: 'Prusa MK4', octoprint_uri: 'http://octo pi.local') }
+
+    before do
+      allow(Octoprint::Job).to receive(:get).and_call_original
+      run_mutation
+    end
+
+    it 'returns the error without sending any command' do
+      expect_failure('Prusa MK4 has an invalid OctoPrint URL')
+      expect_no_command(commands)
+    end
+  end
+
   context 'when the printer does not exist' do
     before { run_mutation(0) }
 

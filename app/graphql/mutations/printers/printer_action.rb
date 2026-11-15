@@ -55,7 +55,9 @@ module Mutations
 
         PrinterMonitor.refresh(printer) if refresh_after_command?
         { success: true, errors: [], printer: }
-      rescue Octoprint::Exceptions::Error, JSON::ParserError, KeyError => e
+      # Besides our own bugs: the gem's errors, answers that aren't OctoPrint's (HTML: JSON::ParserError, no `error`
+      # key: KeyError) and a malformed URL. The gem wraps Faraday's network errors.
+      rescue Octoprint::Exceptions::Error, JSON::ParserError, KeyError, URI::InvalidURIError => e
         failure(printer, octoprint_error_message(printer, e))
       end
 
@@ -78,6 +80,8 @@ module Mutations
         case error
         when Octoprint::Exceptions::MissingCredentialsError
           "#{printer.name} has no OctoPrint URL or API key"
+        when URI::InvalidURIError
+          "#{printer.name} has an invalid OctoPrint URL"
         when Octoprint::Exceptions::ConnectionError
           "Could not reach #{printer.name}'s OctoPrint: #{redact(printer, error.message)}"
         when Octoprint::Exceptions::Error

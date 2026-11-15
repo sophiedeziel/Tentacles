@@ -33,7 +33,7 @@ module Mutations
       # Publishing to the spooler goes through Redis rather than OctoPrint
       def run(printer)
         super
-      rescue Redis::BaseError => e
+      rescue Redis::BaseError, ConnectionPool::TimeoutError => e
         Rails.logger.error("[StartNextPrint] Could not publish start_print for printer #{printer.id}: #{e.message}")
         failure(printer, "Could not ask the spooler to start #{printer.name}'s next print")
       end
