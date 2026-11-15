@@ -66,7 +66,7 @@ export default function NetworkPrinters () {
   }
 
   const sendAddPrinter = (name, uri, secret) => {
-    addPrinter({ variables: { input: { name, uri, secret } } }).then(({ data, error }) => {
+    addPrinter({ variables: { input: { backend: 'OCTOPRINT', name, uri, secret } } }).then(({ data, error }) => {
       if (error) throw error
       const { errors } = data.addPrinter
       if (errors.length > 0) {

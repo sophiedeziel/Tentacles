@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
 import { useQuery, useLazyQuery, useMutation } from '@apollo/client/react'
-import { Card, Form, Input, Button, Space, message } from 'antd'
+import { Card, Button, Space, Typography, message } from 'antd'
 import { PageHeader } from '@ant-design/pro-layout'
 import useInterval from '../../../utils/UseInterval'
 
 import SearchNetworkPrinters from './graphql/SearchNetworkPrinters.graphql'
 import PrinterName from './graphql/PrinterName.graphql'
 import AddPrinter from './graphql/AddPrinter.graphql'
+import PrinterForm from './PrinterForm'
 
 import * as classes from 'common/Common.module.less'
 
@@ -53,7 +54,7 @@ export default function PrinterAdd () {
   }
 
   const sendAddPrinter = (name, uri, secret) => {
-    addPrinter({ variables: { input: { name, uri, secret } } }).then(({ data, error }) => {
+    addPrinter({ variables: { input: { backend: 'OCTOPRINT', name, uri, secret } } }).then(({ data, error }) => {
       if (error) throw error
       const { errors } = data.addPrinter
       if (errors.length > 0) {
@@ -64,10 +65,6 @@ export default function PrinterAdd () {
     }).catch((error) => {
       message.error(error.message)
     })
-  }
-
-  const handleCreateSubmit = (values) => {
-    sendAddPrinter(values.name, values.uri, values.secret)
   }
 
   const requestAPIKey = (ip) => {
@@ -123,6 +120,7 @@ export default function PrinterAdd () {
         className={classes.pageCard}
         title="Add a printer from network scan"
       >
+        <Typography.Paragraph type="secondary">Finds OctoPrint servers. Add PrusaLink printers manually, below.</Typography.Paragraph>
         <AddPrinterButtons />
       </Card>
 
@@ -130,30 +128,7 @@ export default function PrinterAdd () {
         className={classes.pageCard}
         title="Add a printer"
       >
-        <Form
-          layout="vertical"
-          onFinish={handleCreateSubmit}
-          >
-
-          <Form.Item label="Printer name" name="name">
-            <Input />
-          </Form.Item>
-
-          <Form.Item label="URI" name="uri">
-            <Input />
-          </Form.Item>
-
-          <Form.Item label="API key" name="secret">
-            <Input />
-          </Form.Item>
-
-          <Form.Item>
-            <Button type="primary" htmlType="submit">
-              Add printer
-            </Button>
-          </Form.Item>
-
-      </Form>
+        <PrinterForm />
       </Card>
     </>
   )
