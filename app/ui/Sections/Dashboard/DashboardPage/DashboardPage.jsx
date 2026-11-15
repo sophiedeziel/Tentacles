@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { Alert, App, Skeleton, Typography } from 'antd'
+import { Alert, App, Grid, Skeleton, Typography } from 'antd'
 import { useQuery, useSubscription } from '@apollo/client/react'
 
 import AddWidgetModal from '../AddWidget/AddWidgetModal'
@@ -23,6 +23,9 @@ const MONITOR_POLL_INTERVAL = 15000
 // Queue widgets reload their lists this long after the last queue change
 const QUEUE_RELOAD_DELAY = 500
 
+const CHANGED_ELSEWHERE = 'Someone saved the dashboard on another screen while you were editing. Your changes are ' +
+  'kept, and Done saves them over it.'
+
 const HEADER = { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between' }
 
 const plural = (count, one, many) => `${count} ${count === 1 ? one : many}`
@@ -35,15 +38,18 @@ export function summary (printers) {
     plural(queued, 'job queued', 'jobs queued')].join(' · ')
 }
 
-// The redesigned dashboard, served at /dashboard-next until it replaces the one at /.
-// One query loads the layout and every printer; pushes keep them live, and reloads catch up on missed pushes.
-// Edit mode arranges a draft of the layout (useLayoutEditor) and saves it on Done.
+// The dashboard, at /. One query loads the layout and every printer; pushes keep them live, and reloads catch up on missed pushes.
+// Edit mode arranges a draft of the layout (useLayoutEditor) and saves it on Done. It needs the 4-column grid, so
+// it's for desktop screens (md and up) only.
 export default function DashboardPage () {
   // cache-and-network: coming back to the page never shows (and acts on) statuses cached earlier
   const { data, error, refetch } = useQuery(DASHBOARD_PAGE, { fetchPolicy: 'cache-and-network' })
   // no-cache: the page query's own monitorHealthy can't overwrite a failed poll
   const monitor = useQuery(MONITOR_HEALTHY, { pollInterval: MONITOR_POLL_INTERVAL, fetchPolicy: 'no-cache' })
   useRefetchWhenStale(refetch)
+  const editor = useLayoutEditor(data?.dashboard)
+  const { noticeChange } = editor
+  const desktop = !!Grid.useBreakpoint().md
   useSubscription(PRINTER_STATUS_CHANGED)
   // The push refreshes its printer's queuedCount, nextJob and canStartNext; queueVersion tells queue widgets to
   // reload their lists, once per burst of changes
@@ -63,10 +69,10 @@ export default function DashboardPage () {
         return { ...page, dashboard }
       })
       if (unknownPrinter) refetch() // a printer added since the page loaded
+      noticeChange()
     }
   })
   const now = useNow()
-  const editor = useLayoutEditor(data?.dashboard)
   const [gallery, setGallery] = useState(false)
 
   const printers = data?.printers
@@ -93,11 +99,15 @@ export default function DashboardPage () {
             <Typography.Title level={3} style={{ margin: 0 }}>Dashboard</Typography.Title>
             <Typography.Text style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{summary(printers)}</Typography.Text>
           </div>
-          <EditBar editing={editor.editing} busy={editor.busy} onEdit={editor.start} onReset={editor.reset}
+          <EditBar editing={editor.editing} busy={editor.busy} onEdit={desktop ? editor.start : undefined} onReset={editor.reset}
             onAddDivider={() => editor.dispatch({ type: 'addDivider' })} onAddWidget={() => setGallery(true)}
             onDone={editor.done} />
         </div>
         {editor.editing && <EditNotice />}
+        {editor.editing && editor.changedElsewhere && (
+          <Alert type="warning" showIcon style={{ marginTop: 16 }} title="Layout changed elsewhere"
+            description={CHANGED_ELSEWHERE} />
+        )}
         {editor.problem && (
           <Alert type="error" showIcon style={{ marginTop: 16 }} title={editor.problem.title}
             description={editor.problem.messages.map((message) => <div key={message}>{message}</div>)} />

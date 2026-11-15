@@ -1,12 +1,12 @@
 import React, { Suspense, lazy } from 'react'
 
 import {
+  Navigate,
   Routes,
   Route,
   Outlet
 } from 'react-router'
 
-const Dashboard = lazy(() => import('../../Sections/Dashboard/Dashboard'))
 const DashboardPage = lazy(() => import('../../Sections/Dashboard/DashboardPage/DashboardPage'))
 const PrintersList = lazy(() => import('../../Sections/Printers/PrintersList/PrintersList'))
 const PrinterAdd = lazy(() => import('../../Sections/Printers/PrinterAdd/PrinterAdd'))
@@ -20,8 +20,9 @@ export default function AppSwithcer () {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <Routes>
-          <Route path="/" element={<Dashboard />}/>
-          <Route path="dashboard-next" element={<DashboardPage />}/>
+          <Route path="/" element={<DashboardPage />}/>
+          {/* Where the dashboard was served before it replaced the old one: screens may still open it */}
+          <Route path="dashboard-next" element={<Navigate to="/" replace />}/>
           <Route path="printers" element={<Outlet />}>
             <Route index element={<QueuesList />} />
             <Route path=":id/queue" element={<Queue />} />

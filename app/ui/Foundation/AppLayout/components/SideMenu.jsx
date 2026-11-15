@@ -9,17 +9,13 @@ import { useLocation, useNavigate } from 'react-router'
 
 const rootSubmenuKeys = ['printers']
 
-// The redesigned dashboard is served at /dashboard-next until it replaces /
-const ROOT_ALIASES = { '/dashboard-next': '/' }
-
 function SideMenu () {
   const location = useLocation()
   const { pathname } = location
   const navigate = useNavigate()
 
   const getRootFromLocation = (path = pathname) => {
-    const root = '/' + (path.split('/').filter(e => e)[0] || '')
-    return ROOT_ALIASES[root] || root
+    return '/' + (path.split('/').filter(e => e)[0] || '')
   }
 
   const [openKeys, setOpenKeys] = useState([getRootFromLocation()])

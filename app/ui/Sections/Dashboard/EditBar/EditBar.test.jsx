@@ -14,6 +14,11 @@ describe('EditBar', () => {
     expect(onEdit).toHaveBeenCalled()
   })
 
+  it('hides Edit Dashboard when editing is not offered (small screens)', () => {
+    render(<EditBar editing={false} />)
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
+  })
+
   it('offers the edit actions in edit mode', async () => {
     const actions = { onReset: vi.fn(), onAddDivider: vi.fn(), onAddWidget: vi.fn(), onDone: vi.fn() }
     render(<EditBar editing {...actions} />)

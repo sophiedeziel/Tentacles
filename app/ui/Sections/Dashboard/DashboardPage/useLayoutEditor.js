@@ -1,4 +1,4 @@
-import { useReducer, useState } from 'react'
+import { useCallback, useReducer, useRef, useState } from 'react'
 import { useApolloClient } from '@apollo/client/react'
 
 import layoutReducer from '../layout/layoutReducer'
@@ -13,16 +13,32 @@ const UNTITLED = 'Every divider needs a title'
 // - sections / dispatch: the draft and its layoutReducer
 // - busy: 'reset' or 'save' while one runs (the draft can't change meanwhile: the page makes it inert);
 //   problem: { title, messages } when the last one failed
+// - changedElsewhere: another screen saved the layout while editing (noticeChange, on dashboardChanged). The draft
+//   stays, and Done still saves over it: the last save wins.
 export default function useLayoutEditor (dashboard) {
   const client = useApolloClient()
   const [editing, setEditing] = useState(false)
   const [sections, dispatch] = useReducer(layoutReducer, null)
   const [busy, setBusy] = useState(null)
   const [problem, setProblem] = useState(null)
+  const [changedElsewhere, setChangedElsewhere] = useState(false)
+  // A push during our own save may be that save's: it only counts if the save fails (a failed save pushes nothing)
+  const watching = useRef(null)
+  const pushedDuringSave = useRef(false)
+  watching.current = editing && (busy === 'save' ? 'saving' : 'editing')
+  const noticeChange = useCallback(() => {
+    if (watching.current === 'editing') setChangedElsewhere(true)
+    if (watching.current === 'saving') pushedDuringSave.current = true
+  }, [])
+  const notSaved = (messages) => {
+    setProblem({ title: NOT_SAVED, messages })
+    if (pushedDuringSave.current) setChangedElsewhere(true)
+  }
 
   const start = () => {
     dispatch({ type: 'load', dashboard })
     setProblem(null)
+    setChangedElsewhere(false)
     setEditing(true)
   }
 
@@ -46,11 +62,12 @@ export default function useLayoutEditor (dashboard) {
     }
     setBusy('save')
     setProblem(null)
+    pushedDuringSave.current = false
     try {
       const { data } = await client.mutate({ mutation: SAVE_DASHBOARD, variables: { sections: saveInput(sections) } })
       const { dashboard: saved, errors } = data.saveDashboard
       if (!saved || errors.length > 0) {
-        setProblem({ title: NOT_SAVED, messages: errors.length > 0 ? errors : ['Try again'] })
+        notSaved(errors.length > 0 ? errors : ['Try again'])
         return
       }
       // A newer layout, pushed from another screen's later save, stays
@@ -58,13 +75,14 @@ export default function useLayoutEditor (dashboard) {
         const cached = page?.dashboard?.updatedAt
         return !page || (cached && saved.updatedAt && cached > saved.updatedAt) ? page : { ...page, dashboard: saved }
       })
+      setChangedElsewhere(false)
       setEditing(false)
     } catch (error) {
-      setProblem({ title: NOT_SAVED, messages: [error.message] })
+      notSaved([error.message])
     } finally {
       setBusy(null)
     }
   }
 
-  return { editing, sections, dispatch, busy, problem, start, reset, done }
+  return { editing, sections, dispatch, busy, problem, changedElsewhere, noticeChange, start, reset, done }
 }

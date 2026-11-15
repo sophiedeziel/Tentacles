@@ -6,7 +6,20 @@ import { MockedProvider } from '@apollo/client/testing/react'
 import AppSwitcher from './AppSwitcher'
 
 describe('AppSwitcher', () => {
-  it('serves the redesigned dashboard at /dashboard-next', async () => {
+  it('serves the dashboard at /', async () => {
+    render(
+      <MockedProvider mocks={[]}>
+        <MemoryRouter initialEntries={['/']}>
+          <AppSwitcher />
+        </MemoryRouter>
+      </MockedProvider>
+    )
+
+    // The page loads lazily, then fails to load its data (no mocks)
+    expect(await screen.findByText('Could not load the dashboard', {}, { timeout: 5000 })).toBeInTheDocument()
+  })
+
+  it('sends the old /dashboard-next address to the dashboard', async () => {
     render(
       <MockedProvider mocks={[]}>
         <MemoryRouter initialEntries={['/dashboard-next']}>
@@ -15,7 +28,6 @@ describe('AppSwitcher', () => {
       </MockedProvider>
     )
 
-    // The page loads lazily, then fails to load its data (no mocks)
     expect(await screen.findByText('Could not load the dashboard', {}, { timeout: 5000 })).toBeInTheDocument()
   })
 })
