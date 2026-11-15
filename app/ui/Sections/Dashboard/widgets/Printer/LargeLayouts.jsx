@@ -54,7 +54,7 @@ function plainAction (action) {
 }
 
 function Actions ({ view, renderAction = plainAction }) {
-  return <div className={classes.actions}>{view.actions.map((action) => renderAction(action))}</div>
+  return <div className={classes.actions}>{view.actions.map((action) => renderAction(action, view))}</div>
 }
 
 // Large: the camera above the job, or the ring beside it with the temperatures and up next

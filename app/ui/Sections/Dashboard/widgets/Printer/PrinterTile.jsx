@@ -1,14 +1,48 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
+import { useApolloClient } from '@apollo/client/react'
 
+import { ACTIONS } from '../../graphql/actions'
+import CameraStream from './CameraStream'
+import ControlButton from './ControlButton'
 import PrinterWidget from './PrinterWidget'
 
-// A Printer widget of the layout: picks its printer out of the dashboard's data
+const STREAM_RETRY_DELAY = 30000
+
+// A Printer widget of the layout: picks its printer out of the dashboard's data, streams its camera while it is
+// visible and wires its controls to the printer mutations
 export default function PrinterTile ({ widget, size, data }) {
+  const client = useApolloClient()
   const printer = data.printersById[widget.printer?.id]
+  const streamUrl = printer?.status.camera.streamUrl
+  const family = printer?.status.stateFamily
+  const [streamFailed, setStreamFailed] = useState(false)
+
+  // A new stream URL or state gets a new try, and so does a failed stream after a while (a restarted webcam)
+  useEffect(() => setStreamFailed(false), [streamUrl, family])
+  useEffect(() => {
+    if (!streamFailed) return undefined
+    const timer = setTimeout(() => setStreamFailed(false), STREAM_RETRY_DELAY)
+    return () => clearTimeout(timer)
+  }, [streamFailed])
+
   if (!printer) return null
 
-  return <PrinterWidget printer={printer} size={size} options={widget.options} now={data.now} />
+  // Sends what the tile shows (the file printing, the next job), so the server refuses if the printer moved on
+  const run = async (key) => {
+    const { mutation, document, expectations } = ACTIONS[key]
+    const variables = { printerId: printer.id, ...expectations?.(printer) }
+    const { data: result } = await client.mutate({ mutation: document, variables })
+    return result[mutation].errors
+  }
+
+  return (
+    <PrinterWidget printer={printer} size={size} options={widget.options} now={data.now} streamFailed={streamFailed}
+      cameraStream={streamUrl && <CameraStream url={streamUrl} name={printer.name} onError={() => setStreamFailed(true)} />}
+      renderAction={(action, view) => (
+        <ControlButton key={action.key} action={action} view={view} onRun={run} live={data.live !== false} />
+      )} />
+  )
 }
 
 PrinterTile.propTypes = {
