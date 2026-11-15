@@ -61,6 +61,34 @@ RSpec.describe Spooler::Print do
       end
     end
 
+    context 'when OctoPrint fails while the print is paused' do
+      let(:paused) { Octoprint::Job.deserialize({ state: 'Paused', job: { file: {} }, progress: {} }) }
+      let(:operational) { Octoprint::Job.deserialize({ state: 'Operational', job: { file: {} }, progress: {} }) }
+      let(:timeout) { Octoprint::Exceptions::TimeoutError.new('Net::ReadTimeout') }
+
+      it 'retries and keeps monitoring' do
+        answers = [paused, timeout, JSON::ParserError.new('unexpected token'), paused, operational]
+        allow(Octoprint::Job).to receive(:get) do
+          answer = answers.shift
+          answer.is_a?(Exception) ? raise(answer) : answer
+        end
+
+        expect { operation.execute }.not_to raise_error
+        expect(Octoprint::Job).to have_received(:get).exactly(5).times
+        expect(operation).to have_received(:log).with(/Could not read the print's state/).once # One streak
+      end
+
+      it 'gives up after MAX_POLL_FAILURES consecutive failures, without raising' do
+        stub_const('Spooler::Print::MAX_POLL_FAILURES', 3)
+        allow(Octoprint::Job).to receive(:get).and_raise(timeout)
+
+        expect { operation.execute }.not_to raise_error
+        expect(Octoprint::Job).to have_received(:get).exactly(3).times
+        expect(operation).to have_received(:log).with(/Could not read the print's state/).once
+        expect(operation).to have_received(:log).with(/Gave up monitoring the print after 3 failed polls/)
+      end
+    end
+
     it 'waits WAIT_TIME between polls, not after the last one' do
       octoprint_states('Printing', 'Paused', 'Operational')
       operation.execute
