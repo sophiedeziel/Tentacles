@@ -57,13 +57,20 @@ class Spooler
       end
     end
 
+    # A job whose file can't be sent (printer unreachable, no writable storage, ...) is marked `error` rather than
+    # left active, which would block the printer's queue, and the spool thread keeps running
     def start_and_monitor
-      @current_operation.job.update(status: 'active')
+      job = @current_operation.job
+      job.update(status: 'active')
       @current_operation.update_subscribers
 
       @current_operation.execute
 
-      @current_operation.job.update(status: 'completed')
+      job.update(status: 'completed')
+      @current_operation.update_subscribers
+    rescue PrinterBackends::Error => e
+      @current_operation.log("Could not start the print: #{e.class}: #{e.message}".red)
+      job.update(status: 'error')
       @current_operation.update_subscribers
     end
 
