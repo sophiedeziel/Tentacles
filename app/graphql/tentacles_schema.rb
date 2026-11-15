@@ -8,7 +8,10 @@ class TentaclesSchema < GraphQL::Schema
   # For batch-loading (see https://graphql-ruby.org/dataloader/overview.html)
   use GraphQL::Dataloader
 
-  use GraphQL::Subscriptions::ActionCableSubscriptions
+  # Broadcast subscriptions (e.g. printerStatusChanged) run once per trigger and deliver the result to every
+  # subscriber. Fields stay non-broadcastable unless they or their type opt in (see Base::Object.default_broadcastable),
+  # so printerSubscription still runs once per subscriber.
+  use GraphQL::Subscriptions::ActionCableSubscriptions, broadcast: true
 
   # GraphQL-Ruby calls this when something goes wrong while running a query:
 
