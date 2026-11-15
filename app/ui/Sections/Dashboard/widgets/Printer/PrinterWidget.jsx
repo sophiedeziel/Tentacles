@@ -1,31 +1,12 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Progress, Spin } from 'antd'
 
 import PrinterStatus from '../../../../components/PrinterStatus/PrinterStatus'
 import { Printer3DOutlined } from '../../../../components/icons'
 import printerView from './printerView'
+import StateVisual from './StateVisual'
+import { ExtraLargeLayout, LargeLayout } from './LargeLayouts'
 import * as classes from './PrinterWidget.module.less'
-
-// The progress ring while a job is under way, a spinner while connecting, the state icon otherwise
-export function StateVisual ({ view, background }) {
-  if (view.ring) {
-    return <Progress type="circle" percent={view.progress} size={view.ringSize} strokeColor={view.color} />
-  }
-  if (view.spin) return <Spin size={view.ringSize > 64 ? 'large' : 'default'} />
-  return (
-    <span className={classes.stateCircle} style={{
-      width: view.iconCircle, height: view.iconCircle, fontSize: view.iconFont, background: background || view.tint
-    }}>
-      <PrinterStatus family={view.family} text={view.stateText} variant="icon" />
-    </span>
-  )
-}
-
-StateVisual.propTypes = {
-  view: PropTypes.object.isRequired,
-  background: PropTypes.string
-}
 
 function SmallLayout ({ view }) {
   return (
@@ -75,19 +56,20 @@ function MediumLayout ({ view }) {
   )
 }
 
-const LAYOUTS = { S: SmallLayout, M: MediumLayout }
+const LAYOUTS = { S: SmallLayout, M: MediumLayout, L: LargeLayout, XL: ExtraLargeLayout }
 
 // One printer's live state. Presentational: it renders from props only, so the Add Widget gallery can show it
 // with fixture data.
 // - printer: { id, name, status, canStartNext, nextJob } as the dashboard query returns it
 // - size: 'S', 'M', 'L' or 'XL'; options: the widget's options; now: the dashboard's clock (re-renders the times)
 // - cameraStream: the live stream element, shown when the camera is on and the printer reachable
-export default function PrinterWidget ({ printer, size, options, now, cameraStream = null }) {
+// - renderAction: renders one control ({ key, label, danger, disabled, loading }); plain buttons by default
+export default function PrinterWidget ({ printer, size, options, now, cameraStream = null, renderAction }) {
   const view = printerView({ printer, size, options, now })
   if (size === 'M' && view.camera) return <MediumCameraLayout view={view} cameraStream={cameraStream} />
 
   const Layout = LAYOUTS[size] || MediumLayout
-  return <Layout view={view} />
+  return <Layout view={view} cameraStream={cameraStream} renderAction={renderAction} />
 }
 
 PrinterWidget.propTypes = {
@@ -107,7 +89,8 @@ PrinterWidget.propTypes = {
     controls: PropTypes.bool
   }).isRequired,
   now: PropTypes.oneOfType([PropTypes.instanceOf(Date), PropTypes.number]).isRequired,
-  cameraStream: PropTypes.node
+  cameraStream: PropTypes.node,
+  renderAction: PropTypes.func
 }
 
 const layoutPropTypes = { view: PropTypes.object.isRequired }

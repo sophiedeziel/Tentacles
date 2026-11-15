@@ -55,4 +55,75 @@ describe('PrinterWidget', () => {
       expect(screen.getByText('Last seen 2 h ago')).toBeInTheDocument()
     })
   })
+
+  describe('Large', () => {
+    it('shows the camera above the job, the state tag, a progress bar and the controls', () => {
+      render(
+        <PrinterWidget printer={PRINTERS.PRINTING} size="L" options={ALL_OPTIONS} now={FIXTURE_NOW}
+          cameraStream={<span>stream</span>} />
+      )
+      expect(screen.getByText('Live')).toBeInTheDocument()
+      expect(screen.getByText('stream')).toBeInTheDocument()
+      expect(screen.getByText('Printing').closest('.ant-tag')).toBeInTheDocument()
+      expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '64')
+      expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+      expect(screen.queryByText(/Up next/)).not.toBeInTheDocument()
+    })
+
+    it('puts the ring in place of the camera, with temperature tiles and up next', () => {
+      renderWidget('PRINTING', 'L', { camera: false })
+      expect(screen.queryByText('Live')).not.toBeInTheDocument()
+      expect(screen.getByText('Hotend')).toBeInTheDocument()
+      expect(screen.getByText('215° / 215°')).toBeInTheDocument()
+      expect(screen.getByText('Up next: cable_clip_x20.gcode')).toBeInTheDocument()
+    })
+
+    it('shows only the time left when every other option is off', () => {
+      renderWidget('PRINTING', 'L', { camera: false, temperatures: false, upNext: false, controls: false })
+      expect(screen.queryByText('Hotend')).not.toBeInTheDocument()
+      expect(screen.queryByText(/Up next/)).not.toBeInTheDocument()
+      expect(screen.queryByRole('button')).not.toBeInTheDocument()
+    })
+
+    it('shows the camera placeholder with its reason', () => {
+      renderWidget('ERROR', 'L')
+      expect(screen.getByText('No camera')).toBeInTheDocument()
+      expect(screen.getByText('Add a webcam in OctoPrint')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Reconnect' })).toBeInTheDocument()
+    })
+
+    it.each([
+      ['PAUSED', ['Resume', 'Cancel']],
+      ['OPERATIONAL', ['Start Next']],
+      ['CONNECTING', []],
+      ['OFFLINE', ['Connect']]
+    ])('shows the %s controls', (family, labels) => {
+      renderWidget(family, 'L')
+      expect(screen.queryAllByRole('button').map((button) => button.textContent)).toEqual(labels)
+    })
+
+    it('shows a disabled spinner button while cancelling', () => {
+      renderWidget('CANCELLING', 'L')
+      expect(screen.getByRole('button', { name: /Cancelling/ })).toBeDisabled()
+    })
+  })
+
+  describe('Extra Large', () => {
+    it('shows every detail beside the camera', () => {
+      renderWidget('PAUSED', 'XL')
+      expect(screen.getByText('Live')).toBeInTheDocument()
+      expect(screen.getByText('Paused at 38%')).toBeInTheDocument()
+      expect(screen.getByText('175°')).toBeInTheDocument()
+      expect(screen.getByText('100° / 100°')).toBeInTheDocument()
+      expect(screen.getByText('Up next: calibration_cube.gcode')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Resume' })).toBeInTheDocument()
+    })
+
+    it('shows a large ring instead of the camera when it is off', () => {
+      renderWidget('PRINTING', 'XL', { camera: false })
+      expect(screen.queryByText('Live')).not.toBeInTheDocument()
+      expect(screen.getAllByRole('progressbar')).toHaveLength(1)
+    })
+  })
 })
