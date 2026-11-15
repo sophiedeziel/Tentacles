@@ -1,3 +1,9 @@
+// Edit mode's widget tools, as in the mockup's edit board: a round remove button on the top-left corner and a dark
+// toolbar centred at the bottom of the widget
+@night: #110028;
+@elevated: 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+@focus: 2px solid #a565ff;
+
 .editing {
   position: relative;
   height: 100%;
@@ -8,4 +14,103 @@
 .content {
   height: 100%;
   pointer-events: none;
+}
+
+.remove {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid #d9d9d9;
+  border-radius: 50%;
+  background: #fff;
+  color: rgba(0, 0, 0, 0.88);
+  box-shadow: @elevated;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #ff4d4f;
+    color: #ff4d4f;
+  }
+
+  &:focus-visible {
+    outline: @focus;
+    outline-offset: 1px;
+  }
+}
+
+.tools {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: calc(100% - 16px);
+  padding: 3px;
+  border-radius: 8px;
+  background: @night;
+  transform: translateX(-50%);
+  cursor: default;
+}
+
+.group {
+  display: flex;
+  gap: 2px;
+}
+
+.tool {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 5px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.14);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    background: transparent;
+    cursor: default;
+  }
+
+  &:focus-visible {
+    outline: @focus;
+    outline-offset: 1px;
+  }
+
+  // The gear while its menu is open
+  &[aria-expanded='true'] {
+    background: #8f59dc;
+  }
+}
+
+.sizeOn {
+  composes: tool;
+  background: #8f59dc;
+
+  &:hover {
+    background: #8f59dc;
+  }
 }

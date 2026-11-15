@@ -20,6 +20,12 @@ describe('registry', () => {
     })
   })
 
+  it('names a widget after its printer in edit mode', () => {
+    expect(REGISTRY.PRINTER.title({ name: 'Prusa MK4' })).toBe('Prusa MK4')
+    expect(REGISTRY.PRINT_QUEUE.title({ name: 'Prusa MK4' })).toBe('Prusa MK4 queue')
+    expect(REGISTRY.PRINT_QUEUE.title(null)).toBe('Print Queue')
+  })
+
   describe('Printer', () => {
     const printer = REGISTRY.PRINTER
 
