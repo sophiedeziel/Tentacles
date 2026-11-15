@@ -30,19 +30,24 @@ const PREVIEWS = {
   )
 }
 
-// A widget type at one size, as a button that adds it
+// A widget type at one size, as a button that adds it. Not a <button>: the preview has buttons of its own.
 function SizeChoice ({ type, size, label, onPick }) {
   const entry = REGISTRY[type]
   const { widthUnits, heightUnits } = SIZES[size]
   const width = span(widthUnits)
   const height = span(heightUnits)
   return (
-    <button type="button" className={classes.choice} aria-label={label} onClick={onPick}
+    <div role="button" tabIndex={0} className={classes.choice} aria-label={label} onClick={onPick}
+      onKeyDown={(event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return
+        event.preventDefault()
+        onPick()
+      }}
       style={{ width: Math.round(width * SCALE), height: Math.round(height * SCALE) }}>
-      <span className={classes.scaled} style={{ width, height }} inert>
+      <div className={classes.scaled} style={{ width, height }} inert>
         <WidgetFrame label={entry.name}>{PREVIEWS[type](entry, size)}</WidgetFrame>
-      </span>
-    </button>
+      </div>
+    </div>
   )
 }
 

@@ -22,8 +22,9 @@ describe('AddWidgetModal', () => {
       .toEqual(['Choose Printer, Small', 'Choose Printer, Medium', 'Choose Printer, Large', 'Choose Printer, Extra Large'])
     expect(within(dialog).getAllByRole('button', { name: /^Add Print Queue/ })).toHaveLength(5)
     expect(within(dialog).getAllByText('Printer name').length).toBeGreaterThan(0)
-    // No camera streams in the gallery
+    // No camera streams in the gallery, and no button holds another
     expect(dialog.querySelector('img')).toBeNull()
+    expect(dialog.querySelector('button button')).toBeNull()
   })
 
   it('adds a divider', async () => {
@@ -33,10 +34,13 @@ describe('AddWidgetModal', () => {
     expect(onClose).toHaveBeenCalled()
   })
 
-  it('adds a Print Queue for all printers', async () => {
+  it('adds a Print Queue for all printers, also from the keyboard', async () => {
     const { dispatch } = renderGallery()
     await userEvent.click(screen.getByRole('button', { name: 'Add Print Queue, Extra Extra Large' }))
     expect(dispatch).toHaveBeenCalledWith({ type: 'addWidget', widgetType: 'PRINT_QUEUE', size: 'XXL', printerId: null })
+    screen.getByRole('button', { name: 'Add Print Queue, Small' }).focus()
+    await userEvent.keyboard('{Enter}')
+    expect(dispatch).toHaveBeenLastCalledWith({ type: 'addWidget', widgetType: 'PRINT_QUEUE', size: 'S', printerId: null })
   })
 
   it('asks which printer a Printer widget shows', async () => {
