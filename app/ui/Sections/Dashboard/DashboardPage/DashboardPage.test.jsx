@@ -190,6 +190,17 @@ describe('DashboardPage', () => {
       expect(screen.queryByText('Drop at the end of this row')).not.toBeInTheDocument()
     })
 
+    it('says the layout changed elsewhere when another save lands during a save that fails', async () => {
+      await editPage([{
+        request: { query: SAVE_DASHBOARD, variables: { sections: sections.slice(0, 2) } },
+        result: { data: { saveDashboard: { __typename: 'SaveDashboardPayload', dashboard: null, errors: ['Try again'] } } },
+        delay: 1000
+      }], 500)
+      await userEvent.click(screen.getByRole('button', { name: 'Done' }))
+      expect(await screen.findByText("The layout wasn't saved", {}, { timeout: 3000 })).toBeInTheDocument()
+      expect(screen.getByText('Layout changed elsewhere')).toBeInTheDocument()
+    })
+
     it('picks a widget up with the keyboard and puts it back on Esc', async () => {
       await editPage([])
       const cell = screen.getByRole('button', { name: 'Prusa MK4' })

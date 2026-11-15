@@ -22,12 +22,18 @@ export default function useLayoutEditor (dashboard) {
   const [busy, setBusy] = useState(null)
   const [problem, setProblem] = useState(null)
   const [changedElsewhere, setChangedElsewhere] = useState(false)
-  // A push during our own save is that save's
-  const watching = useRef(false)
-  watching.current = editing && busy !== 'save'
+  // A push during our own save may be that save's: it only counts if the save fails (a failed save pushes nothing)
+  const watching = useRef(null)
+  const pushedDuringSave = useRef(false)
+  watching.current = editing && (busy === 'save' ? 'saving' : 'editing')
   const noticeChange = useCallback(() => {
-    if (watching.current) setChangedElsewhere(true)
+    if (watching.current === 'editing') setChangedElsewhere(true)
+    if (watching.current === 'saving') pushedDuringSave.current = true
   }, [])
+  const notSaved = (messages) => {
+    setProblem({ title: NOT_SAVED, messages })
+    if (pushedDuringSave.current) setChangedElsewhere(true)
+  }
 
   const start = () => {
     dispatch({ type: 'load', dashboard })
@@ -56,11 +62,12 @@ export default function useLayoutEditor (dashboard) {
     }
     setBusy('save')
     setProblem(null)
+    pushedDuringSave.current = false
     try {
       const { data } = await client.mutate({ mutation: SAVE_DASHBOARD, variables: { sections: saveInput(sections) } })
       const { dashboard: saved, errors } = data.saveDashboard
       if (!saved || errors.length > 0) {
-        setProblem({ title: NOT_SAVED, messages: errors.length > 0 ? errors : ['Try again'] })
+        notSaved(errors.length > 0 ? errors : ['Try again'])
         return
       }
       // A newer layout, pushed from another screen's later save, stays
@@ -71,7 +78,7 @@ export default function useLayoutEditor (dashboard) {
       setChangedElsewhere(false)
       setEditing(false)
     } catch (error) {
-      setProblem({ title: NOT_SAVED, messages: [error.message] })
+      notSaved([error.message])
     } finally {
       setBusy(null)
     }

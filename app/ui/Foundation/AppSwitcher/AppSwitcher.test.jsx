@@ -18,4 +18,16 @@ describe('AppSwitcher', () => {
     // The page loads lazily, then fails to load its data (no mocks)
     expect(await screen.findByText('Could not load the dashboard', {}, { timeout: 5000 })).toBeInTheDocument()
   })
+
+  it('sends the old /dashboard-next address to the dashboard', async () => {
+    render(
+      <MockedProvider mocks={[]}>
+        <MemoryRouter initialEntries={['/dashboard-next']}>
+          <AppSwitcher />
+        </MemoryRouter>
+      </MockedProvider>
+    )
+
+    expect(await screen.findByText('Could not load the dashboard', {}, { timeout: 5000 })).toBeInTheDocument()
+  })
 })

@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react'
 
 import {
+  Navigate,
   Routes,
   Route,
   Outlet
@@ -20,6 +21,8 @@ export default function AppSwithcer () {
     <Suspense fallback={<div>Loading...</div>}>
       <Routes>
           <Route path="/" element={<DashboardPage />}/>
+          {/* Where the dashboard was served before it replaced the old one: screens may still open it */}
+          <Route path="dashboard-next" element={<Navigate to="/" replace />}/>
           <Route path="printers" element={<Outlet />}>
             <Route index element={<QueuesList />} />
             <Route path=":id/queue" element={<Queue />} />
