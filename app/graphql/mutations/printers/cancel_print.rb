@@ -6,6 +6,10 @@ module Mutations
     class CancelPrint < PrinterAction
       description 'Cancels the print under way on a printer (allowed while PRINTING or PAUSED)'
 
+      argument :expected_file_name, String, required: false,
+                                            description: 'The file the user confirmed for: refuses when the ' \
+                                                         'printer is printing another one'
+
       CANCELLABLE = T.let([PrinterStateFamily::Printing, PrinterStateFamily::Paused].freeze,
                           T::Array[PrinterStateFamily])
 

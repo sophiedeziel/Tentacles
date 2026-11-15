@@ -6,6 +6,10 @@ module Mutations
     class PausePrint < PrinterAction
       description 'Pauses the print under way on a printer (allowed while PRINTING)'
 
+      argument :expected_file_name, String, required: false,
+                                            description: 'The file the user confirmed for: refuses when the ' \
+                                                         'printer is printing another one'
+
       private
 
       def refusal(printer, family)
