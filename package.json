@@ -81,10 +81,16 @@
     "@babel/preset-react": "^8.0.1",
     "@babel/preset-typescript": "^8.0.7",
     "@eslint/js": "^10.0.1",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.10",
+    "@vitejs/plugin-react": "^6.3.0",
     "css-loader": "^7.1.4",
     "eslint": "^9.39.2",
     "eslint-plugin-react": "^7.37.5",
     "globals": "^17.6.0",
+    "jsdom": "^31.0.1",
     "less": "^4.5.1",
     "less-loader": "^13.0.0",
     "mini-css-extract-plugin": "^2.10.1",
@@ -92,9 +98,12 @@
     "postcss-import": "^17.0.0",
     "sass-loader": "^17.0.0",
     "style-loader": "^4.0.0",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0",
     "webpack-dev-server": "^6.0.0"
   },
   "scripts": {
-    "preinstall": "node -e \"if (!/yarn/.test(process.env.npm_execpath || '')) { throw new Error('Please use yarn instead of npm'); }\""
+    "preinstall": "node -e \"if (!/yarn/.test(process.env.npm_execpath || '')) { throw new Error('Please use yarn instead of npm'); }\"",
+    "test": "vitest run"
   }
 }

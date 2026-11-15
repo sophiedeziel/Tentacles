@@ -1,16 +1,16 @@
 import React, { useState } from 'react'
 import { Menu } from 'antd'
 import {
-  BarChartOutlined,
-  BookOutlined,
-  CodeOutlined,
   FileOutlined,
   PieChartOutlined,
   UsbOutlined
 } from '@ant-design/icons'
 import { useLocation, useNavigate } from 'react-router'
 
-const rootSubmenuKeys = ['printers', 'macros', 'reports']
+const rootSubmenuKeys = ['printers']
+
+// The redesigned dashboard is served at /dashboard-next until it replaces /
+const ROOT_ALIASES = { '/dashboard-next': '/' }
 
 function SideMenu () {
   const location = useLocation()
@@ -18,8 +18,8 @@ function SideMenu () {
   const navigate = useNavigate()
 
   const getRootFromLocation = (path = pathname) => {
-    const root = '/' + (path.split('/').filter(e => e)[0] || '/')
-    return root
+    const root = '/' + (path.split('/').filter(e => e)[0] || '')
+    return ROOT_ALIASES[root] || root
   }
 
   const [openKeys, setOpenKeys] = useState([getRootFromLocation()])
@@ -42,16 +42,12 @@ function SideMenu () {
     }
   }
 
+  // Only links to pages that exist: Projects, Operations, Macros and Reports come back with their pages
   const items = [
     {
       label: 'Dashboard',
       key: '/',
       icon: <PieChartOutlined />
-    },
-    {
-      label: 'Projects',
-      key: '/projects',
-      icon: <BookOutlined />
     },
     {
       label: 'Printers',
@@ -65,10 +61,6 @@ function SideMenu () {
         {
           label: 'Manage',
           key: '/printers/manage'
-        },
-        {
-          label: 'Operations',
-          key: '/printers/operations'
         }
       ]
     },
@@ -76,16 +68,6 @@ function SideMenu () {
       label: 'Files',
       key: '/files',
       icon: <FileOutlined />
-    },
-    {
-      label: 'Macros',
-      key: '/macros',
-      icon: <CodeOutlined />
-    },
-    {
-      label: 'Reports',
-      key: '/reports',
-      icon: <BarChartOutlined />
     }
   ]
 
