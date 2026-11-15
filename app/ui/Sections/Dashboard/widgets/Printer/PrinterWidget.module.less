@@ -1,0 +1,175 @@
+// The Printer widget, as in the mockup's "Printer widget: sizes, states, options" board
+
+@muted: rgba(0, 0, 0, 0.65);
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 100%;
+}
+
+.small {
+  composes: column;
+}
+
+.smallHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 20px;
+  color: @muted;
+}
+
+.smallName {
+  composes: ellipsis;
+  font-weight: 600;
+}
+
+.smallCenter {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.smallTime {
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.medium {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  height: 100%;
+}
+
+.visual {
+  flex-shrink: 0;
+  width: 104px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex-grow: 1;
+}
+
+.name {
+  composes: ellipsis;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.headline {
+  composes: ellipsis;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.meta {
+  composes: ellipsis;
+  font-size: 12px;
+  line-height: 20px;
+  color: @muted;
+}
+
+.stateCircle {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Medium with the camera on: the stream fills the tile, details sit on a strip
+.cameraTile {
+  position: relative;
+  height: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #1f1f1f;
+  color: #fff;
+}
+
+.cameraMessage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 40px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+  background: #110028;
+}
+
+.statePill {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.6);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.strip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px 11px;
+  background: rgba(17, 0, 40, 0.86);
+}
+
+.stripTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+.stripMeta {
+  composes: ellipsis;
+  font-size: 12px;
+  line-height: 20px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.stripBar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+}
