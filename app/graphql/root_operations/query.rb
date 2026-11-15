@@ -72,6 +72,21 @@ module RootOperations
       nil
     end
 
+    field :dashboard, Types::Dashboard, null: false,
+                                        description: 'The dashboard layout, created from the default layout the ' \
+                                                     'first time'
+    def dashboard
+      ::DashboardSection.ensure_default!
+      Types::Dashboard.saved
+    end
+
+    field :default_dashboard, Types::Dashboard, null: false,
+                                                description: 'The default layout, not saved (null ids): a Print ' \
+                                                             'Queue XL for all printers, then a Printer M per printer'
+    def default_dashboard
+      { sections: ::DashboardSection.build_default, updated_at: nil }
+    end
+
     field :monitor_healthy, Boolean, null: false,
                                      resolver_method: :monitor_healthy?,
                                      description: 'Whether the printer monitor reported in the last 15 seconds'
