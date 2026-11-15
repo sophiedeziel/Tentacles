@@ -110,6 +110,11 @@ RSpec.describe Printer, :vcr, type: :model do
       expect(printer.api).to be api
     end
 
+    it 'is the PrusaLink adapter of a PrusaLink printer' do
+      printer = build(:printer, :prusalink)
+      expect(printer.api).to be_a(PrinterBackends::Prusalink).and have_attributes(printer:)
+    end
+
     %i[uri secret username].each do |attribute|
       it "is rebuilt when the #{attribute} changed" do
         api
@@ -287,6 +292,10 @@ RSpec.describe Printer, :vcr, type: :model do
       expect(build(:printer, backend: 'repetier')).not_to be_valid
     end
 
+    it 'accepts PrusaLink printers' do
+      expect(build(:printer, :prusalink)).to be_valid
+    end
+
     %i[uri secret].each do |attribute|
       it "requires the #{attribute} of a new printer" do
         expect(build(:printer, attribute => '')).not_to be_valid
@@ -323,6 +332,11 @@ RSpec.describe Printer, :vcr, type: :model do
     it 'are not erased by a blank uri or secret' do
       printer.update!(uri: '', secret: nil)
       expect(printer.reload).to have_attributes(octoprint_uri: 'http://octopi.local/', octoprint_key: 'KEY')
+    end
+
+    it 'are left alone for PrusaLink printers, so that their password is never stored in plain text' do
+      printer = create(:printer, :prusalink)
+      expect(printer.reload).to have_attributes(octoprint_uri: nil, octoprint_key: nil, secret: 'printer-password')
     end
   end
 end

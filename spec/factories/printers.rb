@@ -18,6 +18,13 @@ FactoryBot.define do
       secret { nil }
     end
 
+    trait :prusalink do
+      backend { 'prusalink' }
+      uri { 'http://prusa-mk4.local' }
+      username { 'maker' }
+      secret { 'printer-password' }
+    end
+
     trait :wrong_credentials do
       uri { 'http://10.0.1.165/' }
       secret { '193736djdbs' }

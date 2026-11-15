@@ -138,6 +138,14 @@ RSpec.describe PrinterBackends::Octoprint do
         adapter.public_send(command)
       end
     end
+
+    %i[pause resume cancel].each do |command|
+      it "#{command} ignores the job id: OctoPrint has a single job" do
+        allow(Octoprint::Job).to receive(command).and_return(true)
+        adapter.public_send(command, job_id: 7)
+        expect(Octoprint::Job).to have_received(command).with(no_args)
+      end
+    end
   end
 
   describe '#upload' do

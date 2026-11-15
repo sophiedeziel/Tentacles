@@ -4,7 +4,7 @@
 class Printer < ApplicationRecord
   extend T::Sig
 
-  BACKENDS = %w[octoprint].freeze
+  BACKENDS = %w[octoprint prusalink].freeze
 
   has_many :jobs, class_name: 'Printer::Job', dependent: :nullify
   has_many :dashboard_widgets, dependent: :destroy
