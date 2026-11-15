@@ -3,17 +3,17 @@
 
 module Mutations
   module Printers
-    # Base for the mutations that send a command to a printer's OctoPrint (pausePrint, connectPrinter, ...).
+    # Base for the mutations that send a command to a printer (pausePrint, connectPrinter, ...).
     #
-    # Each action re-reads the printer's LIVE state from OctoPrint first and refuses, without sending anything, when
+    # Each action re-reads the printer's LIVE state from its API first and refuses, without sending anything, when
     # the printer isn't in a state that allows it. After the command, one monitor tick runs inline so that the new
     # state is pushed to the subscribers before the response returns.
     #
-    # Never raises for OctoPrint or network failures: they come back as readable messages in `errors`.
+    # Never raises for printer API or network failures: they come back as readable messages in `errors`.
     #
     # Subclasses implement:
     # - `refusal(printer, family)`: the error message when the action isn't allowed in that state family, else nil
-    # - `send_command(printer)`: the OctoPrint call(s), run with the printer's own client
+    # - `send_command(printer)`: the command, sent through `printer.api`
     class PrinterAction < Base::Mutation
       extend T::Sig
       extend T::Helpers
@@ -41,7 +41,7 @@ module Mutations
       sig { abstract.params(printer: ::Printer, family: PrinterStateFamily).returns(T.nilable(String)) }
       def refusal(printer, family); end
 
-      # Sends the command to OctoPrint. Runs inside the printer's own client (see Printer#octoprint_client).
+      # Sends the command, e.g. `printer.api.pause` (see Printer#api)
       sig { abstract.params(printer: ::Printer).void }
       def send_command(printer); end
 
@@ -53,35 +53,36 @@ module Mutations
 
       sig { params(printer: ::Printer).returns(T::Hash[Symbol, T.untyped]) }
       def run(printer)
-        error = printer.octoprint_client.use { perform(printer) }
+        error = perform(printer)
         return failure(printer, error) if error
 
         PrinterMonitor.refresh(printer) if refresh_after_command?
         { success: true, errors: [], printer: }
-      # Besides our own bugs: the gem's errors, answers that aren't OctoPrint's (HTML: JSON::ParserError, no `error`
-      # key: KeyError) and a malformed URL. The gem wraps Faraday's network errors.
-      rescue Octoprint::Exceptions::Error, JSON::ParserError, KeyError, URI::InvalidURIError => e
-        failure(printer, octoprint_error_message(printer, e))
+      # Besides our own bugs: the adapter's errors, answers that aren't OctoPrint's (HTML: JSON::ParserError, no
+      # `error` key: KeyError) and a malformed URL. The adapter wraps the network errors.
+      rescue PrinterBackends::Error, JSON::ParserError, KeyError, URI::InvalidURIError => e
+        failure(printer, api_error_message(printer, e))
       end
 
       # Checks the live state (and the job the user confirmed, when given), then sends the command when it's
       # allowed. Returns the refusal message, if any.
       sig { params(printer: ::Printer).returns(T.nilable(String)) }
       def perform(printer)
-        job = Octoprint::Job.get
-        message = refusal(printer, PrinterStateFamily.for(job.state)) || unexpected_job(printer, job)
+        job = printer.api.live_job
+        message = refusal(printer, job.fetch(:state_family)) || unexpected_job(printer, job)
         send_command(printer) if message.nil?
         message
       end
 
       # The error message when the printer's live job isn't the one the user confirmed (`expectedFileName`, the
-      # file the screen showed), or nil. A stale screen must not pause or cancel another print.
-      sig { params(printer: ::Printer, job: Octoprint::Job).returns(T.nilable(String)) }
+      # file the screen showed), or nil. A stale screen must not pause or cancel another print. `job` is
+      # `printer.api.live_job`, whose file name is the one the monitor reports (PrinterStatus#file_name).
+      sig { params(printer: ::Printer, job: T::Hash[Symbol, T.untyped]).returns(T.nilable(String)) }
       def unexpected_job(printer, job)
         expected = @expected_file_name
         return if expected.nil?
 
-        current = job.information&.file&.[](:name)
+        current = job[:file_name]
         return if current == expected
 
         current ? "#{printer.name} is now printing #{current}" : "#{printer.name} is no longer printing #{expected}"
@@ -93,15 +94,15 @@ module Mutations
       end
 
       sig { params(printer: ::Printer, error: StandardError).returns(String) }
-      def octoprint_error_message(printer, error)
+      def api_error_message(printer, error)
         case error
-        when Octoprint::Exceptions::MissingCredentialsError
+        when PrinterBackends::MissingCredentials
           "#{printer.name} has no OctoPrint URL or API key"
         when URI::InvalidURIError
           "#{printer.name} has an invalid OctoPrint URL"
-        when Octoprint::Exceptions::ConnectionError
+        when PrinterBackends::Unreachable
           "Could not reach #{printer.name}'s OctoPrint: #{redact(printer, error.message)}"
-        when Octoprint::Exceptions::Error
+        when PrinterBackends::Error
           "#{printer.name}'s OctoPrint returned an error: #{redact(printer, error.message)}"
         else # JSON::ParserError, KeyError: the URL answers, but not like OctoPrint (e.g. an HTML page)
           "#{printer.name}'s OctoPrint URL does not answer like an OctoPrint server"
@@ -111,7 +112,7 @@ module Mutations
       # Never echo the API key back, whatever ends up in an error message
       sig { params(printer: ::Printer, message: String).returns(String) }
       def redact(printer, message)
-        key = printer.octoprint_key
+        key = printer.secret
         key.present? ? message.gsub(key, '[FILTERED]') : message
       end
     end

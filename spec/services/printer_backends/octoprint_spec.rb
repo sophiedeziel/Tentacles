@@ -63,6 +63,19 @@ RSpec.describe PrinterBackends::Octoprint do
     end
   end
 
+  describe '#live_job' do
+    it 'reads the state and the file name with a single request' do
+      allow(Octoprint::Job).to receive(:get).and_return(job('Printing'))
+      expect(adapter.live_job).to eq(state_family: PrinterStateFamily::Printing, file_name: 'cube.gcode')
+      expect(Octoprint::Job).to have_received(:get).once
+    end
+
+    it 'has a nil file name when no job is loaded' do
+      allow(Octoprint::Job).to receive(:get).and_return(Octoprint::Job.deserialize({ state: 'Operational', job: {} }))
+      expect(adapter.live_job).to eq(state_family: PrinterStateFamily::Operational, file_name: nil)
+    end
+  end
+
   describe '#identify' do
     before do
       allow(Octoprint::ServerVersion).to receive(:get)

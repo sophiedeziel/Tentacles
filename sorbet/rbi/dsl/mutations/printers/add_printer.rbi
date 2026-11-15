@@ -6,6 +6,6 @@
 
 
 class Mutations::Printers::AddPrinter
-  sig { params(kargs: T.untyped).returns(T.untyped) }
-  def resolve(**kargs); end
+  sig { params(name: ::String, octoprint_uri: ::String, octoprint_key: ::String).returns(T.untyped) }
+  def resolve(name:, octoprint_uri:, octoprint_key:); end
 end

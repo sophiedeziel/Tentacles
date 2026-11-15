@@ -84,6 +84,12 @@ module PrinterBackends
       { state_family: PrinterStateFamily.for(job.state), progress: job.progress&.completion&.to_f }
     end
 
+    sig { override.returns(T::Hash[Symbol, T.untyped]) }
+    def live_job
+      job = use { ::Octoprint::Job.get }
+      { state_family: PrinterStateFamily.for(job.state), file_name: job.information&.file&.[](:name) }
+    end
+
     sig { override.returns(T.nilable(String)) }
     def version
       use { ::Octoprint::ServerVersion.get }.text

@@ -37,6 +37,13 @@ module PrinterBackends
     sig { abstract.returns(T::Hash[Symbol, T.untyped]) }
     def print_progress; end
 
+    # The state family and the file of the job under way, read together, for the printer actions:
+    # `{ state_family: PrinterStateFamily::Printing, file_name: 'cube.gcode' }`. `file_name` is the name the monitor
+    # reports (PrinterStatus#file_name), so that an action can check it against the file the user confirmed. nil when
+    # no job is loaded.
+    sig { abstract.returns(T::Hash[Symbol, T.untyped]) }
+    def live_job; end
+
     # The server's name and version, e.g. "OctoPrint 1.11.2"
     sig { abstract.returns(T.nilable(String)) }
     def version; end

@@ -11,8 +11,8 @@ module Mutations
 
       field :printer, Types::Printer, null: true
 
-      def resolve(**kargs)
-        printer = ::Printer.new(kargs)
+      def resolve(name:, octoprint_uri:, octoprint_key:)
+        printer = ::Printer.new(name:, backend: 'octoprint', uri: octoprint_uri, secret: octoprint_key)
         if printer.save
           { printer: }
         else

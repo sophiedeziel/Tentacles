@@ -96,16 +96,16 @@ RSpec.shared_examples 'a printer action that fails gracefully' do |commands:|
   context 'when an error message contains the API key' do
     before do
       allow(Octoprint::Job).to receive(:get)
-        .and_raise(Octoprint::Exceptions::ConnectionError, "Failed with key #{printer.octoprint_key}")
+        .and_raise(Octoprint::Exceptions::ConnectionError, "Failed with key #{printer.secret}")
       run_mutation
     end
 
     it { expect_failure("Could not reach Prusa MK4's OctoPrint: Failed with key [FILTERED]") }
   end
 
-  [{ octoprint_key: nil }, { octoprint_key: '' }, { octoprint_uri: '' }].each do |attributes|
+  [{ secret: nil }, { secret: '' }, { uri: '' }].each do |attributes|
     context "when the printer has no OctoPrint credentials (#{attributes})" do
-      let(:printer) { create(:printer, name: 'Prusa MK4', **attributes) }
+      let(:printer) { create(:printer, :unvalidated, name: 'Prusa MK4', **attributes) }
 
       before { run_mutation }
 
@@ -118,7 +118,7 @@ RSpec.shared_examples 'a printer action that fails gracefully' do |commands:|
   end
 
   context 'when the printer has a malformed OctoPrint URL' do
-    let(:printer) { create(:printer, name: 'Prusa MK4', octoprint_uri: 'http://octo pi.local') }
+    let(:printer) { create(:printer, name: 'Prusa MK4', uri: 'http://octo pi.local') }
 
     before do
       allow(Octoprint::Job).to receive(:get).and_call_original

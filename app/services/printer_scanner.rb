@@ -5,7 +5,7 @@ class PrinterScanner
   IP_REGEX = /((?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))/
 
   def call
-    uris = Printer.pluck(:octoprint_uri)
+    uris = Printer.pluck(:uri)
     ips = use_cache do
       all_network_ips.select { |ip| octoprint?(ip) }
     end

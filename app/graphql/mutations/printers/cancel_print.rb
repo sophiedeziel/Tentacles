@@ -19,8 +19,8 @@ module Mutations
         "#{printer.name} is no longer printing" unless CANCELLABLE.include?(family)
       end
 
-      def send_command(_printer)
-        Octoprint::Job.cancel
+      def send_command(printer)
+        printer.api.cancel
       end
     end
   end

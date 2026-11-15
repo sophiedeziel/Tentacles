@@ -16,8 +16,8 @@ module Mutations
         "#{printer.name} is no longer printing" unless family == PrinterStateFamily::Printing
       end
 
-      def send_command(_printer)
-        Octoprint::Job.pause
+      def send_command(printer)
+        printer.api.pause
       end
     end
   end

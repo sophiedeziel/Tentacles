@@ -13,9 +13,8 @@ module Mutations
         "#{printer.name} is no longer in error" unless family == PrinterStateFamily::Error
       end
 
-      def send_command(_printer)
-        Octoprint::Connection.disconnect
-        Octoprint::Connection.connect(ConnectPrinter.connection_params)
+      def send_command(printer)
+        printer.api.reconnect
       end
     end
   end
