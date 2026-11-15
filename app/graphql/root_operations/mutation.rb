@@ -15,5 +15,10 @@ module RootOperations
     field :enqueueFiles, mutation: Mutations::Printers::EnqueueFiles
     field :send_files_to_printers, mutation: Mutations::Printers::SendFilesToPrinters
     field :start_next_print, mutation: Mutations::Printers::StartNextPrint
+    field :pausePrint, mutation: Mutations::Printers::PausePrint
+    field :resumePrint, mutation: Mutations::Printers::ResumePrint
+    field :cancelPrint, mutation: Mutations::Printers::CancelPrint
+    field :connectPrinter, mutation: Mutations::Printers::ConnectPrinter
+    field :reconnectPrinter, mutation: Mutations::Printers::ReconnectPrinter
   end
 end
