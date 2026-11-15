@@ -16,29 +16,41 @@ module Octoprint
     # The API client used for the requests
     # @returns [Client]
     #
-    # pkg:gem/octoprint#lib/octoprint.rb:39
+    # pkg:gem/octoprint#lib/octoprint.rb:51
     sig { returns(T.nilable(::Octoprint::Client)) }
     def client; end
 
     # Sets the API client used for the requests
     # @param [Client] client
     #
-    # pkg:gem/octoprint#lib/octoprint.rb:45
+    # pkg:gem/octoprint#lib/octoprint.rb:57
     def client=(client); end
 
     # Configure the API client with the server's address and key
     #
-    # @param [String] host      Server's host address
-    # @param [String] api_key   Server's API key
+    # @example
+    #   Octoprint.configure(host: "http://octopi.local", api_key: "key", open_timeout: 2, timeout: 3)
+    #
+    # @param [String] host                  Server's host address
+    # @param [String] api_key               Server's API key
+    # @param [Numeric, nil] open_timeout    Seconds to wait for the connection to open. nil falls back to `timeout`
+    # @param [Numeric, nil] timeout         Seconds to wait for a read or a write. nil: adapter default (60s)
     # @return [nil]
     #
-    # pkg:gem/octoprint#lib/octoprint.rb:30
-    sig { params(host: ::String, api_key: ::String).void }
-    def configure(host:, api_key:); end
+    # pkg:gem/octoprint#lib/octoprint.rb:42
+    sig do
+      params(
+        host: ::String,
+        api_key: ::String,
+        open_timeout: T.nilable(::Numeric),
+        timeout: T.nilable(::Numeric)
+      ).void
+    end
+    def configure(host:, api_key:, open_timeout: T.unsafe(nil), timeout: T.unsafe(nil)); end
   end
 end
 
-# pkg:gem/octoprint#lib/octoprint.rb:52
+# pkg:gem/octoprint#lib/octoprint.rb:64
 module Octoprint::Access; end
 
 # Represents a group in the OctoPrint access control system
@@ -882,23 +894,48 @@ end
 
 # The API client object.
 #
+# @example Configure a client with custom timeouts
+#   client = Octoprint::Client.new(host: "http://octopi.local", api_key: "key", open_timeout: 1, timeout: 5)
+#
+# @example Allow more time for large file uploads
+#   client = Octoprint::Client.new(host: "http://octopi.local", api_key: "key", timeout: 120)
+#
 # @attr [String] host
 # @attr [String] api_key
+# @attr [Numeric, nil] open_timeout  Seconds to wait for the connection to open. nil falls back to `timeout`
+# @attr [Numeric, nil] timeout       Seconds to wait for a read or a write. nil: adapter default (60s)
 # @attr [Client] client
 #
-# pkg:gem/octoprint#lib/octoprint/client.rb:13
+# pkg:gem/octoprint#lib/octoprint/client.rb:21
 class Octoprint::Client
-  # pkg:gem/octoprint#lib/octoprint/client.rb:16
-  def initialize(host:, api_key:); end
+  # @param host [String, URI]            Server's host address
+  # @param api_key [String]              Server's API key
+  # @param open_timeout [Numeric, nil]   Seconds to wait for the connection to open. nil falls back to `timeout`
+  # @param timeout [Numeric, nil]        Seconds to wait for a read or a write. nil: adapter default (60s)
+  # @raise [Exceptions::MissingCredentialsError] if host or api_key is missing
+  #
+  # pkg:gem/octoprint#lib/octoprint/client.rb:44
+  sig do
+    params(
+      host: T.nilable(T.any(::String, ::URI::Generic)),
+      api_key: T.nilable(::String),
+      open_timeout: T.nilable(::Numeric),
+      timeout: T.nilable(::Numeric)
+    ).void
+  end
+  def initialize(host:, api_key:, open_timeout: T.unsafe(nil), timeout: T.unsafe(nil)); end
 
-  # pkg:gem/octoprint#lib/octoprint/client.rb:14
+  # pkg:gem/octoprint#lib/octoprint/client.rb:29
   def api_key; end
 
-  # pkg:gem/octoprint#lib/octoprint/client.rb:14
+  # pkg:gem/octoprint#lib/octoprint/client.rb:29
   def client; end
 
-  # pkg:gem/octoprint#lib/octoprint/client.rb:14
+  # pkg:gem/octoprint#lib/octoprint/client.rb:29
   def host; end
+
+  # pkg:gem/octoprint#lib/octoprint/client.rb:29
+  def open_timeout; end
 
   # Instantiates an object from a hash. Can be overridden by child classes
   #
@@ -907,33 +944,48 @@ class Octoprint::Client
   # @param [Hash] body                  the body of the request
   # @param [Hash] options               options
   # @return [Hash]
+  # @raise [Exceptions::TimeoutError] if the server doesn't respond within the configured timeouts
+  # @raise [Exceptions::ConnectionError] if the server can't be reached
   #
-  # pkg:gem/octoprint#lib/octoprint/client.rb:31
+  # pkg:gem/octoprint#lib/octoprint/client.rb:63
   def request(path, options_or_http_method = T.unsafe(nil), body: T.unsafe(nil), headers: T.unsafe(nil), options: T.unsafe(nil), http_method: T.unsafe(nil)); end
+
+  # pkg:gem/octoprint#lib/octoprint/client.rb:29
+  def timeout; end
 
   # Every request inside the block will be executed as this client without affecting the gem's initial configuration
   # @return [Client]
   #
-  # pkg:gem/octoprint#lib/octoprint/client.rb:57
+  # pkg:gem/octoprint#lib/octoprint/client.rb:89
   def use; end
 
   private
 
-  # pkg:gem/octoprint#lib/octoprint/client.rb:107
+  # pkg:gem/octoprint#lib/octoprint/client.rb:145
   def new_client(multipart: T.unsafe(nil)); end
 
-  # pkg:gem/octoprint#lib/octoprint/client.rb:82
+  # pkg:gem/octoprint#lib/octoprint/client.rb:114
   def parse_response(response); end
 
-  # pkg:gem/octoprint#lib/octoprint/client.rb:67
+  # pkg:gem/octoprint#lib/octoprint/client.rb:99
   def process_error(response); end
 
-  # pkg:gem/octoprint#lib/octoprint/client.rb:98
+  # pkg:gem/octoprint#lib/octoprint/client.rb:130
   def request_with_client(http_method, path, body, headers, force_multipart: T.unsafe(nil)); end
 
-  # pkg:gem/octoprint#lib/octoprint/client.rb:87
+  # pkg:gem/octoprint#lib/octoprint/client.rb:119
   def transform_keys_recursively(obj); end
 end
+
+# Default number of seconds to wait for the connection to open
+#
+# pkg:gem/octoprint#lib/octoprint/client.rb:25
+Octoprint::Client::DEFAULT_OPEN_TIMEOUT = T.let(T.unsafe(nil), Integer)
+
+# Default number of seconds to wait for a read or a write
+#
+# pkg:gem/octoprint#lib/octoprint/client.rb:27
+Octoprint::Client::DEFAULT_TIMEOUT = T.let(T.unsafe(nil), Integer)
 
 # Connection handling with the 3D printer
 #
@@ -1534,6 +1586,11 @@ class Octoprint::Exceptions::BadRequestError < ::Octoprint::Exceptions::Error; e
 # pkg:gem/octoprint#lib/octoprint/exceptions.rb:18
 class Octoprint::Exceptions::ConflictError < ::Octoprint::Exceptions::Error; end
 
+# The server could not be reached (connection refused, host unreachable, DNS failure, ...)
+#
+# pkg:gem/octoprint#lib/octoprint/exceptions.rb:22
+class Octoprint::Exceptions::ConnectionError < ::Octoprint::Exceptions::Error; end
+
 # Base error.
 #
 # pkg:gem/octoprint#lib/octoprint/exceptions.rb:8
@@ -1551,6 +1608,11 @@ class Octoprint::Exceptions::MissingCredentialsError < ::Octoprint::Exceptions::
 
 # pkg:gem/octoprint#lib/octoprint/exceptions.rb:20
 class Octoprint::Exceptions::NotFoundError < ::Octoprint::Exceptions::Error; end
+
+# The server did not open the connection or respond within the configured timeouts
+#
+# pkg:gem/octoprint#lib/octoprint/exceptions.rb:24
+class Octoprint::Exceptions::TimeoutError < ::Octoprint::Exceptions::ConnectionError; end
 
 # pkg:gem/octoprint#lib/octoprint/exceptions.rb:17
 class Octoprint::Exceptions::UnknownError < ::Octoprint::Exceptions::Error; end
@@ -2443,6 +2505,1292 @@ class Octoprint::Logs::References
   def resource; end
 end
 
+# Full state of the printer: temperatures, SD card state and general printer state.
+#
+# The printer's components are controlled through dedicated resources:
+#
+# - {Printer::Printhead} — jog, home and change the feed rate of the print head
+# - {Printer::Tool} — set temperatures, select tools, extrude and change the flow rate
+# - {Printer::Bed} — set the heated bed's temperature
+# - {Printer::Chamber} — set the heated chamber's temperature
+# - {Printer::Sd} — initialize, refresh and release the printer's SD card
+# - {Printer::Command} — send arbitrary commands and retrieve custom controls
+#
+# @example Get the current printer state
+#   printer = Octoprint::Printer.get
+#   printer.state.text                    # => "Operational"
+#   printer.state.flags.printing          # => false
+#   printer.temperature.tool(0).actual    # => 214.8821
+#   printer.temperature.bed.target        # => 70.0
+#   printer.sd.ready                      # => true
+#
+# @example Include the temperature history, limited to the last two data points
+#   printer = Octoprint::Printer.get(history: true, limit: 2)
+#   printer.temperature.history.map(&:time) # => [1395651928, 1395651926]
+#
+# @example Exclude data that isn't needed
+#   printer = Octoprint::Printer.get(exclude: %i[temperature sd])
+#   printer.temperature # => nil
+#
+# @see https://docs.octoprint.org/en/master/api/printer.html OctoPrint Printer API Documentation
+#
+# pkg:gem/octoprint#lib/octoprint/printer.rb:33
+class Octoprint::Printer < ::Octoprint::BaseResource
+  include ::Octoprint::AutoInitializable
+  include ::Octoprint::Deserializable
+  extend ::Octoprint::Printer::HistoryQuery
+  extend ::Octoprint::AutoInitializable::ClassMethods
+  extend ::Octoprint::Deserializable::ClassMethods
+
+  # pkg:gem/octoprint#lib/octoprint/printer.rb:57
+  def initialize(**kwargs); end
+
+  # pkg:gem/octoprint#lib/octoprint/printer.rb:57
+  def extra; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer.rb:57
+  def sd; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer.rb:57
+  def state; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer.rb:57
+  def temperature; end
+
+  class << self
+    # Retrieves the current state of the printer.
+    #
+    # @param history [Boolean] Whether to include the temperature history
+    # @param limit [Integer, nil] Only return the last +limit+ history data points (ignored unless +history+ is true)
+    # @param exclude [Array<String, Symbol>] Fields to leave out of the response: +temperature+, +sd+ and/or +state+
+    #
+    # @example Get the printer state
+    #   printer = Octoprint::Printer.get
+    #   printer.state.text # => "Operational"
+    #
+    # @example Get the printer state with the last 10 temperature data points
+    #   Octoprint::Printer.get(history: true, limit: 10).temperature.history
+    #
+    # @example Only retrieve the general state
+    #   Octoprint::Printer.get(exclude: %i[temperature sd]).state.flags.ready # => true
+    #
+    # @return [Printer] The current printer state
+    # @raise [ArgumentError] if +exclude+ contains an unknown field
+    # @raise [Octoprint::Exceptions::ConflictError] if the printer is not operational
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer.rb:94
+    sig do
+      params(
+        history: T::Boolean,
+        limit: T.nilable(::Integer),
+        exclude: T::Array[T.any(::String, ::Symbol)]
+      ).returns(::Octoprint::Printer)
+    end
+    def get(history: T.unsafe(nil), limit: T.unsafe(nil), exclude: T.unsafe(nil)); end
+  end
+end
+
+# Heated bed temperature and commands.
+#
+# Only available if the selected printer profile has a heated bed, otherwise every request
+# raises {Octoprint::Exceptions::ConflictError}. Requires the +CONTROL+ permission for commands
+# and +STATUS+ for {.temperature}.
+#
+# @example Read the bed temperature
+#   bed = Octoprint::Printer::Bed.temperature
+#   puts "#{bed.actual}°C / #{bed.target}°C"
+#
+# @example Include the last two history readings
+#   Octoprint::Printer::Bed.temperature(history: true, limit: 2).history.map(&:actual) # => [50.221, 49.1123]
+#
+# @example Heat the bed to 75°C
+#   Octoprint::Printer::Bed.target(75)
+#
+# @example Set a -5°C offset
+#   Octoprint::Printer::Bed.offset(-5)
+#
+# @see https://docs.octoprint.org/en/master/api/printer.html#issue-a-bed-command
+#
+# pkg:gem/octoprint#lib/octoprint/printer/bed.rb:26
+class Octoprint::Printer::Bed < ::Octoprint::BaseResource
+  include ::Octoprint::Printer::Heater
+  include ::Octoprint::Printer::TemperatureAttributes
+  include ::Octoprint::AutoInitializable
+  include ::Octoprint::Deserializable
+  extend ::Octoprint::Printer::HistoryQuery
+  extend ::Octoprint::Printer::Heater::ClassMethods
+  extend ::Octoprint::Printer::TemperatureAttributes::ClassMethods
+  extend ::Octoprint::AutoInitializable::ClassMethods
+  extend ::Octoprint::Deserializable::ClassMethods
+
+  # pkg:gem/octoprint#lib/octoprint/printer/bed.rb:27
+  def initialize(**kwargs); end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/bed.rb:27
+  def actual; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/bed.rb:27
+  def extra; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/bed.rb:27
+  def history; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/bed.rb:27
+  def offset; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/bed.rb:27
+  def target; end
+end
+
+# Heated chamber temperature and commands.
+#
+# Only available if the selected printer profile has a heated chamber, otherwise every request
+# raises {Octoprint::Exceptions::ConflictError}. Requires the +CONTROL+ permission for commands
+# and +STATUS+ for {.temperature}.
+#
+# @example Read the chamber temperature
+#   chamber = Octoprint::Printer::Chamber.temperature
+#   puts "#{chamber.actual}°C / #{chamber.target}°C"
+#
+# @example Heat the chamber to 50°C
+#   Octoprint::Printer::Chamber.target(50)
+#
+# @example Set a -5°C offset
+#   Octoprint::Printer::Chamber.offset(-5)
+#
+# @see https://docs.octoprint.org/en/master/api/printer.html#issue-a-chamber-command
+#
+# pkg:gem/octoprint#lib/octoprint/printer/chamber.rb:23
+class Octoprint::Printer::Chamber < ::Octoprint::BaseResource
+  include ::Octoprint::Printer::Heater
+  include ::Octoprint::Printer::TemperatureAttributes
+  include ::Octoprint::AutoInitializable
+  include ::Octoprint::Deserializable
+  extend ::Octoprint::Printer::HistoryQuery
+  extend ::Octoprint::Printer::Heater::ClassMethods
+  extend ::Octoprint::Printer::TemperatureAttributes::ClassMethods
+  extend ::Octoprint::AutoInitializable::ClassMethods
+  extend ::Octoprint::Deserializable::ClassMethods
+
+  # pkg:gem/octoprint#lib/octoprint/printer/chamber.rb:24
+  def initialize(**kwargs); end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/chamber.rb:24
+  def actual; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/chamber.rb:24
+  def extra; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/chamber.rb:24
+  def history; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/chamber.rb:24
+  def offset; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/chamber.rb:24
+  def target; end
+end
+
+# Sends arbitrary commands or GCODE scripts to the printer and retrieves custom controls.
+#
+# Use with care: some commands can interfere with or even stop a running print job.
+# Requires the +CONTROL+ permission.
+#
+# @example Send a single command
+#   Octoprint::Printer::Command.send_command("M106")
+#
+# @example Send multiple commands
+#   Octoprint::Printer::Command.send_commands(["M18", "M106 S0"])
+#
+# @example Run a GCODE script template
+#   Octoprint::Printer::Command.run_script("afterPrintCancelled")
+#
+# @example List the custom controls
+#   Octoprint::Printer::Command.custom_controls.map(&:name) # => ["Fan", "Reporting"]
+#
+# @see https://docs.octoprint.org/en/master/api/printer.html#send-an-arbitrary-command-to-the-printer
+#
+# pkg:gem/octoprint#lib/octoprint/printer/command.rb:24
+class Octoprint::Printer::Command < ::Octoprint::BaseResource
+  class << self
+    # Retrieves the custom controls configured in OctoPrint's +config.yaml+.
+    #
+    # @example
+    #   Octoprint::Printer::Command.custom_controls.each do |control|
+    #     puts control.name
+    #     control.children&.each { |child| puts "  #{child.name}: #{child.command}" }
+    #   end
+    #
+    # @return [Array<Printer::CustomControl>] The custom controls
+    # @see https://docs.octoprint.org/en/master/features/custom_controls.html Custom controls
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/command.rb:131
+    sig { returns(T::Array[::Octoprint::Printer::CustomControl]) }
+    def custom_controls; end
+
+    # Sends an arbitrary command request. Exactly one of +command+, +commands+ or +script+ must be given.
+    #
+    # @param command [String, nil] A single command to send
+    # @param commands [Array<String>, nil] Multiple commands to send, in order
+    # @param script [String, nil] The name of a GCODE script template to send
+    # @param parameters [Hash, nil] Parameters to replace in the commands or to provide to the script renderer
+    # @param context [Hash, nil] Additional template variables for the script renderer (only with +script+)
+    #
+    # @example
+    #   Octoprint::Printer::Command.issue(commands: ["G91", "G1 X%(distance)s", "G90"],
+    #                                     parameters: { distance: 10 })
+    #
+    # @return [Boolean] true on success (204 No Content)
+    # @raise [ArgumentError] if not exactly one of +command+, +commands+ or +script+ is given,
+    #   or if +context+ is given without +script+
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/command.rb:53
+    sig do
+      params(
+        command: T.nilable(::String),
+        commands: T.nilable(T::Array[::String]),
+        script: T.nilable(::String),
+        parameters: T.nilable(T::Hash[T.any(::String, ::Symbol), T.untyped]),
+        context: T.nilable(T::Hash[T.any(::String, ::Symbol), T.untyped])
+      ).returns(T.untyped)
+    end
+    def issue(command: T.unsafe(nil), commands: T.unsafe(nil), script: T.unsafe(nil), parameters: T.unsafe(nil), context: T.unsafe(nil)); end
+
+    # Renders a GCODE script template and sends it to the printer.
+    #
+    # @param script [String] The name of the GCODE script template
+    # @param parameters [Hash, nil] Parameters to provide to the script renderer
+    # @param context [Hash, nil] Additional template variables to provide to the script renderer
+    #
+    # @example
+    #   Octoprint::Printer::Command.run_script("afterPrintCancelled")
+    #
+    # @return [Boolean] true on success (204 No Content)
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/command.rb:116
+    sig do
+      params(
+        script: ::String,
+        parameters: T.nilable(T::Hash[T.any(::String, ::Symbol), T.untyped]),
+        context: T.nilable(T::Hash[T.any(::String, ::Symbol), T.untyped])
+      ).returns(T.untyped)
+    end
+    def run_script(script, parameters: T.unsafe(nil), context: T.unsafe(nil)); end
+
+    # Sends a single command to the printer.
+    #
+    # @param command [String] The command to send
+    # @param parameters [Hash, nil] Parameters to replace in the command
+    #
+    # @example
+    #   Octoprint::Printer::Command.send_command("M106")
+    #
+    # @example With parameters
+    #   Octoprint::Printer::Command.send_command("M106 S%(speed)s", parameters: { speed: 255 })
+    #
+    # @return [Boolean] true on success (204 No Content)
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/command.rb:76
+    sig do
+      params(
+        command: ::String,
+        parameters: T.nilable(T::Hash[T.any(::String, ::Symbol), T.untyped])
+      ).returns(T.untyped)
+    end
+    def send_command(command, parameters: T.unsafe(nil)); end
+
+    # Sends multiple commands to the printer, in the given order.
+    #
+    # @param commands [Array<String>] The commands to send
+    # @param parameters [Hash, nil] Parameters to replace in the commands
+    #
+    # @example
+    #   Octoprint::Printer::Command.send_commands(["M18", "M106 S0"])
+    #
+    # @return [Boolean] true on success (204 No Content)
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/command.rb:95
+    sig do
+      params(
+        commands: T::Array[::String],
+        parameters: T.nilable(T::Hash[T.any(::String, ::Symbol), T.untyped])
+      ).returns(T.untyped)
+    end
+    def send_commands(commands, parameters: T.unsafe(nil)); end
+  end
+end
+
+# A custom control as configured in OctoPrint's +config.yaml+.
+#
+# There are two kinds of custom controls: containers, which group other controls in +children+,
+# and controls, which send a +command+, +commands+ or +script+ to the printer and/or display
+# output matched by +regex+ and rendered with +template+.
+#
+# @example
+#   fan = Octoprint::Printer::Command.custom_controls.first
+#   fan.container?                    # => true
+#   fan.children.first.command        # => "M106 S%(speed)s"
+#   fan.children.first.input.first    # => #<Octoprint::Printer::CustomControl::Input ...>
+#
+# @see https://docs.octoprint.org/en/master/features/custom_controls.html
+#
+# pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:19
+class Octoprint::Printer::CustomControl
+  include ::Octoprint::AutoInitializable
+  include ::Octoprint::Deserializable
+  extend ::Octoprint::AutoInitializable::ClassMethods
+  extend ::Octoprint::Deserializable::ClassMethods
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:104
+  def initialize(**kwargs); end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:104
+  def additional_classes; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:104
+  def children; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:104
+  def collapsed; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:104
+  def command; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:104
+  def commands; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:104
+  def confirm; end
+
+  # Whether this is a container grouping other controls.
+  #
+  # @return [Boolean] true if the control has children
+  #
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:115
+  sig { returns(T::Boolean) }
+  def container?; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:104
+  def enabled; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:104
+  def extra; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:104
+  def input; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:104
+  def javascript; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:104
+  def key; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:104
+  def layout; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:104
+  def name; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:104
+  def offset; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:104
+  def regex; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:104
+  def script; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:104
+  def template; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:104
+  def template_key; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:104
+  def type; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control.rb:104
+  def width; end
+end
+
+# An input parameter of a custom control.
+#
+# @example
+#   input = Octoprint::Printer::Command.custom_controls.first.children.first.input.first
+#   input.name       # => "Speed (0-255)"
+#   input.parameter  # => "speed"
+#   input.default    # => 255
+#   input.slider     # => { min: 0, max: 255 }
+#
+# @see https://docs.octoprint.org/en/master/features/custom_controls.html
+#
+# pkg:gem/octoprint#lib/octoprint/printer/custom_control/input.rb:17
+class Octoprint::Printer::CustomControl::Input
+  include ::Octoprint::AutoInitializable
+  include ::Octoprint::Deserializable
+  extend ::Octoprint::AutoInitializable::ClassMethods
+  extend ::Octoprint::Deserializable::ClassMethods
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control/input.rb:42
+  def initialize(**kwargs); end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control/input.rb:42
+  def default; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control/input.rb:42
+  def extra; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control/input.rb:42
+  def name; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control/input.rb:42
+  def parameter; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/custom_control/input.rb:42
+  def slider; end
+end
+
+# Fields that can be excluded from the full state response.
+#
+# pkg:gem/octoprint#lib/octoprint/printer.rb:66
+Octoprint::Printer::EXCLUDABLE_FIELDS = T.let(T.unsafe(nil), Array)
+
+# Behaviour of the single heater resources ({Printer::Bed} and {Printer::Chamber}): reading the
+# heater's temperature and setting its target and offset.
+#
+# Including this module also includes {Printer::TemperatureAttributes}, so the including class gets the
+# +actual+, +target+, +offset+, +history+ and +extra+ attributes.
+#
+# @example
+#   class Bed < BaseResource
+#     include Heater
+#
+#     resource_path("/api/printer/bed")
+#   end
+#
+#   Bed.temperature.actual # => 50.221
+#   Bed.target(75)
+#
+# pkg:gem/octoprint#lib/octoprint/printer/heater.rb:21
+module Octoprint::Printer::Heater
+  include ::Octoprint::AutoInitializable
+  include ::Octoprint::Deserializable
+  include ::Octoprint::Printer::TemperatureAttributes
+
+  mixes_in_class_methods ::Octoprint::Printer::Heater::ClassMethods
+  mixes_in_class_methods ::Octoprint::Printer::TemperatureAttributes::ClassMethods
+  mixes_in_class_methods ::Octoprint::AutoInitializable::ClassMethods
+  mixes_in_class_methods ::Octoprint::Deserializable::ClassMethods
+
+  class << self
+    # Adds the temperature attributes to the including resource.
+    #
+    # @param base [Class] The including resource
+    # @return [void]
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/heater.rb:108
+    sig { params(base: ::Module).void }
+    def included(base); end
+  end
+end
+
+# Class methods added to the including resource.
+#
+# pkg:gem/octoprint#lib/octoprint/printer/heater.rb:26
+module Octoprint::Printer::Heater::ClassMethods
+  extend T::Generic
+  include ::Octoprint::Printer::HistoryQuery
+
+  has_attached_class!(:out)
+
+  # Issues a heater command.
+  #
+  # @param command [String] The command to issue: +target+ or +offset+
+  # @param options [Hash] Additional command parameters
+  #
+  # @return [Boolean] true on success (204 No Content)
+  # @raise [Octoprint::Exceptions::BadRequestError] if the parameters are invalid
+  # @raise [Octoprint::Exceptions::ConflictError] if the printer is not operational or the heater isn't
+  #   configured
+  #
+  # pkg:gem/octoprint#lib/octoprint/printer/heater.rb:60
+  sig { params(command: ::String, options: T::Hash[::Symbol, T.untyped]).returns(T.untyped) }
+  def issue_command(command:, options: T.unsafe(nil)); end
+
+  # Sets the heater's temperature offset.
+  #
+  # @param offset [Numeric] The temperature offset
+  #
+  # @return [Boolean] true on success (204 No Content)
+  # @raise [Octoprint::Exceptions::BadRequestError] if the offset is invalid
+  # @raise [Octoprint::Exceptions::ConflictError] if the printer is not operational or the heater isn't
+  #   configured
+  #
+  # pkg:gem/octoprint#lib/octoprint/printer/heater.rb:86
+  sig { params(offset: ::Numeric).returns(T.untyped) }
+  def offset(offset); end
+
+  # Sets the heater's target temperature. A target of 0 turns the heater off.
+  #
+  # @param temperature [Numeric] The target temperature
+  #
+  # @return [Boolean] true on success (204 No Content)
+  # @raise [Octoprint::Exceptions::BadRequestError] if the temperature is invalid
+  # @raise [Octoprint::Exceptions::ConflictError] if the printer is not operational or the heater isn't
+  #   configured
+  #
+  # pkg:gem/octoprint#lib/octoprint/printer/heater.rb:73
+  sig { params(temperature: ::Numeric).returns(T.untyped) }
+  def target(temperature); end
+
+  # Retrieves the heater's current temperature.
+  #
+  # @param history [Boolean] Whether to include the temperature history
+  # @param limit [Integer, nil] Only return the last +limit+ history data points (ignored unless +history+
+  #   is true)
+  #
+  # @return [Object] The heater, e.g. a {Printer::Bed}, with its temperature
+  # @raise [Octoprint::Exceptions::ConflictError] if the printer is not operational or the heater isn't
+  #   configured
+  #
+  # pkg:gem/octoprint#lib/octoprint/printer/heater.rb:43
+  sig { params(history: T::Boolean, limit: T.nilable(::Integer)).returns(T.attached_class) }
+  def temperature(history: T.unsafe(nil), limit: T.unsafe(nil)); end
+
+  private
+
+  # The heater's key in the API responses, derived from the class name (+:bed+, +:chamber+).
+  #
+  # @return [Symbol] The heater's key
+  #
+  # pkg:gem/octoprint#lib/octoprint/printer/heater.rb:96
+  sig { returns(::Symbol) }
+  def heater_key; end
+end
+
+# Builds the +history+ and +limit+ query parameters shared by the temperature endpoints.
+#
+# @api private
+#
+# pkg:gem/octoprint#lib/octoprint/printer/history_query.rb:9
+module Octoprint::Printer::HistoryQuery
+  private
+
+  # @param history [Boolean] Whether to include the temperature history
+  # @param limit [Integer, nil] Maximum number of history data points, only sent when +history+ is true
+  # @return [Hash] The query parameters
+  #
+  # pkg:gem/octoprint#lib/octoprint/printer/history_query.rb:18
+  sig { params(history: T::Boolean, limit: T.nilable(::Integer)).returns(T::Hash[::Symbol, T.untyped]) }
+  def history_query(history:, limit:); end
+end
+
+# Print head commands: jogging, homing and changing the feed rate.
+#
+# All commands except {.feedrate} may only be sent while the printer is operational and not printing.
+# Requires the +CONTROL+ permission.
+#
+# @example Jog the print head
+#   Octoprint::Printer::Printhead.jog(x: 10, y: -5, z: 0.02)
+#
+# @example Home the X and Y axes
+#   Octoprint::Printer::Printhead.home(axes: %w[x y])
+#
+# @example Set the feed rate to 105%
+#   Octoprint::Printer::Printhead.feedrate(105)
+#
+# @see https://docs.octoprint.org/en/master/api/printer.html#issue-a-print-head-command
+#
+# pkg:gem/octoprint#lib/octoprint/printer/printhead.rb:21
+class Octoprint::Printer::Printhead < ::Octoprint::BaseResource
+  class << self
+    # Changes the feed rate factor applied to the movements of the axes.
+    #
+    # @param factor [Numeric] Percentage between 50 and 200 as an integer (+50+..+200+) or float (+0.5+..+2.0+)
+    #
+    # @example Using a percentage
+    #   Octoprint::Printer::Printhead.feedrate(105)
+    #
+    # @example Using a float
+    #   Octoprint::Printer::Printhead.feedrate(1.05)
+    #
+    # @return [Boolean] true on success (204 No Content)
+    # @raise [Octoprint::Exceptions::BadRequestError] if the factor is out of range
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/printhead.rb:104
+    sig { params(factor: ::Numeric).returns(T.untyped) }
+    def feedrate(factor); end
+
+    # Homes the print head on the given axes.
+    #
+    # @param axes [Array<String, Symbol>] The axes to home, one or more of +x+, +y+ and +z+. Defaults to all three.
+    #
+    # @example Home all axes
+    #   Octoprint::Printer::Printhead.home
+    #
+    # @example Home X and Y only
+    #   Octoprint::Printer::Printhead.home(axes: %w[x y])
+    #
+    # @return [Boolean] true on success (204 No Content)
+    # @raise [Octoprint::Exceptions::BadRequestError] if an invalid axis is given
+    # @raise [Octoprint::Exceptions::ConflictError] if the printer is not operational or is printing
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/printhead.rb:87
+    sig { params(axes: T::Array[T.any(::String, ::Symbol)]).returns(T.untyped) }
+    def home(axes: T.unsafe(nil)); end
+
+    # Issues a print head command.
+    #
+    # @param command [String] The command to issue: +jog+, +home+ or +feedrate+
+    # @param options [Hash] Additional command parameters
+    #
+    # @example
+    #   Octoprint::Printer::Printhead.issue_command(command: "home", options: { axes: ["z"] })
+    #
+    # @return [Boolean] true on success (204 No Content)
+    # @raise [Octoprint::Exceptions::BadRequestError] if the parameters are invalid
+    # @raise [Octoprint::Exceptions::ConflictError] if the printer is not operational or is printing
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/printhead.rb:38
+    sig { params(command: ::String, options: T::Hash[::Symbol, T.untyped]).returns(T.untyped) }
+    def issue_command(command:, options: T.unsafe(nil)); end
+
+    # Jogs the print head by a relative amount, or to an absolute position, on one or more axes.
+    #
+    # @param x [Numeric, nil] Distance (or coordinate when +absolute+) to travel on the X axis, in mm
+    # @param y [Numeric, nil] Distance (or coordinate when +absolute+) to travel on the Y axis, in mm
+    # @param z [Numeric, nil] Distance (or coordinate when +absolute+) to travel on the Z axis, in mm
+    # @param absolute [Boolean, nil] Move to absolute coordinates instead of relative amounts
+    # @param speed [Integer, false, nil] Speed in mm/min. Defaults to the profile's minimum axis speed;
+    #   +false+ sends no speed at all
+    #
+    # @example Relative jog
+    #   Octoprint::Printer::Printhead.jog(x: 10, y: -5, z: 0.02)
+    #
+    # @example Absolute move at a given speed
+    #   Octoprint::Printer::Printhead.jog(x: 100, y: 100, absolute: true, speed: 3000)
+    #
+    # @return [Boolean] true on success (204 No Content)
+    # @raise [Octoprint::Exceptions::BadRequestError] if an amount is invalid
+    # @raise [Octoprint::Exceptions::ConflictError] if the printer is not operational or is printing
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/printhead.rb:69
+    sig do
+      params(
+        x: T.nilable(::Numeric),
+        y: T.nilable(::Numeric),
+        z: T.nilable(::Numeric),
+        absolute: T.nilable(T::Boolean),
+        speed: T.nilable(T.any(::FalseClass, ::Integer))
+      ).returns(T.untyped)
+    end
+    def jog(x: T.unsafe(nil), y: T.unsafe(nil), z: T.unsafe(nil), absolute: T.unsafe(nil), speed: T.unsafe(nil)); end
+  end
+end
+
+# The printer's SD card: state and commands.
+#
+# Requires the +CONTROL+ permission for commands and +STATUS+ for {.get}.
+#
+# @example Check whether the SD card is ready
+#   Octoprint::Printer::Sd.get.ready # => true
+#
+# @example Initialize, refresh and release the SD card
+#   Octoprint::Printer::Sd.init
+#   Octoprint::Printer::Sd.refresh
+#   Octoprint::Printer::Sd.release
+#
+# @see https://docs.octoprint.org/en/master/api/printer.html#issue-an-sd-command
+#
+# pkg:gem/octoprint#lib/octoprint/printer/sd.rb:19
+class Octoprint::Printer::Sd < ::Octoprint::BaseResource
+  include ::Octoprint::AutoInitializable
+  include ::Octoprint::Deserializable
+  extend ::Octoprint::AutoInitializable::ClassMethods
+  extend ::Octoprint::Deserializable::ClassMethods
+
+  # pkg:gem/octoprint#lib/octoprint/printer/sd.rb:34
+  def initialize(**kwargs); end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/sd.rb:34
+  def extra; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/sd.rb:34
+  def ready; end
+
+  class << self
+    # Retrieves the current state of the printer's SD card.
+    #
+    # @example
+    #   Octoprint::Printer::Sd.get.ready # => true
+    #
+    # @return [Printer::Sd] The SD card state
+    # @raise [Octoprint::Exceptions::NotFoundError] if SD support is disabled in OctoPrint's settings
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/sd.rb:44
+    sig { returns(::Octoprint::Printer::Sd) }
+    def get; end
+
+    # Initializes the printer's SD card and retrieves its file list.
+    #
+    # @example
+    #   Octoprint::Printer::Sd.init
+    #
+    # @return [Boolean] true on success (204 No Content)
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/sd.rb:69
+    sig { returns(T.untyped) }
+    def init; end
+
+    # Issues an SD command.
+    #
+    # @param command [String] The command to issue: +init+, +refresh+ or +release+
+    #
+    # @example
+    #   Octoprint::Printer::Sd.issue_command(command: "refresh")
+    #
+    # @return [Boolean] true on success (204 No Content)
+    # @raise [Octoprint::Exceptions::ConflictError] if the card isn't initialized (+refresh+ and +release+)
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/sd.rb:58
+    sig { params(command: ::String).returns(T.untyped) }
+    def issue_command(command:); end
+
+    # Refreshes the list of files stored on the printer's SD card.
+    #
+    # @example
+    #   Octoprint::Printer::Sd.refresh
+    #
+    # @return [Boolean] true on success (204 No Content)
+    # @raise [Octoprint::Exceptions::ConflictError] if the card hasn't been initialized
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/sd.rb:81
+    sig { returns(T.untyped) }
+    def refresh; end
+
+    # Releases the SD card from the printer. The reverse operation of {.init}.
+    #
+    # @example
+    #   Octoprint::Printer::Sd.release
+    #
+    # @return [Boolean] true on success (204 No Content)
+    # @raise [Octoprint::Exceptions::ConflictError] if the card hasn't been initialized
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/sd.rb:93
+    sig { returns(T.untyped) }
+    def release; end
+  end
+end
+
+# The printer's general state.
+#
+# @example
+#   state = Octoprint::Printer.get.state
+#   state.text            # => "Operational"
+#   state.flags.ready     # => true
+#
+# @see https://docs.octoprint.org/en/master/api/datamodel.html#printer-state
+#
+# pkg:gem/octoprint#lib/octoprint/printer/state.rb:14
+class Octoprint::Printer::State
+  include ::Octoprint::AutoInitializable
+  include ::Octoprint::Deserializable
+  extend ::Octoprint::AutoInitializable::ClassMethods
+  extend ::Octoprint::Deserializable::ClassMethods
+
+  # pkg:gem/octoprint#lib/octoprint/printer/state.rb:35
+  def initialize(**kwargs); end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/state.rb:35
+  def error; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/state.rb:35
+  def extra; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/state.rb:35
+  def flags; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/state.rb:35
+  def text; end
+end
+
+# Boolean flags describing the printer's state.
+#
+# @example
+#   flags = Octoprint::Printer.get.state.flags
+#   flags.operational     # => true
+#   flags.printing        # => false
+#   flags.closed_or_error # => false
+#
+# @see https://docs.octoprint.org/en/master/api/datamodel.html#printer-state
+#
+# pkg:gem/octoprint#lib/octoprint/printer/state_flags.rb:15
+class Octoprint::Printer::StateFlags
+  include ::Octoprint::AutoInitializable
+  include ::Octoprint::Deserializable
+  extend ::Octoprint::AutoInitializable::ClassMethods
+  extend ::Octoprint::Deserializable::ClassMethods
+
+  # pkg:gem/octoprint#lib/octoprint/printer/state_flags.rb:68
+  def initialize(**kwargs); end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/state_flags.rb:68
+  def cancelling; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/state_flags.rb:68
+  def closed_or_error; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/state_flags.rb:68
+  def error; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/state_flags.rb:68
+  def extra; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/state_flags.rb:68
+  def finishing; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/state_flags.rb:68
+  def operational; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/state_flags.rb:68
+  def paused; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/state_flags.rb:68
+  def pausing; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/state_flags.rb:68
+  def printing; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/state_flags.rb:68
+  def ready; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/state_flags.rb:68
+  def resuming; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/state_flags.rb:68
+  def sd_ready; end
+end
+
+# Temperature reading shared by the printer's heaters ({Printer::Tool}, {Printer::Bed} and
+# {Printer::Chamber}).
+#
+# Including this module declares the following attributes on the including class:
+#
+# - +actual+ [Float, nil] Current temperature
+# - +target+ [Float, nil] Target temperature, nil if no target temperature is set
+# - +offset+ [Float, nil] Currently configured temperature offset
+# - +history+ [Array<Printer::TemperatureReading>, nil] The heater's temperature history, only included
+#   when requested
+# - +extra+ [Hash, nil] Any additional fields returned by the API
+#
+# @example
+#   class Tool < BaseResource
+#     include TemperatureAttributes
+#   end
+#
+#   tool = Tool.from_response({ tool0: { actual: 214.8821, target: 220.0, offset: 0 } }, :tool0)
+#   tool.actual # => 214.8821
+#
+# pkg:gem/octoprint#lib/octoprint/printer/temperature_attributes.rb:25
+module Octoprint::Printer::TemperatureAttributes
+  include ::Octoprint::AutoInitializable
+  include ::Octoprint::Deserializable
+
+  mixes_in_class_methods ::Octoprint::Printer::TemperatureAttributes::ClassMethods
+  mixes_in_class_methods ::Octoprint::AutoInitializable::ClassMethods
+  mixes_in_class_methods ::Octoprint::Deserializable::ClassMethods
+
+  class << self
+    # Declares the temperature attributes on the including class.
+    #
+    # @param base [Class] The including class
+    # @return [void]
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/temperature_attributes.rb:58
+    sig { params(base: ::Module).void }
+    def included(base); end
+  end
+end
+
+# Class methods added to the including class.
+#
+# pkg:gem/octoprint#lib/octoprint/printer/temperature_attributes.rb:30
+module Octoprint::Printer::TemperatureAttributes::ClassMethods
+  # Builds a heater from a temperature response, picking the heater's own data out of the
+  # response and out of every history data point.
+  #
+  # @api private
+  # @param response [Hash] A tool, bed or chamber temperature response
+  # @param key [Symbol] The heater's key in the response, e.g. +:tool0+ or +:bed+
+  # @return [Object] An instance of the including class
+  #
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_attributes.rb:41
+  sig { params(response: T::Hash[::Symbol, T.untyped], key: ::Symbol).returns(T.untyped) }
+  def from_response(response, key); end
+end
+
+# Temperature data of a single heater (tool, bed or chamber).
+#
+# @example
+#   bed = Octoprint::Printer.get.temperature.bed
+#   bed.actual # => 50.221
+#   bed.target # => 70.0
+#   bed.offset # => 5
+#
+# @see https://docs.octoprint.org/en/master/api/datamodel.html#temperature-data
+#
+# pkg:gem/octoprint#lib/octoprint/printer/temperature_data.rb:15
+class Octoprint::Printer::TemperatureData
+  include ::Octoprint::AutoInitializable
+  include ::Octoprint::Deserializable
+  extend ::Octoprint::AutoInitializable::ClassMethods
+  extend ::Octoprint::Deserializable::ClassMethods
+
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_data.rb:39
+  def initialize(**kwargs); end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_data.rb:39
+  def actual; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_data.rb:39
+  def extra; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_data.rb:39
+  def offset; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_data.rb:39
+  def target; end
+
+  class << self
+    # Moves all +tool{n}+ entries of a temperature hash into a +:tools+ hash of {TemperatureData}.
+    #
+    # @api private
+    # @param data [Hash] A temperature state or history data point hash
+    # @return [Hash] The modified data hash
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/temperature_data.rb:47
+    sig { params(data: T::Hash[::Symbol, T.untyped]).returns(T::Hash[::Symbol, T.untyped]) }
+    def extract_tools(data); end
+  end
+end
+
+# Matches the keys of tool temperatures, e.g. +tool0+, +tool1+
+#
+# pkg:gem/octoprint#lib/octoprint/printer/temperature_data.rb:21
+Octoprint::Printer::TemperatureData::TOOL_KEY = T.let(T.unsafe(nil), Regexp)
+
+# A historic temperature data point.
+#
+# @example
+#   point = Octoprint::Printer.get(history: true).temperature.history.first
+#   point.time            # => 1395651928
+#   point.recorded_at     # => 2014-03-24 05:05:28 -0400
+#   point.tool(0).actual  # => 214.8821
+#   point.bed.target      # => 70.0
+#
+# @see https://docs.octoprint.org/en/master/api/datamodel.html#historic-temperature-data-point
+#
+# pkg:gem/octoprint#lib/octoprint/printer/temperature_data_point.rb:16
+class Octoprint::Printer::TemperatureDataPoint
+  include ::Octoprint::AutoInitializable
+  include ::Octoprint::Deserializable
+  extend ::Octoprint::AutoInitializable::ClassMethods
+  extend ::Octoprint::Deserializable::ClassMethods
+
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_data_point.rb:43
+  def initialize(**kwargs); end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_data_point.rb:43
+  def bed; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_data_point.rb:43
+  def chamber; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_data_point.rb:43
+  def extra; end
+
+  # The data point's timestamp as a Time object.
+  #
+  # @return [Time, nil] The time of the data point
+  #
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_data_point.rb:67
+  sig { returns(T.nilable(::Time)) }
+  def recorded_at; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_data_point.rb:43
+  def time; end
+
+  # Temperature data of the tool with the given index.
+  #
+  # @param index [Integer] The tool's index, starting at 0
+  # @return [Printer::TemperatureData, nil] The tool's temperature data, nil if there is no such tool
+  #
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_data_point.rb:59
+  sig { params(index: ::Integer).returns(T.nilable(::Octoprint::Printer::TemperatureData)) }
+  def tool(index = T.unsafe(nil)); end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_data_point.rb:43
+  def tools; end
+end
+
+# A historic temperature reading of a single heater.
+#
+# @example
+#   reading = Octoprint::Printer::Tool.temperatures(history: true)[0].history.first
+#   reading.actual # => 50.221
+#   reading.target # => 70.0
+#
+# @see https://docs.octoprint.org/en/master/api/datamodel.html#historic-temperature-data-point
+#
+# pkg:gem/octoprint#lib/octoprint/printer/temperature_reading.rb:14
+class Octoprint::Printer::TemperatureReading
+  include ::Octoprint::AutoInitializable
+  include ::Octoprint::Deserializable
+  extend ::Octoprint::AutoInitializable::ClassMethods
+  extend ::Octoprint::Deserializable::ClassMethods
+
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_reading.rb:35
+  def initialize(**kwargs); end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_reading.rb:35
+  def actual; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_reading.rb:35
+  def extra; end
+
+  # The reading's timestamp as a Time object.
+  #
+  # @return [Time, nil] The time of the reading, nil when the server didn't provide one
+  #
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_reading.rb:41
+  sig { returns(T.nilable(::Time)) }
+  def recorded_at; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_reading.rb:35
+  def target; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_reading.rb:35
+  def time; end
+end
+
+# Temperature state of the printer's tools, bed and chamber, with an optional history.
+#
+# Returned by {Printer.get} as {Printer#temperature}. Only the heaters present on the printer are populated.
+#
+# @example
+#   temperature = Octoprint::Printer.get(history: true, limit: 2).temperature
+#   temperature.tools.keys         # => [:tool0, :tool1]
+#   temperature.tool(0).actual     # => 214.8821
+#   temperature.history.first.time # => 1395651928
+#
+# @see https://docs.octoprint.org/en/master/api/printer.html#temperature-state
+#
+# pkg:gem/octoprint#lib/octoprint/printer/temperature_state.rb:17
+class Octoprint::Printer::TemperatureState
+  include ::Octoprint::AutoInitializable
+  include ::Octoprint::Deserializable
+  extend ::Octoprint::AutoInitializable::ClassMethods
+  extend ::Octoprint::Deserializable::ClassMethods
+
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_state.rb:43
+  def initialize(**kwargs); end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_state.rb:43
+  def bed; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_state.rb:43
+  def chamber; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_state.rb:43
+  def extra; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_state.rb:43
+  def history; end
+
+  # Temperature data of the tool with the given index.
+  #
+  # @example
+  #   Octoprint::Printer.get.temperature.tool(1).target # => 205.0
+  #
+  # @param index [Integer] The tool's index, starting at 0
+  # @return [Printer::TemperatureData, nil] The tool's temperature data, nil if there is no such tool
+  #
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_state.rb:63
+  sig { params(index: ::Integer).returns(T.nilable(::Octoprint::Printer::TemperatureData)) }
+  def tool(index = T.unsafe(nil)); end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/temperature_state.rb:43
+  def tools; end
+end
+
+# Tool (hotend) temperatures and commands: target and offset temperatures, tool selection,
+# extrusion and flow rate.
+#
+# Commands may only be sent while the printer is operational, and {.select_tool} and {.extrude}
+# only while it is not printing. Requires the +CONTROL+ permission for commands and +STATUS+ for
+# {.temperatures}.
+#
+# @example Read the first hotend's temperature
+#   Octoprint::Printer::Tool.temperatures[0].actual # => 214.8821
+#
+# @example Heat up the hotends
+#   Octoprint::Printer::Tool.target(tool0: 220, tool1: 205)
+#
+# @example Extrude 5mm of filament
+#   Octoprint::Printer::Tool.extrude(5)
+#
+# @see https://docs.octoprint.org/en/master/api/printer.html#issue-a-tool-command
+#
+# pkg:gem/octoprint#lib/octoprint/printer/tool.rb:23
+class Octoprint::Printer::Tool < ::Octoprint::BaseResource
+  include ::Octoprint::Printer::TemperatureAttributes
+  include ::Octoprint::AutoInitializable
+  include ::Octoprint::Deserializable
+  extend ::Octoprint::Printer::HistoryQuery
+  extend ::Octoprint::Printer::TemperatureAttributes::ClassMethods
+  extend ::Octoprint::AutoInitializable::ClassMethods
+  extend ::Octoprint::Deserializable::ClassMethods
+
+  # pkg:gem/octoprint#lib/octoprint/printer/tool.rb:26
+  def initialize(**kwargs); end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/tool.rb:26
+  def actual; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/tool.rb:26
+  def extra; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/tool.rb:26
+  def history; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/tool.rb:26
+  def offset; end
+
+  # pkg:gem/octoprint#lib/octoprint/printer/tool.rb:26
+  def target; end
+
+  class << self
+    # Extrudes filament from the currently selected tool. Use a negative amount to retract.
+    #
+    # @param amount [Numeric] The amount of filament to extrude, in mm
+    # @param speed [Integer, nil] Speed in mm/min. Defaults to the profile's maximum E axis speed.
+    #
+    # @example Extrude 5mm
+    #   Octoprint::Printer::Tool.extrude(5)
+    #
+    # @example Retract 3mm at 300mm/min
+    #   Octoprint::Printer::Tool.extrude(-3, speed: 300)
+    #
+    # @return [Boolean] true on success (204 No Content)
+    # @raise [Octoprint::Exceptions::BadRequestError] if the amount is invalid
+    # @raise [Octoprint::Exceptions::ConflictError] if the printer is not operational or is printing
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/tool.rb:135
+    sig { params(amount: ::Numeric, speed: T.nilable(::Integer)).returns(T.untyped) }
+    def extrude(amount, speed: T.unsafe(nil)); end
+
+    # Changes the flow rate factor applied to extrusion.
+    #
+    # @param factor [Numeric] Percentage between 75 and 125 as an integer (+75+..+125+) or float (+0.75+..+1.25+)
+    #
+    # @example
+    #   Octoprint::Printer::Tool.flowrate(95)
+    #
+    # @return [Boolean] true on success (204 No Content)
+    # @raise [Octoprint::Exceptions::BadRequestError] if the factor is out of range
+    # @raise [Octoprint::Exceptions::ConflictError] if the printer is not operational
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/tool.rb:150
+    sig { params(factor: ::Numeric).returns(T.untyped) }
+    def flowrate(factor); end
+
+    # Issues a tool command.
+    #
+    # @param command [String] The command to issue: +target+, +offset+, +select+, +extrude+ or +flowrate+
+    # @param options [Hash] Additional command parameters
+    #
+    # @example
+    #   Octoprint::Printer::Tool.issue_command(command: "select", options: { tool: "tool1" })
+    #
+    # @return [Boolean] true on success (204 No Content)
+    # @raise [Octoprint::Exceptions::BadRequestError] if the parameters are invalid
+    # @raise [Octoprint::Exceptions::ConflictError] if the printer is not operational
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/tool.rb:67
+    sig { params(command: ::String, options: T::Hash[::Symbol, T.untyped]).returns(T.untyped) }
+    def issue_command(command:, options: T.unsafe(nil)); end
+
+    # Sets the temperature offset of one or more tools.
+    #
+    # @param offsets [Hash{Symbol, String => Numeric}] Temperature offsets keyed by +tool{n}+
+    #
+    # @example
+    #   Octoprint::Printer::Tool.offset(tool0: 10, tool1: -5)
+    #
+    # @return [Boolean] true on success (204 No Content)
+    # @raise [Octoprint::Exceptions::BadRequestError] if a key or offset is invalid
+    # @raise [Octoprint::Exceptions::ConflictError] if the printer is not operational
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/tool.rb:101
+    sig { params(offsets: T::Hash[T.any(::String, ::Symbol), ::Numeric]).returns(T.untyped) }
+    def offset(offsets); end
+
+    # Selects the printer's current tool. Sends the +select+ command.
+    #
+    # @param tool [String, Symbol] The tool to select, in the format +tool{n}+
+    #
+    # @example
+    #   Octoprint::Printer::Tool.select_tool("tool1")
+    #
+    # @return [Boolean] true on success (204 No Content)
+    # @raise [Octoprint::Exceptions::BadRequestError] if the tool is invalid
+    # @raise [Octoprint::Exceptions::ConflictError] if the printer is not operational or is printing
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/tool.rb:116
+    sig { params(tool: T.any(::String, ::Symbol)).returns(T.untyped) }
+    def select_tool(tool); end
+
+    # Sets the target temperature of one or more tools. A target of 0 turns the heater off.
+    #
+    # @param targets [Hash{Symbol, String => Numeric}] Target temperatures keyed by +tool{n}+,
+    #   or +tool+ for the currently active tool
+    #
+    # @example Set the temperatures of two hotends
+    #   Octoprint::Printer::Tool.target(tool0: 220, tool1: 205)
+    #
+    # @example Set the temperature of the active hotend
+    #   Octoprint::Printer::Tool.target(tool: 220)
+    #
+    # @return [Boolean] true on success (204 No Content)
+    # @raise [Octoprint::Exceptions::BadRequestError] if a key or temperature is invalid
+    # @raise [Octoprint::Exceptions::ConflictError] if the printer is not operational
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/tool.rb:86
+    sig { params(targets: T::Hash[T.any(::String, ::Symbol), ::Numeric]).returns(T.untyped) }
+    def target(targets); end
+
+    # Retrieves the current temperature of each of the printer's tools.
+    #
+    # @param history [Boolean] Whether to include the temperature history
+    # @param limit [Integer, nil] Only return the last +limit+ history data points (ignored unless +history+ is true)
+    #
+    # @example Read the first hotend's temperature
+    #   Octoprint::Printer::Tool.temperatures[0].actual # => 214.8821
+    #
+    # @example Include each tool's last two history readings
+    #   tools = Octoprint::Printer::Tool.temperatures(history: true, limit: 2)
+    #   tools.map(&:target)              # => [220.0, nil]
+    #   tools[0].history.map(&:actual)   # => [214.8821, 212.32]
+    #
+    # @return [Array<Printer::Tool>] The tools' temperatures, indexed by tool number
+    # @raise [Octoprint::Exceptions::ConflictError] if the printer is not operational
+    #
+    # pkg:gem/octoprint#lib/octoprint/printer/tool.rb:46
+    sig { params(history: T::Boolean, limit: T.nilable(::Integer)).returns(T::Array[::Octoprint::Printer::Tool]) }
+    def temperatures(history: T.unsafe(nil), limit: T.unsafe(nil)); end
+  end
+end
+
 # Printer profile management for OctoPrint server configuration
 #
 # This class provides methods to manage printer profiles on the OctoPrint server.
@@ -2773,7 +4121,7 @@ class Octoprint::Settings < ::Octoprint::BaseResource
     # @raise [Octoprint::Exceptions::Error] if the request fails
     # @raise [Octoprint::Exceptions::AuthenticationError] if lacking admin rights
     #
-    # pkg:gem/octoprint#lib/octoprint/settings.rb:113
+    # pkg:gem/octoprint#lib/octoprint/settings.rb:131
     sig { returns(T::Hash[::Symbol, T.untyped]) }
     def fetch_templates; end
 
@@ -2814,7 +4162,7 @@ class Octoprint::Settings < ::Octoprint::BaseResource
     # @raise [Octoprint::Exceptions::Error] if the request fails
     # @raise [Octoprint::Exceptions::AuthenticationError] if lacking admin rights
     #
-    # pkg:gem/octoprint#lib/octoprint/settings.rb:91
+    # pkg:gem/octoprint#lib/octoprint/settings.rb:109
     sig { returns(T::Hash[::Symbol, ::String]) }
     def regenerate_api_key; end
 
@@ -2843,9 +4191,134 @@ class Octoprint::Settings < ::Octoprint::BaseResource
     # @raise [Octoprint::Exceptions::Error] if the request fails
     # @raise [Octoprint::Exceptions::AuthenticationError] if lacking SETTINGS permission
     #
-    # pkg:gem/octoprint#lib/octoprint/settings.rb:72
+    # pkg:gem/octoprint#lib/octoprint/settings.rb:90
     sig { params(settings: T::Hash[::Symbol, T.untyped]).returns(T::Hash[::Symbol, T.untyped]) }
     def save(settings); end
+
+    # Retrieves the webcam settings as a typed object.
+    #
+    # Handles both the multi-webcam settings shape of OctoPrint 1.9+ and the legacy
+    # `webcam` keys of older versions. See {Settings::Webcam.from_settings} to build
+    # it from a settings hash you already fetched.
+    #
+    # @example Get the webcam stream URL
+    #   webcam = Octoprint::Settings.webcam
+    #   puts webcam.stream_url if webcam.enabled
+    #
+    # @return [Settings::Webcam] The webcam settings
+    # @raise [Octoprint::Exceptions::Error] if the request fails
+    # @raise [Octoprint::Exceptions::AuthenticationError] if lacking SETTINGS_READ permission
+    #
+    # pkg:gem/octoprint#lib/octoprint/settings.rb:61
+    sig { returns(::Octoprint::Settings::Webcam) }
+    def webcam; end
+  end
+end
+
+# Typed view of the webcam part of the OctoPrint settings.
+#
+# OctoPrint 1.9 added support for several webcams, provided by plugins. The
+# settings then list them under `webcam.webcams` and name the default one in
+# `webcam.defaultWebcam`. Older servers only expose the legacy flat keys
+# (`webcam.streamUrl`, `webcam.snapshotUrl`, ...). This class reads the
+# multi-webcam shape when it is present and falls back to the legacy keys.
+#
+# @example Get the webcam settings
+#   webcam = Octoprint::Settings.webcam
+#   puts webcam.stream_url if webcam.enabled
+#
+# @example Build it from settings you already fetched
+#   settings = Octoprint::Settings.get
+#   webcam = Octoprint::Settings::Webcam.from_settings(settings)
+#
+# @see https://docs.octoprint.org/en/master/api/settings.html
+#
+# pkg:gem/octoprint#lib/octoprint/settings/webcam.rb:23
+class Octoprint::Settings::Webcam
+  include ::Octoprint::AutoInitializable
+  extend ::Octoprint::AutoInitializable::ClassMethods
+
+  # pkg:gem/octoprint#lib/octoprint/settings/webcam.rb:64
+  def initialize(**kwargs); end
+
+  # pkg:gem/octoprint#lib/octoprint/settings/webcam.rb:64
+  def display_name; end
+
+  # pkg:gem/octoprint#lib/octoprint/settings/webcam.rb:64
+  def enabled; end
+
+  # pkg:gem/octoprint#lib/octoprint/settings/webcam.rb:64
+  def flip_h; end
+
+  # pkg:gem/octoprint#lib/octoprint/settings/webcam.rb:64
+  def flip_v; end
+
+  # pkg:gem/octoprint#lib/octoprint/settings/webcam.rb:64
+  def name; end
+
+  # pkg:gem/octoprint#lib/octoprint/settings/webcam.rb:64
+  def rotate90; end
+
+  # pkg:gem/octoprint#lib/octoprint/settings/webcam.rb:64
+  def snapshot_url; end
+
+  # pkg:gem/octoprint#lib/octoprint/settings/webcam.rb:64
+  def stream_ratio; end
+
+  # pkg:gem/octoprint#lib/octoprint/settings/webcam.rb:64
+  def stream_url; end
+
+  class << self
+    # Builds the webcam settings from the hash returned by {Settings.get}.
+    #
+    # Uses the default webcam from the OctoPrint 1.9+ `webcams` list when there is
+    # one (or the first webcam if the default can't be found), and only falls back to
+    # the legacy `webcam` keys when the server has no `webcams` list. Empty URLs are
+    # returned as nil.
+    #
+    # @example
+    #   settings = Octoprint::Settings.get
+    #   webcam = Octoprint::Settings::Webcam.from_settings(settings)
+    #
+    # @param settings [Hash] The settings hash, as returned by {Settings.get}
+    # @return [Webcam]
+    #
+    # pkg:gem/octoprint#lib/octoprint/settings/webcam.rb:80
+    sig { params(settings: T::Hash[::Symbol, T.untyped]).returns(::Octoprint::Settings::Webcam) }
+    def from_settings(settings); end
+
+    private
+
+    # Picks the default webcam from the OctoPrint 1.9+ `webcams` list.
+    #
+    # @param legacy [Hash] The `webcam` section of the settings
+    # @return [Hash, nil] The default webcam's settings, or nil when there is no `webcams` list
+    #
+    # pkg:gem/octoprint#lib/octoprint/settings/webcam.rb:93
+    sig { params(legacy: T::Hash[::Symbol, T.untyped]).returns(T.nilable(T::Hash[::Symbol, T.untyped])) }
+    def default_webcam(legacy); end
+
+    # Reads the attributes from the legacy `webcam` keys of OctoPrint < 1.9.
+    #
+    # @param legacy [Hash] The `webcam` section of the settings
+    # @return [Hash] The attributes of the webcam
+    #
+    # pkg:gem/octoprint#lib/octoprint/settings/webcam.rb:125
+    sig { params(legacy: T::Hash[::Symbol, T.untyped]).returns(T::Hash[::Symbol, T.untyped]) }
+    def legacy_attributes(legacy); end
+
+    # Reads the attributes of a webcam from the OctoPrint 1.9+ `webcams` list.
+    #
+    # The stream is only available for webcams that provide `compat` settings (or a
+    # stream in their `extras`, like the classic webcam). `snapshotDisplay` is only
+    # used when it is an HTTP URL, since plugins can put any text in it.
+    #
+    # @param camera [Hash] A webcam from the `webcams` list
+    # @return [Hash] The attributes of the webcam
+    #
+    # pkg:gem/octoprint#lib/octoprint/settings/webcam.rb:107
+    sig { params(camera: T::Hash[::Symbol, T.untyped]).returns(T::Hash[::Symbol, T.untyped]) }
+    def webcam_attributes(camera); end
   end
 end
 
@@ -3116,7 +4589,7 @@ Octoprint::Types::Url = String
 # Alias for backward compatibility
 # @deprecated Use Octoprint::Access::User instead
 #
-# pkg:gem/octoprint#lib/octoprint.rb:52
+# pkg:gem/octoprint#lib/octoprint.rb:64
 Octoprint::User = Octoprint::Access::User
 
 # Utility operations for testing paths, URLs, and connectivity.

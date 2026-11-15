@@ -68,6 +68,37 @@ RSpec.describe Printer, :vcr, type: :model do
 
     it { is_expected.to be_a(Octoprint::Files::OperationResult) }
     its(:done) { is_expected.to be_truthy }
+
+    it 'uses a client with long timeouts for large files', vcr: { cassette_name: 'Printer/upload/1_8_1' } do
+      allow(Octoprint::Client).to receive(:new).and_call_original
+      subject
+      expect(Octoprint::Client).to have_received(:new)
+        .with(hash_including(host: printer.octoprint_uri, api_key: printer.octoprint_key,
+                             open_timeout: 5, timeout: 120))
+    end
+
+    [Octoprint::Exceptions::ConnectionError, Octoprint::Exceptions::TimeoutError].each do |error_class|
+      context "when the upload fails with #{error_class.name.demodulize}" do
+        let(:printer) { create(:printer) }
+        let(:redis) { MockRedis.new }
+
+        before do
+          stub_const('REDIS_POOL', ConnectionPool::Wrapper.new(size: 1, timeout: 1) { redis })
+          allow(Octoprint::Files).to receive(:upload).and_raise(error_class, 'execution expired')
+          allow(OctoprintCache).to receive(:set_disconnected)
+        end
+
+        it 'raises the error' do
+          expect { subject }.to raise_error(error_class)
+        end
+
+        it 'does not mark the printer as disconnected' do
+          expect { subject }.to raise_error(error_class)
+          expect(OctoprintCache).not_to have_received(:set_disconnected)
+          expect(OctoprintCache.disconnected?(printer.id)).to be false
+        end
+      end
+    end
   end
 
   describe 'using_api' do
@@ -88,6 +119,30 @@ RSpec.describe Printer, :vcr, type: :model do
 
       it 'raises an error' do
         expect { subject }.to raise_error(Octoprint::Exceptions::MissingCredentialsError)
+      end
+    end
+
+    [
+      [Octoprint::Exceptions::ConnectionError, 'Failed to open TCP connection to 10.0.1.165:80'],
+      [Octoprint::Exceptions::TimeoutError, 'execution expired']
+    ].each do |error_class, message|
+      context "when octoprint cannot be reached (#{error_class.name.demodulize})" do
+        let(:printer) { create(:printer) }
+        let(:redis) { MockRedis.new }
+
+        before do
+          stub_const('REDIS_POOL', ConnectionPool::Wrapper.new(size: 1, timeout: 1) { redis })
+          allow(Octoprint::ServerVersion).to receive(:get).and_raise(error_class, message)
+        end
+
+        it 'returns nil without raising' do
+          expect(subject).to be_nil
+        end
+
+        it 'marks the printer as disconnected' do
+          subject
+          expect(OctoprintCache.disconnected?(printer.id)).to be true
+        end
       end
     end
 
