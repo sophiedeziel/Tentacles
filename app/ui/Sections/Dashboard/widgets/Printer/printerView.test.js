@@ -98,6 +98,26 @@ describe('printerView', () => {
       expect(view('CONNECTING').cameraMessage).toEqual({ message: 'Camera offline', hint: 'Waiting for the printer' })
       expect(view('OFFLINE')).toMatchObject({ cameraLive: false, cameraOff: true })
     })
+
+    it('only points OctoPrint printers to OctoPrint for a webcam', () => {
+      expect(view('ERROR', { printer: { backend: 'PRUSALINK' } }).cameraMessage).toEqual({ message: 'No camera', hint: '' })
+    })
+  })
+
+  describe('PrusaLink printers', () => {
+    const prusalink = (family) => view(family, { printer: { backend: 'PRUSALINK' } })
+
+    it('offer no Connect or Reconnect: PrusaLink connects on its own', () => {
+      expect(prusalink('OFFLINE').actions).toEqual([])
+      expect(prusalink('ERROR').actions).toEqual([])
+      expect(prusalink('PRINTING').actions.map((action) => action.key)).toEqual(['pause', 'cancel'])
+    })
+
+    it('do not ask to reconnect after an error', () => {
+      const error = { ...PRINTERS.ERROR.status, fileName: null }
+      expect(view('ERROR', { printer: { backend: 'PRUSALINK', status: error } }).subline).toBe('Check the printer')
+      expect(view('ERROR', { printer: { status: error } }).subline).toBe('Check the printer and reconnect')
+    })
   })
 
   it('formats temperatures with their unit', () => {

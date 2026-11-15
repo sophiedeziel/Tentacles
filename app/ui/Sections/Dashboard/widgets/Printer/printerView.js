@@ -17,21 +17,23 @@ export function formatTemperature ({ actual, target, unit }) {
   return target ? `${value(actual)} / ${value(target)}` : value(actual)
 }
 
-// The controls of each state family, before options and confirmations
-function actionsFor (family, canStartNext) {
+// The controls of each state family, before options and confirmations. Connect and Reconnect are OctoPrint's:
+// PrusaLink connects to its printer on its own.
+function actionsFor (family, canStartNext, octoprint) {
   switch (family) {
     case 'PRINTING': return [{ key: 'pause', label: 'Pause' }, { key: 'cancel', label: 'Cancel', danger: true }]
     case 'PAUSED': return [{ key: 'resume', label: 'Resume' }, { key: 'cancel', label: 'Cancel', danger: true }]
     case 'CANCELLING': return [{ key: 'cancelling', label: 'Cancelling', loading: true, disabled: true }]
     case 'OPERATIONAL': return canStartNext ? [{ key: 'startNext', label: 'Start Next' }] : []
-    case 'ERROR': return [{ key: 'reconnect', label: 'Reconnect' }]
-    case 'OFFLINE': return [{ key: 'connect', label: 'Connect' }]
+    case 'ERROR': return octoprint ? [{ key: 'reconnect', label: 'Reconnect' }] : []
+    case 'OFFLINE': return octoprint ? [{ key: 'connect', label: 'Connect' }] : []
     default: return []
   }
 }
 
-function cameraMessage (family, name, camera) {
-  if (!camera.enabled) return { message: 'No camera', hint: 'Add a webcam in OctoPrint' }
+// Only OctoPrint has webcam settings to point to
+function cameraMessage (family, name, camera, octoprint) {
+  if (!camera.enabled) return { message: 'No camera', hint: octoprint ? 'Add a webcam in OctoPrint' : '' }
   if (family === 'CONNECTING') return { message: 'Camera offline', hint: 'Waiting for the printer' }
   if (family === 'ERROR') return { message: 'Camera offline', hint: `${name} stopped responding` }
   if (family === 'OFFLINE') return { message: 'Camera offline', hint: `${name} is offline` }
@@ -42,6 +44,7 @@ function cameraMessage (family, name, camera) {
 // `streamFailed` is set once the camera stream failed to load.
 export default function printerView ({ printer, size, options, now, streamFailed = false }) {
   const { name, status, canStartNext, nextJob } = printer
+  const octoprint = printer.backend === 'OCTOPRINT'
   const family = status.stateFamily
   const palette = statePalette(family)
   const hasJob = IN_PROGRESS.includes(family)
@@ -74,10 +77,11 @@ export default function printerView ({ printer, size, options, now, streamFailed
   else if (family === 'OPERATIONAL') subline = next ? `Up next: ${next}` : 'Queue is empty'
   else if (family === 'CONNECTING') subline = 'This can take a few seconds'
   else if (family === 'ERROR') {
-    subline = status.fileName ? `Stopped ${status.fileName} at ${progress}%` : 'Check the printer and reconnect'
+    const check = octoprint ? 'Check the printer and reconnect' : 'Check the printer'
+    subline = status.fileName ? `Stopped ${status.fileName} at ${progress}%` : check
   } else subline = status.lastSeenAt ? `Last seen ${formatAgo(status.lastSeenAt, now)}` : 'Not connected'
 
-  const actions = actionsFor(family, canStartNext)
+  const actions = actionsFor(family, canStartNext, octoprint)
   const big = size === 'L' || size === 'XL'
 
   const camera = !!(options.camera && size !== 'S')
@@ -113,7 +117,7 @@ export default function printerView ({ printer, size, options, now, streamFailed
     camera,
     cameraLive,
     cameraOff: camera && !cameraLive,
-    cameraMessage: cameraMessage(family, name, status.camera),
+    cameraMessage: cameraMessage(family, name, status.camera, octoprint),
     streamUrl: status.camera.streamUrl,
     progressBar: hasJob && camera
   }

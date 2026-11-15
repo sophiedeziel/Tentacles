@@ -23,7 +23,14 @@ const status = (overrides) => ({
 })
 
 const printer = (id, name, statusOverrides, extra = {}) => ({
-  id, name, canStartNext: false, queuedCount: 0, nextJob: null, status: status(statusOverrides), ...extra
+  id,
+  name,
+  backend: 'OCTOPRINT',
+  canStartNext: false,
+  queuedCount: 0,
+  nextJob: null,
+  status: status(statusOverrides),
+  ...extra
 })
 
 export const PRINTERS = {
