@@ -16,7 +16,7 @@ export default function DividerRow ({ section, index, count, dispatch, handle = 
     <div className={classes.dividerEdit}>
       {handle || <span className={classes.handle}><HolderOutlined /></span>}
       <Input value={section.title ?? ''} maxLength={MAX_TITLE_LENGTH} aria-label="Section name"
-        placeholder="Section name" className={classes.titleInput}
+        placeholder="Section name" className={classes.titleInput} status={section.title?.trim() ? undefined : 'error'}
         onChange={(event) => dispatch({ type: 'renameDivider', key, title: event.target.value })} />
       <span className={classes.dividerLine} />
       <Button aria-label="Move divider earlier" icon={<UpOutlined />} disabled={index <= 1}

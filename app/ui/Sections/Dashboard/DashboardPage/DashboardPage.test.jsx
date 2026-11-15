@@ -112,7 +112,9 @@ describe('DashboardPage', () => {
       { id: '2', title: 'Garage', widgets: [printerInput('w2', '4')] },
       { id: null, title: 'New Section', widgets: [] }
     ]
-    const save = (result) => ({ request: { query: SAVE_DASHBOARD, variables: { sections } }, result: { data: { saveDashboard: result } } })
+    const save = (result, delay = 0) => ({
+      request: { query: SAVE_DASHBOARD, variables: { sections } }, result: { data: { saveDashboard: result } }, delay
+    })
     const editPage = async (mocks) => {
       renderPage(page(), undefined, 60000, mocks)
       await userEvent.click(await screen.findByRole('button', { name: /Edit Dashboard/ }))
@@ -121,14 +123,24 @@ describe('DashboardPage', () => {
     it('saves the draft on Done and leaves edit mode', async () => {
       const saved = page().dashboard
       saved.sections.push({ __typename: 'DashboardSection', id: '3', title: 'New Section', widgets: [] })
-      await editPage([save({ __typename: 'SaveDashboardPayload', dashboard: saved, errors: [] })])
+      await editPage([save({ __typename: 'SaveDashboardPayload', dashboard: saved, errors: [] }, 200)])
       expect(screen.getByText(/Drag a widget and the dashboard rearranges/)).toBeInTheDocument()
       await userEvent.click(screen.getByRole('button', { name: 'Add Divider' }))
       expect(screen.getAllByRole('textbox', { name: 'Section name' }).map((input) => input.value)).toEqual(['Garage', 'New Section'])
       await userEvent.click(screen.getByRole('button', { name: 'Done' }))
+      // The draft can't change while it saves
+      expect(screen.getByRole('region', { name: 'Garage' }).closest('[inert]')).not.toBeNull()
       expect(await screen.findByRole('button', { name: /Edit Dashboard/ })).toBeInTheDocument()
       expect(screen.getByText('New Section')).toBeInTheDocument()
       expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+    })
+
+    it('asks for a title on every divider before saving', async () => {
+      await editPage([])
+      await userEvent.clear(screen.getByRole('textbox', { name: 'Section name' }))
+      await userEvent.click(screen.getByRole('button', { name: 'Done' }))
+      expect(screen.getByText('Every divider needs a title')).toBeInTheDocument()
+      expect(screen.getByRole('textbox', { name: 'Section name' })).toHaveClass('ant-input-status-error')
     })
 
     it('shows why the layout was not saved and keeps editing', async () => {

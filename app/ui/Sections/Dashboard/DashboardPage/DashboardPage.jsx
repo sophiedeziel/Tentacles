@@ -106,10 +106,13 @@ export default function DashboardPage () {
               ? "Tentacles can't be reached, so printer states may be out of date."
               : "The printer monitor isn't reporting, so printer states may be out of date."} />
         )}
-        {sections.map((section, index) => (
-          <Section key={section.key || section.id || index} section={section} index={index} data={widgetData}
-            editor={editor.editing ? editor : null} />
-        ))}
+        {/* Nothing changes the draft while it saves or resets */}
+        <div inert={!!editor.busy} aria-busy={!!editor.busy}>
+          {sections.map((section, index) => (
+            <Section key={section.key || section.id || index} section={section} index={index} data={widgetData}
+              editor={editor.editing ? editor : null} />
+          ))}
+        </div>
       </StreamVisibilityProvider>
     </App>
   )
