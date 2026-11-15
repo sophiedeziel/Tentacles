@@ -46,6 +46,11 @@ describe('layoutReducer', () => {
       expect(draft[0].widgets[0].key).not.toBe(draft[0].key)
     })
 
+    it('leaves out widget types it does not know', () => {
+      const draft = draftFrom({ sections: [{ id: '1', title: null, widgets: [printer('11'), { ...printer('12'), type: 'CAMERA' }] }] })
+      expect(shape(draft)).toEqual([['11']])
+    })
+
     it('always starts with an untitled section', () => {
       expect(titles(draftFrom({ sections: [] }))).toEqual([null])
       expect(titles(draftFrom({ sections: [{ id: '2', title: 'Workshop', widgets: [] }] }))).toEqual([null, 'Workshop'])

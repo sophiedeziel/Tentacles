@@ -30,13 +30,14 @@ function widgetFrom ({ id, type, widthUnits, heightUnits, printer, options }) {
 }
 
 // The edit-mode copy of a layout (`dashboard` or `defaultDashboard`): its sections, in order, each with a `key`
-// that stays the same while it moves. The first section is the untitled one above every divider.
+// that stays the same while it moves. The first section is the untitled one above every divider. A widget of a type
+// this browser doesn't know (a newer server) is left out, since it can't be shown, edited or saved.
 export function draftFrom (dashboard) {
   const sections = dashboard.sections.map((section) => ({
     key: section.id ? `section-${section.id}` : newKey(),
     id: section.id ?? null,
     title: section.title ?? null,
-    widgets: section.widgets.map(widgetFrom)
+    widgets: section.widgets.filter((widget) => REGISTRY[widget.type]).map(widgetFrom)
   }))
   if (!sections.length || sections[0].title) sections.unshift({ key: newKey(), id: null, title: null, widgets: [] })
   return sections
