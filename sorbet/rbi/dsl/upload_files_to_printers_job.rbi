@@ -9,15 +9,21 @@ class UploadFilesToPrintersJob
   class << self
     sig do
       params(
-        file_ids: T.untyped,
-        printer_ids: T.untyped,
-        "**": T.untyped,
+        file_ids: T::Array[T.any(::Integer, ::String)],
+        printer_ids: T::Array[T.any(::Integer, ::String)],
+        print: T::Boolean,
         block: T.nilable(T.proc.params(job: UploadFilesToPrintersJob).void)
       ).returns(T.any(UploadFilesToPrintersJob, FalseClass))
     end
-    def perform_later(file_ids, printer_ids, **, &block); end
+    def perform_later(file_ids, printer_ids, print: T.unsafe(nil), &block); end
 
-    sig { params(file_ids: T.untyped, printer_ids: T.untyped, "**": T.untyped).returns(T.untyped) }
-    def perform_now(file_ids, printer_ids, **); end
+    sig do
+      params(
+        file_ids: T::Array[T.any(::Integer, ::String)],
+        printer_ids: T::Array[T.any(::Integer, ::String)],
+        print: T::Boolean
+      ).void
+    end
+    def perform_now(file_ids, printer_ids, print: T.unsafe(nil)); end
   end
 end

@@ -32,7 +32,19 @@ RSpec.describe Spooler::Print do
       octoprint_states('Operational')
       operation.execute
       expect(UploadFilesToPrintersJob).to have_received(:perform_now)
-        .with([printer_job.executable_id], [printer.id], select: true, print: true)
+        .with([printer_job.executable_id], [printer.id], print: true)
+    end
+
+    # On main, Spooler::Print passed `select: true, print: true`, which Printer#upload doesn't accept
+    it 'calls the upload job with arguments that Printer#upload accepts' do
+      allow(UploadFilesToPrintersJob).to receive(:perform_now).and_call_original
+      allow(printer.api).to receive(:upload)
+      allow(Printer).to receive(:where).and_call_original
+      allow(Printer).to receive(:where).with(id: [printer.id]).and_return([printer])
+      octoprint_states('Printing', 'Operational')
+
+      expect { operation.execute }.not_to raise_error
+      expect(printer.api).to have_received(:upload).with(Rails.root.join('tmp/test.gcode').to_s, print: true)
     end
 
     it 'keeps monitoring through a pause and a resume' do

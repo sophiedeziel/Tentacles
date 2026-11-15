@@ -37,9 +37,9 @@ class Spooler
     end
 
     def execute
-      log '1. Start the print: send the right gcode to octoprint'.cyan
+      log '1. Start the print: upload the file to the printer'.cyan
       update_subscribers
-      UploadFilesToPrintersJob.perform_now([@file.id], [@printer.id], select: true, print: true)
+      UploadFilesToPrintersJob.perform_now([@file.id], [@printer.id], print: true)
 
       log '2. Monitor the print'.cyan
 
