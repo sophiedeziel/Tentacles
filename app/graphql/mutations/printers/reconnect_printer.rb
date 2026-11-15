@@ -6,7 +6,8 @@ module Mutations
     # Closes OctoPrint's connection to a printer in error, then opens it again (see ConnectPrinter)
     # Refused for the backends that connect on their own (PrusaLink).
     class ReconnectPrinter < PrinterAction
-      description 'Disconnects then reconnects OctoPrint to a printer in ERROR'
+      description "Disconnects then reconnects the printer's server to a printer in ERROR. Refused for the backends " \
+                  'that connect on their own (PrusaLink)'
 
       private
 

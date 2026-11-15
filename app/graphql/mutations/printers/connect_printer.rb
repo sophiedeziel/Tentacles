@@ -7,7 +7,8 @@ module Mutations
     # baudrate are autodetected and OctoPrint uses its default printer profile.
     # Refused for the backends that connect on their own (PrusaLink).
     class ConnectPrinter < PrinterAction
-      description 'Connects OctoPrint to an OFFLINE printer (autodetected port and baudrate, default profile)'
+      description "Connects the printer's server to an OFFLINE printer (OctoPrint: autodetected port and baudrate, " \
+                  'default profile). Refused for the backends that connect on their own (PrusaLink)'
 
       private
 
