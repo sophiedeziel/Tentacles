@@ -17,7 +17,7 @@ module Mutations
       end
 
       def send_command(printer)
-        printer.api.resume
+        printer.api.resume(job_id: live_job_id)
       end
     end
   end

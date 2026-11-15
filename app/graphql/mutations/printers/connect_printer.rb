@@ -5,10 +5,15 @@ module Mutations
   module Printers
     # Connects OctoPrint to the printer (allowed while OFFLINE, once OctoPrint itself answers). The serial port and
     # baudrate are autodetected and OctoPrint uses its default printer profile.
+    # Refused for the backends that connect on their own (PrusaLink).
     class ConnectPrinter < PrinterAction
       description 'Connects OctoPrint to an OFFLINE printer (autodetected port and baudrate, default profile)'
 
       private
+
+      def connection_command?
+        true
+      end
 
       def refusal(printer, family)
         case family
