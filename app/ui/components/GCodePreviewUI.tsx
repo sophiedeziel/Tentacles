@@ -2,14 +2,12 @@ import * as GCodePreview from 'gcode-preview';
 import React from 'react';
 import {
   forwardRef,
-  Ref,
+  type Ref,
   useEffect,
   useImperativeHandle,
   useRef,
   useState
 } from 'react';
-import { render } from 'react-dom';
-import * as THREE from 'three';
 
 interface GCodePreviewProps {
   topLayerColor?: string;
