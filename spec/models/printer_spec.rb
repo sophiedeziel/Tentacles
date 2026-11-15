@@ -313,6 +313,11 @@ RSpec.describe Printer, :vcr, type: :model do
       printer.update!(uri: 'http://octopi2.local/', secret: 'KEY2')
       expect(printer.reload).to have_attributes(octoprint_uri: 'http://octopi2.local/', octoprint_key: 'KEY2')
     end
+
+    it 'are not erased by a blank uri or secret' do
+      printer.update!(uri: '', secret: nil)
+      expect(printer.reload).to have_attributes(octoprint_uri: 'http://octopi.local/', octoprint_key: 'KEY')
+    end
   end
 end
 
@@ -346,12 +351,13 @@ RSpec.describe Printer, 'with a secret that cannot be decrypted' do
     expect(PrinterApiCache.disconnected?(printer.id)).to be false
   end
 
-  it 'is still valid and can be saved, keeping its stored secret' do
+  it 'is still valid and can be saved, keeping its stored secret and the old OctoPrint key' do
     stored = described_class.connection.select_value("SELECT secret FROM printers WHERE id = #{printer.id}")
 
     printer.update!(name: 'Renamed')
 
-    expect(described_class.find(printer.id).name).to eq 'Renamed'
+    expect(described_class.find(printer.id)).to have_attributes(name: 'Renamed',
+                                                                octoprint_key: 'A8DDB1359AAB415AB38C345129815DF4')
     expect(described_class.connection.select_value("SELECT secret FROM printers WHERE id = #{printer.id}"))
       .to eq stored
   end

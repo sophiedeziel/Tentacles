@@ -136,12 +136,14 @@ class Printer < ApplicationRecord
 
   private
 
-  # Until the cleanup drops them, `octoprint_uri` and `octoprint_key` mirror `uri` and `secret`
+  # Until the cleanup drops them, `octoprint_uri` and `octoprint_key` mirror `uri` and `secret`. A blank or unreadable
+  # value never erases the old one: the previous release would lose credentials it could still use.
   sig { void }
   def mirror_octoprint_credentials
     return unless backend == 'octoprint'
 
-    self.octoprint_uri = uri
-    self.octoprint_key = secret
+    self.octoprint_uri = uri if uri.present?
+    key = readable_secret
+    self.octoprint_key = key if key.present?
   end
 end
