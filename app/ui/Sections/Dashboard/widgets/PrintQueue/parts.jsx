@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Button, Progress } from 'antd'
+import { Button, Progress, theme } from 'antd'
 import { Link } from 'react-router'
 
 import { PrintQueueOutlined } from '../../../../components/icons'
@@ -58,7 +58,11 @@ export function plainStartNext () {
   return <Button size="small">Start Next</Button>
 }
 
-const SEND_FROM_FILES = <>Send G-code from <Link to="/files">Files</Link> to start a print.</>
+// Where prints are enqueued. The link takes the theme's primary colour, like antd's links.
+export function SendFromFiles () {
+  const { token } = theme.useToken()
+  return <>Send G-code from <Link to="/files" style={{ color: token.colorPrimary }}>Files</Link> to start a print.</>
+}
 
 // The empty queue: text only at Medium, the illustration from Large up. Both point to Files, where prints are
 // enqueued.
@@ -67,7 +71,7 @@ export function EmptyQueue ({ illustration = false }) {
     return (
       <div className={classes.emptyText}>
         <strong>Queue is empty</strong>
-        <span>{SEND_FROM_FILES}</span>
+        <span><SendFromFiles /></span>
       </div>
     )
   }
@@ -75,7 +79,7 @@ export function EmptyQueue ({ illustration = false }) {
     <div className={classes.emptyIllustration}>
       <EmptyQueueIllustration />
       <strong>Queue is empty</strong>
-      <span>{SEND_FROM_FILES}</span>
+      <span><SendFromFiles /></span>
     </div>
   )
 }
@@ -94,8 +98,33 @@ function EmptyQueueIllustration () {
   )
 }
 
+// Printing, Up next, "+ N more" and the ready bar: Large, and the left column of the Extra Large lists
+export function UpNextColumn ({ view, renderStartNext }) {
+  return (
+    <>
+      {view.now.length > 0 && (
+        <>
+          <span className={classes.label}>Printing</span>
+          {view.now.map((item) => <NowItem key={item.printerId} item={item} />)}
+        </>
+      )}
+      {view.next.length > 0 && (
+        <>
+          <span className={classes.label} style={{ marginTop: 2 }}>Up next</span>
+          <div className={classes.rows}>
+            {view.next.map((row) => <NextRow key={row.id} row={row} />)}
+          </div>
+          {view.moreText && <span className={classes.more}>{view.moreText}</span>}
+        </>
+      )}
+      {view.ready && <ReadyBar ready={view.ready} renderStartNext={renderStartNext} />}
+    </>
+  )
+}
+
 Header.propTypes = { title: PropTypes.string.isRequired, right: PropTypes.string }
 NextRow.propTypes = { row: PropTypes.object.isRequired, tall: PropTypes.bool }
 NowItem.propTypes = { item: PropTypes.object.isRequired }
 ReadyBar.propTypes = { ready: PropTypes.object.isRequired, renderStartNext: PropTypes.func.isRequired }
 EmptyQueue.propTypes = { illustration: PropTypes.bool }
+UpNextColumn.propTypes = { view: PropTypes.object.isRequired, renderStartNext: PropTypes.func.isRequired }

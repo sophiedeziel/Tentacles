@@ -232,3 +232,122 @@
     color: rgba(0, 0, 0, 0.45);
   }
 }
+
+// Extra Large and 4×4
+
+.big {
+  composes: column;
+  gap: 8px;
+}
+
+.table {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.5fr) minmax(0, 1.5fr) 64px 104px;
+  gap: 12px;
+  align-items: center;
+  height: 40px;
+  flex-shrink: 0;
+  border-bottom: 1px solid @line;
+  font-size: 14px;
+}
+
+.tableHead {
+  composes: tableRow;
+  height: 24px;
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 600;
+  color: @muted;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.printerName {
+  composes: ellipsis;
+  font-weight: 600;
+}
+
+.nowCell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.bar {
+  height: 4px;
+  border-radius: 2px;
+  background: @line;
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 4px;
+  }
+}
+
+.small12 {
+  composes: ellipsis;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.count {
+  text-align: right;
+  font-weight: 600;
+}
+
+.end {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.foldLine {
+  margin-top: auto;
+  padding-top: 6px;
+  font-size: 12px;
+  line-height: 20px;
+  color: @muted;
+}
+
+.under {
+  display: flex;
+  gap: 20px;
+  padding-top: 12px;
+  border-top: 1px solid @line;
+}
+
+.columns {
+  flex-grow: 1;
+  display: flex;
+  gap: 20px;
+  min-height: 0;
+}
+
+.listColumn {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.historyColumn {
+  composes: listColumn;
+  padding-left: 20px;
+  border-left: 1px solid @line;
+}

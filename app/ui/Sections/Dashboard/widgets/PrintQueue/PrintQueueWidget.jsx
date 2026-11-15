@@ -1,8 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
+import BigLayout from './BigLayouts'
 import queueView from './queueView'
-import { EmptyQueue, Header, NextRow, NowItem, ReadyBar, plainStartNext } from './parts'
+import { EmptyQueue, Header, NextRow, UpNextColumn, plainStartNext } from './parts'
 import * as classes from './PrintQueueWidget.module.less'
 
 // Small: only the number of queued jobs, large (grey when there are none)
@@ -50,31 +51,7 @@ function LargeLayout ({ view, renderStartNext }) {
   )
 }
 
-// Printing, Up next, "+ N more" and the ready bar: Large, and the left column of the Extra Large lists
-export function UpNextColumn ({ view, renderStartNext }) {
-  return (
-    <>
-      {view.now.length > 0 && (
-        <>
-          <span className={classes.label}>Printing</span>
-          {view.now.map((item) => <NowItem key={item.printerId} item={item} />)}
-        </>
-      )}
-      {view.next.length > 0 && (
-        <>
-          <span className={classes.label} style={{ marginTop: 2 }}>Up next</span>
-          <div className={classes.rows}>
-            {view.next.map((row) => <NextRow key={row.id} row={row} />)}
-          </div>
-          {view.moreText && <span className={classes.more}>{view.moreText}</span>}
-        </>
-      )}
-      {view.ready && <ReadyBar ready={view.ready} renderStartNext={renderStartNext} />}
-    </>
-  )
-}
-
-const LAYOUTS = { S: SmallLayout, M: MediumLayout, L: LargeLayout }
+const LAYOUTS = { S: SmallLayout, M: MediumLayout, L: LargeLayout, XL: BigLayout, XXL: BigLayout }
 
 // What prints next, for all printers or one. Presentational: it renders from props only, so the Add Widget gallery
 // can show it with fixture data.
@@ -87,8 +64,6 @@ export default function PrintQueueWidget ({
   printers, printerId = null, size, options, queue = null, history = null, now, renderStartNext = plainStartNext
 }) {
   const Layout = LAYOUTS[size]
-  if (!Layout) return null // Extra Large and up come next
-
   const view = queueView({ printers, printerId, size, options, queue, history, now })
   return <Layout view={view} renderStartNext={renderStartNext} />
 }
@@ -120,4 +95,3 @@ const layoutPropTypes = { view: PropTypes.object.isRequired, renderStartNext: Pr
 SmallLayout.propTypes = layoutPropTypes
 MediumLayout.propTypes = layoutPropTypes
 LargeLayout.propTypes = layoutPropTypes
-UpNextColumn.propTypes = layoutPropTypes
