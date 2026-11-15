@@ -4,6 +4,7 @@ import { useQuery, useSubscription } from '@apollo/client/react'
 
 import EditBar, { EditNotice } from '../EditBar/EditBar'
 import Section from '../Section/Section'
+import EditableSections from './EditableSections'
 import useDebouncedCounter from '../utils/useDebouncedCounter'
 import useNow from '../utils/useNow'
 import useRefetchWhenStale from '../utils/useRefetchWhenStale'
@@ -81,9 +82,7 @@ export default function DashboardPage () {
   // Cameras never stream in edit mode
   const widgetData = { printers, printersById, now, live, queueVersion, editing: editor.editing }
   // An untitled first section with no widgets has nothing to show
-  const sections = editor.editing
-    ? editor.sections
-    : data.dashboard.sections.filter((section) => section.title || section.widgets.length > 0)
+  const sections = data.dashboard.sections.filter((section) => section.title || section.widgets.length > 0)
   return (
     <App>
       <StreamVisibilityProvider>
@@ -108,10 +107,11 @@ export default function DashboardPage () {
         )}
         {/* Nothing changes the draft while it saves or resets */}
         <div inert={!!editor.busy} aria-busy={!!editor.busy}>
-          {sections.map((section, index) => (
-            <Section key={section.key || section.id || index} section={section} index={index} data={widgetData}
-              editor={editor.editing ? editor : null} />
-          ))}
+          {editor.editing
+            ? <EditableSections editor={editor} data={widgetData} />
+            : sections.map((section, index) => (
+              <Section key={section.id || index} section={section} index={index} data={widgetData} />
+            ))}
         </div>
       </StreamVisibilityProvider>
     </App>
