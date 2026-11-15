@@ -4,8 +4,7 @@
 module PrinterMonitor
   # Reads a printer's state from its OctoPrint with the printer's own client.
   #
-  # Every call runs in `client.use`, which sets the client for the current thread only: the gem's global
-  # configuration (used by the spooler) is never touched.
+  # Every call runs in `client.use` (see Printer#octoprint_client), which sets the client for the current thread only.
   class OctoprintReader
     extend T::Sig
     include Logging
@@ -20,7 +19,6 @@ module PrinterMonitor
     sig { params(printer: Printer).void }
     def initialize(printer)
       @printer = printer
-      @client = T.let(nil, T.nilable(Octoprint::Client))
       @temperatures_failing = T.let(false, T::Boolean)
     end
 
@@ -124,7 +122,7 @@ module PrinterMonitor
     # Raises Octoprint::Exceptions::MissingCredentialsError when the URI or the API key is blank
     sig { returns(Octoprint::Client) }
     def client
-      @client ||= Octoprint::Client.new(host: printer.octoprint_uri.presence, api_key: printer.octoprint_key.presence)
+      printer.octoprint_client
     end
   end
 end
