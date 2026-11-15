@@ -4,8 +4,9 @@
 module PrinterMonitor
   # One monitor tick for one printer, outside of the monitor process (see PrinterMonitor.refresh).
   #
-  # Reads the job and temperatures with the monitor's OctoprintReader and publishes the snapshot like a Worker does
-  # (only when it changed). The webcam settings aren't read again: the camera of the last snapshot is kept.
+  # Reads the job and temperatures with the monitor's reader (see Reader.for) and publishes the snapshot like a
+  # Worker does (only when it changed). The webcam settings aren't read again: the camera of the last snapshot is
+  # kept.
   class InlineTick
     extend T::Sig
     include Logging
@@ -22,7 +23,7 @@ module PrinterMonitor
     sig { returns(T.nilable(PrinterStatus)) }
     def call
       previous = PrinterStatusStore.read(printer.id)
-      status = build_status(OctoprintReader.new(printer).status_attributes, previous)
+      status = build_status(Reader.for(printer).status_attributes, previous)
       PrinterMonitor.publish(status, printer) unless status.same_as?(previous)
       status
     rescue StandardError => e

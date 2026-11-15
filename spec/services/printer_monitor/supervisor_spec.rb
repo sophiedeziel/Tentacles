@@ -76,7 +76,7 @@ RSpec.describe PrinterMonitor::Supervisor do
       end
     end
 
-    %i[octoprint_uri octoprint_key].each do |attribute|
+    %i[uri secret].each do |attribute|
       context "when the printer's #{attribute} changed" do
         before do
           supervisor.refresh

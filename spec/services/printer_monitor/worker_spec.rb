@@ -93,7 +93,7 @@ RSpec.describe PrinterMonitor::Worker do
 
       worker.tick
 
-      expect(clients.first).to have_attributes(host: printer.octoprint_uri, api_key: printer.octoprint_key)
+      expect(clients.first).to have_attributes(host: printer.uri, api_key: printer.secret)
       expect(Octoprint).not_to have_received(:configure)
     end
 
@@ -305,7 +305,7 @@ RSpec.describe PrinterMonitor::Worker do
     end
 
     context 'when the printer has no OctoPrint credentials' do
-      let(:printer) { create(:printer, octoprint_uri: '', octoprint_key: nil) }
+      let(:printer) { create(:printer, :unvalidated, uri: '', secret: nil) }
 
       before { worker.tick }
 
@@ -445,7 +445,7 @@ RSpec.describe PrinterMonitor::Worker do
     end
 
     context 'when the OctoPrint URI has a path without a trailing slash' do
-      let(:printer) { create(:printer, octoprint_uri: 'http://10.0.1.165/octoprint') }
+      let(:printer) { create(:printer, uri: 'http://10.0.1.165/octoprint') }
 
       it 'resolves relative URLs under that path' do
         allow(Octoprint::Settings).to receive(:webcam) do
@@ -457,7 +457,7 @@ RSpec.describe PrinterMonitor::Worker do
     end
 
     context 'when the OctoPrint URI has credentials' do
-      let(:printer) { create(:printer, octoprint_uri: 'http://admin:secret@10.0.1.165/') }
+      let(:printer) { create(:printer, uri: 'http://admin:secret@10.0.1.165/') }
 
       it 'does not copy them into the stream URL' do
         worker.tick
@@ -502,6 +502,43 @@ RSpec.describe PrinterMonitor::Worker do
 
       expect(worker.join(5)).to be_a(Thread)
       expect(worker).to have_received(:tick).at_least(:once)
+    end
+  end
+
+  describe 'failure logs' do
+    before do
+      allow(Rails.logger).to receive(:warn).and_call_original
+      allow(Rails.logger).to receive(:error).and_call_original
+    end
+
+    [
+      Octoprint::Exceptions::ConnectionError.new('Failed to open TCP connection'),
+      Octoprint::Exceptions::TimeoutError.new('execution expired'),
+      Octoprint::Exceptions::AuthenticationError.new('[403] Invalid API key'),
+      Octoprint::Exceptions::InternalServerError.new('[500] Oops')
+    ].each do |error|
+      it "warns once that the printer is unreachable when OctoPrint raises #{error.class.name.demodulize}" do
+        go_offline(error)
+        2.times { worker.tick }
+
+        expect(Rails.logger).to have_received(:warn).with(/Unreachable: #{Regexp.escape(error.message)}/).once
+        expect(Rails.logger).not_to have_received(:error).with(/Unexpected error/)
+      end
+    end
+
+    it 'warns about missing credentials' do
+      printer = create(:printer, :disconnected)
+      described_class.new(printer, interval: 2.0).tick
+
+      expect(Rails.logger).to have_received(:warn).with(/Unreachable: Missing OctoPrint credentials/)
+    end
+
+    it 'logs anything else as an unexpected error' do
+      go_offline(NoMethodError.new('undefined method'))
+      worker.tick
+
+      expect(Rails.logger).to have_received(:error)
+        .with(/Unexpected error while polling OctoPrint: NoMethodError: undefined method/)
     end
   end
 end
