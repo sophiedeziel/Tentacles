@@ -1,0 +1,60 @@
+// A section is a 4-column grid: widgets never flow across a divider.
+// Below md: 2 columns (XL and XXL clamp to 2 wide); below sm: 1 column.
+.section {
+  margin-top: 24px;
+
+  // Right under the page header
+  &:first-of-type {
+    margin-top: 18px;
+  }
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+
+  &::after {
+    content: '';
+    flex-grow: 1;
+    border-top: 1px solid rgba(5, 5, 5, 0.06);
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: 168px;
+  grid-auto-flow: row;
+  gap: 12px;
+}
+
+.cell {
+  grid-column: span var(--width-units);
+  grid-row: span var(--height-units);
+  min-width: 0;
+}
+
+@media (max-width: 767.98px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cell {
+    grid-column: span var(--width-units-md);
+  }
+}
+
+@media (max-width: 575.98px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cell {
+    grid-column: span 1;
+  }
+}
