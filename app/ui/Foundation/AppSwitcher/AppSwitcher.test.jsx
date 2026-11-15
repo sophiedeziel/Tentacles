@@ -12,6 +12,7 @@ describe('AppSwitcher', () => {
       </MemoryRouter>
     )
 
-    expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
+    // The page loads lazily: allow for a slow first transform
+    expect(await screen.findByRole('heading', { name: 'Dashboard' }, { timeout: 5000 })).toBeInTheDocument()
   })
 })
