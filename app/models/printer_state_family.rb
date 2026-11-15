@@ -6,6 +6,8 @@
 #
 #   PrinterStateFamily.for('Printing from SD') # => PrinterStateFamily::Printing
 #   PrinterStateFamily.for('Something new')    # => PrinterStateFamily::Offline (and logs the text once)
+#
+# PrusaLink reports one of a few fixed states instead: see .for_prusalink.
 class PrinterStateFamily < T::Enum
   extend T::Sig
 
@@ -51,6 +53,22 @@ class PrinterStateFamily < T::Enum
     T::Array[[String, PrinterStateFamily]]
   )
 
+  # PrusaLink's `printer.state` per family. ATTENTION (the printer waits for the user, e.g. after a filament
+  # runout) depends on the job, see .for_prusalink.
+  PRUSALINK_STATES = T.let(
+    {
+      'PRINTING' => Printing,
+      'PAUSED' => Paused,
+      'IDLE' => Operational,
+      'READY' => Operational,
+      'FINISHED' => Operational,
+      'STOPPED' => Operational,
+      'BUSY' => Operational,
+      'ERROR' => Error
+    }.freeze,
+    T::Hash[String, PrinterStateFamily]
+  )
+
   # Families in which OctoPrint is connected to the printer and can report temperatures
   CONNECTED = T.let([Printing, Paused, Cancelling, Operational].freeze, T::Array[PrinterStateFamily])
 
@@ -74,18 +92,36 @@ class PrinterStateFamily < T::Enum
       match = PREFIXES.find { |prefix, _family| text.start_with?(prefix) }
       return match.last if match
 
-      log_unknown(T.must(state_text))
+      log_unknown('OctoPrint', T.must(state_text))
+      Offline
+    end
+
+    # Maps a PrusaLink `printer.state` ("PRINTING", "ATTENTION", ...) to its family. `job` tells whether PrusaLink
+    # reports a job: ATTENTION is PAUSED during a job, ERROR otherwise. Unknown states map to Offline and are
+    # logged (once per state).
+    #
+    #   PrinterStateFamily.for_prusalink('ATTENTION', job: true)  # => PrinterStateFamily::Paused
+    #   PrinterStateFamily.for_prusalink('ATTENTION', job: false) # => PrinterStateFamily::Error
+    sig { params(state: T.nilable(String), job: T::Boolean).returns(PrinterStateFamily) }
+    def for_prusalink(state, job:)
+      return Offline if state.blank?
+      return job ? Paused : Error if state == 'ATTENTION'
+
+      family = PRUSALINK_STATES[state]
+      return family if family
+
+      log_unknown('PrusaLink', state)
       Offline
     end
 
     private
 
-    sig { params(state_text: String).void }
-    def log_unknown(state_text)
+    sig { params(backend: String, state_text: String).void }
+    def log_unknown(backend, state_text)
       @logged_unknown_texts.clear if @logged_unknown_texts.size >= MAX_LOGGED_UNKNOWN_TEXTS
-      return unless @logged_unknown_texts.add?(state_text)
+      return unless @logged_unknown_texts.add?([backend, state_text])
 
-      Rails.logger.warn("[PrinterStateFamily] Unknown OctoPrint state #{state_text.inspect}, treating it as OFFLINE")
+      Rails.logger.warn("[PrinterStateFamily] Unknown #{backend} state #{state_text.inspect}, treating it as OFFLINE")
     end
   end
 
