@@ -1,0 +1,126 @@
+# typed: true
+# frozen_string_literal: true
+
+module PrinterMonitor
+  # Polls one printer's OctoPrint in its own thread and publishes a PrinterStatus snapshot when its state changes.
+  #
+  # Every tick reads the job (and the temperatures when OctoPrint is connected to the printer). The snapshot is
+  # stored in Redis and the GraphQL subscribers are notified only when it differs from the last one written.
+  # Unreachable printers are reported as OFFLINE and polled less and less often (see Connectivity#delay).
+  #
+  #   worker = PrinterMonitor::Worker.new(printer).start
+  #   worker.stop
+  #   worker.join
+  class Worker
+    extend T::Sig
+    include Runnable
+
+    DEFAULT_INTERVAL = 2.0
+    UNREACHABLE_STATE_TEXT = 'Unreachable'
+    MISSING_CREDENTIALS_TEXT = 'Missing OctoPrint credentials'
+    ERROR_TEXT_LENGTH = 200
+
+    sig { override.returns(Printer) }
+    attr_reader :printer
+
+    sig { returns(Connectivity) }
+    attr_reader :connectivity
+
+    # Seconds between ticks, from PRINTER_MONITOR_INTERVAL (defaults to 2)
+    sig { returns(Float) }
+    def self.default_interval
+      interval = ENV.fetch('PRINTER_MONITOR_INTERVAL', DEFAULT_INTERVAL).to_f
+      interval.positive? ? interval : DEFAULT_INTERVAL
+    end
+
+    sig { params(printer: Printer, interval: Float).void }
+    def initialize(printer, interval: self.class.default_interval)
+      @printer = printer
+      @reader = T.let(OctoprintReader.new(printer), OctoprintReader)
+      @webcam = T.let(WebcamTracker.new(printer, @reader), WebcamTracker)
+      @connectivity = T.let(Connectivity.new(printer, interval:), Connectivity)
+      @previous = T.let(nil, T.nilable(PrinterStatus))
+    end
+
+    # Polls OctoPrint once, publishes the snapshot if it changed and writes the heartbeat. Never raises.
+    sig { override.void }
+    def tick
+      # The heartbeat is written even when publishing failed (e.g. the GraphQL trigger raised)
+      error = capture_error { publish(poll) }
+      error = capture_error { PrinterStatusStore.beat! } || error
+      error ? publish_failed(error) : connectivity.record_publish_success
+    end
+
+    delegate :delay, to: :connectivity
+
+    private
+
+    sig { returns(PrinterStatus) }
+    def poll
+      attributes = @reader.status_attributes
+      @webcam.refresh
+      connectivity.record_success
+      build_status(attributes)
+    rescue StandardError => e
+      record_failure(e)
+      build_status({ state_family: PrinterStateFamily::Offline, state_text: UNREACHABLE_STATE_TEXT,
+                     error_text: error_text(e) })
+    end
+
+    sig { params(status: PrinterStatus).void }
+    def publish(status)
+      return if status.same_as?(@previous)
+
+      PrinterStatusStore.write(status)
+      @previous = status
+      TentaclesSchema.subscriptions.trigger(:printer_status_changed, {}, printer)
+    end
+
+    sig { params(attributes: T::Hash[Symbol, T.untyped]).returns(PrinterStatus) }
+    def build_status(attributes)
+      base = { printer_id: printer.id, camera: @webcam.camera, last_seen_at: connectivity.last_seen_at,
+               updated_at: Time.current }
+      PrinterStatus.new(**T.unsafe(base.merge(attributes)))
+    end
+
+    sig { params(error: StandardError).void }
+    def record_failure(error)
+      connectivity.record_failure
+      @webcam.expire # Fetch the webcam settings again once reconnected
+      log_failure(error) if connectivity.failures == 1
+    end
+
+    # Runs the block and returns the error it raised, if any
+    sig { params(block: T.proc.void).returns(T.nilable(StandardError)) }
+    def capture_error(&block)
+      block.call
+      nil
+    rescue StandardError => e
+      e
+    end
+
+    # Only the first failure of a streak is logged, so a Redis outage doesn't flood the logs
+    sig { params(error: StandardError).void }
+    def publish_failed(error)
+      streak = connectivity.record_publish_failure
+      log_exception('Failed to publish the printer status', error) if streak == 1
+    end
+
+    sig { params(error: StandardError).returns(String) }
+    def error_text(error)
+      return MISSING_CREDENTIALS_TEXT if error.is_a?(Octoprint::Exceptions::MissingCredentialsError)
+
+      (error.message.presence || error.class.name.to_s).truncate(ERROR_TEXT_LENGTH)
+    end
+
+    # Only the first failure of a streak is logged, so unreachable printers don't flood the logs
+    sig { params(error: StandardError).void }
+    def log_failure(error)
+      if error.is_a?(Octoprint::Exceptions::Error)
+        log(:warn, "Unreachable: #{error_text(error)}")
+      else
+        log_exception('Unexpected error while polling OctoPrint', error)
+      end
+    end
+  end
+end
