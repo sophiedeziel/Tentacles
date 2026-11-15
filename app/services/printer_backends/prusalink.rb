@@ -15,6 +15,9 @@ module PrinterBackends
     # Seconds to wait for PrusaLink
     OPEN_TIMEOUT = 2
     TIMEOUT = 5
+    # Seconds to wait for PrusaLink when uploading G-code files
+    UPLOAD_OPEN_TIMEOUT = 5
+    UPLOAD_TIMEOUT = 120
 
     CONNECTS_ON_ITS_OWN = 'PrusaLink printers connect on their own'
 
@@ -143,9 +146,17 @@ module PrinterBackends
       raise Error, CONNECTS_ON_ITS_OWN
     end
 
+    # Uploads the file (G-code or binary G-code, sent as it is) to the root of the first writable storage, replacing
+    # a file of the same name. With its own client: large files take much longer than the API client's timeouts.
     sig { override.params(path: String, print: T::Boolean).void }
     def upload(path, print: false)
-      raise NotImplementedError, 'Uploading to PrusaLink printers is not supported yet'
+      storage = T.let(writable_storage.path, String)
+      self.class.translate_errors do
+        upload_client.use do
+          ::Prusalink::Files.upload(path, storage:, path: ::File.basename(path), print_after_upload: print,
+                                          overwrite: true)
+        end
+      end
     end
 
     # The printer's PrusaLink client, for PrinterMonitor::PrusalinkReader.
@@ -161,6 +172,26 @@ module PrinterBackends
     end
 
     private
+
+    # Raises Prusalink::Exceptions::MissingCredentialsError when the URI or the password is blank
+    sig { returns(::Prusalink::Client) }
+    def upload_client
+      @upload_client ||= T.let(
+        ::Prusalink::Client.new(host: printer.uri.presence, password: printer.secret.presence,
+                                username: printer.username.presence || ::Prusalink::Client::DEFAULT_USERNAME,
+                                open_timeout: UPLOAD_OPEN_TIMEOUT, timeout: UPLOAD_TIMEOUT),
+        T.nilable(::Prusalink::Client)
+      )
+    end
+
+    # The first available storage that isn't read only: the USB drive on MK4, XL and MINI, the local storage of
+    # PrusaLink on a Raspberry Pi. Raises PrinterBackends::Error when there is none (e.g. no USB drive inserted).
+    sig { returns(::Prusalink::Storage) }
+    def writable_storage
+      storages = use { ::Prusalink::Storage.list }
+      storages.find { |storage| storage.available? && !storage.read_only? && storage.path.present? } ||
+        raise(Error, "#{printer.name} has no writable storage. Insert a USB drive")
+    end
 
     # Raises PrinterBackends::Error when PrusaLink answers without a status
     sig { returns(::Prusalink::Status) }

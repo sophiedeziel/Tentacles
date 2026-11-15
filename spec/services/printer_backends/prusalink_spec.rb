@@ -213,8 +213,125 @@ RSpec.describe PrinterBackends::Prusalink do
     end
   end
 
-  it 'does not upload yet' do
-    expect { adapter.upload('spec/fixture_files/test.gcode') }.to raise_error(NotImplementedError, /not supported yet/)
+  describe '#upload' do
+    let(:path) { 'tmp/cube.gcode' }
+    let(:usb) { { name: 'usb', type: 'USB', path: '/usb', available: true, read_only: false } }
+    let(:storages) { [usb] }
+
+    def storage(attributes)
+      Prusalink::Storage.deserialize(attributes)
+    end
+
+    before do
+      allow(Prusalink::Storage).to receive(:list) { storages.map { |attributes| storage(attributes) } }
+      allow(Prusalink::Files).to receive(:upload).and_return(true)
+    end
+
+    it 'uploads the file to the root of the storage, replacing a file of the same name' do
+      adapter.upload(path)
+      expect(Prusalink::Files).to have_received(:upload)
+        .with(path, storage: '/usb', path: 'cube.gcode', print_after_upload: false, overwrite: true)
+    end
+
+    it 'prints the file after the upload when asked to' do
+      adapter.upload(path, print: true)
+      expect(Prusalink::Files).to have_received(:upload)
+        .with(path, storage: '/usb', path: 'cube.gcode', print_after_upload: true, overwrite: true)
+    end
+
+    it 'uploads binary G-code unchanged' do
+      adapter.upload('tmp/cube.bgcode', print: true)
+      expect(Prusalink::Files).to have_received(:upload)
+        .with('tmp/cube.bgcode', storage: '/usb', path: 'cube.bgcode', print_after_upload: true, overwrite: true)
+    end
+
+    context 'with several storages' do
+      let(:storages) do
+        [
+          { name: 'sd', type: 'SDCARD', path: '/sd', available: false, read_only: false },
+          { name: 'firmware', type: 'LOCAL', path: '/firmware', available: true, read_only: true },
+          { name: 'local', type: 'LOCAL', path: '/local', available: true, read_only: false },
+          usb
+        ]
+      end
+
+      it 'picks the first available storage that is not read only' do
+        adapter.upload(path)
+        expect(Prusalink::Files).to have_received(:upload).with(path, hash_including(storage: '/local'))
+      end
+    end
+
+    [
+      [],
+      [{ name: 'usb', type: 'USB', path: '/usb', available: false }],
+      [{ name: 'usb', type: 'USB', path: '/usb', available: true, read_only: true }]
+    ].each do |list|
+      context "with storages #{list}" do
+        let(:storages) { list }
+
+        it 'raises a readable error without uploading' do
+          printer.name = 'Prusa MK4'
+          expect { adapter.upload(path) }
+            .to raise_error(PrinterBackends::Error, 'Prusa MK4 has no writable storage. Insert a USB drive')
+          expect(Prusalink::Files).not_to have_received(:upload)
+        end
+      end
+    end
+
+    it 'uploads with its own client and long timeouts, and lists the storages with the API client' do
+      clients = {}
+      allow(Prusalink::Storage).to receive(:list) {
+        clients[:list] = Prusalink.client
+        [storage(usb)]
+      }
+      allow(Prusalink::Files).to receive(:upload) { clients[:upload] = Prusalink.client }
+
+      adapter.upload(path)
+
+      expect(clients[:list]).to be adapter.client
+      expect(clients[:upload]).to have_attributes(host: 'http://prusa-mk4.local', username: 'maker',
+                                                  password: 'printer-password', open_timeout: 5, timeout: 120)
+      expect(Prusalink.client).to be_nil
+    end
+
+    it 'translates the errors of the upload' do
+      allow(Prusalink::Files).to receive(:upload).and_raise(Prusalink::Exceptions::ConflictError, '[409] Conflict')
+      expect { adapter.upload(path) }.to raise_error(PrinterBackends::Error, '[409] Conflict')
+    end
+
+    context 'with the HTTP answers of the printer' do
+      include WebMock::API
+
+      around { |example| VCR.turned_off { example.run } }
+
+      let(:file) { Rails.root.join('spec/fixture_files/test.gcode').to_s }
+
+      before do
+        allow(Prusalink::Storage).to receive(:list).and_call_original
+        allow(Prusalink::Files).to receive(:upload).and_call_original
+        stub_request(:get, 'http://prusa-mk4.local/api/v1/storage')
+          .to_return(status: 200, headers: { 'Content-Type' => 'application/json' },
+                     body: { storage_list: [usb] }.to_json)
+        # The gem's digest middleware fetches the challenge with a HEAD before streaming a file
+        stub_request(:head, 'http://prusa-mk4.local/api/v1/files/usb/test.gcode').to_return(status: 404)
+      end
+
+      it 'sends the file with the Print-After-Upload and Overwrite headers' do
+        upload = stub_request(:put, 'http://prusa-mk4.local/api/v1/files/usb/test.gcode')
+                 .with(body: File.binread(file),
+                       headers: { 'Content-Type' => 'application/octet-stream', 'Print-After-Upload' => '?1',
+                                  'Overwrite' => '?1' })
+                 .to_return(status: 201)
+
+        adapter.upload(file, print: true)
+        assert_requested(upload)
+      end
+
+      it 'raises Unreachable when the upload times out' do
+        stub_request(:put, 'http://prusa-mk4.local/api/v1/files/usb/test.gcode').to_timeout
+        expect { adapter.upload(file) }.to raise_error(PrinterBackends::Unreachable)
+      end
+    end
   end
 
   describe 'error translation' do
