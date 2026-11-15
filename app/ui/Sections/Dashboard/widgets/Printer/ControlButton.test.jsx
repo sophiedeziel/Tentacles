@@ -8,10 +8,13 @@ import ControlButton from './ControlButton'
 import printerView from './printerView'
 import { ALL_OPTIONS, FIXTURE_NOW, PRINTERS } from './fixtures'
 
+// What the tiles snapshot: the printer's file and next job
+const snapshotOf = (printer) => () => ({ file: printer.status.fileName, job: printer.nextJob?.id })
+
 const setup = (family, key, onRun = vi.fn().mockResolvedValue([]), live = true) => {
   const view = printerView({ printer: PRINTERS[family], size: 'L', options: ALL_OPTIONS, now: FIXTURE_NOW })
   const action = view.actions.find((candidate) => candidate.key === key)
-  render(<App><ControlButton action={action} view={view} onRun={onRun} live={live} /></App>)
+  render(<App><ControlButton action={action} view={view} onRun={onRun} live={live} snapshot={snapshotOf(PRINTERS[family])} /></App>)
   return onRun
 }
 
@@ -24,7 +27,7 @@ describe('ControlButton', () => {
     expect(onRun).not.toHaveBeenCalled()
 
     await userEvent.click(screen.getByRole('button', { name: 'Pause Print' }))
-    expect(onRun).toHaveBeenCalledWith('pause')
+    expect(onRun).toHaveBeenCalledWith('pause', { file: 'bracket_v3.gcode', job: 'cable_clip_x20.gcode' })
   })
 
   it('keeps printing when the Popconfirm is dismissed', async () => {
@@ -39,7 +42,7 @@ describe('ControlButton', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Start Next' }))
     expect(await screen.findByText('spool_holder.gcode starts on Prusa Mini+. Make sure the bed is clear.')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Start Print' }))
-    expect(onRun).toHaveBeenCalledWith('startNext')
+    expect(onRun).toHaveBeenCalledWith('startNext', { file: null, job: 'spool_holder.gcode' })
   })
 
   it('asks in a Modal before cancelling, since it cannot be undone', async () => {
@@ -51,13 +54,13 @@ describe('ControlButton', () => {
     expect(screen.getByRole('button', { name: 'Keep Paused' })).toBeInTheDocument()
 
     await userEvent.click(screen.getByRole('button', { name: 'Cancel Print' }))
-    expect(onRun).toHaveBeenCalledWith('cancel')
+    expect(onRun).toHaveBeenCalledWith('cancel', { file: 'enclosure_panel.gcode', job: 'calibration_cube.gcode' })
   })
 
   it('connects right away and shows the errors it returns', async () => {
     const onRun = setup('OFFLINE', 'connect', vi.fn().mockResolvedValue(["Could not reach Kobra 2's OctoPrint"]))
     await userEvent.click(screen.getByRole('button', { name: 'Connect' }))
-    expect(onRun).toHaveBeenCalledWith('connect')
+    expect(onRun).toHaveBeenCalledWith('connect', { file: null, job: undefined })
     expect(await screen.findByText("Could not reach Kobra 2's OctoPrint")).toBeInTheDocument()
   })
 
@@ -90,5 +93,23 @@ describe('ControlButton', () => {
     setup('PRINTING', 'pause', vi.fn().mockResolvedValue([]), false)
     await userEvent.click(screen.getByRole('button', { name: 'Pause' }))
     expect(await screen.findByText(/keeps the bed warm\. Printer states may be out of date\.$/)).toBeInTheDocument()
+  })
+
+  it('runs what the confirmation showed when it opened, even if a push changed the printer since', async () => {
+    const onRun = vi.fn().mockResolvedValue([])
+    const element = (printer) => {
+      const view = printerView({ printer, size: 'L', options: ALL_OPTIONS, now: FIXTURE_NOW })
+      return <App><ControlButton action={view.actions[0]} view={view} onRun={onRun} snapshot={snapshotOf(printer)} /></App>
+    }
+    const { rerender } = render(element(PRINTERS.OPERATIONAL))
+    await userEvent.click(screen.getByRole('button', { name: 'Start Next' }))
+    await screen.findByText('spool_holder.gcode starts on Prusa Mini+. Make sure the bed is clear.')
+
+    // Another screen started spool_holder.gcode: phone_stand.gcode is next now
+    const moved = { ...PRINTERS.OPERATIONAL, nextJob: { id: 'phone_stand.gcode', executable: { id: 'p', filename: 'phone_stand.gcode' } } }
+    rerender(element(moved))
+    expect(screen.getByText('spool_holder.gcode starts on Prusa Mini+. Make sure the bed is clear.')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Start Print' }))
+    expect(onRun).toHaveBeenCalledWith('startNext', { file: null, job: 'spool_holder.gcode' })
   })
 })

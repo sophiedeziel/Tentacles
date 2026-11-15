@@ -28,11 +28,10 @@ export default function PrinterTile ({ widget, size, data }) {
 
   if (!printer) return null
 
-  // Sends what the tile shows (the file printing, the next job), so the server refuses if the printer moved on
-  const run = async (key) => {
-    const { mutation, document, expectations } = ACTIONS[key]
-    const variables = { printerId: printer.id, ...expectations?.(printer) }
-    const { data: result } = await client.mutate({ mutation: document, variables })
+  // Sends what the user confirmed (the file printing, the next job), so the server refuses if the printer moved on
+  const run = async (key, confirmed) => {
+    const { mutation, document } = ACTIONS[key]
+    const { data: result } = await client.mutate({ mutation: document, variables: { printerId: printer.id, ...confirmed } })
     return result[mutation].errors
   }
 
@@ -40,7 +39,8 @@ export default function PrinterTile ({ widget, size, data }) {
     <PrinterWidget printer={printer} size={size} options={widget.options} now={data.now} streamFailed={streamFailed}
       cameraStream={streamUrl && <CameraStream url={streamUrl} name={printer.name} onError={() => setStreamFailed(true)} />}
       renderAction={(action, view) => (
-        <ControlButton key={action.key} action={action} view={view} onRun={run} live={data.live !== false} />
+        <ControlButton key={action.key} action={action} view={view} onRun={run} live={data.live !== false}
+          snapshot={() => ACTIONS[action.key]?.expectations?.(printer)} />
       )} />
   )
 }

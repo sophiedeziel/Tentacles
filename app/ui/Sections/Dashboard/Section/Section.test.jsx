@@ -32,11 +32,12 @@ describe('Section', () => {
     expect(screen.getByText('Prusa MK4')).toBeInTheDocument()
   })
 
-  it('stands in for a Print Queue until that widget exists', () => {
-    render(<Section data={data} section={{
-      id: '1', title: null, widgets: [{ id: 'q', type: 'PRINT_QUEUE', widthUnits: 4, heightUnits: 2, printer: null, options: {} }]
+  it('renders a Print Queue widget from the printers', () => {
+    render(<Section data={{ ...data, printers: [PRINTERS.PRINTING] }} section={{
+      id: '1', title: null, widgets: [{ id: 'q', type: 'PRINT_QUEUE', widthUnits: 1, heightUnits: 1, printer: null, options: {} }]
     }} />)
     expect(screen.getByText('Print Queue')).toBeInTheDocument()
-    expect(screen.getByText('· Coming soon')).toBeInTheDocument()
+    expect(screen.getByText('3')).toBeInTheDocument()
+    expect(screen.queryByText('· Coming soon')).not.toBeInTheDocument()
   })
 })
