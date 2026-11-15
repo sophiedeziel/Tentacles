@@ -1,12 +1,83 @@
-import React from 'react'
-import { Typography } from 'antd'
+import React, { useMemo } from 'react'
+import { Alert, Skeleton, Typography } from 'antd'
+import { useQuery, useSubscription } from '@apollo/client/react'
 
-// The redesigned dashboard, served at /dashboard-next until it replaces the one at /.
-// View mode only for now: the sections, widgets and live data come in the next layers.
+import Section from '../Section/Section'
+import useNow from '../utils/useNow'
+import useRefetchWhenStale from '../utils/useRefetchWhenStale'
+import {
+  DASHBOARD_CHANGED,
+  DASHBOARD_PAGE,
+  MONITOR_HEALTHY,
+  PRINTER_STATUS_CHANGED
+} from '../graphql/dashboard'
+
+const MONITOR_POLL_INTERVAL = 15000
+
+const plural = (count, one, many) => `${count} ${count === 1 ? one : many}`
+
+// "4 printers · 1 printing · 5 jobs queued"
+export function summary (printers) {
+  const printing = printers.filter((printer) => printer.status.stateFamily === 'PRINTING').length
+  const queued = printers.reduce((total, printer) => total + printer.queuedCount, 0)
+  return [plural(printers.length, 'printer', 'printers'), `${printing} printing`,
+    plural(queued, 'job queued', 'jobs queued')].join(' · ')
+}
+
+// The redesigned dashboard, served at /dashboard-next until it replaces the one at /. View mode only.
+// One query loads the layout and every printer; pushes keep them live, and reloads catch up on missed pushes.
 export default function DashboardPage () {
+  // cache-and-network: coming back to the page never shows (and acts on) statuses cached earlier
+  const { data, error, refetch } = useQuery(DASHBOARD_PAGE, { fetchPolicy: 'cache-and-network' })
+  // no-cache: the page query's own monitorHealthy can't overwrite a failed poll
+  const monitor = useQuery(MONITOR_HEALTHY, { pollInterval: MONITOR_POLL_INTERVAL, fetchPolicy: 'no-cache' })
+  useRefetchWhenStale(refetch)
+  useSubscription(PRINTER_STATUS_CHANGED)
+  useSubscription(DASHBOARD_CHANGED, {
+    onData: ({ client, data: pushed }) => {
+      const dashboard = pushed.data?.dashboardChanged
+      if (!dashboard) return
+      let unknownPrinter = false
+      client.cache.updateQuery({ query: DASHBOARD_PAGE }, (page) => {
+        if (!page) return page
+        const known = new Set(page.printers.map((printer) => printer.id))
+        unknownPrinter = dashboard.sections.some((section) => section.widgets.some(
+          (widget) => widget.printer && !known.has(widget.printer.id)
+        ))
+        return { ...page, dashboard }
+      })
+      if (unknownPrinter) refetch() // a printer added since the page loaded
+    }
+  })
+  const now = useNow()
+
+  const printers = data?.printers
+  const printersById = useMemo(
+    () => Object.fromEntries((printers || []).map((printer) => [printer.id, printer])),
+    [printers]
+  )
+
+  if (error && !data) return <Alert type="error" title="Could not load the dashboard" description={error.message} />
+  if (!data) return <Skeleton active />
+
+  // Live: the last reloads worked and the monitor is reporting. Otherwise the controls warn that states may be old.
+  const unreachable = !!(error || monitor.error)
+  const live = !unreachable && (monitor.data?.monitorHealthy ?? data.monitorHealthy)
+  const widgetData = { printersById, now, live }
   return (
     <div>
       <Typography.Title level={3} style={{ margin: 0 }}>Dashboard</Typography.Title>
+      <Typography.Text style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{summary(printers)}</Typography.Text>
+      {!live && (
+        <Alert type="warning" showIcon style={{ marginTop: 16 }} title="Live data paused"
+          description={unreachable
+            ? "Tentacles can't be reached, so printer states may be out of date."
+            : "The printer monitor isn't reporting, so printer states may be out of date."} />
+      )}
+      {/* An untitled first section with no widgets has nothing to show */}
+      {data.dashboard.sections.filter((section) => section.title || section.widgets.length > 0).map((section, index) => (
+        <Section key={section.id || index} section={section} data={widgetData} />
+      ))}
     </div>
   )
 }
