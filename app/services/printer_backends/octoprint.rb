@@ -39,6 +39,29 @@ module PrinterBackends
         { port: 'AUTO', baudrate: 0 }
       end
 
+      # The specs columns of a printer profile
+      sig { params(profile: ::Octoprint::PrinterProfiles::PrinterProfile).returns(T::Hash[Symbol, T.untyped]) }
+      def profile_specs(profile)
+        extruder = profile.extruder
+        { name: profile.name.presence, model: profile.model.presence, heated_bed: profile.heated_bed,
+          heated_chamber: profile.heated_chamber, extruders: extruder[:count]&.to_i,
+          nozzle_diameter: extruder[:nozzleDiameter]&.to_f, **build_volume(profile.volume) }
+      end
+
+      # The build volume columns (mm) of a printer profile's `volume`: the width is the diameter of a circular bed
+      #
+      #   build_volume({ formFactor: 'circular', width: 180, depth: 180, height: 300 })
+      #   # => { bed_shape: 'circular', build_diameter: 180.0, build_volume_z: 300.0 }
+      sig { params(volume: T::Hash[Symbol, T.untyped]).returns(T::Hash[Symbol, T.untyped]) }
+      def build_volume(volume)
+        width, depth, height = volume.values_at(:width, :depth, :height).map { |size| size&.to_f }
+        shape = volume[:formFactor]
+        return { bed_shape: 'circular', build_diameter: width, build_volume_z: height } if shape == 'circular'
+
+        { bed_shape: ('rectangular' if shape == 'rectangular'),
+          build_volume_x: width, build_volume_y: depth, build_volume_z: height }
+      end
+
       # OctoPrint often returns the stream URL relative to its own host ("/webcam/?action=stream"). Returns nil
       # when the URL is blank, invalid or not HTTP(S). Never hands the OctoPrint credentials (user:password@) to
       # the browser.
@@ -113,6 +136,15 @@ module PrinterBackends
       { name: profile&.dig(:name), version: }
     end
 
+    # From the current printer profile (else the default one) and the webcam settings. OctoPrint doesn't know the
+    # firmware. A circular (delta) bed has its diameter in the profile's width.
+    sig { override.returns(ReportedSpecs) }
+    def reported_specs
+      webcam = use { ::Octoprint::Settings.webcam }.enabled
+      profile = current_profile
+      ReportedSpecs.new(webcam:, **(profile ? self.class.profile_specs(profile) : {}))
+    end
+
     sig { override.returns(T.nilable(String)) }
     def webcam_url
       webcam = use { ::Octoprint::Settings.webcam }
@@ -175,6 +207,13 @@ module PrinterBackends
       self.class.translate_errors { client.use(&block) }
     end
     # rubocop:enable Naming/BlockForwarding, Style/ArgumentsForwarding
+
+    # The printer profile in use: the current one, else the default one. nil when OctoPrint has neither.
+    sig { returns(T.nilable(::Octoprint::PrinterProfiles::PrinterProfile)) }
+    def current_profile
+      profiles = use { ::Octoprint::PrinterProfiles.list }.profiles.values
+      profiles.find(&:current) || profiles.find(&:default)
+    end
 
     # Raises Octoprint::Exceptions::MissingCredentialsError when the URI or the API key is blank
     sig { returns(::Octoprint::Client) }

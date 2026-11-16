@@ -107,4 +107,88 @@ RSpec.describe Printer::Specs, type: :model do
       end
     end
   end
+
+  describe '#fill_blank_specs' do
+    let(:printer) { create(:printer, :prusalink, model: 'Custom MK4', heated_bed: false) }
+    let(:reported) do
+      PrinterBackends::ReportedSpecs.new(name: 'Workshop XL', model: 'MK4', firmware: 'prusa_firmware',
+                                         nozzle_diameter: 0.6, heated_bed: true, extruders: 1)
+    end
+
+    it 'fills the nil columns only, and saves them' do
+      expect(printer.fill_blank_specs(reported)).to contain_exactly('firmware', 'nozzle_diameter', 'extruders')
+
+      expect(printer.reload).to have_attributes(name: 'Printer', model: 'Custom MK4', heated_bed: false,
+                                                firmware: 'prusa_firmware', nozzle_diameter: 0.6, extruders: 1,
+                                                brand: nil, build_volume_x: nil, materials: [])
+    end
+
+    it 'leaves nil a column that refuses the reported value' do
+      reported = PrinterBackends::ReportedSpecs.new(nozzle_diameter: 0.0, extruders: 2)
+
+      expect(printer.fill_blank_specs(reported)).to eq ['extruders']
+      expect(printer.reload).to have_attributes(nozzle_diameter: nil, extruders: 2)
+    end
+
+    it 'fills nothing when every reported column is set' do
+      printer.update!(firmware: 'marlin', nozzle_diameter: 0.4, extruders: 2)
+
+      expect(printer.fill_blank_specs(reported)).to eq []
+      expect(printer.reload).to have_attributes(firmware: 'marlin', nozzle_diameter: 0.4, extruders: 2)
+    end
+  end
+
+  describe '#reported_specs' do
+    let(:printer) { create(:printer, :prusalink) }
+    let(:redis) { MockRedis.new }
+
+    before do
+      stub_const('REDIS_POOL', ConnectionPool::Wrapper.new(size: 1, timeout: 1) { redis })
+      allow(Prusalink::Info).to receive(:get).and_return(Prusalink::Info.new(name: 'XL', nozzle_diameter: 0.6))
+      allow(Prusalink::ServerVersion).to receive(:get).and_return(Prusalink::ServerVersion.new(firmware: '6.2.0'))
+    end
+
+    it 'is cached for 2 hours, and comes back from the cache with the same values' do
+      first = printer.reported_specs
+
+      expect(Printer.find(printer.id).reported_specs.serialize).to eq first.serialize
+      expect(first).to have_attributes(name: 'XL', firmware: 'prusa_firmware', nozzle_diameter: 0.6)
+      expect(Prusalink::Info).to have_received(:get).once
+    end
+
+    it 'is nil, without calling the server, while the printer is flagged disconnected' do
+      PrinterApiCache.set_disconnected(printer.id)
+
+      expect(printer.reported_specs).to be_nil
+      expect(Prusalink::Info).not_to have_received(:get)
+    end
+  end
+
+  describe '#fill_specs_from_server' do
+    let(:printer) { create(:printer, :prusalink) }
+
+    before { stub_const('REDIS_POOL', ConnectionPool::Wrapper.new(size: 1, timeout: 1) { MockRedis.new }) }
+
+    it 'fills the blank specs with what the server reports' do
+      allow(printer).to receive(:reported_specs).and_return(PrinterBackends::ReportedSpecs.new(model: 'MK4'))
+
+      expect(printer.fill_specs_from_server).to eq ['model']
+      expect(printer.reload.model).to eq 'MK4'
+    end
+
+    it 'is nil when the printer is unreachable' do
+      allow(Prusalink::Info).to receive(:get).and_raise(Prusalink::Exceptions::ConnectionError, 'timeout')
+
+      expect(printer.fill_specs_from_server).to be_nil
+    end
+
+    it 'is nil, and logs why, when the server refuses the credentials' do
+      allow(Prusalink::Info).to receive(:get).and_raise(Prusalink::Exceptions::AuthenticationError, '[401]')
+      allow(Rails.logger).to receive(:error)
+
+      expect(printer.fill_specs_from_server).to be_nil
+      expect(Rails.logger).to have_received(:error)
+        .with("Could not read the specs of printer #{printer.id}: PrinterBackends::Unauthorized: [401]")
+    end
+  end
 end

@@ -179,6 +179,29 @@ RSpec.describe Mutations::Printers::UpdatePrinter, type: :request do
     before do
       PrinterApiCache.set_disconnected(printer.id)
       redis.set("printer_api_#{printer.id}_version", 'cached')
+      allow(Prusalink::Info).to receive(:get).and_return(Prusalink::Info.new(name: 'XL', nozzle_diameter: 0.6))
+      allow(Prusalink::ServerVersion).to receive(:get)
+        .and_return(Prusalink::ServerVersion.new(printer: 'XL', firmware: '6.2.0'))
+    end
+
+    it 'fills the blank specs from the new address, keeping the others' do
+      input.merge!(uri: 'http://192.168.1.60')
+
+      update_printer
+
+      expect(data['errors']).to eq([])
+      expect(printer.reload).to have_attributes(nozzle_diameter: 0.6, firmware_version: '6.2.0', model: 'MK4',
+                                                firmware: 'prusa_firmware', name: 'Prusa MK4')
+    end
+
+    it 'saves the new address even when the specs cannot be read' do
+      allow(Prusalink::Info).to receive(:get).and_raise(Prusalink::Exceptions::ConnectionError, 'timeout')
+      input.merge!(uri: 'http://192.168.1.60')
+
+      update_printer
+
+      expect(data['errors']).to eq([])
+      expect(printer.reload).to have_attributes(uri: 'http://192.168.1.60', nozzle_diameter: nil)
     end
 
     it 'forgets the disconnected flag and the cached answers when it changes' do
@@ -198,6 +221,7 @@ RSpec.describe Mutations::Printers::UpdatePrinter, type: :request do
 
       expect(PrinterApiCache.disconnected?(printer.id)).to be true
       expect(redis.get("printer_api_#{printer.id}_version")).to eq('cached')
+      expect(Prusalink::Info).not_to have_received(:get)
     end
 
     it 'keeps them when the printer is invalid' do

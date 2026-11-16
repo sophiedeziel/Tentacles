@@ -169,6 +169,51 @@ RSpec.describe PrinterBackends::Prusalink do
     end
   end
 
+  describe '#reported_specs' do
+    def stub_server(printer: nil, firmware: '6.2.0+8899', info: Prusalink::Info.new(name: 'XL', nozzle_diameter: 0.6))
+      allow(Prusalink::Info).to receive(:get).and_return(info)
+      allow(Prusalink::ServerVersion).to receive(:get)
+        .and_return(Prusalink::ServerVersion.new(version: '2.1.2', printer:, firmware:))
+    end
+
+    it 'reads the name and nozzle from the info, the firmware version from the server version' do
+      stub_server
+
+      expect(adapter.reported_specs.serialize).to eq(
+        'name' => 'XL', 'firmware' => 'prusa_firmware', 'firmware_version' => '6.2.0+8899', 'nozzle_diameter' => 0.6
+      )
+    end
+
+    it 'reads the model when the server names it' do
+      stub_server(printer: 'MK4')
+
+      expect(adapter.reported_specs.model).to eq 'MK4'
+    end
+
+    it 'has no model when the server sends a version instead' do
+      stub_server(printer: '1.0.0')
+
+      expect(adapter.reported_specs.model).to be_nil
+    end
+
+    it 'is always Prusa firmware, even without a firmware version' do
+      stub_server(firmware: nil, info: nil)
+
+      expect(adapter.reported_specs.serialize).to eq('firmware' => 'prusa_firmware')
+    end
+  end
+
+  describe '.readable_model' do
+    it 'keeps a model name' do
+      expect(%w[MK4 XL MINI I3MK3S].map { described_class.readable_model(it) }).to eq %w[MK4 XL MINI I3MK3S]
+    end
+
+    it 'drops versions and blanks' do
+      expect(['1.0.0', '6.2.0+8899', '2.1.2-rc1', '', ' ', nil].map { described_class.readable_model(it) })
+        .to all(be_nil)
+    end
+  end
+
   it 'has no webcam' do
     expect(adapter.webcam_url).to be_nil
   end

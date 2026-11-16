@@ -24,6 +24,7 @@ module Mutations
                                 username: username.presence, secret: (secret.presence || octoprint_key).presence)
         if printer.save
           start_spool(printer)
+          printer.fill_specs_from_server
           { printer:, errors: [] }
         else
           { printer: nil, errors: printer.errors.full_messages }

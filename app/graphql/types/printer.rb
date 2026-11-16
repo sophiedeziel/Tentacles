@@ -18,6 +18,18 @@ module Types
       object
     end
 
+    field :reported_specs, Types::PrinterSpecs, null: true,
+                                                description: "What the printer's server reports, to compare with " \
+                                                             '`specs`. Calls the printer server (answer cached 2 ' \
+                                                             'hours): details page only. Null when it cannot be ' \
+                                                             'read.'
+    def reported_specs
+      object.reported_specs
+    rescue *::Printer::Specs::READ_ERRORS => e
+      Rails.logger.warn("[reportedSpecs] Could not read the specs of printer #{object.id}: #{e.class}: #{e.message}")
+      nil
+    end
+
     field :version, String, null: true,
                             description: 'The server and its version, e.g. "OctoPrint 1.11.2", or "Unavailable"'
     def version

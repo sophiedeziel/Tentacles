@@ -68,6 +68,11 @@ module PrinterBackends
     sig { abstract.returns(T::Hash[Symbol, T.nilable(String)]) }
     def identify; end
 
+    # What the server reports about the printer (its name, model, build volume, ...), to fill the specs left blank.
+    # Raises like #identify.
+    sig { abstract.returns(ReportedSpecs) }
+    def reported_specs; end
+
     # The URL of the webcam stream, or nil when there is none
     sig { abstract.returns(T.nilable(String)) }
     def webcam_url; end

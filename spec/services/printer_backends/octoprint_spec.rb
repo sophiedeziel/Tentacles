@@ -102,6 +102,62 @@ RSpec.describe PrinterBackends::Octoprint do
     end
   end
 
+  describe '#reported_specs' do
+    def profile(id, current: false, default: false, **volume)
+      { id:, name: "#{id} profile", color: 'default', model: "#{id} model", current:, default:, resource: '',
+        volume: { formFactor: 'rectangular', width: 250, depth: 210, height: 220, origin: 'lowerleft', **volume },
+        heatedBed: true, heatedChamber: false, axes: {},
+        extruder: { count: 2, nozzleDiameter: 0.6, offsets: [[0.0, 0.0]], sharedNozzle: false } }
+    end
+
+    def stub_profiles(*profiles)
+      list = Octoprint::PrinterProfiles.deserialize({ profiles: profiles.index_by { |p| p[:id] } })
+      allow(Octoprint::PrinterProfiles).to receive(:list).and_return(list)
+    end
+
+    before do
+      webcam = Octoprint::Settings::Webcam.from_settings({ webcam: { webcam_enabled: true, stream_url: '/webcam/' } })
+      allow(Octoprint::Settings).to receive(:webcam).and_return(webcam)
+    end
+
+    it 'reads the current profile, and the webcam from the settings' do
+      stub_profiles(profile('_default', default: true), profile('mk3', current: true))
+
+      expect(adapter.reported_specs.serialize).to eq(
+        'name' => 'mk3 profile', 'model' => 'mk3 model', 'bed_shape' => 'rectangular', 'build_volume_x' => 250.0,
+        'build_volume_y' => 210.0, 'build_volume_z' => 220.0, 'extruders' => 2, 'nozzle_diameter' => 0.6,
+        'heated_bed' => true, 'heated_chamber' => false, 'webcam' => true
+      )
+    end
+
+    it 'reads the default profile when none is current' do
+      stub_profiles(profile('mk3'), profile('_default', default: true))
+
+      expect(adapter.reported_specs).to have_attributes(name: '_default profile', model: '_default model')
+    end
+
+    it 'reads the width of a circular bed as its diameter' do
+      stub_profiles(profile('delta', current: true, formFactor: 'circular', width: 180, depth: 180))
+
+      expect(adapter.reported_specs).to have_attributes(bed_shape: 'circular', build_diameter: 180.0,
+                                                        build_volume_z: 220.0, build_volume_x: nil,
+                                                        build_volume_y: nil)
+    end
+
+    it 'reads only the webcam without a current or default profile' do
+      stub_profiles(profile('mk3'))
+
+      expect(adapter.reported_specs.serialize).to eq('webcam' => true)
+    end
+
+    it 'reports neither firmware, brand, temperatures nor materials' do
+      stub_profiles(profile('_default', default: true))
+
+      expect(adapter.reported_specs).to have_attributes(firmware: nil, firmware_version: nil, brand: nil,
+                                                        max_hotend_temp: nil, max_bed_temp: nil, materials: nil)
+    end
+  end
+
   describe '#webcam_url' do
     def webcam(enabled:, stream_url:)
       Octoprint::Settings::Webcam.from_settings({ webcam: { webcam_enabled: enabled, stream_url: } })
