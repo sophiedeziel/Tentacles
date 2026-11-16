@@ -9,9 +9,10 @@ module Types
     field :id, ID, null: false, description: 'For printerAppKeyChanged and cancelPrinterAppKeyRequest'
     field :address, String, null: false, description: 'The address of the OctoPrint server, as requested'
     field :state, Types::AppKeyRequestState, null: false
-    field :approval_url, String, null: true,
-                                 description: "Where the user approves the request: OctoPrint's dialog for it when " \
-                                              "OctoPrint reports one, else OctoPrint's own page"
+    field :approval_url, Types::Url,
+          null: true,
+          description: "Where the user approves the request: OctoPrint's dialog for it when OctoPrint reports one, " \
+                       "else OctoPrint's own page"
     field :printer, Types::Printer, null: true, description: 'The printer added with the key, when ADDED'
     field :error, String, null: true, description: 'What went wrong, when FAILED'
   end
