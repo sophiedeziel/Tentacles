@@ -4,7 +4,7 @@
 module Mutations
   module Printers
     # Asks the spooler to start the next job of a printer's queue, when Printer.start_next_allowed? with the LIVE
-    # state read from OctoPrint (Printer.canStartNext uses the monitor's last snapshot instead).
+    # state read from the printer (Printer.canStartNext uses the monitor's last snapshot instead).
     class StartNextPrint < PrinterAction
       description 'Mutation to start the next print in the queue for a printer'
 
@@ -46,7 +46,7 @@ module Mutations
         false
       end
 
-      # Publishing to the spooler goes through Redis rather than OctoPrint
+      # Publishing to the spooler goes through Redis rather than the printer
       def run(printer)
         super
       rescue Redis::BaseError, ConnectionPool::TimeoutError => e

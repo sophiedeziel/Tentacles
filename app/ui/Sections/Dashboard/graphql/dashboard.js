@@ -1,7 +1,7 @@
 import { gql } from '@apollo/client'
 
 // Every printer field the dashboard reads. All are batched (one Redis MGET and one SQL query for the fleet):
-// never select jobStatus, currentJob, version or octoprintVersion here, they call the printer live.
+// never select jobStatus, currentJob or version here, they call the printer live.
 export const PRINTER_FIELDS = gql`
   fragment DashboardPrinterFields on Printer {
     id

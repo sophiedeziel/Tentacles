@@ -36,14 +36,6 @@ module Types
       object.version || 'Unavailable'
     end
 
-    field :octoprint_uri, Types::Url, null: true, deprecation_reason: 'Use `uri`'
-    def octoprint_uri
-      object.uri
-    end
-    field :octoprint_version, String, null: true, deprecation_reason: 'Use `version`'
-    def octoprint_version
-      version
-    end
     field :job_status, String, null: true
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
@@ -53,7 +45,7 @@ module Types
 
     field :status, Types::PrinterStatus, null: false,
                                          description: 'Live state, as last reported by the printer monitor'
-    # Reads the monitor's snapshot from Redis (one MGET for all the printers of a query), never OctoPrint
+    # Reads the monitor's snapshot from Redis (one MGET for all the printers of a query), never the printer
     def status
       dataloader.with(Sources::PrinterStatusSource).load(object.id) ||
         ::PrinterStatus.unknown(printer_id: object.id, last_seen_at: object.last_seen_at)
@@ -63,7 +55,7 @@ module Types
           null: false, resolver_method: :can_start_next?,
           description: 'Whether startNextPrint would start the next job of the queue: the printer is OPERATIONAL ' \
                        '(as last reported by the printer monitor), its queue is not empty and it has no active job'
-    # Batched: one Redis MGET and one grouped SQL query for all the printers of a query, never OctoPrint
+    # Batched: one Redis MGET and one grouped SQL query for all the printers of a query, never the printer
     def can_start_next?
       status_request = dataloader.with(Sources::PrinterStatusSource).request(object.id)
       jobs_request = dataloader.with(Sources::PrinterJobsSource).request(object.id)

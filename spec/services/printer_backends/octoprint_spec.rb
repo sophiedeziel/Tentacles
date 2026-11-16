@@ -15,7 +15,7 @@ RSpec.describe PrinterBackends::Octoprint do
   end
 
   describe 'reading the printer, from the recorded OctoPrint answers' do
-    it 'reads the version', vcr: { cassette_name: 'Printer/octoprint_version/1_3_1' } do
+    it 'reads the version', vcr: { cassette_name: 'Printer/version/1_3_1' } do
       expect(adapter.version).to eq 'OctoPrint 1.7.3'
     end
 

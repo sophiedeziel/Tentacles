@@ -19,7 +19,7 @@ module PrinterMonitor
       @printer = printer
     end
 
-    # Returns the snapshot, or nil when OctoPrint or Redis couldn't be reached (logged, never raised)
+    # Returns the snapshot, or nil when the printer or Redis couldn't be reached (logged, never raised)
     sig { returns(T.nilable(PrinterStatus)) }
     def call
       previous = PrinterStatusStore.read(printer.id)
