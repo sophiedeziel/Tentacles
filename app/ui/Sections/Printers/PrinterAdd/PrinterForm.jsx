@@ -124,7 +124,10 @@ export default function PrinterForm () {
         <Input placeholder="Filled in from the printer when the test passes" />
       </Form.Item>
 
-      <Form.Item label={settings.uriLabel} name="uri" rules={[{ required: true, message: `${settings.uriLabel} is required` }]}>
+      <Form.Item label={settings.uriLabel} name="uri" rules={[
+          { required: true, message: `${settings.uriLabel} is required` },
+          { type: 'url', message: `Enter a full address, e.g. ${settings.uriPlaceholder}` },
+        ]}>
         <Input placeholder={settings.uriPlaceholder} />
       </Form.Item>
 

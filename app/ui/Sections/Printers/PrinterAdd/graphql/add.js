@@ -32,7 +32,7 @@ export const PRINTER_APP_KEY_CHANGED = gql`
 
 // The manual form: test the connection (never saved), then add the printer
 export const IDENTIFY_PRINTER = gql`
-  query IdentifyPrinter($backend: PrinterBackend!, $uri: String!, $username: String, $secret: String!) {
+  query IdentifyPrinter($backend: PrinterBackend!, $uri: URL!, $username: String, $secret: String!) {
     identifyPrinter(backend: $backend, uri: $uri, username: $username, secret: $secret) { name version }
   }
 `

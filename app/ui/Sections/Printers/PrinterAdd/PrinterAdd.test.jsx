@@ -141,6 +141,14 @@ describe('PrinterAdd', () => {
     expect(await screen.findByText('Printer page 12')).toBeInTheDocument()
   })
 
+  it('asks for a full address before testing the connection (the API only takes absolute URLs)', async () => {
+    renderPage()
+    await userEvent.type(screen.getByLabelText('OctoPrint address'), '192.168.1.99')
+    await userEvent.type(screen.getByLabelText('API key'), 'key')
+    await userEvent.click(screen.getByRole('button', { name: 'Test Connection' }))
+    expect(await screen.findByText('Enter a full address, e.g. http://octopi.local')).toBeInTheDocument()
+  })
+
   it('keeps Add Printer locked when the printer is not reachable', async () => {
     const variables = { backend: 'OCTOPRINT', uri: 'http://192.168.1.99', username: null, secret: 'key' }
     renderPage([{
