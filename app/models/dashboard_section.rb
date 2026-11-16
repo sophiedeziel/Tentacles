@@ -42,8 +42,9 @@ class DashboardSection < ApplicationRecord
     end
   end
 
-  # The default layout, unsaved (no ids): one section with a Print Queue XL (4×2) for all printers, then a Printer M
-  # (2×1) per printer with the camera off. Printers past the widget limit are left out.
+  # The default layout, unsaved (no ids): one section with a Print Queue XL (4×2) for all printers, with one row per
+  # printer and history on, then a Printer M (2×1) per printer with the camera off. Printers past the widget limit are
+  # left out.
   sig { returns(T::Array[DashboardSection]) }
   def self.build_default
     printers = ::Printer.order(:id).limit(MAX_WIDGETS - 1).to_a
@@ -51,7 +52,9 @@ class DashboardSection < ApplicationRecord
       PrinterWidget.new(printer:, width_units: 2, height_units: 1, position: index + 1, options: { 'camera' => false })
     end
     section = new(title: nil, position: 0)
-    section.widgets = [PrintQueueWidget.new(width_units: 4, height_units: 2, position: 0), *widgets]
+    queue = PrintQueueWidget.new(width_units: 4, height_units: 2, position: 0,
+                                 options: { 'row_per_printer' => true, 'history' => true })
+    section.widgets = [queue, *widgets]
     [section]
   end
 

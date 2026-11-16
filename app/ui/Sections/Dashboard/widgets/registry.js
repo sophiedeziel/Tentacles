@@ -71,7 +71,11 @@ export const REGISTRY = {
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     defaultSize: 'L',
     optionsFor: optionsFor(PRINT_QUEUE_OPTIONS),
-    defaultOptions: () => ({ nowPrinting: true, startNext: true, rowPerPrinter: false, history: false }),
+    // One row per printer and history start on at Extra Large and 4×4, where the design gives a fleet its table
+    defaultOptions: (size) => {
+      const big = size === 'XL' || size === 'XXL'
+      return { nowPrinting: true, startNext: true, rowPerPrinter: big, history: big }
+    },
     optionKeys: PRINT_QUEUE_OPTIONS.map((option) => option.key),
     optionsInput: 'printQueue',
     Component: PrintQueueTile,

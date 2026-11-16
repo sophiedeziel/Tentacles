@@ -1,4 +1,4 @@
-import { REGISTRY, SIZES } from '../widgets/registry'
+import { REGISTRY, SIZES, sizeOf } from '../widgets/registry'
 
 // The title of a divider added in edit mode
 export const NEW_DIVIDER_TITLE = 'New Section'
@@ -113,6 +113,16 @@ export function newWidget (type, size, printerId = null) {
   }
 }
 
+// A resized widget's options. Those its old size showed are kept, since the user may have set them. Those only the
+// new size shows take that size's default, as on a new widget: a Print Queue grown to Extra Large gets its table.
+function resizedOptions (widget, size) {
+  const entry = REGISTRY[widget.type]
+  const shown = entry.optionsFor(sizeOf(widget)).map((option) => option.key)
+  const defaults = entry.defaultOptions(size)
+  const added = entry.optionsFor(size).filter((option) => !shown.includes(option.key))
+  return { ...widget.options, ...Object.fromEntries(added.map((option) => [option.key, defaults[option.key]])) }
+}
+
 function moveSection (sections, key, index) {
   const from = sectionIndex(sections, key)
   // The untitled first section stays first
@@ -136,7 +146,8 @@ function removeDivider (sections, key) {
 // - load { dashboard }: start over from a layout (Edit Dashboard, or Reset Layout with the default layout)
 // - restore { sections }: back to a snapshot (a cancelled drag)
 // - moveWidget { key, sectionKey, index }, stepWidget { key, step }
-// - resizeWidget { key, size }: only to a size the widget's type supports; its options are kept for every size
+// - resizeWidget { key, size }: only to a size the widget's type supports. Options the old size showed are kept;
+//   the ones only the new size shows take its default (see resizedOptions).
 // - setPrinter { key, printerId }, setOption { key, option, value }
 // - addWidget { widgetType, size, printerId }: at the end of the last section; removeWidget { key }
 // - addDivider, renameDivider { key, title }, stepDivider { key, step }, moveSection { key, index },
@@ -154,7 +165,12 @@ export default function layoutReducer (sections, action) {
     case 'resizeWidget':
       return updateWidget(sections, action.key, (widget) => (
         REGISTRY[widget.type]?.sizes.includes(action.size)
-          ? { ...widget, widthUnits: SIZES[action.size].widthUnits, heightUnits: SIZES[action.size].heightUnits }
+          ? {
+              ...widget,
+              widthUnits: SIZES[action.size].widthUnits,
+              heightUnits: SIZES[action.size].heightUnits,
+              options: resizedOptions(widget, action.size)
+            }
           : null
       ))
     case 'setPrinter':
