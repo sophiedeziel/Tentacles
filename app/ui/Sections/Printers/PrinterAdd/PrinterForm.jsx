@@ -1,45 +1,15 @@
 import React, { useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useLazyQuery, useMutation } from '@apollo/client/react'
-import { CombinedGraphQLErrors } from '@apollo/client'
 import { Alert, Button, Form, Input, Segmented, Space } from 'antd'
 
+import { BACKENDS, testErrorAlert } from '../connection'
 import { ADD_PRINTER, IDENTIFY_PRINTER } from './graphql/add'
 
 const BACKEND_OPTIONS = [{ label: 'OctoPrint', value: 'OCTOPRINT' }, { label: 'PrusaLink', value: 'PRUSALINK' }]
 
-const BACKENDS = {
-  OCTOPRINT: {
-    uriLabel: 'OctoPrint address',
-    uriPlaceholder: 'http://octopi.local',
-    secretLabel: 'API key',
-    secretPlaceholder: 'Paste the key',
-    secretHelp: 'In OctoPrint: Settings, Application Keys. Create one named Tentacles.',
-    wrongSecret: 'Wrong API key'
-  },
-  PRUSALINK: {
-    uriLabel: 'Address',
-    uriPlaceholder: 'http://192.168.1.42',
-    secretLabel: 'Password',
-    secretHelp: 'Shown on the printer: Settings, Network, PrusaLink',
-    wrongSecret: 'Wrong password'
-  }
-}
-
 // Changing one of these invalidates the connection test
 const CONNECTION_FIELDS = ['backend', 'uri', 'username', 'secret']
-
-// identifyPrinter's failures are GraphQL errors with a code in `extensions.code`
-const testErrorAlert = (error, backend) => {
-  const graphQLError = CombinedGraphQLErrors.is(error) ? error.errors[0] : null
-  const description = graphQLError?.message || error.message
-
-  switch (graphQLError?.extensions?.code) {
-    case 'UNAUTHORIZED': return { title: BACKENDS[backend].wrongSecret, description }
-    case 'UNREACHABLE': return { title: 'Printer not reachable', description }
-    default: return { title: description }
-  }
-}
 
 // "Enter Details Manually": test the connection, then add the printer and open its page
 export default function PrinterForm () {
