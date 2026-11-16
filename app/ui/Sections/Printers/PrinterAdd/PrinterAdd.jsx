@@ -1,135 +1,41 @@
-import React, { useState } from 'react'
-import { useQuery, useLazyQuery, useMutation } from '@apollo/client/react'
-import { Card, Button, Space, Typography, message } from 'antd'
-import { PageHeader } from '@ant-design/pro-layout'
-import useInterval from '../../../utils/UseInterval'
+import React, { useEffect, useState } from 'react'
+import { Link, useSearchParams } from 'react-router'
+import { App, Card, Typography } from 'antd'
+import { ArrowLeftOutlined } from '@ant-design/icons'
 
-import SearchNetworkPrinters from './graphql/SearchNetworkPrinters.graphql'
-import PrinterName from './graphql/PrinterName.graphql'
-import AddPrinter from './graphql/AddPrinter.graphql'
+import NetworkCard from './NetworkCard'
 import PrinterForm from './PrinterForm'
+import * as classes from './PrinterAdd.module.less'
 
-import * as classes from 'common/Common.module.less'
-
+// Add Printer, at /printers/add: an OctoPrint server found on the network (approved in OctoPrint, added by the
+// server), or any printer entered by hand. Both end on the new printer's page. ?connect=<address> (the fleet list's
+// Connect) starts that address's approval once: the parameter is dropped so a reload doesn't ask OctoPrint again.
 export default function PrinterAdd () {
-  const [delay] = useState(1000)
-  const [isRunning, setIsRunning] = useState(false)
-  const [apiRequestToken, setApiRequestToken] = useState()
-  const [apiRequestIP, setApiRequestIP] = useState()
-  const [octoprintTab, setOctoprintTab] = useState()
+  const [params, setParams] = useSearchParams()
+  const [connectTo] = useState(() => params.get('connect'))
 
-  useInterval(() => {
-    pollAPIKey()
-  }, isRunning ? delay : null)
-
-  const { loading, error, data } = useQuery(SearchNetworkPrinters)
-  const [printerQuery] = useLazyQuery(PrinterName)
-  const [addPrinter] = useMutation(AddPrinter)
-
-  const pollAPIKey = () => {
-    fetch(`http://${apiRequestIP}/plugin/appkeys/request/${apiRequestToken}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    }).then((response) => {
-      if (response.status === 200) {
-        setIsRunning(false)
-        return (response.json())
-      }
-    }).then((data) => {
-      if (data?.api_key) {
-        octoprintTab.close()
-        const uri = `http://${apiRequestIP}/`
-        printerQuery({ variables: { uri, secret: data.api_key } }).then(({ data: printerData, error }) => {
-          if (error) throw error
-          sendAddPrinter(printerData.identifyPrinter.name || apiRequestIP, uri, data.api_key)
-        }).catch((error) => {
-          message.error(error.message)
-        })
-      }
-    }).catch((error) => {
-      console.error('pollAPIKey', error)
-    })
-  }
-
-  const sendAddPrinter = (name, uri, secret) => {
-    addPrinter({ variables: { input: { backend: 'OCTOPRINT', name, uri, secret } } }).then(({ data, error }) => {
-      if (error) throw error
-      const { errors } = data.addPrinter
-      if (errors.length > 0) {
-        message.error(errors.join('. '))
-        return
-      }
-      window.location.href = '/printers/manage'
-    }).catch((error) => {
-      message.error(error.message)
-    })
-  }
-
-  const requestAPIKey = (ip) => {
-    fetch(`http://${ip}/plugin/appkeys/request`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ app: 'Tentacles' })
-    }).then((response) => {
-      if (response.status === 201) {
-        return (response.json())
-      }
-    }).then(({ app_token: appToken }) => {
-      setIsRunning(true)
-      setApiRequestToken(appToken)
-      setApiRequestIP(ip)
-      setOctoprintTab(window.open(
-        `http://${ip}`, '_blank'))
-    }).catch(() => {
-      window.open(`http://${ip}`, '_blank')
-    })
-  }
-
-  const AddPrinterButtons = () => {
-    if (loading) return (<>Scanning</>)
-    if (error) return (<></>)
-
-    return (
-      <Space>
-        {
-          data.searchNetworkPrinters.map((ip) => {
-            return (
-              <Button key={ip} type="primary" onClick={() => { requestAPIKey(ip) }}>{ip}</Button>
-            )
-          })
-        }
-      </Space>
-    )
-  }
+  useEffect(() => {
+    if (params.has('connect')) setParams({}, { replace: true })
+  }, [params, setParams])
 
   return (
-    <>
-      <PageHeader
-        className="site-page-header"
-        ghost={false}
-        onBack={() => window.history.back()}
-        title="Back to printer's management"
-      >
-      </PageHeader>
-
-      <Card
-        className={classes.pageCard}
-        title="Add a printer from network scan"
-      >
-        <Typography.Paragraph type="secondary">Finds OctoPrint servers. Add PrusaLink printers manually, below.</Typography.Paragraph>
-        <AddPrinterButtons />
-      </Card>
-
-      <Card
-        className={classes.pageCard}
-        title="Add a printer"
-      >
-        <PrinterForm />
-      </Card>
-    </>
+    <App>
+      <div className={classes.page}>
+        <div className={classes.heading}>
+          <Link to="/printers/manage" className={classes.back}><ArrowLeftOutlined /> Printers</Link>
+          <Typography.Title level={3} style={{ margin: 0 }}>Add Printer</Typography.Title>
+          <span className={classes.muted}>
+            Tentacles connects to a printer through its server, OctoPrint or PrusaLink. Pick one found on your
+            network, or enter its details yourself.
+          </span>
+        </div>
+        <div className={classes.cards}>
+          <NetworkCard connectTo={connectTo} />
+          <Card className={classes.manualCard} title={<h2 className={classes.cardTitle}>Enter Details Manually</h2>}>
+            <PrinterForm />
+          </Card>
+        </div>
+      </div>
+    </App>
   )
 }

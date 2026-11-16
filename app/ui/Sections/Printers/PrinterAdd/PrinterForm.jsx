@@ -1,23 +1,27 @@
 import React, { useRef, useState } from 'react'
+import { useNavigate } from 'react-router'
 import { useLazyQuery, useMutation } from '@apollo/client/react'
 import { CombinedGraphQLErrors } from '@apollo/client'
-import { Alert, Button, Form, Input, Radio, Space } from 'antd'
+import { Alert, Button, Form, Input, Segmented, Space } from 'antd'
 
-import IdentifyPrinter from './graphql/IdentifyPrinter.graphql'
-import AddPrinter from './graphql/AddPrinter.graphql'
+import { ADD_PRINTER, IDENTIFY_PRINTER } from './graphql/add'
+
+const BACKEND_OPTIONS = [{ label: 'OctoPrint', value: 'OCTOPRINT' }, { label: 'PrusaLink', value: 'PRUSALINK' }]
 
 const BACKENDS = {
   OCTOPRINT: {
-    uriLabel: 'URI',
+    uriLabel: 'OctoPrint address',
     uriPlaceholder: 'http://octopi.local',
     secretLabel: 'API key',
+    secretPlaceholder: 'Paste the key',
+    secretHelp: 'In OctoPrint: Settings, Application Keys. Create one named Tentacles.',
     wrongSecret: 'Wrong API key'
   },
   PRUSALINK: {
     uriLabel: 'Address',
     uriPlaceholder: 'http://192.168.1.42',
     secretLabel: 'Password',
-    secretHelp: 'Shown on the printer: Settings > Network > PrusaLink',
+    secretHelp: 'Shown on the printer: Settings, Network, PrusaLink',
     wrongSecret: 'Wrong password'
   }
 }
@@ -37,8 +41,9 @@ const testErrorAlert = (error, backend) => {
   }
 }
 
-// The manual "Add a printer" form: test the connection, then add the printer
+// "Enter Details Manually": test the connection, then add the printer and open its page
 export default function PrinterForm () {
+  const navigate = useNavigate()
   const [form] = Form.useForm()
   const backend = Form.useWatch('backend', form) || 'OCTOPRINT'
   const [identity, setIdentity] = useState(null)
@@ -47,8 +52,8 @@ export default function PrinterForm () {
   // Ignores the answer of a test whose connection fields have changed since
   const testId = useRef(0)
 
-  const [identifyPrinter, { loading: testing }] = useLazyQuery(IdentifyPrinter, { fetchPolicy: 'no-cache' })
-  const [addPrinter, { loading: adding }] = useMutation(AddPrinter)
+  const [identifyPrinter, { loading: testing }] = useLazyQuery(IDENTIFY_PRINTER, { fetchPolicy: 'no-cache' })
+  const [addPrinter, { loading: adding }] = useMutation(ADD_PRINTER)
 
   const resetTest = () => {
     testId.current += 1
@@ -89,12 +94,12 @@ export default function PrinterForm () {
 
     addPrinter({ variables: { input } }).then(({ data, error }) => {
       if (error) throw error
-      const { errors } = data.addPrinter
+      const { printer, errors } = data.addPrinter
       if (errors.length > 0) {
         setAddErrors(errors)
         return
       }
-      window.location.href = '/printers/manage'
+      navigate(`/printers/${printer.id}`)
     }).catch((error) => {
       setAddErrors([error.message])
     })
@@ -106,19 +111,17 @@ export default function PrinterForm () {
     <Form
       form={form}
       layout="vertical"
+      requiredMark={false}
       initialValues={{ backend: 'OCTOPRINT', username: 'maker' }}
       onValuesChange={handleValuesChange}
       onFinish={handleFinish}
     >
       <Form.Item label="Printer server" name="backend">
-        <Radio.Group>
-          <Radio.Button value="OCTOPRINT">OctoPrint</Radio.Button>
-          <Radio.Button value="PRUSALINK">PrusaLink</Radio.Button>
-        </Radio.Group>
+        <Segmented options={BACKEND_OPTIONS} />
       </Form.Item>
 
       <Form.Item label="Printer name" name="name" rules={[{ required: true, message: 'Name is required' }]}>
-        <Input />
+        <Input placeholder="Filled in from the printer when the test passes" />
       </Form.Item>
 
       <Form.Item label={settings.uriLabel} name="uri" rules={[{ required: true, message: `${settings.uriLabel} is required` }]}>
@@ -137,7 +140,7 @@ export default function PrinterForm () {
         extra={settings.secretHelp}
         rules={[{ required: true, message: `${settings.secretLabel} is required` }]}
       >
-        {backend === 'PRUSALINK' ? <Input.Password /> : <Input />}
+        <Input.Password placeholder={settings.secretPlaceholder} />
       </Form.Item>
 
       {identity && (
@@ -158,13 +161,13 @@ export default function PrinterForm () {
         </Form.Item>
       )}
 
-      <Form.Item>
-        <Space>
+      <Form.Item extra="Add Printer unlocks once the connection test passes." style={{ marginBottom: 0 }}>
+        <Space wrap>
           <Button onClick={testConnection} loading={testing}>
-            Test connection
+            Test Connection
           </Button>
           <Button type="primary" htmlType="submit" disabled={!identity} loading={adding}>
-            Add printer
+            Add Printer
           </Button>
         </Space>
       </Form.Item>
