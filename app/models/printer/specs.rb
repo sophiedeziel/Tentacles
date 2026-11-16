@@ -62,11 +62,17 @@ class Printer
     end
 
     # Fills the blank specs with what the printer's server reports (#reported_specs, cached 2 hours), when a printer
-    # is added or its address changes. Best effort: nil, logged, when the server can't be read.
+    # is added or its address changes, and by FillPrinterSpecsJob. Saves when it read the server in `specs_filled_at`
+    # (the monitor fills the printers where it is nil). Best effort: nil, logged, when the server can't be read.
     sig { returns(T.nilable(T::Array[String])) }
     def fill_specs_from_server
       reported = reported_specs
-      reported && fill_blank_specs(reported)
+      return nil unless reported
+
+      filled = fill_blank_specs(reported)
+      # Even when nothing was filled, or the save failed: the server was read
+      T.bind(self, Printer).update_column(:specs_filled_at, Time.current) # rubocop:disable Rails/SkipsModelValidations
+      filled
     rescue *READ_ERRORS, Redis::BaseError, ConnectionPool::TimeoutError => e
       Rails.logger.error("Could not read the specs of printer #{T.bind(self, Printer).id}: #{e.class}: #{e.message}")
       nil

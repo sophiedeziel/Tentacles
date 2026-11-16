@@ -62,8 +62,9 @@ export default function AboutCard ({ printer, hints, onReload }) {
       <div className={classes.banner}>
         <span className={classes.strong}>{product} can fill in some of these fields</span>
         <span className={classes.small}>
-          Empty fields are filled in for you. A field that already has a value is never replaced, unless you click
-          the reload icon next to it, and that reloads only that field.
+          Empty fields are filled in from {product} when Tentacles first reaches the printer, and again when its
+          address changes. A field that already has a value is never replaced, unless you click the reload icon next
+          to it, and that reloads only that field.
         </span>
       </div>
 

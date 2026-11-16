@@ -124,6 +124,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_120000) do
     t.boolean "heated_chamber"
     t.boolean "webcam"
     t.json "materials"
+    t.datetime "specs_filled_at"
   end
 
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"

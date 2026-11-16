@@ -169,17 +169,27 @@ RSpec.describe Printer::Specs, type: :model do
 
     before { stub_const('REDIS_POOL', ConnectionPool::Wrapper.new(size: 1, timeout: 1) { MockRedis.new }) }
 
-    it 'fills the blank specs with what the server reports' do
+    it 'fills the blank specs with what the server reports, and saves when it read the server' do
       allow(printer).to receive(:reported_specs).and_return(PrinterBackends::ReportedSpecs.new(model: 'MK4'))
 
       expect(printer.fill_specs_from_server).to eq ['model']
       expect(printer.reload.model).to eq 'MK4'
+      expect(printer.specs_filled_at).to be_within(1.second).of(Time.current)
     end
 
-    it 'is nil when the printer is unreachable' do
+    it 'saves when it read the server, even with nothing to fill' do
+      printer.update!(model: 'MK4')
+      allow(printer).to receive(:reported_specs).and_return(PrinterBackends::ReportedSpecs.new(model: 'XL'))
+
+      expect(printer.fill_specs_from_server).to eq []
+      expect(printer.reload.specs_filled_at).to be_within(1.second).of(Time.current)
+    end
+
+    it 'is nil when the printer is unreachable, and leaves specs_filled_at nil' do
       allow(Prusalink::Info).to receive(:get).and_raise(Prusalink::Exceptions::ConnectionError, 'timeout')
 
       expect(printer.fill_specs_from_server).to be_nil
+      expect(printer.reload.specs_filled_at).to be_nil
     end
 
     it 'is nil, and logs why, when the server refuses the credentials' do
