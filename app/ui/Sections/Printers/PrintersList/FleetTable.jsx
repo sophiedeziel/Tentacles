@@ -1,39 +1,21 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { Link, useNavigate } from 'react-router'
-import { useMutation } from '@apollo/client/react'
-import { App, Button, Card, Input, Segmented, Table } from 'antd'
+import { Button, Card, Input, Segmented, Table } from 'antd'
 import { StarFilled, StarOutlined } from '@ant-design/icons'
 
 import PrinterStatus from '../../../components/PrinterStatus/PrinterStatus'
 import PrintProgress from '../../../components/PrintProgress/PrintProgress'
 import { Printer3DOutlined } from '../../../components/icons'
+import useFavorite from '../useFavorite'
 import fleetView, { FILTERS, filterFleet } from './fleetView'
 import RowMenu, { usePrinterAction } from './RowMenu'
-import { SET_PRINTER_FAVORITE } from './graphql/fleet'
 import * as classes from './PrintersList.module.less'
 
 // Saved on click; the cache update re-sorts the list at once
 function FavoriteStar ({ printer }) {
-  const { message } = App.useApp()
-  const [setFavorite] = useMutation(SET_PRINTER_FAVORITE)
-  const { id, favorite, name } = printer
-
-  const toggle = async () => {
-    try {
-      const { data } = await setFavorite({
-        variables: { id, favorite: !favorite },
-        optimisticResponse: {
-          setPrinterFavorite: {
-            __typename: 'SetPrinterFavoritePayload', printer: { __typename: 'Printer', id, favorite: !favorite }, errors: []
-          }
-        }
-      })
-      data.setPrinterFavorite.errors.forEach((error) => message.error(error))
-    } catch (error) {
-      message.error(`Could not save the favorite: ${error.message}`)
-    }
-  }
+  const toggle = useFavorite(printer)
+  const { favorite, name } = printer
 
   return (
     <Button type="text" aria-pressed={favorite} aria-label={`Favorite ${name}`} onClick={toggle}

@@ -10,6 +10,7 @@ import {
 const DashboardPage = lazy(() => import('../../Sections/Dashboard/DashboardPage/DashboardPage'))
 const PrintersList = lazy(() => import('../../Sections/Printers/PrintersList/PrintersList'))
 const PrinterAdd = lazy(() => import('../../Sections/Printers/PrinterAdd/PrinterAdd'))
+const PrinterDetails = lazy(() => import('../../Sections/Printers/PrinterDetails/PrinterDetails'))
 const QueuesList = lazy(() => import('../../Sections/Printers/QueuesList/QueuesList'))
 const Queue = lazy(() => import('../../Sections/Printers/Queue/Queue'))
 const FilesList = lazy(() => import('../../Sections/Files/FilesList/FilesList'))
@@ -28,6 +29,7 @@ export default function AppSwithcer () {
             <Route path=":id/queue" element={<Queue />} />
             <Route path="manage" element={<PrintersList />} />
             <Route path="add" element={<PrinterAdd />} />
+            <Route path=":id" element={<PrinterDetails />} />
           </Route>
           <Route path="files" element={<Outlet />} >
             <Route index element={<FilesList />} />

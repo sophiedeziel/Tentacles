@@ -19,18 +19,21 @@ const LABELS = {
   remove: 'Remove Printer'
 }
 
-// Drops the removed printer from the cached list, then from the cache: a printQueueChanged push for it that comes
+// Drops a removed printer from the cached list, then from the cache: a printQueueChanged push for it that comes
 // later only makes an orphan entry, never a row
+export function forgetPrinter (cache, id) {
+  cache.modify({ fields: { printers: (refs, { readField }) => refs.filter((ref) => readField('id', ref) !== id) } })
+  cache.evict({ id: cache.identify({ __typename: 'Printer', id }) })
+  cache.gc()
+}
+
 async function removePrinter (client, printer) {
   const { data } = await client.mutate({
     mutation: REMOVE_PRINTER,
     variables: { id: printer.id },
     update: (cache, { data: result }) => {
       const id = result?.removePrinter?.removedPrinterId
-      if (!id) return
-      cache.modify({ fields: { printers: (refs, { readField }) => refs.filter((ref) => readField('id', ref) !== id) } })
-      cache.evict({ id: cache.identify({ __typename: 'Printer', id }) })
-      cache.gc()
+      if (id) forgetPrinter(cache, id)
     }
   })
   return data.removePrinter.errors
@@ -69,7 +72,8 @@ const confirmationView = (printer, view) => ({
   nextJobName: printer.nextJob?.executable?.filename
 })
 
-const removeConfirmation = (printer) => ({
+// Also the details page's Remove Printer
+export const removeConfirmation = (printer) => ({
   kind: 'modal',
   title: `Remove ${printer.name}?`,
   ok: 'Remove Printer',

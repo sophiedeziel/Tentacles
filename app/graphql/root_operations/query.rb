@@ -15,11 +15,11 @@ module RootOperations
       ::Printer.all
     end
 
-    field :printer, Types::Printer, null: true do
+    field :printer, Types::Printer, null: true, description: 'The printer, null when there is none with that id' do
       argument :id, ID, required: true
     end
     def printer(id:)
-      ::Printer.find(id)
+      ::Printer.find_by(id:)
     end
 
     field :files, [Types::File], null: false do

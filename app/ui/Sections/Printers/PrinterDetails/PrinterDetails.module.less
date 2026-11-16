@@ -1,0 +1,107 @@
+// The printer details page, as in the mockup: the header over the cards, Connection and Remove on the left
+
+@muted: rgba(0, 0, 0, 0.65);
+@purple: #722ed1;
+
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.header, .title, .buttons, .columns, .serverRow, .versionRow, .removeCard {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.header {
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: 4px;
+}
+
+.heading, .side, .removeText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.back {
+  align-self: flex-start;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  color: @purple;
+}
+
+.buttons {
+  gap: 8px;
+}
+
+.starOn {
+  color: @purple;
+}
+
+.columns {
+  align-items: flex-start;
+}
+
+.side {
+  flex: 2 1 360px;
+  gap: 12px;
+}
+
+.cardTitle, .removeTitle {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.serverRow, .versionRow {
+  justify-content: space-between;
+}
+
+.serverRow {
+  margin-bottom: 16px;
+}
+
+.strong {
+  font-weight: 600;
+}
+
+.muted, .small {
+  color: @muted;
+}
+
+.small {
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.testResult {
+  margin-top: 16px;
+}
+
+.removeCard {
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+}
+
+.removeText {
+  flex: 1 1 200px;
+  gap: 0;
+}
+
+.removeTitle {
+  font-size: 14px;
+  line-height: 22px;
+}

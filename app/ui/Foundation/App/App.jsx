@@ -8,9 +8,8 @@ import { ApolloProvider } from '@apollo/client/react'
 import UploadHttpLink from 'apollo-upload-client/UploadHttpLink.mjs'
 import { createConsumer } from '@rails/actioncable'
 import ActionCableLink from 'graphql-ruby-client/subscriptions/ActionCableLink'
-import {
-  BrowserRouter as Router
-} from 'react-router'
+import { createBrowserRouter } from 'react-router'
+import { RouterProvider } from 'react-router/dom'
 
 import { setContext } from '@apollo/client/link/context'
 import { POSSIBLE_TYPES, TYPE_POLICIES } from '../../Sections/Dashboard/graphql/dashboard'
@@ -51,14 +50,16 @@ const client = new ApolloClient({
   cache: new InMemoryCache({ possibleTypes: POSSIBLE_TYPES, typePolicies: TYPE_POLICIES })
 })
 
+// A data router, for useBlocker (the printer details page's unsaved-changes guard). AppSwitcher's <Routes> still
+// pick the page under it.
+const router = createBrowserRouter([
+  { path: '*', element: <AppLayout><AppSwitcher /></AppLayout> }
+])
+
 function App () {
   return (
     <ApolloProvider client={client}>
-      <Router>
-        <AppLayout>
-          <AppSwitcher />
-        </AppLayout>
-      </Router>
+      <RouterProvider router={router} />
     </ApolloProvider>
   )
 }
