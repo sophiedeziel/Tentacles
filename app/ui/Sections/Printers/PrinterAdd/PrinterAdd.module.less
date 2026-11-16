@@ -1,0 +1,141 @@
+// Add Printer, as in the mockup: the header over two cards side by side (stacked when narrow)
+
+@muted: rgba(0, 0, 0, 0.65);
+@purple: #722ed1;
+
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.heading, .cardBody, .lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.heading {
+  padding-bottom: 4px;
+}
+
+.back {
+  align-self: flex-start;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  color: @purple;
+}
+
+.muted, .mutedIcon, .lines .muted {
+  color: @muted;
+}
+
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.scanCard {
+  flex: 3 1 480px;
+  min-width: 0;
+}
+
+.manualCard {
+  flex: 2 1 360px;
+  min-width: 0;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.cardBody {
+  gap: 20px;
+
+  p {
+    margin: 0;
+  }
+}
+
+.scanning {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: @muted;
+}
+
+// The scan's addresses, in one bordered list
+.rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.row, .rowText, .rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.row {
+  justify-content: space-between;
+  padding: 14px 16px;
+
+  & + & {
+    border-top: 1px solid #f0f0f0;
+  }
+}
+
+.waiting {
+  background: #f9f0ff;
+}
+
+.rowText {
+  flex: 1 1 260px;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.rowActions {
+  gap: 8px;
+}
+
+.icon, .mutedIcon {
+  flex: none;
+  font-size: 18px;
+}
+
+.icon {
+  color: @purple;
+}
+
+.lines {
+  gap: 0;
+
+  span + span {
+    font-size: 12px;
+    line-height: 20px;
+  }
+}
+
+.mono {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+  font-weight: 600;
+}
+
+.danger {
+  color: #ff4d4f;
+}
