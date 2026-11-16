@@ -10,6 +10,7 @@ class Spooler
       @current_operation = nil
       @active = false
       @start_job_after_finish = false
+      @discarded = false
     end
 
     def working?
@@ -26,6 +27,14 @@ class Spooler
       @active = true
     end
 
+    # Stops the spool for good (its printer was removed). The operation under way isn't interrupted: nothing is sent
+    # to the printer, and a print under way keeps running.
+    def discard
+      @discarded = true
+      @active = false
+      @thread.kill
+    end
+
     private
 
     def log(message)
@@ -38,7 +47,7 @@ class Spooler
           Thread.handle_interrupt(Exception => :immediate) do
             operations_loop
           ensure
-            @current_operation&.interrupt
+            @current_operation&.interrupt unless @discarded
           end
         end
       end

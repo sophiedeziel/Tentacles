@@ -8,6 +8,9 @@ module Mutations
       RSpec.describe AddPrinter, type: :request do
         let(:json) { response.parsed_body }
         let(:data) { json['data']['addPrinter'] }
+        let(:redis) { instance_double(Redis, publish: 1) }
+
+        before { stub_const('REDIS_POOL', ConnectionPool::Wrapper.new(size: 1, timeout: 1) { redis }) }
 
         def add_printer(input)
           post '/graphql', params: { query:, variables: { input: } }
@@ -47,6 +50,20 @@ module Mutations
                                'uri' => 'http://192.168.0.15', 'username' => nil },
                 'errors' => []
               )
+            end
+
+            it 'tells the spooler, so that the printer gets a spool without a restart' do
+              add_printer(input)
+
+              expect(redis).to have_received(:publish)
+                .with('printers', { command: 'add_printer', printer_id: Printer.last.id }.to_json).once
+            end
+
+            it 'adds the printer even when the spooler cannot be told' do
+              allow(redis).to receive(:publish).and_raise(Redis::CannotConnectError)
+
+              expect { add_printer(input) }.to change { Printer.count }.by(1)
+              expect(data['errors']).to eq([])
             end
           end
 
@@ -104,8 +121,9 @@ module Mutations
           context 'with invalid arguments' do
             let(:input) { { backend: 'PRUSALINK', name: '', uri: '', secret: '' } }
 
-            it 'does not add a printer' do
+            it 'does not add a printer nor tell the spooler' do
               expect { add_printer(input) }.not_to(change { Printer.count })
+              expect(redis).not_to have_received(:publish)
             end
 
             it 'returns a nil printer and the validation errors' do

@@ -59,6 +59,50 @@ RSpec.describe Printer, :vcr, type: :model do
     it { is_expected.to eq enqueued_printer_jobs.first }
   end
 
+  describe 'destroy' do
+    let(:printer) { create(:printer) }
+    let(:file) { create(:file_record) }
+    let(:section) { DashboardSection.create!(title: nil, position: 0) }
+
+    before do
+      %w[enqueued active completed error].each { |status| create(:printer_job, printer:, executable: file, status:) }
+      PrinterWidget.create!(dashboard_section: section, printer:, width_units: 2, height_units: 1, position: 0)
+    end
+
+    it 'deletes its jobs, queued, under way and finished, and its dashboard widgets' do
+      printer.destroy!
+
+      expect(Printer::Job.where(printer_id: printer.id)).to be_empty
+      expect(DashboardWidget.where(printer_id: printer.id)).to be_empty
+    end
+
+    it 'keeps the files in the library' do
+      expect { printer.destroy! }.not_to(change { FileRecord.count })
+    end
+
+    it 'deletes the jobs without their callbacks: no printQueueChanged per job (Printers::Remove sends one)' do
+      allow(TentaclesSchema.subscriptions).to receive(:trigger)
+
+      printer.destroy!
+
+      expect(TentaclesSchema.subscriptions).not_to have_received(:trigger)
+    end
+  end
+
+  describe 'notify_spooler' do
+    let(:printer) { create(:printer) }
+    let(:redis) { instance_double(Redis, publish: 1) }
+
+    before { stub_const('REDIS_POOL', ConnectionPool::Wrapper.new(size: 1, timeout: 1) { redis }) }
+
+    it 'publishes the command with the printer id on the printers channel' do
+      printer.notify_spooler(:add_printer)
+
+      expect(redis).to have_received(:publish)
+        .with('printers', { command: 'add_printer', printer_id: printer.id }.to_json)
+    end
+  end
+
   describe 'upload' do
     let(:file_path) { 'spec/fixture_files/test.gcode' }
 

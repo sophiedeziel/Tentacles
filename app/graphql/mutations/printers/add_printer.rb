@@ -23,10 +23,21 @@ module Mutations
         printer = ::Printer.new(name:, backend:, uri: (uri.presence || octoprint_uri).presence,
                                 username: username.presence, secret: (secret.presence || octoprint_key).presence)
         if printer.save
+          start_spool(printer)
           { printer:, errors: [] }
         else
           { printer: nil, errors: printer.errors.full_messages }
         end
+      end
+
+      private
+
+      # The spooler builds a spool for the new printer. The printer is added either way: without it, the spooler only
+      # picks the printer up on its next restart.
+      def start_spool(printer)
+        printer.notify_spooler(:add_printer)
+      rescue Redis::BaseError, ConnectionPool::TimeoutError => e
+        Rails.logger.error("[addPrinter] Could not publish add_printer for printer #{printer.id}: #{e.message}")
       end
     end
   end

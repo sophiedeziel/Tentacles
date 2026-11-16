@@ -38,7 +38,7 @@ module Mutations
 
       # The spooler starts the job asynchronously (and publishes the new state), so this only queues the command
       def send_command(printer)
-        printer.start_print
+        printer.notify_spooler(:start_print)
       end
 
       # The printer is still OPERATIONAL until the spooler uploads the file and starts it: a tick wouldn't show anything

@@ -41,4 +41,21 @@ RSpec.describe PrinterApiCache do
     described_class.set_disconnected(1)
     expect(use_cache { raise 'called' }).to be_nil
   end
+
+  describe '.forget' do
+    it "deletes the printer's cached answers and disconnected flag, not those of other printers" do
+      use_cache { 'OctoPrint 1.11.2' }
+      described_class.use_cache(id: 1, method: 'job_status', time: 2.hours) { 'Printing' }
+      described_class.use_cache(id: 12, method: 'version', time: 2.hours) { 'OctoPrint 1.10.0' }
+      described_class.set_disconnected(1)
+
+      described_class.forget(1)
+
+      expect(redis.keys).to eq ['printer_api_12_version']
+    end
+
+    it 'does nothing for a printer without keys' do
+      expect { described_class.forget(1) }.not_to raise_error
+    end
+  end
 end

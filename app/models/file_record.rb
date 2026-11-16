@@ -2,7 +2,8 @@
 
 class FileRecord < ApplicationRecord
   has_one_attached :file
-  has_many :jobs, class_name: 'Printer::Job', as: :executable, dependent: :nullify
+  # A job can't lose its file (executable_id is NOT NULL): deleting a file deletes the jobs that print it
+  has_many :jobs, class_name: 'Printer::Job', as: :executable, dependent: :delete_all
 
   has_many :file_labels, dependent: :destroy
   has_many :labels, through: :file_labels

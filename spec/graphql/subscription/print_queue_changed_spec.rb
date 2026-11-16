@@ -97,6 +97,23 @@ RSpec.describe Subscriptions::PrintQueueChanged do
     end
   end
 
+  it 'pushes a removed printer with an empty queue, without contacting it' do
+    printer = create(:printer)
+    create(:printer_job, printer:)
+    pubsub.clear # the push of the create
+    subscription_id = subscribe.context[:subscription_id]
+    allow(PrinterBackends).to receive(:for)
+
+    Printers::Remove.call(printer)
+    deliver_events
+
+    expected = { 'id' => printer.id.to_s, 'queuedCount' => 0, 'canStartNext' => false, 'nextJob' => nil }
+    expect(deliveries(subscription_id)).to eq(
+      [{ 'result' => { 'data' => { 'printQueueChanged' => expected } }, 'more' => true }]
+    )
+    expect(PrinterBackends).not_to have_received(:for)
+  end
+
   it 'pushes nothing on progress updates' do
     job = create(:printer_job, status: 'active')
     pubsub.clear # the push of the create
