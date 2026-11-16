@@ -4136,12 +4136,11 @@ functions-have-names@^1.2.3:
   resolved "https://registry.yarnpkg.com/functions-have-names/-/functions-have-names-1.2.3.tgz#0404fe4ee2ba2f607f0e0ec3c80bae994133b834"
   integrity sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==
 
-gcode-preview@3.0.0-alpha.5:
-  version "3.0.0-alpha.5"
-  resolved "https://registry.yarnpkg.com/gcode-preview/-/gcode-preview-3.0.0-alpha.5.tgz#7217c5c227ad3b0cc26dc266d057990d09f720c0"
-  integrity sha512-DWkw6Kv83QC7BxPHqhNk0dso9ILNgH/J5Mz+xvx7j4jqjCIg33xRmU9rkdmdlC6K1uduPVF5cb50LpA1TBLr6A==
+gcode-preview@3.0.0-alpha.7:
+  version "3.0.0-alpha.7"
+  resolved "https://registry.yarnpkg.com/gcode-preview/-/gcode-preview-3.0.0-alpha.7.tgz#93d1a842cc9728bf9435f932f73a9ccc40ec4bcb"
+  integrity sha512-fggAFXBi7bBziAy3RLAE37wEgocTHyrOx7ui+9uD51QJZJr7rvaER7w7x2KLBUNcrjEtypUE9wFSpVbCDzBpxA==
   dependencies:
-    lil-gui "^0.20.0"
     three ">=0.166.0 <0.186.0"
 
 generator-function@^2.0.0:
@@ -5016,11 +5015,6 @@ lightningcss@^1.33.0:
     lightningcss-linux-x64-musl "1.33.0"
     lightningcss-win32-arm64-msvc "1.33.0"
     lightningcss-win32-x64-msvc "1.33.0"
-
-lil-gui@^0.20.0:
-  version "0.20.0"
-  resolved "https://registry.yarnpkg.com/lil-gui/-/lil-gui-0.20.0.tgz#c970391fcde9f88d5425b2648114c24d9bd30243"
-  integrity sha512-k7Ipr0ztqslMA2XvM5z5ZaWhxQtnEOwJBfI/hmSuRh6q4iMG9L0boqqrnZSzBR1jzyJ28OMl47l65ILzRe1TdA==
 
 loader-utils@^2.0.2:
   version "2.0.4"
