@@ -54,10 +54,11 @@ class PrinterAppKeyRequest < T::Struct
     end
   end
 
-  # The URL of the OctoPrint server, which the new printer gets
+  # The URL of the OctoPrint server, which the new printer gets. `address` is an IP address the network scan found
+  # (see requestPrinterAppKey).
   sig { returns(String) }
   def url
-    OctoprintAppKeys.url(address)
+    OctoprintAppKeys.url(IPAddr.new(address))
   end
 
   # What Types::AppKeyRequest reads: everything but the app token (which approval_url holds, though: see Types::AppKeyRequest)

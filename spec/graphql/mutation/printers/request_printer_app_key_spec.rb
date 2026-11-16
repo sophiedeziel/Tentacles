@@ -27,6 +27,9 @@ RSpec.describe Mutations::Printers::RequestPrinterAppKey, type: :request do
     post '/graphql', params: { query:, variables: { address: } }, as: :json
   end
 
+  # What the last networkPrinters scan found
+  before { redis.set(:printers_ips, %w[192.168.1.20 192.168.1.57].to_json) }
+
   def created(body)
     { status: 201, body: body.to_json, headers: { 'Content-Type' => 'application/json' } }
   end
@@ -67,12 +70,43 @@ RSpec.describe Mutations::Printers::RequestPrinterAppKey, type: :request do
     expect(data['request']).to include('address' => '192.168.1.57', 'approvalUrl' => 'http://192.168.1.57/')
   end
 
-  it 'takes the URL of the server' do
-    stub_request(:post, 'http://octopi.local:5000/plugin/appkeys/request').to_return(created(app_token:))
-    request_app_key('http://octopi.local:5000/')
+  it 'calls an IPv6 address the scan found in brackets' do
+    redis.set(:printers_ips, ['fd00::57'].to_json)
+    stub_request(:post, 'http://[fd00::57]/plugin/appkeys/request').to_return(created(app_token:))
+    request_app_key('FD00:0:0:0:0:0:0:57')
 
-    expect(data['request']).to include('address' => 'http://octopi.local:5000/',
-                                       'approvalUrl' => 'http://octopi.local:5000/')
+    expect(data['request']).to include('address' => 'fd00::57', 'approvalUrl' => 'http://[fd00::57]/')
+  end
+
+  # Only the addresses the scan found are called: the server never calls an address a client made up (SSRF)
+  shared_examples 'an address that is refused without calling anything' do |address, message|
+    it "refuses #{address.inspect}" do
+      request_app_key(address)
+
+      expect(json['errors']).to be_nil
+      expect(data).to eq('request' => nil, 'errors' => [message])
+      expect(a_request(:any, //)).not_to have_been_made
+      expect(OctoprintAppKeyPollJob).not_to have_been_enqueued
+    end
+  end
+
+  not_an_ip = 'Enter the IP address of an OctoPrint server found by the network scan, e.g. 192.168.1.57'
+  it_behaves_like 'an address that is refused without calling anything', ' ',
+                  'Enter the address of the OctoPrint server'
+  it_behaves_like 'an address that is refused without calling anything', 'octopi.local', not_an_ip
+  it_behaves_like 'an address that is refused without calling anything', 'http://192.168.1.57/', not_an_ip
+  it_behaves_like 'an address that is refused without calling anything', '192.168.1.57:5000', not_an_ip
+  it_behaves_like 'an address that is refused without calling anything', '192.168.1.0/24', not_an_ip
+  it_behaves_like 'an address that is refused without calling anything', 'fe80::1%en0', not_an_ip
+  it_behaves_like 'an address that is refused without calling anything', '169.254.169.254',
+                  'The network scan did not find OctoPrint at 169.254.169.254. Scan the network again.'
+
+  it 'refuses every address before the first scan' do
+    redis.del(:printers_ips)
+    request_app_key
+
+    expect(data['errors']).to eq ['The network scan did not find OctoPrint at 192.168.1.57. Scan the network again.']
+    expect(a_request(:any, //)).not_to have_been_made
   end
 
   shared_examples 'a request OctoPrint could not take' do |message|
@@ -81,7 +115,7 @@ RSpec.describe Mutations::Printers::RequestPrinterAppKey, type: :request do
 
       expect(json['errors']).to be_nil
       expect(data).to eq('request' => nil, 'errors' => [message])
-      expect(redis.keys).to be_empty
+      expect(redis.keys).to eq ['printers_ips']
       expect(OctoprintAppKeyPollJob).not_to have_been_enqueued
     end
   end
@@ -118,12 +152,5 @@ RSpec.describe Mutations::Printers::RequestPrinterAppKey, type: :request do
     before { octoprint.to_return(status: 201, body: '<html></html>') }
 
     it_behaves_like 'a request OctoPrint could not take', 'http://192.168.1.57/ does not answer like OctoPrint'
-  end
-
-  it 'refuses a blank address without calling anything' do
-    request_app_key(' ')
-
-    expect(data).to eq('request' => nil, 'errors' => ['Enter the address of the OctoPrint server'])
-    expect(a_request(:any, //)).not_to have_been_made
   end
 end

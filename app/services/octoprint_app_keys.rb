@@ -20,10 +20,11 @@ class OctoprintAppKeys
   # Seconds: OctoPrint drops a request that isn't polled for 5 seconds
   TIMEOUT = 3
 
-  # "http://192.168.1.57/" for "192.168.1.57"; a URL is kept as it is
-  sig { params(address: String).returns(String) }
-  def self.url(address)
-    address.match?(%r{\Ahttps?://}i) ? address : "http://#{address}/"
+  # "http://192.168.1.57/" for 192.168.1.57, "http://[fd00::57]/" for fd00::57. Built from a parsed IP address
+  # only: never from text a client sent.
+  sig { params(ip: IPAddr).returns(String) }
+  def self.url(ip)
+    "http://#{ip.ipv6? ? "[#{ip}]" : ip}/"
   end
 
   sig { params(url: String).void }

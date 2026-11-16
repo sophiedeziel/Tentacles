@@ -73,4 +73,24 @@ RSpec.describe PrinterScanner do
       expect(service.call).to eq(['192.168.0.6'])
     end
   end
+
+  describe '#last_scan' do
+    let(:service) { described_class.new }
+    let(:redis) { MockRedis.new }
+
+    before { stub_const('REDIS_POOL', ConnectionPool::Wrapper.new(size: 1, timeout: 1) { redis }) }
+
+    it 'returns the addresses of the last scan, however old, without scanning' do
+      redis.set(:printers_ips, ['192.168.0.5'].to_json)
+      redis.set(:last_printer_scan, 1.day.ago.to_i)
+      allow(service).to receive(:network_scan)
+
+      expect(service.last_scan).to eq(['192.168.0.5'])
+      expect(service).not_to have_received(:network_scan)
+    end
+
+    it 'is empty before the first scan' do
+      expect(service.last_scan).to eq([])
+    end
+  end
 end
