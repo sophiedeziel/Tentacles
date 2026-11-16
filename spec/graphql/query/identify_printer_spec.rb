@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+require 'support/unreadable_secret'
 
 # The gems are stubbed: nothing reaches the network
 RSpec.describe 'Query identifyPrinter', type: :request do
+  include UnreadableSecret
+
   let(:secret) { 's3cr3t-passw0rd' }
   let(:variables) { { backend:, uri: 'http://192.168.0.15/', secret: } }
   let(:query) do
@@ -217,6 +220,81 @@ RSpec.describe 'Query identifyPrinter', type: :request do
         expect(error['extensions']).to eq('code' => 'PRINTER_ERROR')
         expect(Prusalink::Info).not_to have_received(:get)
       end
+    end
+  end
+
+  context 'with a saved printer (printerId)' do
+    let(:saved) { create(:printer, :prusalink, secret: 'saved-passw0rd') }
+    let(:backend) { 'PRUSALINK' }
+    let(:variables) { { backend:, uri: 'http://192.168.0.20/', username: 'maker', printerId: saved.id.to_s } }
+    let(:query) do
+      <<~GQL
+        query identifyPrinter($backend: PrinterBackend!, $uri: String!, $username: String, $secret: String,
+                              $printerId: ID) {
+          identifyPrinter(backend: $backend, uri: $uri, username: $username, secret: $secret, printerId: $printerId) {
+            name
+            version
+          }
+        }
+      GQL
+    end
+
+    before do
+      allow(Prusalink::Client).to receive(:new).and_call_original
+      allow(Prusalink::Info).to receive(:get).and_return(Prusalink::Info.deserialize({ name: 'Prusa MK4' }))
+      allow(Prusalink::ServerVersion).to receive(:get)
+        .and_return(Prusalink::ServerVersion.deserialize({ version: '2.1.2', firmware: '6.1.3' }))
+    end
+
+    [nil, ''].each do |blank|
+      it "uses the saved secret with the given URL when the secret is #{blank.inspect}" do
+        variables[:secret] = blank unless blank.nil?
+
+        identify
+
+        expect(json['data']['identifyPrinter']).to eq('name' => 'Prusa MK4',
+                                                      'version' => 'PrusaLink 2.1.2 (firmware 6.1.3)')
+        expect(Prusalink::Client).to have_received(:new)
+          .with(hash_including(host: 'http://192.168.0.20/', username: 'maker', password: 'saved-passw0rd'))
+      end
+    end
+
+    it 'uses the secret sent over the saved one' do
+      variables[:secret] = 'typed-passw0rd'
+
+      identify
+
+      expect(Prusalink::Client).to have_received(:new).with(hash_including(password: 'typed-passw0rd'))
+    end
+
+    it 'never returns the saved secret in its errors' do
+      allow(Prusalink::Info).to receive(:get)
+        .and_raise(Prusalink::Exceptions::ConnectionError, 'Failed to open TCP connection (saved-passw0rd)')
+
+      identify
+
+      expect(error['extensions']).to eq('code' => 'UNREACHABLE')
+      expect(error['message']).to include('[FILTERED]')
+      expect(response.body).not_to include('saved-passw0rd')
+    end
+
+    it 'asks for the secret when the saved one cannot be read' do
+      make_secret_unreadable(saved)
+
+      identify
+
+      expect(error['message']).to eq('Enter the URL and the password')
+      expect(error['extensions']).to eq('code' => 'PRINTER_ERROR')
+    end
+
+    it 'returns a PRINTER_ERROR for an unknown printer' do
+      variables[:printerId] = (saved.id + 1).to_s
+
+      identify
+
+      expect(error['message']).to eq('Printer not found')
+      expect(error['extensions']).to eq('code' => 'PRINTER_ERROR')
+      expect(Prusalink::Client).not_to have_received(:new)
     end
   end
 end
