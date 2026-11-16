@@ -3,7 +3,7 @@
 
 module Types
   # Resolves anything with the readers of the Printer::Specs columns (brand, firmware, bed_shape, build_volume_x, ...):
-  # a ::Printer for its saved specs.
+  # a ::Printer for its saved specs, a PrinterBackends::ReportedSpecs for what its server reports.
   class PrinterSpecs < Base::Object
     extend T::Sig
 

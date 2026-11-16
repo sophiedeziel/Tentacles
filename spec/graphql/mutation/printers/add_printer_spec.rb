@@ -8,9 +8,17 @@ module Mutations
       RSpec.describe AddPrinter, type: :request do
         let(:json) { response.parsed_body }
         let(:data) { json['data']['addPrinter'] }
-        let(:redis) { instance_double(Redis, publish: 1) }
+        let(:redis) { instance_double(Redis, publish: 1, get: nil, set: 'OK') }
+        let(:webcam) { Octoprint::Settings::Webcam.from_settings({ webcam: { webcam_enabled: true } }) }
 
-        before { stub_const('REDIS_POOL', ConnectionPool::Wrapper.new(size: 1, timeout: 1) { redis }) }
+        before do
+          stub_const('REDIS_POOL', ConnectionPool::Wrapper.new(size: 1, timeout: 1) { redis })
+          # The printer servers: an OctoPrint without printer profile, a PrusaLink XL
+          allow(Octoprint::Settings).to receive(:webcam).and_return(webcam)
+          allow(Octoprint::PrinterProfiles).to receive(:list).and_return(Octoprint::PrinterProfiles.new(profiles: {}))
+          allow(Prusalink::Info).to receive(:get).and_return(Prusalink::Info.new(name: 'XL', nozzle_diameter: 0.6))
+          allow(Prusalink::ServerVersion).to receive(:get).and_return(Prusalink::ServerVersion.new(firmware: '6.2.0'))
+        end
 
         def add_printer(input)
           post '/graphql', params: { query:, variables: { input: } }
@@ -59,6 +67,12 @@ module Mutations
                 .with('printers', { command: 'add_printer', printer_id: Printer.last.id }.to_json).once
             end
 
+            it 'fills the webcam from the OctoPrint settings' do
+              add_printer(input)
+
+              expect(Printer.last).to have_attributes(webcam: true, model: nil)
+            end
+
             it 'adds the printer even when the spooler cannot be told' do
               allow(redis).to receive(:publish).and_raise(Redis::CannotConnectError)
 
@@ -90,6 +104,28 @@ module Mutations
               expect(data['printer']).to include('name' => 'Prusa MK4', 'backend' => 'PRUSALINK',
                                                  'uri' => 'http://prusa-mk4.local', 'username' => 'maker')
               expect(response.body).not_to include('printer-password')
+            end
+
+            it 'fills its specs with what PrusaLink reports' do
+              add_printer(input)
+
+              expect(Printer.last).to have_attributes(firmware: 'prusa_firmware', firmware_version: '6.2.0',
+                                                      nozzle_diameter: 0.6, name: 'Prusa MK4')
+            end
+
+            it 'adds the printer even when its specs cannot be read' do
+              allow(Prusalink::Info).to receive(:get).and_raise(Prusalink::Exceptions::AuthenticationError, '[401]')
+
+              expect { add_printer(input) }.to change { Printer.count }.by(1)
+              expect(data['errors']).to eq([])
+              expect(Printer.last).to have_attributes(firmware: nil, nozzle_diameter: nil)
+            end
+
+            it 'adds the printer even when it is unreachable' do
+              allow(Prusalink::Info).to receive(:get).and_raise(Prusalink::Exceptions::ConnectionError, 'timeout')
+
+              expect { add_printer(input) }.to change { Printer.count }.by(1)
+              expect(data['errors']).to eq([])
             end
 
             it 'stores a blank username as nil (the default username)' do

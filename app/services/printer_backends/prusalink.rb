@@ -38,6 +38,14 @@ module PrinterBackends
         raise Error, e.message
       end
 
+      # The `printer` of PrusaLink's /api/version when it names a model ("MK4", "XL"), nil when it's a version number
+      # ("1.0.0", "6.2.0+8899") or missing: the MK4, XL and MINI firmware don't send it, and its format isn't documented
+      sig { params(printer: T.nilable(String)).returns(T.nilable(String)) }
+      def readable_model(printer)
+        model = printer.to_s.strip
+        model if model.match?(/[[:alpha:]]/) && !model.match?(/\A\d+(\.\d+)+/)
+      end
+
       # The state family of a PrusaLink status (see PrinterStateFamily.for_prusalink)
       sig { params(status: ::Prusalink::Status).returns(PrinterStateFamily) }
       def state_family(status)
@@ -110,6 +118,17 @@ module PrinterBackends
     def identify
       info = use { ::Prusalink::Info.get }
       { name: info&.name.presence || URI(printer.uri.to_s).host, version: }
+    end
+
+    # The name and nozzle from the printer's info, the firmware version and model from the server version. The
+    # firmware is always Prusa's. The cameras aren't read yet.
+    sig { override.returns(ReportedSpecs) }
+    def reported_specs
+      info = use { ::Prusalink::Info.get }
+      server = use { ::Prusalink::ServerVersion.get }
+      ReportedSpecs.new(name: info&.name.presence, model: self.class.readable_model(server.printer),
+                        firmware: 'prusa_firmware', firmware_version: server.firmware.presence,
+                        nozzle_diameter: info&.nozzle_diameter&.to_f)
     end
 
     # The camera isn't supported yet

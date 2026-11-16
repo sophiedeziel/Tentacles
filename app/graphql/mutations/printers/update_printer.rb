@@ -30,7 +30,11 @@ module Mutations
         return { printer: nil, errors: ['Printer not found'] } if printer.nil?
 
         if printer.update(attributes(changes))
-          forget_api_answers(printer) if printer.saved_change_to_uri?
+          if printer.saved_change_to_uri?
+            forget_api_answers(printer)
+            # After forgetting: the specs come from the new address, not from the old one's cached answer
+            printer.fill_specs_from_server
+          end
           { printer:, errors: [] }
         else
           # The printer as saved, without the rejected changes
