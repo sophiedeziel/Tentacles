@@ -9,7 +9,8 @@ import * as classes from './PrinterAdd.module.less'
 
 // Add Printer, at /printers/add: an OctoPrint server found on the network (approved in OctoPrint, added by the
 // server), or any printer entered by hand. Both end on the new printer's page. ?connect=<address> (the fleet list's
-// Connect) starts that address's approval once: the parameter is dropped so a reload doesn't ask OctoPrint again.
+// Connect) starts that address's approval once, with no tab (no click is behind it): the parameter is dropped so a
+// reload doesn't ask OctoPrint again.
 export default function PrinterAdd () {
   const [params, setParams] = useSearchParams()
   const [connectTo] = useState(() => params.get('connect'))

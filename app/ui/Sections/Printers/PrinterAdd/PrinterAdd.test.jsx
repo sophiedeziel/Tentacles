@@ -76,18 +76,30 @@ describe('PrinterAdd', () => {
     expect(screen.queryByText(/CORS/)).not.toBeInTheDocument()
   })
 
-  it('waits for the approval in OctoPrint, then opens the new printer', async () => {
+  it('opens OctoPrint in the Connect click, waits for the approval, then opens the new printer', async () => {
+    const tab = { opener: window, closed: false, close: vi.fn(), location: { href: '' }, document: { body: {} } }
+    window.open.mockReturnValue(tab)
     renderPage([REQUEST, pushed(appKeyRequest('ADDED', { __typename: 'Printer', id: '9', name: 'Ender 3 V2' }), 200)])
     await userEvent.click(await screen.findByRole('button', { name: 'Connect 192.168.1.57' }))
 
     await screen.findByText('Waiting for you to approve Tentacles in OctoPrint')
+    expect(window.open).toHaveBeenCalledWith('', '_blank')
+    expect(tab.location.href).toBe('http://192.168.1.57/')
     const waiting = await row('192.168.1.57')
     expect(within(waiting).getByText('Waiting for you to approve Tentacles in OctoPrint')).toBeInTheDocument()
-    expect(within(waiting).getByRole('button', { name: 'Open OctoPrint Again' })).toBeInTheDocument()
+    expect(within(waiting).getByRole('button', { name: 'Open OctoPrint Again' })).not.toHaveClass('ant-btn-primary')
     expect(within(waiting).getByRole('button', { name: 'Cancel Request' })).toBeInTheDocument()
     expect(currentStep()).toBe('Approve in OctoPrint')
 
     expect(await screen.findByText('Printer page 9')).toBeInTheDocument()
+  })
+
+  it('makes Open OctoPrint the primary button when the browser blocked the tab', async () => {
+    renderPage([REQUEST, pushed(appKeyRequest('DENIED'))])
+    await userEvent.click(await screen.findByRole('button', { name: 'Connect 192.168.1.57' }))
+    const open = await screen.findByRole('button', { name: 'Open OctoPrint' })
+    expect(open).toHaveClass('ant-btn-primary')
+    expect(window.open).toHaveBeenCalledOnce()
   })
 
   it('shows Connect again after Cancel Request', async () => {
@@ -98,10 +110,17 @@ describe('PrinterAdd', () => {
     expect(currentStep()).toBe('Choose')
   })
 
-  it('starts the approval of ?connect= once, and drops the parameter', async () => {
-    renderPage([REQUEST, pushed(appKeyRequest('DENIED'), 200)], '/printers/add?connect=192.168.1.57')
+  it('starts the approval of ?connect= once without a pop-up, and drops the parameter', async () => {
+    renderPage([REQUEST, pushed(appKeyRequest('DENIED'), 500)], '/printers/add?connect=192.168.1.57')
     expect(await screen.findByText('Waiting for you to approve Tentacles in OctoPrint')).toBeInTheDocument()
     expect(screen.getByLabelText('search')).toHaveTextContent(/^$/)
+    expect(window.open).not.toHaveBeenCalled()
+
+    const open = screen.getByRole('button', { name: 'Open OctoPrint' })
+    expect(open).toHaveClass('ant-btn-primary')
+    await userEvent.click(open)
+    expect(window.open).toHaveBeenCalledWith('http://192.168.1.57/', '_blank', 'noopener,noreferrer')
+    expect(screen.getByRole('button', { name: 'Open OctoPrint Again' })).not.toHaveClass('ant-btn-primary')
 
     expect(await screen.findByText(/OctoPrint did not approve Tentacles/)).toBeInTheDocument()
     expect(requested).toEqual(['192.168.1.57'])
