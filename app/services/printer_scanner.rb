@@ -4,21 +4,21 @@ class PrinterScanner
   # rubocop:disable-next Layout/LineLength
   IP_REGEX = /((?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))/
 
-  def call
-    uris = Printer.pluck(:uri)
-    ips = use_cache do
+  # The IP address of every OctoPrint server on the local /24 network (they answer the appkeys probe), the saved
+  # printers' included. The scan is cached 15 minutes in Redis; `refresh: true` scans again.
+  def call(refresh: false)
+    use_cache(refresh:) do
       all_network_ips.select { |ip| octoprint?(ip) }
     end
-    ips.reject { |ip| "http://#{ip}/".in? uris }
   end
 
   private
 
-  def use_cache
-    cached_ips = REDIS_POOL.with do |conn|
-      conn.get(:printers_ips)
+  def use_cache(refresh:)
+    unless refresh
+      cached_ips = REDIS_POOL.with { |conn| conn.get(:printers_ips) }
+      return JSON.parse(cached_ips) if cached_ips && last_printer_scan > 15.minutes.ago.to_i
     end
-    return JSON.parse cached_ips if last_printer_scan > 15.minutes.ago.to_i
 
     yield.tap { |ips| store_printers_ips(ips) }
   end
