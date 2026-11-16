@@ -1,6 +1,6 @@
 import React from 'react'
 import { describe, expect, it, vi } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MockedProvider } from '@apollo/client/testing/react'
 import { InMemoryCache } from '@apollo/client'
@@ -15,6 +15,11 @@ import { POSSIBLE_TYPES, PRINT_QUEUE_CHANGED, PRINTER_STATUS_CHANGED, TYPE_POLIC
 import { PRINTERS } from '../../Dashboard/widgets/Printer/fixtures'
 
 const { status } = PRINTERS.PRINTING
+const NO_SPECS = {
+  brand: null, model: null, firmwareDisplayName: null, firmwareVersion: null, buildVolume: null, extruders: null,
+  nozzleDiameter: null, maxHotendTemp: null, maxBedTemp: null, heatedBed: null, heatedChamber: null, webcam: null, materials: []
+}
+const specs = (values = {}) => ({ __typename: 'PrinterSpecs', ...NO_SPECS, ...values })
 const PRINTER = {
   __typename: 'Printer',
   ...PRINTERS.PRINTING,
@@ -22,6 +27,7 @@ const PRINTER = {
   uri: 'http://192.168.1.21',
   username: 'maker',
   favorite: false,
+  specs: specs(),
   nextJob: { __typename: 'EnqueuedJob', ...PRINTERS.PRINTING.nextJob, executable: { __typename: 'File', ...PRINTERS.PRINTING.nextJob.executable } },
   status: {
     __typename: 'PrinterStatus',
@@ -52,7 +58,7 @@ const renderPage = (mocks = [], baseMocks = BASE_MOCKS) => {
 
 const updated = (input, printer = {}) => ({
   request: { query: UPDATE_PRINTER, variables: { input: { id: '1', ...input } } },
-  result: { data: { updatePrinter: { __typename: 'UpdatePrinterPayload', printer: { __typename: 'Printer', id: '1', name: PRINTER.name, uri: PRINTER.uri, username: 'maker', ...printer }, errors: [] } } }
+  result: { data: { updatePrinter: { __typename: 'UpdatePrinterPayload', printer: { __typename: 'Printer', id: '1', name: PRINTER.name, uri: PRINTER.uri, username: 'maker', specs: PRINTER.specs, ...printer }, errors: [] } } }
 })
 const identify = (secret, result) => ({
   request: {
@@ -199,5 +205,94 @@ describe('PrinterDetails', () => {
       await userEvent.click(await screen.findByRole('button', { name: 'Open Queue' }))
       expect(await screen.findByText('Queue')).toBeInTheDocument()
     })
+  })
+
+  describe('About This Printer', () => {
+    const MK4_SPECS = {
+      brand: 'Prusa Research',
+      model: 'MK4',
+      firmwareDisplayName: 'prusa_firmware',
+      firmwareVersion: '6.2.0',
+      buildVolume: { __typename: 'RectangularBuildVolume', x: 250, y: 210, z: 220 },
+      nozzleDiameter: 0.6,
+      materials: ['PLA', 'PETG']
+    }
+    // The page of a printer with these specs
+    const renderAbout = (saved, mocks = []) => {
+      const printer = { ...PRINTER, specs: specs(saved) }
+      return renderPage(mocks, [
+        { ...BASE_MOCKS[0], result: { data: { printer } } },
+        ...BASE_MOCKS.slice(1)
+      ])
+    }
+    const savedSpecs = (input, saved) => updated({ specs: input }, { specs: specs(saved) })
+    const volume = (label) => within(screen.getByRole('group', { name: 'Build volume' })).getByLabelText(label)
+    const pick = async (label, option) => {
+      await userEvent.click(field(label))
+      await userEvent.click(await screen.findByTitle(option, { selector: '.ant-select-item-option' }))
+    }
+
+    it('shows the saved specs', async () => {
+      renderAbout(MK4_SPECS)
+      expect(await screen.findByRole('heading', { name: 'About This Printer' })).toBeInTheDocument()
+      expect(screen.getByText('PrusaLink can fill in some of these fields')).toBeInTheDocument()
+      expect(field('Brand')).toHaveValue('Prusa Research')
+      expect(screen.getByText('Printer servers do not report a brand.')).toBeInTheDocument()
+      expect(screen.getByTitle('Prusa Firmware')).toBeInTheDocument()
+      expect(volume('Width (X)')).toHaveValue('250')
+      expect(volume('Height (Z)')).toHaveValue('220')
+      expect(screen.getByText('PrusaLink cameras are not read yet')).toBeInTheDocument()
+      expect(screen.getByTitle('PETG')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Save Changes/ })).toBeDisabled()
+    })
+
+    it('switches the build volume to Diameter and Z for a circular bed', async () => {
+      renderAbout(MK4_SPECS, [savedSpecs(
+        { buildVolume: { circular: { diameter: 180, height: 220 } } },
+        { ...MK4_SPECS, buildVolume: { __typename: 'CircularBuildVolume', diameter: 180, height: 220 } }
+      )])
+      await screen.findByRole('heading', { name: 'About This Printer' })
+      await pick('Bed shape', 'Circular')
+      expect(volume('Diameter')).toBeVisible()
+      expect(volume('Width (X)')).not.toBeVisible()
+      // Z carries over; the diameter is missing
+      expect(screen.getByText(/Fill in every dimension/)).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Save Changes/ })).toBeDisabled()
+
+      await userEvent.type(volume('Diameter'), '180')
+      await save()
+      expect(await screen.findByText('Changes saved')).toBeInTheDocument()
+      expect(volume('Diameter')).toHaveValue('180')
+    })
+
+    it('clears the build volume once all of its dimensions are cleared', async () => {
+      renderAbout(MK4_SPECS, [savedSpecs({ buildVolume: null }, { ...MK4_SPECS, buildVolume: null })])
+      await screen.findByRole('heading', { name: 'About This Printer' })
+      for (const label of ['Width (X)', 'Depth (Y)', 'Height (Z)']) await userEvent.clear(volume(label))
+      await save()
+      expect(await screen.findByText('Changes saved')).toBeInTheDocument()
+    })
+
+    it('takes a firmware that is not in the list, as typed', async () => {
+      renderAbout(MK4_SPECS, [savedSpecs({ firmware: 'Smoothie' }, { ...MK4_SPECS, firmwareDisplayName: 'Smoothie' })])
+      await screen.findByRole('heading', { name: 'About This Printer' })
+      await userEvent.type(field('Firmware'), 'Smoothie')
+      await userEvent.click(await screen.findByTitle('Smoothie', { selector: '.ant-select-item-option' }))
+      await save()
+      expect(await screen.findByText('Changes saved')).toBeInTheDocument()
+      expect(field('Firmware').closest('.ant-select')).toHaveTextContent('Smoothie')
+    })
+
+    it('starts empty for a printer without specs', async () => {
+      renderAbout({}, [savedSpecs({ model: 'Ender 5 Plus', materials: ['PLA'] }, { model: 'Ender 5 Plus', materials: ['PLA'] })])
+      await screen.findByRole('heading', { name: 'About This Printer' })
+      expect(field('Model')).toHaveValue('')
+      expect(volume('Width (X)')).toHaveValue('')
+      await userEvent.type(field('Model'), 'Ender 5 Plus')
+      await pick('Materials', 'PLA')
+      await save()
+      expect(await screen.findByText('Changes saved')).toBeInTheDocument()
+    })
+
   })
 })

@@ -9,6 +9,7 @@ import PrinterStatus from '../../../components/PrinterStatus/PrinterStatus'
 import useFleetLiveUpdates from '../../../utils/useFleetLiveUpdates'
 import { forgetPrinter } from '../PrintersList/RowMenu'
 import useFavorite from '../useFavorite'
+import AboutCard from './AboutCard'
 import ConnectionCard from './ConnectionCard'
 import RemoveCard from './RemoveCard'
 import { formValues, hasChanges, updateInput } from './detailsForm'
@@ -106,6 +107,7 @@ function DetailsForm ({ printer }) {
           <ConnectionCard printer={printer} />
           <RemoveCard printer={printer} onRemoved={onRemoved} />
         </div>
+        <AboutCard printer={printer} />
       </div>
 
       <Modal open={blocker.state === 'blocked'} title="Leave without saving?" okText="Discard Changes"
@@ -146,8 +148,8 @@ const printerShape = PropTypes.shape({
 FavoriteButton.propTypes = { printer: printerShape }
 DetailsForm.propTypes = { printer: printerShape }
 
-// A printer's page, at /printers/:id: its live state in the header, its connection to edit, and Remove. The About
-// This Printer card joins the same form.
+// A printer's page, at /printers/:id: its live state in the header, its connection and About This Printer to edit
+// in one form, and Remove.
 export default function PrinterDetails () {
   return <App><DetailsPage /></App>
 }
