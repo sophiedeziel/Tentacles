@@ -13,7 +13,8 @@ import AboutCard from './AboutCard'
 import ConnectionCard from './ConnectionCard'
 import RemoveCard from './RemoveCard'
 import { formValues, hasChanges, updateInput } from './detailsForm'
-import { PRINTER_DETAILS, UPDATE_PRINTER } from './graphql/details'
+import { reloadedValues, reportedValues, specsHints } from './specsHints'
+import { IDENTIFY_SAVED_PRINTER, PRINTER_DETAILS, REPORTED_SPECS, UPDATE_PRINTER } from './graphql/details'
 import * as classes from './PrinterDetails.module.less'
 
 // Saved on click, apart from the form
@@ -46,6 +47,18 @@ function useUnsavedChangesGuard (dirty, leaving) {
   return blocker
 }
 
+// What the printer's server reports, in the form's shape, read after the page renders: reportedSpecs, and the name
+// identifyPrinter reads with the saved connection. Null until one of them answers; a failure is no answer.
+function useReported (printer) {
+  const { id, backend, uri, username } = printer
+  const { data: specs } = useQuery(REPORTED_SPECS, { variables: { id } })
+  const identity = { backend, uri, username: backend === 'PRUSALINK' ? username : null, secret: null, printerId: id }
+  const { data: identified } = useQuery(IDENTIFY_SAVED_PRINTER, { variables: identity, skip: !uri })
+  const reportedSpecs = specs?.printer?.reportedSpecs
+  const name = identified?.identifyPrinter?.name
+  return reportedSpecs || name ? reportedValues(reportedSpecs, name) : null
+}
+
 // One form for the whole page: Save Changes sends what changed in one updatePrinter. Favorite and Remove act at once.
 function DetailsForm ({ printer }) {
   const { message } = App.useApp()
@@ -58,7 +71,12 @@ function DetailsForm ({ printer }) {
   const dirty = hasChanges(printer, values)
   const blocker = useUnsavedChangesGuard(dirty, leaving)
   const [initialValues] = useState(() => formValues(printer))
+  const reported = useReported(printer)
+  const hints = specsHints(printer.backend, values, reported)
   const { status } = printer
+
+  // Save Changes writes it
+  const reload = (field) => form.setFieldsValue(reloadedValues(field, reported))
 
   const save = async (submitted) => {
     const input = updateInput(printer, submitted)
@@ -104,10 +122,10 @@ function DetailsForm ({ printer }) {
 
       <div className={classes.columns}>
         <div className={classes.side}>
-          <ConnectionCard printer={printer} />
+          <ConnectionCard printer={printer} nameHint={hints.name} onReload={reload} />
           <RemoveCard printer={printer} onRemoved={onRemoved} />
         </div>
-        <AboutCard printer={printer} />
+        <AboutCard printer={printer} hints={hints} onReload={reload} />
       </div>
 
       <Modal open={blocker.state === 'blocked'} title="Leave without saving?" okText="Discard Changes"

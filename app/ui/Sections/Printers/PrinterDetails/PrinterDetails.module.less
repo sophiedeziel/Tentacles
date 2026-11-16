@@ -107,6 +107,18 @@
   line-height: 22px;
 }
 
+// A field and its reload button
+.withReload {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  > :first-child {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
 .about {
   flex: 3 1 480px;
   min-width: 0;
@@ -165,6 +177,10 @@
   padding: 12px 16px;
   border: 1px solid #f0f0f0;
   border-radius: 8px;
+
+  > .withReload > :first-child {
+    flex: none;
+  }
 }
 
 .switchText {

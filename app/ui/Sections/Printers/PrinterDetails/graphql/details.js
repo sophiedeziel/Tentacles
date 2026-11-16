@@ -47,7 +47,20 @@ export const PRINTER_VERSION = gql`
   }
 `
 
-// Test Connection with what the form holds; a blank secret is the saved one of `printerId`
+// What the printer's server reports, null when it can't be read: the About card's hints and reload buttons. Calls
+// the printer (answer cached 2 hours on the server), so it loads after the page
+export const REPORTED_SPECS = gql`
+  query PrinterDetailsReportedSpecs($id: ID!) {
+    printer(id: $id) {
+      id
+      reportedSpecs { ...PrinterDetailsSpecsFields }
+    }
+  }
+  ${SPECS_FIELDS}
+`
+
+// Test Connection with what the form holds; a blank secret is the saved one of `printerId`. Run with the saved
+// connection, it also gives the name the server reports (reportedSpecs has none) for the name's reload button.
 export const IDENTIFY_SAVED_PRINTER = gql`
   query PrinterDetailsIdentify(
     $backend: PrinterBackend!, $uri: URL!, $username: String, $secret: String, $printerId: ID

@@ -5,6 +5,7 @@ import { Alert, Button, Card, Form, Input, Tag } from 'antd'
 
 import { BACKENDS, testErrorAlert } from '../connection'
 import { productName } from '../PrintersList/fleetView'
+import ReportedField from './ReportedField'
 import { IDENTIFY_SAVED_PRINTER, PRINTER_VERSION } from './graphql/details'
 import * as classes from './PrinterDetails.module.less'
 
@@ -22,11 +23,15 @@ function VersionLine ({ printer, testedVersion }) {
 }
 
 // Connection: the backend can't change (that's a new printer); the secret is never shown, blank keeps it. Test
-// Connection tries what the form holds, with the saved secret when none is typed.
-export default function ConnectionCard ({ printer }) {
+// Connection tries what the form holds, with the saved secret when none is typed. The name gets a reload button
+// once the server's name is known (`nameHint`, see specsHints).
+export default function ConnectionCard ({ printer, nameHint, onReload }) {
   const form = Form.useFormInstance()
   const values = Form.useWatch([], form)
-  const [identifyPrinter, { loading: testing }] = useLazyQuery(IDENTIFY_SAVED_PRINTER, { fetchPolicy: 'no-cache' })
+  // Its own request, even while the page reads the reported name with the same connection
+  const [identifyPrinter, { loading: testing }] = useLazyQuery(IDENTIFY_SAVED_PRINTER, {
+    fetchPolicy: 'no-cache', context: { queryDeduplication: false }
+  })
   const [test, setTest] = useState(null)
   const { backend } = printer
   const settings = BACKENDS[backend]
@@ -59,9 +64,10 @@ export default function ConnectionCard ({ printer }) {
         <Tag style={{ marginInlineEnd: 0 }}>{productName(backend)}</Tag>
       </div>
 
-      <Form.Item label="Printer name" name="name" rules={[{ required: true, whitespace: true, message: 'Name is required' }]}>
+      <ReportedField label="Printer name" name="name" hint={nameHint} product={productName(backend)}
+        onReload={() => onReload('name')} rules={[{ required: true, whitespace: true, message: 'Name is required' }]}>
         <Input />
-      </Form.Item>
+      </ReportedField>
 
       <Form.Item label={settings.uriLabel} name="uri"
         rules={[
@@ -104,4 +110,4 @@ const printerShape = PropTypes.shape({
 }).isRequired
 
 VersionLine.propTypes = { printer: printerShape, testedVersion: PropTypes.string }
-ConnectionCard.propTypes = { printer: printerShape }
+ConnectionCard.propTypes = { printer: printerShape, nameHint: PropTypes.string, onReload: PropTypes.func.isRequired }
