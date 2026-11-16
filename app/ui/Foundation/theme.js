@@ -39,6 +39,9 @@ export const darkTheme = {
 // The printer state families, as named by the PrinterStateFamily GraphQL enum
 export const STATE_FAMILIES = ['PRINTING', 'PAUSED', 'CANCELLING', 'OPERATIONAL', 'CONNECTING', 'ERROR', 'OFFLINE']
 
+// The families a fleet flags as "Needs Attention". CONNECTING is left out: it settles on its own.
+export const NEEDS_ATTENTION_FAMILIES = ['ERROR', 'OFFLINE', 'CANCELLING']
+
 // One palette entry per state family:
 // - color: progress rings and bars, status dots
 // - tint: the light background behind a state icon or a large ring

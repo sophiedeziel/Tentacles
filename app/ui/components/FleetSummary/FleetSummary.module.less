@@ -1,0 +1,20 @@
+// FleetSummary: four figures side by side, each under a short bar in its state colour, as in the mockup
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.figure {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.bar {
+  width: 24px;
+  height: 4px;
+  border-radius: 2px;
+}

@@ -1,0 +1,18 @@
+// PrintProgress: the bar, then a muted line under it, as in the mockup's fleet list "Now" column
+
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+
+  :global(.ant-progress) {
+    margin: 0;
+  }
+}
+
+.text {
+  font-size: 12px;
+  line-height: 20px;
+  color: rgba(0, 0, 0, 0.65);
+}
