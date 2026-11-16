@@ -1,13 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
 import fleetView, { filterFleet, formatBuildVolume, matchesSearch, needsAttention, sortFleet } from './fleetView'
-import { FIXTURE_NOW, PRINTERS } from '../../Dashboard/widgets/Printer/fixtures'
+import { FIXTURE_NOW, PRINTERS, UNREACHABLE } from '../../Dashboard/widgets/Printer/fixtures'
 
 const rectangular = { x: 250, y: 210, z: 220 }
 const fleetPrinter = (printer, { favorite = false, brand = null, model = null, buildVolume = null, ...extra } = {}) => ({
   ...printer, uri: 'http://192.168.1.21', favorite, specs: { brand, model, buildVolume }, ...extra
 })
-const view = (family, options) => fleetView(fleetPrinter(PRINTERS[family], options), FIXTURE_NOW.getTime())
+// The printers of each state family, plus UNREACHABLE: OFFLINE because OctoPrint doesn't answer
+const FIXTURES = { ...PRINTERS, UNREACHABLE }
+const view = (family, options) => fleetView(fleetPrinter(FIXTURES[family], options), FIXTURE_NOW.getTime())
 const ids = (printers) => printers.map((printer) => printer.id)
 
 describe('fleetView', () => {
@@ -65,9 +67,13 @@ describe('fleetView', () => {
   })
 
   it('says an offline printer is unreachable, with its server and when it was last seen', () => {
-    expect(view('OFFLINE').now.text).toBe('OctoPrint unreachable. Last seen 2 h ago')
+    expect(view('UNREACHABLE').now).toEqual({ text: 'OctoPrint unreachable. Last seen 2 h ago', muted: true })
     const prusa = { ...PRINTERS.OFFLINE, backend: 'PRUSALINK', status: { ...PRINTERS.OFFLINE.status, lastSeenAt: null } }
     expect(fleetView(fleetPrinter(prusa), FIXTURE_NOW.getTime()).now.text).toBe('PrusaLink unreachable.')
+  })
+
+  it('says OctoPrint is up when only its printer is offline', () => {
+    expect(view('OFFLINE').now).toEqual({ text: "OctoPrint is running, but the printer isn't connected", muted: true })
   })
 
   it("shows an error printer's error, else its state text", () => {
@@ -90,21 +96,22 @@ describe('fleetView', () => {
   })
 
   it.each([
-    ['OFFLINE', 'OCTOPRINT', 'Edit Connection', '/printers/7'],
+    ['OFFLINE', 'OCTOPRINT', 'Connect', null],
+    ['UNREACHABLE', 'OCTOPRINT', 'Edit Connection', '/printers/8'],
     ['OFFLINE', 'PRUSALINK', 'Edit Connection', '/printers/7'],
     ['ERROR', 'OCTOPRINT', 'Reconnect', null],
     ['ERROR', 'PRUSALINK', 'Edit Connection', '/printers/6'],
     ['PRINTING', 'OCTOPRINT', 'Open Queue', '/printers/1/queue'],
     ['CONNECTING', 'OCTOPRINT', 'Open Queue', '/printers/5/queue']
   ])('offers the main action of a %s %s printer: %s', (family, backend, label, to) => {
-    const printer = fleetPrinter({ ...PRINTERS[family], backend })
+    const printer = fleetPrinter({ ...FIXTURES[family], backend })
     const { mainAction } = fleetView(printer, FIXTURE_NOW.getTime())
     expect([mainAction.label, mainAction.to ?? null]).toEqual([label, to])
   })
 
   it.each([
     ['PRINTING', true], ['PAUSED', true], ['CANCELLING', true], ['OPERATIONAL', true], ['CONNECTING', true],
-    ['OFFLINE', false], ['ERROR', false]
+    ['OFFLINE', false], ['UNREACHABLE', false], ['ERROR', false]
   ])('tints the avatar of a %s printer: %s', (family, tinted) => {
     expect(view(family).tinted).toBe(tinted)
   })

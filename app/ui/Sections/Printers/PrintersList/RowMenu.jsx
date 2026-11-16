@@ -15,6 +15,7 @@ const LABELS = {
   resume: 'Resume Print',
   cancel: 'Cancel Print',
   startNext: 'Start Next Print',
+  connect: 'Connect',
   reconnect: 'Reconnect',
   remove: 'Remove Printer'
 }

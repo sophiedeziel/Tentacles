@@ -31,6 +31,32 @@ RSpec.describe PrinterStatus do
     its(:camera) { is_expected.to have_attributes(enabled: false, stream_url: nil) }
   end
 
+  describe '#server_reachable?' do
+    it 'is true when the server answered, even with the printer disconnected' do
+      offline = described_class.new(**attributes, state_family: PrinterStateFamily::Offline, state_text: 'Offline')
+
+      expect([status, offline]).to all(be_server_reachable)
+    end
+
+    it 'is false when the monitor could not reach the server' do
+      unreachable = described_class.new(**attributes, state_family: PrinterStateFamily::Offline,
+                                                      state_text: described_class::UNREACHABLE_STATE_TEXT)
+
+      expect(unreachable).not_to be_server_reachable
+    end
+
+    it 'is false for the placeholder of a printer the monitor has not reported on' do
+      expect(described_class.unknown(printer_id: 3, last_seen_at: now)).not_to be_server_reachable
+    end
+
+    it 'is true for a server that answered without a state' do
+      unknown_state = described_class.new(**attributes, state_family: PrinterStateFamily::Offline,
+                                                        state_text: described_class::UNKNOWN_STATE_TEXT)
+
+      expect(unknown_state).to be_server_reachable
+    end
+  end
+
   describe 'JSON serialization' do
     it 'round-trips every attribute' do
       restored = described_class.from_json(status.to_json)

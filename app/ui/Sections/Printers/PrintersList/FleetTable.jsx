@@ -23,7 +23,7 @@ function FavoriteStar ({ printer }) {
   )
 }
 
-// Edit Connection and Open Queue open a page; Reconnect runs at once (it doesn't touch a print)
+// Edit Connection and Open Queue open a page; Connect and Reconnect run at once (they don't touch a print)
 function MainAction ({ printer, action }) {
   const navigate = useNavigate()
   const runAction = usePrinterAction()

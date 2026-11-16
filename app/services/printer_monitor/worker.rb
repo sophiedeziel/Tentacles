@@ -17,7 +17,6 @@ module PrinterMonitor
     include Runnable
 
     DEFAULT_INTERVAL = 2.0
-    UNREACHABLE_STATE_TEXT = 'Unreachable'
     ERROR_TEXT_LENGTH = 200
 
     sig { override.returns(Printer) }
@@ -63,7 +62,7 @@ module PrinterMonitor
       build_status(attributes)
     rescue StandardError => e
       record_failure(e)
-      build_status({ state_family: PrinterStateFamily::Offline, state_text: UNREACHABLE_STATE_TEXT,
+      build_status({ state_family: PrinterStateFamily::Offline, state_text: PrinterStatus::UNREACHABLE_STATE_TEXT,
                      error_text: error_text(e) })
     end
 
