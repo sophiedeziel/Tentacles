@@ -1,5 +1,5 @@
 import { NEEDS_ATTENTION_FAMILIES } from '../../../Foundation/theme'
-import { doneAt, formatAgo } from '../../Dashboard/utils/time'
+import { doneAt, formatAgo } from '../../../utils/time'
 
 export const FILTERS = ['All', 'Favorites', 'Needs Attention']
 

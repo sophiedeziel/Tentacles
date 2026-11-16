@@ -52,24 +52,7 @@ module RootOperations
 
     field :network_printers, resolver: Resolvers::NetworkPrinters
 
-    field :search_network_printers, [String], null: true, deprecation_reason: 'Use networkPrinters'
-    def search_network_printers
-      Resolvers::NetworkPrinters.scan(refresh: false).filter_map { |found| found[:address] unless found[:printer] }
-    end
-
     field :identify_printer, resolver: Resolvers::IdentifyPrinter
-
-    field :octoprint_name, String, null: true, deprecation_reason: 'Use `identifyPrinter`' do
-      argument :octoprint_uri, Types::Url, required: true
-      argument :octoprint_key, String, required: true
-    end
-    def octoprint_name(octoprint_uri:, octoprint_key:)
-      ::Printer.new(backend: 'octoprint', uri: octoprint_uri, secret: octoprint_key).api.identify[:name]
-    # JSON::ParserError and KeyError: the gem fails to read the error of a server that isn't OctoPrint
-    rescue PrinterBackends::Error, JSON::ParserError, KeyError, URI::InvalidURIError => e
-      Rails.logger.warn("[octoprintName] Could not get OctoPrint's name at #{octoprint_uri.inspect}: #{e.class}")
-      nil
-    end
 
     field :dashboard, Types::Dashboard, null: false,
                                         description: 'The dashboard layout, created from the default layout the ' \

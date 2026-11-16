@@ -9,7 +9,7 @@ RSpec.describe 'Query printers', type: :request do
   let(:redis) { MockRedis.new }
   let!(:readable) { create(:printer, name: 'Readable') }
   let!(:unreadable) { make_secret_unreadable(create(:printer, name: 'Unreadable')) }
-  let(:query) { 'query { printers { id name octoprintUri octoprintKey octoprintVersion jobStatus } }' }
+  let(:query) { 'query { printers { id name octoprintUri octoprintVersion jobStatus } }' }
   let(:json) { response.parsed_body }
 
   before do
@@ -25,16 +25,16 @@ RSpec.describe 'Query printers', type: :request do
     expect(json['errors']).to be_nil
     expect(json['data']['printers']).to contain_exactly(
       { 'id' => readable.id.to_s, 'name' => 'Readable', 'octoprintUri' => 'http://10.0.1.165/',
-        'octoprintKey' => readable.secret, 'octoprintVersion' => 'OctoPrint 1.11.2', 'jobStatus' => 'Operational' },
+        'octoprintVersion' => 'OctoPrint 1.11.2', 'jobStatus' => 'Operational' },
       { 'id' => unreadable.id.to_s, 'name' => 'Unreadable', 'octoprintUri' => 'http://10.0.1.165/',
-        'octoprintKey' => nil, 'octoprintVersion' => 'Unavailable', 'jobStatus' => nil }
+        'octoprintVersion' => 'Unavailable', 'jobStatus' => nil }
     )
   end
 
   describe 'the backend fields' do
     let!(:prusalink) { create(:printer, :prusalink, name: 'Prusa MK4') }
     let(:query) do
-      'query { printers { name backend uri username version octoprintUri octoprintKey octoprintVersion } }'
+      'query { printers { name backend uri username version octoprintUri octoprintVersion } }'
     end
     let(:printers) { json['data']['printers'].index_by { |printer| printer['name'] } }
 
@@ -53,15 +53,16 @@ RSpec.describe 'Query printers', type: :request do
       )
     end
 
-    it 'never returns the PrusaLink password' do
-      expect(printers['Prusa MK4']['octoprintKey']).to be_nil
+    it 'never returns a secret' do
       expect(response.body).not_to include(prusalink.secret)
+      expect(response.body).not_to include(readable.secret)
+      expect(TentaclesSchema.get_type('Printer').fields.keys).not_to include('octoprintKey', 'secret')
     end
 
-    it "returns an OctoPrint printer's backend and version, and its API key in the deprecated octoprintKey" do
+    it "returns an OctoPrint printer's backend and version" do
       expect(printers['Readable']).to include(
         'backend' => 'OCTOPRINT', 'uri' => 'http://10.0.1.165/', 'username' => nil,
-        'version' => 'OctoPrint 1.11.2', 'octoprintKey' => readable.secret
+        'version' => 'OctoPrint 1.11.2'
       )
     end
 

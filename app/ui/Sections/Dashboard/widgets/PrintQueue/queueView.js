@@ -1,5 +1,5 @@
 import { statePalette } from '../../../../Foundation/theme'
-import { doneAt, formatAgo, formatTimeLeft } from '../../utils/time'
+import { doneAt, formatAgo, formatTimeLeft } from '../../../../utils/time'
 
 const IN_PROGRESS = ['PRINTING', 'PAUSED', 'CANCELLING']
 const BIG = ['XL', 'XXL']
