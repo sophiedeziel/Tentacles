@@ -1,5 +1,0 @@
-query PrinterName($uri: URL!, $secret: String!) {
-  identifyPrinter(backend: OCTOPRINT, uri: $uri, secret: $secret) {
-    name
-  }
-}

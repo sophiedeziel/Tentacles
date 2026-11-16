@@ -100,13 +100,15 @@ export const DASHBOARD_CHANGED = gql`
   ${LAYOUT_FIELDS}
 `
 
-// The layout's widget options are a union
+// The layout's widget options and a printer's build volume are unions
 export const POSSIBLE_TYPES = {
-  DashboardWidgetOptions: ['PrinterWidgetOptions', 'PrintQueueWidgetOptions']
+  DashboardWidgetOptions: ['PrinterWidgetOptions', 'PrintQueueWidgetOptions'],
+  BuildVolume: ['RectangularBuildVolume', 'CircularBuildVolume']
 }
 
-// A status, a layout and widget options have no id of their own. A status keeps the newest snapshot, so a reload
-// that answers late can't overwrite a newer push; the others are replaced.
+// A status, a layout, widget options and specs have no id of their own. A status keeps the newest snapshot, so a
+// reload that answers late can't overwrite a newer push; specs merge (pages select different fields of them); the
+// others are replaced.
 export const TYPE_POLICIES = {
   PrinterStatus: {
     merge: (existing, incoming, { readField }) => (
@@ -115,6 +117,7 @@ export const TYPE_POLICIES = {
         : existing
     )
   },
+  PrinterSpecs: { merge: true },
   Dashboard: { merge: false },
   PrinterWidgetOptions: { merge: false },
   PrintQueueWidgetOptions: { merge: false }

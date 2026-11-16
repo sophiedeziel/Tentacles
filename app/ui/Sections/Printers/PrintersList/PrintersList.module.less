@@ -1,0 +1,145 @@
+// The fleet list, as in the mockup: a 1180 px column of header, summary, scan banner and the printers card
+
+@muted: rgba(0, 0, 0, 0.65);
+@purple: #722ed1;
+
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  // Links in the brand purple, like the buttons
+  a:not(.name) {
+    color: @purple;
+  }
+}
+
+// Rows of items, and columns of lines
+.header, .buttons, .tools, .banner, .addresses, .address, .printer, .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.heading, .bannerText, .names, .job {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.header {
+  gap: 12px;
+  justify-content: space-between;
+  padding-bottom: 4px;
+}
+
+.muted, .subtitle, .star {
+  color: @muted;
+}
+
+.mono, .fileName {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+}
+
+.empty, .banner {
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  padding: 48px 24px;
+  background: #ffffff;
+}
+
+.banner {
+  padding: 16px 24px;
+  gap: 16px;
+  justify-content: space-between;
+  background: #f9f0ff;
+  border-color: #d3adf7;
+}
+
+.bannerText {
+  flex: 1 1 320px;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.address {
+  gap: 12px;
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 8px 8px 8px 12px;
+}
+
+// The table's first and last cells line up with the card's title and tools
+.card :global {
+  .ant-table-wrapper .ant-table .ant-table-thead > tr > th,
+  .ant-table-wrapper .ant-table .ant-table-tbody > tr > td {
+    &:first-child {
+      padding-inline: 16px 0;
+    }
+
+    &:last-child {
+      padding-inline-end: 24px;
+    }
+  }
+}
+
+.starOn {
+  color: @purple;
+}
+
+.printer {
+  flex-wrap: nowrap;
+  gap: 12px;
+}
+
+// Purple unless the printer can't be reached
+.avatar, .avatarTinted {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.04);
+  color: @muted;
+}
+
+.avatarTinted {
+  background: #f9f0ff;
+  color: @purple;
+}
+
+.name {
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.88);
+}
+
+.subtitle, .fileName {
+  font-size: 12px;
+  line-height: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.actions {
+  flex-wrap: nowrap;
+  gap: 4px;
+  justify-content: flex-end;
+}

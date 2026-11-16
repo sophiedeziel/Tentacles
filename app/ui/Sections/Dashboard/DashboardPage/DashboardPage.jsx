@@ -8,14 +8,12 @@ import Section from '../Section/Section'
 import EditableSections from './EditableSections'
 import useDebouncedCounter from '../utils/useDebouncedCounter'
 import useNow from '../utils/useNow'
-import useRefetchWhenStale from '../utils/useRefetchWhenStale'
+import useFleetLiveUpdates from '../../../utils/useFleetLiveUpdates'
 import { StreamVisibilityProvider } from '../utils/useStreamWhenVisible'
 import {
   DASHBOARD_CHANGED,
   DASHBOARD_PAGE,
-  MONITOR_HEALTHY,
-  PRINT_QUEUE_CHANGED,
-  PRINTER_STATUS_CHANGED
+  MONITOR_HEALTHY
 } from '../graphql/dashboard'
 import useLayoutEditor from './useLayoutEditor'
 
@@ -46,15 +44,13 @@ export default function DashboardPage () {
   const { data, error, refetch } = useQuery(DASHBOARD_PAGE, { fetchPolicy: 'cache-and-network' })
   // no-cache: the page query's own monitorHealthy can't overwrite a failed poll
   const monitor = useQuery(MONITOR_HEALTHY, { pollInterval: MONITOR_POLL_INTERVAL, fetchPolicy: 'no-cache' })
-  useRefetchWhenStale(refetch)
   const editor = useLayoutEditor(data?.dashboard)
   const { noticeChange } = editor
   const desktop = !!Grid.useBreakpoint().md
-  useSubscription(PRINTER_STATUS_CHANGED)
-  // The push refreshes its printer's queuedCount, nextJob and canStartNext; queueVersion tells queue widgets to
-  // reload their lists, once per burst of changes
+  // Each queue push refreshes its printer's queuedCount, nextJob and canStartNext; queueVersion tells queue widgets
+  // to reload their lists, once per burst of changes
   const [queueVersion, queueChanged] = useDebouncedCounter(QUEUE_RELOAD_DELAY)
-  useSubscription(PRINT_QUEUE_CHANGED, { onData: queueChanged })
+  useFleetLiveUpdates(refetch, { onQueueChange: queueChanged })
   useSubscription(DASHBOARD_CHANGED, {
     onData: ({ client, data: pushed }) => {
       const dashboard = pushed.data?.dashboardChanged
