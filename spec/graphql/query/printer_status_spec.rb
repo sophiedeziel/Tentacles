@@ -18,7 +18,7 @@ RSpec.describe 'Query printers { status }', type: :request do
         printers {
           id
           status {
-            stateFamily stateText errorText fileName progress printTimeLeft
+            stateFamily stateText serverReachable errorText fileName progress printTimeLeft
             hotend { actual target unit }
             bed { actual target unit }
             camera { enabled streamUrl }
@@ -75,6 +75,7 @@ RSpec.describe 'Query printers { status }', type: :request do
       expect(statuses[printer.id]).to eq(
         'stateFamily' => 'PRINTING',
         'stateText' => 'Printing from SD',
+        'serverReachable' => true,
         'errorText' => nil,
         'fileName' => "part_#{printer.id}.gcode",
         'progress' => 43,
@@ -95,6 +96,7 @@ RSpec.describe 'Query printers { status }', type: :request do
       expect(statuses[printer.id]).to eq(
         'stateFamily' => 'OFFLINE',
         'stateText' => 'Unknown',
+        'serverReachable' => false,
         'errorText' => nil,
         'fileName' => nil,
         'progress' => nil,
@@ -106,6 +108,19 @@ RSpec.describe 'Query printers { status }', type: :request do
         'updatedAt' => printer.last_seen_at.utc.iso8601
       )
     end
+  end
+
+  it 'tells a server that does not answer from one that is up without its printer' do
+    unreachable, closed = with_snapshot.first(2)
+    [[unreachable, PrinterStatus::UNREACHABLE_STATE_TEXT], [closed, 'Closed']].each do |printer, state_text|
+      PrinterStatusStore.write(PrinterStatus.new(printer_id: printer.id, state_family: PrinterStateFamily::Offline,
+                                                 state_text:, updated_at:))
+    end
+
+    post '/graphql', params: { query: }
+
+    expect(statuses.values_at(unreachable.id, closed.id).pluck('stateText', 'serverReachable'))
+      .to eq [['Unreachable', false], ['Closed', true]]
   end
 
   it 'returns OFFLINE / Unknown for a printer without snapshot nor last_seen_at' do

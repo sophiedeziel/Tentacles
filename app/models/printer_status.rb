@@ -55,6 +55,8 @@ class PrinterStatus < T::Struct
   TimeLike = T.type_alias { T.any(Time, ActiveSupport::TimeWithZone) }
 
   UNKNOWN_STATE_TEXT = 'Unknown'
+  # The state text of the snapshot the monitor writes when the printer's server doesn't answer
+  UNREACHABLE_STATE_TEXT = 'Unreachable'
   TIME_PROPS = T.let(%w[last_seen_at updated_at].freeze, T::Array[String])
 
   const :printer_id, Integer
@@ -92,6 +94,14 @@ class PrinterStatus < T::Struct
     hash = serialize
     TIME_PROPS.each { |prop| hash[prop] = hash[prop]&.utc&.iso8601(3) }
     hash.to_json
+  end
+
+  # Whether the printer's server (OctoPrint, PrusaLink) answered the monitor, whatever the state of the printer
+  # behind it. False when it couldn't be reached, and for the placeholder of a printer the monitor hasn't reported on
+  # yet: the only snapshot without a time.
+  sig { returns(T::Boolean) }
+  def server_reachable?
+    !updated_at.nil? && state_text != UNREACHABLE_STATE_TEXT
   end
 
   # The values that matter for change detection: temperatures rounded to 1°, progress to 1 % and time left to

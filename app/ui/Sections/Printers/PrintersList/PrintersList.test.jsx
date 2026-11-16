@@ -10,7 +10,7 @@ import PrintersList from './PrintersList'
 import { FLEET_PAGE, NETWORK_PRINTERS, REMOVE_PRINTER, SET_PRINTER_FAVORITE } from './graphql/fleet'
 import { POSSIBLE_TYPES, PRINT_QUEUE_CHANGED, PRINTER_STATUS_CHANGED, TYPE_POLICIES } from '../../Dashboard/graphql/dashboard'
 import { ACTIONS } from '../../Dashboard/graphql/actions'
-import { PRINTERS } from '../../Dashboard/widgets/Printer/fixtures'
+import { PRINTERS, UNREACHABLE } from '../../Dashboard/widgets/Printer/fixtures'
 
 const typed = (printer, { favorite = false, brand = null, model = null } = {}) => ({
   __typename: 'Printer',
@@ -92,12 +92,23 @@ describe('PrintersList', () => {
   })
 
   it('offers the main action for each state', async () => {
-    renderPage()
+    renderPage([...FLEET, typed(UNREACHABLE)])
     const buttonsOf = (name) => within(screen.getByText(name).closest('tr')).getAllByRole('button').map((button) => button.textContent)
     await screen.findByText('Kobra 2')
     expect(buttonsOf('Prusa MK4')).toContain('Open Queue')
     expect(buttonsOf('Ender 3 V2')).toContain('Reconnect')
-    expect(buttonsOf('Kobra 2')).toContain('Edit Connection')
+    expect(buttonsOf('Kobra 2')).toContain('Connect')
+    expect(buttonsOf('Sidewinder X2')).toContain('Edit Connection')
+  })
+
+  it('connects a printer OctoPrint is not connected to from its main action, without asking', async () => {
+    let connected = false
+    renderPage(FLEET, [{
+      request: { query: ACTIONS.connect.document, variables: { printerId: '7' } },
+      result: () => { connected = true; return { data: { connectPrinter: { __typename: 'ConnectPrinterPayload', success: true, errors: [] } } } }
+    }])
+    await userEvent.click(within((await screen.findByText('Kobra 2')).closest('tr')).getByRole('button', { name: 'Connect' }))
+    await waitFor(() => expect(connected).toBe(true))
   })
 
   it.each([

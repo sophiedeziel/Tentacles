@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import printerView, { formatTemperature } from './printerView'
-import { ALL_OPTIONS, FIXTURE_NOW, PRINTERS } from './fixtures'
+import { ALL_OPTIONS, FIXTURE_NOW, PRINTERS, UNREACHABLE } from './fixtures'
 
 const view = (family, { size = 'L', options = {}, printer = {} } = {}) => printerView({
   printer: { ...PRINTERS[family], ...printer },
@@ -18,7 +18,7 @@ describe('printerView', () => {
       ['OPERATIONAL', 'Ready to print', 'Up next: spool_holder.gcode', ['startNext']],
       ['CONNECTING', 'Connecting to OctoPrint', 'This can take a few seconds', []],
       ['ERROR', 'Stopped responding', 'Stopped gear_v2.gcode at 12%', ['reconnect']],
-      ['OFFLINE', 'Offline', 'Last seen 2 h ago', ['connect']]
+      ['OFFLINE', 'Offline', 'Printer not connected to OctoPrint', ['connect']]
     ])('%s reads "%s", with its controls', (family, headline, subline, actions) => {
       const result = view(family)
       expect(result.headline).toBe(headline)
@@ -84,6 +84,22 @@ describe('printerView', () => {
       expect(view('PRINTING', { size: 'L' })).toMatchObject({ showTemps: false, metaLine: expect.stringMatching(/Hotend/) })
       expect(view('PRINTING', { size: 'L', options: { camera: false } }).showTemps).toBe(true)
       expect(view('PRINTING', { size: 'S' }).showTemps).toBe(false)
+    })
+  })
+
+  describe('OFFLINE', () => {
+    const unreachable = (printer = {}) => printerView({
+      printer: { ...UNREACHABLE, ...printer }, size: 'L', options: ALL_OPTIONS, now: FIXTURE_NOW
+    })
+
+    it('offers no Connect when OctoPrint itself does not answer, and says when it last did', () => {
+      expect(unreachable()).toMatchObject({ headline: 'Offline', subline: 'Last seen 2 h ago', actions: [] })
+      expect(unreachable({ status: { ...UNREACHABLE.status, lastSeenAt: null } }).subline).toBe('Not connected')
+    })
+
+    it('offers no Connect for a printer the monitor has not reported on', () => {
+      const placeholder = { ...PRINTERS.OFFLINE.status, stateText: 'Unknown', serverReachable: false }
+      expect(view('OFFLINE', { printer: { status: placeholder } }).actions).toEqual([])
     })
   })
 

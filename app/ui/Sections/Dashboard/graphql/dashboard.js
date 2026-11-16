@@ -11,7 +11,7 @@ export const PRINTER_FIELDS = gql`
     queuedCount
     nextJob { id executable { id filename } }
     status {
-      stateFamily stateText errorText fileName progress printTimeLeft
+      stateFamily stateText serverReachable errorText fileName progress printTimeLeft
       hotend { actual target unit }
       bed { actual target unit }
       camera { enabled streamUrl }

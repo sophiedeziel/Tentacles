@@ -52,7 +52,7 @@ describe('PrinterWidget', () => {
     it('says the camera is offline when the printer cannot be reached', () => {
       renderWidget('OFFLINE', 'M')
       expect(screen.getByText('Camera offline')).toBeInTheDocument()
-      expect(screen.getByText('Last seen 2 h ago')).toBeInTheDocument()
+      expect(screen.getByText('Printer not connected to OctoPrint')).toBeInTheDocument()
     })
   })
 

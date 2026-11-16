@@ -241,7 +241,8 @@ RSpec.describe PrinterMonitor::Worker do
 
         expect(status).to have_attributes(
           state_family: PrinterStateFamily::Offline, state_text: 'Unreachable',
-          error_text: 'Failed to open TCP connection', file_name: nil, progress: nil, hotend: nil, bed: nil
+          error_text: 'Failed to open TCP connection', file_name: nil, progress: nil, hotend: nil, bed: nil,
+          server_reachable?: false
         )
       end
 

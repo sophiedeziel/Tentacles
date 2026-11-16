@@ -10,6 +10,7 @@ const camera = { enabled: true, streamUrl: 'http://printer.local/webcam/?action=
 const status = (overrides) => ({
   stateFamily: 'OPERATIONAL',
   stateText: 'Operational',
+  serverReachable: true,
   errorText: null,
   fileName: null,
   progress: null,
@@ -54,10 +55,17 @@ export const PRINTERS = {
     stateFamily: 'ERROR', stateText: 'Offline after error', fileName: 'gear_v2.gcode', progress: 12,
     camera: { enabled: false, streamUrl: null }
   }),
+  // OctoPrint answers, but isn't connected to the printer
   OFFLINE: printer('7', 'Kobra 2', {
     stateFamily: 'OFFLINE', stateText: 'Offline', lastSeenAt: '2026-11-14T11:23:00Z'
   })
 }
+
+// OFFLINE because OctoPrint itself doesn't answer
+export const UNREACHABLE = printer('8', 'Sidewinder X2', {
+  stateFamily: 'OFFLINE', stateText: 'Unreachable', serverReachable: false, lastSeenAt: '2026-11-14T11:23:00Z',
+  errorText: 'Failed to open TCP connection to octopi.local:80 (Connection refused)', hotend: null, bed: null
+})
 
 // A Printer widget's options with everything on
 export const ALL_OPTIONS = { camera: true, timeLeft: true, temperatures: true, upNext: true, controls: true }

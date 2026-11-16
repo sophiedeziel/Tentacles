@@ -10,6 +10,11 @@ module Types
     field :state_family, Types::PrinterStateFamily, null: false
     field :state_text, String, null: false,
                                description: %(State as reported by the printer's server, e.g. "Printing from SD")
+    field :server_reachable, Boolean,
+          null: false, method: :server_reachable?,
+          description: "Whether the printer's server (OctoPrint, PrusaLink) answered the monitor. OFFLINE with a " \
+                       'reachable server means the server is up but not connected to the printer. False until the ' \
+                       'monitor reports on the printer'
     field :error_text, String, null: true, description: 'Only in ERROR'
     field :file_name, String, null: true, description: 'File of the current job, null when no job is loaded'
     field :progress, Integer, null: true, description: 'Completion of the current job, 0 to 100'

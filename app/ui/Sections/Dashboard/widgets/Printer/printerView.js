@@ -17,16 +17,22 @@ export function formatTemperature ({ actual, target, unit }) {
   return target ? `${value(actual)} / ${value(target)}` : value(actual)
 }
 
-// The controls of each state family, before options and confirmations. Connect and Reconnect are OctoPrint's:
-// PrusaLink connects to its printer on its own.
-function actionsFor (family, canStartNext, octoprint) {
+// OctoPrint answers but isn't connected to its printer: Connect opens the connection. PrusaLink connects to its
+// printer on its own, and a server that doesn't answer needs its connection fixed instead.
+export const canConnect = (printer) => (
+  printer.backend === 'OCTOPRINT' && printer.status?.stateFamily === 'OFFLINE' && !!printer.status.serverReachable
+)
+
+// The controls of each state family, before options and confirmations. Reconnect is OctoPrint's: PrusaLink
+// connects to its printer on its own.
+function actionsFor (family, canStartNext, octoprint, connectable) {
   switch (family) {
     case 'PRINTING': return [{ key: 'pause', label: 'Pause' }, { key: 'cancel', label: 'Cancel', danger: true }]
     case 'PAUSED': return [{ key: 'resume', label: 'Resume' }, { key: 'cancel', label: 'Cancel', danger: true }]
     case 'CANCELLING': return [{ key: 'cancelling', label: 'Cancelling', loading: true, disabled: true }]
     case 'OPERATIONAL': return canStartNext ? [{ key: 'startNext', label: 'Start Next' }] : []
     case 'ERROR': return octoprint ? [{ key: 'reconnect', label: 'Reconnect' }] : []
-    case 'OFFLINE': return octoprint ? [{ key: 'connect', label: 'Connect' }] : []
+    case 'OFFLINE': return connectable ? [{ key: 'connect', label: 'Connect' }] : []
     default: return []
   }
 }
@@ -51,6 +57,7 @@ export default function printerView ({ printer, size, options, now, streamFailed
   const reachable = !UNREACHABLE.includes(family)
   const progress = status.progress ?? 0
   const next = nextJob?.executable?.filename
+  const connectable = canConnect(printer)
 
   const temps = reachable
     ? [['Hotend', status.hotend], ['Bed', status.bed]]
@@ -79,9 +86,10 @@ export default function printerView ({ printer, size, options, now, streamFailed
   else if (family === 'ERROR') {
     const check = octoprint ? 'Check the printer and reconnect' : 'Check the printer'
     subline = status.fileName ? `Stopped ${status.fileName} at ${progress}%` : check
-  } else subline = status.lastSeenAt ? `Last seen ${formatAgo(status.lastSeenAt, now)}` : 'Not connected'
+  } else if (connectable) subline = 'Printer not connected to OctoPrint'
+  else subline = status.lastSeenAt ? `Last seen ${formatAgo(status.lastSeenAt, now)}` : 'Not connected'
 
-  const actions = actionsFor(family, canStartNext, octoprint)
+  const actions = actionsFor(family, canStartNext, octoprint, connectable)
   const big = size === 'L' || size === 'XL'
 
   const camera = !!(options.camera && size !== 'S')
