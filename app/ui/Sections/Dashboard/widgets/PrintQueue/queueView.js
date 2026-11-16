@@ -4,19 +4,23 @@ import { doneAt, formatAgo, formatTimeLeft } from '../../../../utils/time'
 const IN_PROGRESS = ['PRINTING', 'PAUSED', 'CANCELLING']
 const BIG = ['XL', 'XXL']
 
-// What a printer is doing, for the per-printer table: its sort rank, and its name in the "+ N more printers" line.
-// Ready with work waiting comes first, then printing, paused, error, and idle and offline last.
+// What a printer is doing, for the per-printer table: its sort rank, and whether the "+ N more printers" line counts
+// it as needing attention. Ready with work waiting comes first, then printing, paused, error, and idle and offline
+// last. Attention is read from the state alone: a ready printer waits for Start Next, a paused one for Resume, one in
+// error for a fix. Printing, cancelling and connecting settle on their own, and idle and offline printers have no
+// work waiting.
 const BUCKETS = [
-  { key: 'ready', rank: 0, label: 'ready' },
-  { key: 'printing', rank: 1, label: 'printing' },
-  { key: 'paused', rank: 2, label: 'paused' },
-  { key: 'cancelling', rank: 2, label: 'cancelling' },
-  { key: 'error', rank: 3, label: 'in error' },
-  { key: 'connecting', rank: 4, label: 'connecting' },
-  { key: 'idle', rank: 5, label: 'idle' },
-  { key: 'offline', rank: 6, label: 'offline' }
+  { key: 'ready', rank: 0, attention: true },
+  { key: 'printing', rank: 1 },
+  { key: 'paused', rank: 2, attention: true },
+  { key: 'cancelling', rank: 2 },
+  { key: 'error', rank: 3, attention: true },
+  { key: 'connecting', rank: 4 },
+  { key: 'idle', rank: 5 },
+  { key: 'offline', rank: 6 }
 ]
 const RANK = Object.fromEntries(BUCKETS.map((bucket) => [bucket.key, bucket.rank]))
+const ATTENTION = BUCKETS.filter((bucket) => bucket.attention).map((bucket) => bucket.key)
 
 // What the "Now" column says when nothing is printing
 const IDLE_TEXT = { ready: 'Idle', idle: 'Idle', error: 'Stopped responding', connecting: 'Connecting', offline: 'Offline' }
@@ -53,18 +57,20 @@ export function sortPrinters (printers) {
   return [...printers].sort((a, b) => RANK[bucketOf(a)] - RANK[bucketOf(b)] || a.name.localeCompare(b.name))
 }
 
-// The rows that fit `max`: all of them, or max - 1 and a "+ N more printers: 1 paused · 2 idle" line counting the
-// rest by state (always 2 or more: a single row takes the line's place)
+// The rows that fit `max`: all of them, or max - 1 and a line for the rest (always 2 or more: a single row takes the
+// line's place). The line says how many of them need attention, and never claims it for printers that don't:
+// "+ 3 more printers need attention", "+ 7 more printers, 2 need attention" or "+ 7 more printers".
 export function foldRows (rows, max) {
   if (rows.length <= max) return { shown: rows, moreText: null }
 
   const shown = rows.slice(0, max - 1)
   const hidden = rows.slice(max - 1)
-  const counts = BUCKETS
-    .map((bucket) => [bucket.label, hidden.filter((row) => row.bucket === bucket.key).length])
-    .filter(([, count]) => count > 0)
-    .map(([label, count]) => `${count} ${label}`)
-  return { shown, moreText: `+ ${hidden.length} more printers: ${counts.join(' · ')}` }
+  const attention = hidden.filter((row) => ATTENTION.includes(row.bucket)).length
+  const more = `+ ${hidden.length} more printers`
+  let moreText = more
+  if (attention === hidden.length) moreText = `${more} need attention`
+  else if (attention > 0) moreText = `${more}, ${attention} ${attention === 1 ? 'needs' : 'need'} attention`
+  return { shown, moreText }
 }
 
 // Whether the widget shows one row per printer: all printers at XL and XXL, with the option on

@@ -56,15 +56,27 @@ describe('queueView', () => {
       expect(foldRows(rows(['ready', 'printing', 'idle']), 3)).toEqual({ shown: rows(['ready', 'printing', 'idle']), moreText: null })
     })
 
-    it('folds the rest into "+ N more printers", counting them by state, with no "need attention" bucket', () => {
+    it('folds the rest into "+ N more printers", saying how many need attention', () => {
       const folded = foldRows(rows(['ready', 'printing', 'printing', 'paused', 'idle', 'error', 'idle', 'offline']), 4)
       expect(folded.shown.map((row) => row.bucket)).toEqual(['ready', 'printing', 'printing'])
-      expect(folded.moreText).toBe('+ 5 more printers: 1 paused · 1 in error · 2 idle · 1 offline')
+      expect(folded.moreText).toBe('+ 5 more printers, 2 need attention')
+      expect(foldRows(rows(['printing', 'printing', 'idle', 'ready']), 2).moreText).toBe('+ 3 more printers, 1 needs attention')
+    })
+
+    it('says they all need attention only when every hidden printer is ready, paused or in error', () => {
+      expect(foldRows(rows(['ready', 'ready', 'paused', 'error']), 2).moreText).toBe('+ 3 more printers need attention')
+    })
+
+    it('never claims attention for printing, cancelling, connecting, idle or offline printers', () => {
+      expect(foldRows(rows(['ready', 'printing', 'cancelling', 'connecting', 'idle', 'offline']), 1).moreText)
+        .toBe('+ 6 more printers, 1 needs attention')
+      expect(foldRows(rows(['printing', 'cancelling', 'connecting', 'idle', 'offline']), 1).moreText)
+        .toBe('+ 5 more printers')
     })
 
     it('never folds a single printer: its row takes the summary line\'s place', () => {
       expect(foldRows(rows(['printing', 'printing', 'idle']), 3).moreText).toBeNull()
-      expect(foldRows(rows(['printing', 'printing', 'idle']), 2).moreText).toBe('+ 2 more printers: 1 printing · 1 idle')
+      expect(foldRows(rows(['printing', 'printing', 'idle']), 2).moreText).toBe('+ 2 more printers')
     })
 
     it('shows 5 printers and the summary at XL past 6, 9 at XXL past 10', () => {
@@ -72,10 +84,10 @@ describe('queueView', () => {
       farm[0] = farmPrinter('0', 'Printer 0', 'PRINTING', 1)
       const xl = view('XL', { printers: farm, queue: null })
       expect(xl.shown).toHaveLength(5)
-      expect(xl.moreText).toBe('+ 7 more printers: 7 idle')
+      expect(xl.moreText).toBe('+ 7 more printers')
       const xxl = view('XXL', { printers: farm, queue: null })
       expect(xxl.shown).toHaveLength(9)
-      expect(xxl.moreText).toBe('+ 3 more printers: 3 idle')
+      expect(xxl.moreText).toBe('+ 3 more printers')
       expect(view('XXL', { printers: farm.slice(0, 10), queue: null }).moreText).toBeNull()
     })
   })

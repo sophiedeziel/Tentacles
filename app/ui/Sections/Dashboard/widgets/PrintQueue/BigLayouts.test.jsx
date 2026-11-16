@@ -41,7 +41,14 @@ describe('PrintQueueWidget at Extra Large and 4×4', () => {
   it('folds the printers past what fits into "+ N more printers"', () => {
     renderWidget('XL', { printers: farm(4), queue: null })
     expect(rowTexts()).toHaveLength(5)
-    expect(screen.getByText('+ 3 more printers: 3 idle')).toBeInTheDocument()
+    expect(screen.getByText('+ 3 more printers')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Open Print Queues' })).toHaveAttribute('href', '/printers')
+  })
+
+  it('says when every folded printer needs attention', () => {
+    const paused = Array.from({ length: 4 }, (_, index) => ({ ...PRINTERS.PAUSED, id: `paused-${index}`, name: `Paused ${index + 1}` }))
+    renderWidget('XL', { printers: FLEET.concat(paused), queue: null })
+    expect(screen.getByText('+ 3 more printers need attention')).toBeInTheDocument()
   })
 
   it('shows ten printers at 4×4, with the shared up next list and history underneath', () => {
