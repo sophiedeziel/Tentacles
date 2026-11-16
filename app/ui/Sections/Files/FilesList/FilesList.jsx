@@ -12,6 +12,7 @@ import UnarchiveFiles from 'graphql/UnarchiveFiles.graphql'
 import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Dropdown, Tag } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
 import LabelApplicator from './components/LabelApplicator'
+import { PrintQueueOutlined } from '../../../components/icons'
 // import FileDetails from './components/FileDetails/FileDetails'
 
 const filesize = require('file-size')
@@ -170,7 +171,7 @@ export default function FilesList () {
         return (
           <Space size="middle">
             <Dropdown.Button menu={{ items }} >
-              <Link to={'/files/' + file.id + '/print'}>Print</Link>
+              <Link to={'/files/' + file.id + '/print'}><PrintQueueOutlined aria-hidden /> Print</Link>
             </Dropdown.Button>
           </Space>
         )

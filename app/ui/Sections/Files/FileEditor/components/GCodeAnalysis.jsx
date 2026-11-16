@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { Collapse, Table, Badge } from 'antd'
 
+import { HeatedBedOutlined, HotendOutlined, LayersOutlined } from '../../../../components/icons'
+
 function GCodeAnalysis ({ gcodeAnalysis, onLineSelect }) {
   const [openedCollapse, setOpenedCollapse] = useState([])
 
@@ -113,19 +115,19 @@ function GCodeAnalysis ({ gcodeAnalysis, onLineSelect }) {
     },
     {
       key: 'hotendTemperatures',
-      label: 'Hotend Temperature changes',
+      label: <><HotendOutlined aria-hidden /> Hotend Temperature changes</>,
       children: hotendTemperaturesTable(),
       extra: <Badge count={gcodeAnalysis.hotendTemperatures.length} overflowCount={9999} color="purple" />
     },
     {
       key: 'bedTemperatures',
-      label: 'Bed Temperature changes',
+      label: <><HeatedBedOutlined aria-hidden /> Bed Temperature changes</>,
       children: bedTemperaturesTable(),
       extra: <Badge count={gcodeAnalysis.bedTemperatures.length} overflowCount={9999} color="purple" />
     },
     {
       key: 'layers',
-      label: 'Layers',
+      label: <><LayersOutlined aria-hidden /> Layers</>,
       children: layersTable(),
       extra: <Badge count={gcodeAnalysis.layers.length} overflowCount={9999} color="purple" />
     }

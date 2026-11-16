@@ -8,6 +8,7 @@ import * as classes from './FilePrinter.module.less'
 
 import { Col, Row, Card, Checkbox, Button, List, Statistic, message } from 'antd'
 import { PageHeader } from '@ant-design/pro-layout'
+import { PrintQueueOutlined } from '../../../components/icons'
 
 import File from './graphql/File.graphql'
 import SendFileToPrinters from './graphql/SendFileToPrinters.graphql'
@@ -97,7 +98,7 @@ export default function FilePrinter () {
               )}
             />
             <Row style={{ marginTop: 12 }}>
-              <Button type="primary" onClick={handleEnqueue}>Enqueue print</Button>
+              <Button type="primary" icon={<PrintQueueOutlined aria-hidden />} onClick={handleEnqueue}>Enqueue print</Button>
               <Button onClick={handleUpload}>Upload</Button>
             </Row>
           </Card>

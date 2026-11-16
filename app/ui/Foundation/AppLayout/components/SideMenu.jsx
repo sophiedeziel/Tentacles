@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Menu } from 'antd'
-import {
-  FileOutlined,
-  PieChartOutlined,
-  UsbOutlined
-} from '@ant-design/icons'
+import { FileOutlined, PieChartOutlined } from '@ant-design/icons'
 import { useLocation, useNavigate } from 'react-router'
+
+import { Printer3DOutlined } from '../../../components/icons'
 
 const PRINTERS_SUBMENU = 'printers'
 
@@ -64,7 +62,7 @@ function SideMenu ({ collapsed = false }) {
     {
       label: 'Printers',
       key: PRINTERS_SUBMENU,
-      icon: <UsbOutlined />,
+      icon: <Printer3DOutlined />,
       children: [
         {
           label: 'Print Queues',
