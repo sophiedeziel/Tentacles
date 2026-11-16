@@ -60,7 +60,7 @@ module RootOperations
     field :identify_printer, resolver: Resolvers::IdentifyPrinter
 
     field :octoprint_name, String, null: true, deprecation_reason: 'Use `identifyPrinter`' do
-      argument :octoprint_uri, String, required: true
+      argument :octoprint_uri, Types::Url, required: true
       argument :octoprint_key, String, required: true
     end
     def octoprint_name(octoprint_uri:, octoprint_key:)

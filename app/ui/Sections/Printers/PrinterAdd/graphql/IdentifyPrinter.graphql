@@ -1,4 +1,4 @@
-query IdentifyPrinter($backend: PrinterBackend!, $uri: String!, $username: String, $secret: String!) {
+query IdentifyPrinter($backend: PrinterBackend!, $uri: URL!, $username: String, $secret: String!) {
   identifyPrinter(backend: $backend, uri: $uri, username: $username, secret: $secret) {
     name
     version

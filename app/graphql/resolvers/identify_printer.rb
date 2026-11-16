@@ -21,7 +21,7 @@ module Resolvers
     type Types::PrinterIdentity, null: false
 
     argument :backend, Types::PrinterBackend, required: true
-    argument :uri, String, required: true, description: "The URL of the printer's server"
+    argument :uri, Types::Url, required: true, description: "The URL of the printer's server"
     argument :username, String, required: false, description: 'The username, for PrusaLink (default: "maker")'
     argument :secret, String, required: false,
                               description: "OctoPrint's API key, or PrusaLink's password. Blank with `printerId`: " \

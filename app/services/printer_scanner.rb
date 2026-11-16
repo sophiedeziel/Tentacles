@@ -12,6 +12,12 @@ class PrinterScanner
     end
   end
 
+  # The addresses the last scan found, however old, without scanning: [] before the first scan
+  def last_scan
+    cached_ips = REDIS_POOL.with { |conn| conn.get(:printers_ips) }
+    cached_ips ? JSON.parse(cached_ips) : []
+  end
+
   private
 
   def use_cache(refresh:)

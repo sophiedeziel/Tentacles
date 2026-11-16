@@ -7,7 +7,7 @@ RSpec.describe 'Query octoprintName', type: :request do
   let(:variables) { { octoprintUri: 'http://192.168.0.15', octoprintKey: '12345678' } }
   let(:query) do
     <<~GQL
-      query octoprintName($octoprintUri: String!, $octoprintKey: String!) {
+      query octoprintName($octoprintUri: URL!, $octoprintKey: String!) {
         octoprintName(octoprintUri: $octoprintUri, octoprintKey: $octoprintKey)
       }
     GQL

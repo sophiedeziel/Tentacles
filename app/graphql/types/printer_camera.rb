@@ -6,6 +6,6 @@ module Types
     default_broadcastable true
 
     field :enabled, Boolean, null: false, description: "Whether the webcam is enabled in the printer's server"
-    field :stream_url, String, null: true, description: 'Absolute URL of the webcam stream'
+    field :stream_url, Types::Url, null: true, description: 'Absolute URL of the webcam stream'
   end
 end

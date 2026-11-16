@@ -8,7 +8,7 @@ module Types
     field :id, ID, null: false
     field :name, String, null: false
     field :backend, Types::PrinterBackend, null: false
-    field :uri, String, null: true, description: "The URL of the printer's server"
+    field :uri, Types::Url, null: true, description: "The URL of the printer's server"
     field :username, String, null: true, description: 'The username, for the backends that use one (PrusaLink)'
     field :favorite, Boolean, null: false, description: 'Favorites come first in the fleet list'
     field :specs, Types::PrinterSpecs, null: false,
@@ -36,7 +36,7 @@ module Types
       object.version || 'Unavailable'
     end
 
-    field :octoprint_uri, String, null: true, deprecation_reason: 'Use `uri`'
+    field :octoprint_uri, Types::Url, null: true, deprecation_reason: 'Use `uri`'
     def octoprint_uri
       object.uri
     end
