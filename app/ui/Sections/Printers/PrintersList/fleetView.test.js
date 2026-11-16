@@ -110,10 +110,16 @@ describe('fleetView', () => {
   })
 
   it.each([
-    ['OCTOPRINT', 'http://192.168.1.30/', ['details', 'openServer', 'reconnect', 'remove']],
-    ['PRUSALINK', 'http://192.168.1.21', ['details', 'openServer', 'remove']],
-    ['PRUSALINK', null, ['details', 'remove']]
-  ])('lists the menu of a %s printer at %s', (backend, uri, menu) => {
-    expect(fleetView(fleetPrinter({ ...PRINTERS.PRINTING, backend }, { uri }), FIXTURE_NOW.getTime()).menu).toEqual(menu)
+    ['PRINTING', 'OCTOPRINT', ['details', 'openServer', 'pause', 'cancel', 'reconnect', 'remove']],
+    ['PAUSED', 'PRUSALINK', ['details', 'openServer', 'resume', 'cancel', 'remove']],
+    ['OPERATIONAL', 'PRUSALINK', ['details', 'openServer', 'startNext', 'remove']],
+    ['CANCELLING', 'PRUSALINK', ['details', 'openServer', 'remove']],
+    ['OFFLINE', 'OCTOPRINT', ['details', 'openServer', 'reconnect', 'remove']]
+  ])('lists the menu of a %s %s printer', (family, backend, menu) => {
+    expect(fleetView(fleetPrinter({ ...PRINTERS[family], backend }), FIXTURE_NOW.getTime()).menu).toEqual(menu)
+  })
+
+  it('leaves Start Next out when nothing can start, and Open out without an address', () => {
+    expect(view('OPERATIONAL', { canStartNext: false, uri: null }).menu).toEqual(['details', 'reconnect', 'remove'])
   })
 })
