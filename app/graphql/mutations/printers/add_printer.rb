@@ -8,10 +8,10 @@ module Mutations
       argument :backend, Types::PrinterBackend, required: false, default_value: 'octoprint',
                                                 replace_null_with_default: true
       argument :name, String, required: true
-      argument :uri, String, required: false, description: "The URL of the printer's server"
+      argument :uri, Types::Url, required: false, description: "The URL of the printer's server"
       argument :username, String, required: false, description: 'The username, for PrusaLink (default: "maker")'
       argument :secret, String, required: false, description: "OctoPrint's API key, or PrusaLink's password"
-      argument :octoprint_uri, String, required: false, deprecation_reason: 'Use `uri`'
+      argument :octoprint_uri, Types::Url, required: false, deprecation_reason: 'Use `uri`'
       argument :octoprint_key, String, required: false, deprecation_reason: 'Use `secret`'
 
       field :printer, Types::Printer, null: true, description: 'The new printer, null when it is invalid'

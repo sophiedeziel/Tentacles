@@ -13,7 +13,7 @@ module Mutations
 
       argument :id, ID, required: true
       argument :name, String, required: false
-      argument :uri, String, required: false, description: "The URL of the printer's server"
+      argument :uri, Types::Url, required: false, description: "The URL of the printer's server"
       argument :username, String, required: false, description: 'The username, for PrusaLink (default: "maker")'
       argument :secret, String, required: false,
                                 description: "OctoPrint's API key, or PrusaLink's password. Null or empty keeps " \

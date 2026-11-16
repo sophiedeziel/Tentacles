@@ -13,7 +13,7 @@ module Types
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
     field :archived_at, GraphQL::Types::ISO8601DateTime, null: true
-    field :download_url, String, null: false
+    field :download_url, Types::Url, null: false
     field :top_file_comments, String, null: true
     field :file_content, String, null: true
     field :gcode_analysis, Types::GcodeAnalysis, null: true

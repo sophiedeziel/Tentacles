@@ -11,7 +11,7 @@ RSpec.describe 'Query identifyPrinter', type: :request do
   let(:variables) { { backend:, uri: 'http://192.168.0.15/', secret: } }
   let(:query) do
     <<~GQL
-      query identifyPrinter($backend: PrinterBackend!, $uri: String!, $username: String, $secret: String!) {
+      query identifyPrinter($backend: PrinterBackend!, $uri: URL!, $username: String, $secret: String!) {
         identifyPrinter(backend: $backend, uri: $uri, username: $username, secret: $secret) {
           name
           version
@@ -229,7 +229,7 @@ RSpec.describe 'Query identifyPrinter', type: :request do
     let(:variables) { { backend:, uri: 'http://192.168.0.20/', username: 'maker', printerId: saved.id.to_s } }
     let(:query) do
       <<~GQL
-        query identifyPrinter($backend: PrinterBackend!, $uri: String!, $username: String, $secret: String,
+        query identifyPrinter($backend: PrinterBackend!, $uri: URL!, $username: String, $secret: String,
                               $printerId: ID) {
           identifyPrinter(backend: $backend, uri: $uri, username: $username, secret: $secret, printerId: $printerId) {
             name
