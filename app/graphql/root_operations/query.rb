@@ -50,9 +50,11 @@ module RootOperations
       ::Label.find_by(id: id)
     end
 
-    field :search_network_printers, [String], null: true
+    field :network_printers, resolver: Resolvers::NetworkPrinters
+
+    field :search_network_printers, [String], null: true, deprecation_reason: 'Use networkPrinters'
     def search_network_printers
-      ::PrinterScanner.new.call
+      Resolvers::NetworkPrinters.scan(refresh: false).filter_map { |found| found[:address] unless found[:printer] }
     end
 
     field :identify_printer, resolver: Resolvers::IdentifyPrinter
