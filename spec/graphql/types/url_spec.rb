@@ -1,0 +1,31 @@
+# frozen_string_literal: true
+
+require 'rails_helper'
+
+RSpec.describe Types::Url do
+  describe '.coerce_input' do
+    it 'accepts absolute http and https URLs' do
+      expect(described_class.coerce_input('http://192.168.1.57/', nil)).to eq('http://192.168.1.57/')
+      expect(described_class.coerce_input('https://octopi.local/api', nil)).to eq('https://octopi.local/api')
+    end
+
+    it 'refuses relative URLs, other schemes and garbage' do
+      ['/printers', '192.168.1.57', 'ftp://host/file', 'file:///etc/passwd', 'http://',
+       'http://bad host/'].each do |value|
+        expect { described_class.coerce_input(value, nil) }.to raise_error(GraphQL::CoercionError), value
+      end
+    end
+  end
+
+  describe '.coerce_result' do
+    it 'sends the URL as a string' do
+      expect(described_class.coerce_result(URI('http://192.168.1.57/'), nil)).to eq('http://192.168.1.57/')
+    end
+  end
+
+  it 'is named URL in the schema, with its specification' do
+    type = TentaclesSchema.get_type('URL')
+    expect(type.specified_by_url).to eq('https://url.spec.whatwg.org/')
+    expect(TentaclesSchema.get_type('NetworkPrinter').get_field('url').type.unwrap.graphql_name).to eq('URL')
+  end
+end
