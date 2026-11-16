@@ -4,7 +4,7 @@ import { useApolloClient, useQuery } from '@apollo/client/react'
 
 import { ACTIONS } from '../../graphql/actions'
 import { PRINT_QUEUE_WIDGET } from '../../graphql/printQueue'
-import useRefetchWhenStale from '../../utils/useRefetchWhenStale'
+import useRefetchWhenStale from '../../../../utils/useRefetchWhenStale'
 import ControlButton from '../Printer/ControlButton'
 import PrintQueueWidget from './PrintQueueWidget'
 import { rowsToLoad } from './queueView'

@@ -1,5 +1,5 @@
 import { statePalette } from '../../../../Foundation/theme'
-import { doneAt, formatAgo, formatClock, formatTimeLeft } from '../../utils/time'
+import { doneAt, formatAgo, formatClock, formatTimeLeft } from '../../../../utils/time'
 
 const IN_PROGRESS = ['PRINTING', 'PAUSED', 'CANCELLING']
 const UNREACHABLE = ['OFFLINE', 'CONNECTING', 'ERROR']

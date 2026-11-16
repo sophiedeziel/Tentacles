@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { Progress } from 'antd'
 
 import { STATE_FAMILIES, statePalette } from '../../Foundation/theme'
-import { formatTimeLeft } from '../../Sections/Dashboard/utils/time'
+import { formatTimeLeft } from '../../utils/time'
 import * as classes from './PrintProgress.module.less'
 
 // The line under the bar: time left while printing (or the percentage when the printer doesn't say), where the

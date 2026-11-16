@@ -7,7 +7,7 @@ import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 
 import EmptyState from '../../../components/EmptyState/EmptyState'
 import FleetSummary from '../../../components/FleetSummary/FleetSummary'
-import useNow from '../../Dashboard/utils/useNow'
+import useNow from '../../../utils/useNow'
 import useFleetLiveUpdates from '../../../utils/useFleetLiveUpdates'
 import FleetTable from './FleetTable'
 import { FLEET_PAGE, NETWORK_PRINTERS } from './graphql/fleet'

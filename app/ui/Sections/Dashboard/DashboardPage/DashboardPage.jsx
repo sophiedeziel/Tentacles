@@ -7,7 +7,7 @@ import EditBar, { EditNotice } from '../EditBar/EditBar'
 import Section from '../Section/Section'
 import EditableSections from './EditableSections'
 import useDebouncedCounter from '../utils/useDebouncedCounter'
-import useNow from '../utils/useNow'
+import useNow from '../../../utils/useNow'
 import useFleetLiveUpdates from '../../../utils/useFleetLiveUpdates'
 import { StreamVisibilityProvider } from '../utils/useStreamWhenVisible'
 import {

@@ -1,7 +1,7 @@
 import { useSubscription } from '@apollo/client/react'
 
 import { PRINT_QUEUE_CHANGED, PRINTER_STATUS_CHANGED } from '../Sections/Dashboard/graphql/dashboard'
-import useRefetchWhenStale from '../Sections/Dashboard/utils/useRefetchWhenStale'
+import useRefetchWhenStale from './useRefetchWhenStale'
 
 // Keeps a page's printers live (the dashboard, the fleet list). Apollo merges each pushed printer into the cache by
 // id: printerStatusChanged carries its DashboardPrinterFields, printQueueChanged its queue fields (queuedCount,
