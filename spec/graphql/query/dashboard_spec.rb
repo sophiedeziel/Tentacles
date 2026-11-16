@@ -37,7 +37,7 @@ RSpec.describe 'Query dashboard and defaultDashboard', type: :request do
       { 'id' => ids ? be_present : nil, 'type' => 'PRINT_QUEUE', 'widthUnits' => 4, 'heightUnits' => 2,
         'printer' => nil,
         'options' => { '__typename' => 'PrintQueueWidgetOptions', 'nowPrinting' => true, 'startNext' => true,
-                       'rowPerPrinter' => false, 'history' => false } },
+                       'rowPerPrinter' => true, 'history' => true } },
       { 'id' => ids ? be_present : nil, 'type' => 'PRINTER', 'widthUnits' => 2, 'heightUnits' => 1,
         'printer' => { 'id' => printer.id.to_s, 'name' => 'Prusa MK4' },
         'options' => { '__typename' => 'PrinterWidgetOptions', 'camera' => false, 'timeLeft' => true,
