@@ -1,5 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { theme } from 'antd'
+import { Link } from 'react-router'
 
 import JobStatus from '../../../../components/JobStatus/JobStatus'
 import PrinterStatus from '../../../../components/PrinterStatus/PrinterStatus'
@@ -49,6 +51,13 @@ function PrinterRow ({ row, renderStartNext }) {
   )
 }
 
+// The fold line's way to every printer's queue: the Print Queues page. The link takes the theme's primary colour,
+// like antd's links.
+function OpenPrintQueues () {
+  const { token } = theme.useToken()
+  return <Link to="/printers" style={{ color: token.colorPrimary }}>Open Print Queues</Link>
+}
+
 // All printers with one row per printer: the table, folded past what fits, and at 4×4 the shared up next list and
 // history underneath
 function TableLayout ({ view, renderStartNext }) {
@@ -63,7 +72,12 @@ function TableLayout ({ view, renderStartNext }) {
           <span role="columnheader" />
         </div>
         {view.shown.map((row) => <PrinterRow key={row.printer.id} row={row} renderStartNext={renderStartNext} />)}
-        {view.moreText && <div className={classes.foldLine}>{view.moreText}</div>}
+        {view.moreText && (
+          <div className={classes.foldLine}>
+            <span>{view.moreText}</span>
+            <OpenPrintQueues />
+          </div>
+        )}
       </div>
       {view.under && (
         <div className={classes.under}>
