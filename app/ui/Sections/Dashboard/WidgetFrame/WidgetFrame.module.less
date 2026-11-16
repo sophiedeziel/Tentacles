@@ -8,6 +8,9 @@
   position: relative;
   height: 100%;
   cursor: grab;
+  // A long press picks the widget up on touch screens: no text selection or callout menu
+  -webkit-touch-callout: none;
+  user-select: none;
 }
 
 // The widget shows but can't be used while arranging
@@ -65,8 +68,11 @@
   cursor: default;
 }
 
+// On a narrow widget (an S tile on a phone) the five sizes wrap rather than spill out of the toolbar
 .group {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 2px;
 }
 

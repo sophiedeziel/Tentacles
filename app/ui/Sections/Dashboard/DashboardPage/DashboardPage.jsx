@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { Alert, App, Grid, Skeleton, Typography } from 'antd'
+import { Alert, App, Skeleton, Typography } from 'antd'
 import { useQuery, useSubscription } from '@apollo/client/react'
 
 import AddWidgetModal from '../AddWidget/AddWidgetModal'
@@ -37,8 +37,7 @@ export function summary (printers) {
 }
 
 // The dashboard, at /. One query loads the layout and every printer; pushes keep them live, and reloads catch up on missed pushes.
-// Edit mode arranges a draft of the layout (useLayoutEditor) and saves it on Done. It needs the 4-column grid, so
-// it's for desktop screens (md and up) only.
+// Edit mode arranges a draft of the layout (useLayoutEditor) and saves it on Done.
 export default function DashboardPage () {
   // cache-and-network: coming back to the page never shows (and acts on) statuses cached earlier
   const { data, error, refetch } = useQuery(DASHBOARD_PAGE, { fetchPolicy: 'cache-and-network' })
@@ -46,7 +45,6 @@ export default function DashboardPage () {
   const monitor = useQuery(MONITOR_HEALTHY, { pollInterval: MONITOR_POLL_INTERVAL, fetchPolicy: 'no-cache' })
   const editor = useLayoutEditor(data?.dashboard)
   const { noticeChange } = editor
-  const desktop = !!Grid.useBreakpoint().md
   // Each queue push refreshes its printer's queuedCount, nextJob and canStartNext; queueVersion tells queue widgets
   // to reload their lists, once per burst of changes
   const [queueVersion, queueChanged] = useDebouncedCounter(QUEUE_RELOAD_DELAY)
@@ -95,7 +93,7 @@ export default function DashboardPage () {
             <Typography.Title level={3} style={{ margin: 0 }}>Dashboard</Typography.Title>
             <Typography.Text style={{ color: 'rgba(0, 0, 0, 0.65)' }}>{summary(printers)}</Typography.Text>
           </div>
-          <EditBar editing={editor.editing} busy={editor.busy} onEdit={desktop ? editor.start : undefined} onReset={editor.reset}
+          <EditBar editing={editor.editing} busy={editor.busy} onEdit={editor.start} onReset={editor.reset}
             onAddDivider={() => editor.dispatch({ type: 'addDivider' })} onAddWidget={() => setGallery(true)}
             onDone={editor.done} />
         </div>

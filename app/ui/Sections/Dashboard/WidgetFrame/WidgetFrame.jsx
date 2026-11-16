@@ -19,7 +19,7 @@ function Gear ({ title, settings }) {
   const [open, setOpen] = useState(false)
   return (
     <Popover trigger="click" placement="bottom" arrow={false} open={open} onOpenChange={setOpen}
-      content={<div onPointerDown={stop} onKeyDown={stop}>{settings}</div>}>
+      content={<div onMouseDown={stop} onTouchStart={stop} onKeyDown={stop}>{settings}</div>}>
       <button type="button" className={classes.tool} aria-label={`Settings for ${title}`} aria-expanded={open}>
         <SettingOutlined />
       </button>
