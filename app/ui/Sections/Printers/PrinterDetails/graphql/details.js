@@ -26,7 +26,7 @@ export const PRINTER_VERSION = gql`
 // Test Connection with what the form holds; a blank secret is the saved one of `printerId`
 export const IDENTIFY_SAVED_PRINTER = gql`
   query PrinterDetailsIdentify(
-    $backend: PrinterBackend!, $uri: String!, $username: String, $secret: String, $printerId: ID
+    $backend: PrinterBackend!, $uri: URL!, $username: String, $secret: String, $printerId: ID
   ) {
     identifyPrinter(backend: $backend, uri: $uri, username: $username, secret: $secret, printerId: $printerId) {
       name

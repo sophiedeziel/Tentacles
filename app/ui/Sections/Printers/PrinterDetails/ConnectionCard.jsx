@@ -64,7 +64,10 @@ export default function ConnectionCard ({ printer }) {
       </Form.Item>
 
       <Form.Item label={settings.uriLabel} name="uri"
-        rules={[{ required: true, whitespace: true, message: `${settings.uriLabel} is required` }]}>
+        rules={[
+          { required: true, whitespace: true, message: `${settings.uriLabel} is required` },
+          { type: 'url', message: `Enter a full address, e.g. ${settings.uriPlaceholder}` },
+        ]}>
         <Input placeholder={settings.uriPlaceholder} />
       </Form.Item>
 

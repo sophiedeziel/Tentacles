@@ -94,6 +94,15 @@ describe('PrinterDetails', () => {
     expect(screen.getByRole('button', { name: /Save Changes/ })).toBeDisabled()
   })
 
+  it('asks for a full address instead of saving one without a scheme', async () => {
+    renderPage()
+    await userEvent.clear(await screen.findByLabelText('Address'))
+    await userEvent.type(field('Address'), '192.168.1.22')
+    await save()
+    expect(await screen.findByText('Enter a full address, e.g. http://192.168.1.42')).toBeInTheDocument()
+    expect(screen.queryByText('Changes saved')).not.toBeInTheDocument()
+  })
+
   it('sends the password once one is typed, then blanks it again', async () => {
     renderPage([updated({ secret: 'new pass' })])
     await userEvent.type(await screen.findByLabelText('Password'), 'new pass')
