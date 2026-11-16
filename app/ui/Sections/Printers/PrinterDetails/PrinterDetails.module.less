@@ -1,4 +1,5 @@
-// The printer details page, as in the mockup: the header over the cards, Connection and Remove on the left
+// The printer details page, as in the mockup: the header over the cards, Connection and Remove on the left, About
+// This Printer on the right
 
 @muted: rgba(0, 0, 0, 0.65);
 @purple: #722ed1;
@@ -104,4 +105,70 @@
 .removeTitle {
   font-size: 14px;
   line-height: 22px;
+}
+
+.about {
+  flex: 3 1 480px;
+  min-width: 0;
+}
+
+.banner {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: #f9f0ff;
+  border: 1px solid #d3adf7;
+  border-radius: 8px;
+}
+
+.grid2, .grid3 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 16px;
+}
+
+.grid3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.capabilities {
+  margin: 0 0 16px;
+  padding-top: 20px;
+  border-top: 1px solid #f0f0f0;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 600;
+}
+
+.volume {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dimension {
+  width: 140px;
+}
+
+.number {
+  width: 100%;
+}
+
+.switchBox {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+}
+
+.switchText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
