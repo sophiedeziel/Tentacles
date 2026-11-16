@@ -20,25 +20,11 @@ module Mutations
       # One keyword per argument, as Tapioca generates the signature from the arguments
       def resolve(name:, backend: 'octoprint', uri: nil, username: nil, secret: nil, # rubocop:disable Metrics/ParameterLists
                   octoprint_uri: nil, octoprint_key: nil)
-        printer = ::Printer.new(name:, backend:, uri: (uri.presence || octoprint_uri).presence,
-                                username: username.presence, secret: (secret.presence || octoprint_key).presence)
-        if printer.save
-          start_spool(printer)
-          printer.fill_specs_from_server
-          { printer:, errors: [] }
-        else
-          { printer: nil, errors: printer.errors.full_messages }
-        end
-      end
+        printer = ::Printers::Add.call(name:, backend:, uri: (uri.presence || octoprint_uri).presence,
+                                       username: username.presence, secret: (secret.presence || octoprint_key).presence)
+        return { printer:, errors: [] } if printer.persisted?
 
-      private
-
-      # The spooler builds a spool for the new printer. The printer is added either way: without it, the spooler only
-      # picks the printer up on its next restart.
-      def start_spool(printer)
-        printer.notify_spooler(:add_printer)
-      rescue Redis::BaseError, ConnectionPool::TimeoutError => e
-        Rails.logger.error("[addPrinter] Could not publish add_printer for printer #{printer.id}: #{e.message}")
+        { printer: nil, errors: printer.errors.full_messages }
       end
     end
   end

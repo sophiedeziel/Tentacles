@@ -23,6 +23,8 @@ module RootOperations
     field :removePrinter, mutation: Mutations::Printers::RemovePrinter
     field :setPrinterFavorite, mutation: Mutations::Printers::SetPrinterFavorite
     field :updatePrinter, mutation: Mutations::Printers::UpdatePrinter
+    field :requestPrinterAppKey, mutation: Mutations::Printers::RequestPrinterAppKey
+    field :cancelPrinterAppKeyRequest, mutation: Mutations::Printers::CancelPrinterAppKeyRequest
 
     field :saveDashboard, mutation: Mutations::Dashboards::SaveDashboard
   end
