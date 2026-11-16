@@ -10,7 +10,7 @@ import GCodePreviewUI from 'components/GCodePreviewUI'
 
 import { Card, Collapse, Col, Row, Button, Typography, Divider, Input, Slider } from 'antd'
 import { PageHeader } from '@ant-design/pro-layout'
-import { FileOutlined } from '@ant-design/icons'
+import { GcodeFileOutlined } from '../../../components/icons'
 
 import GCodeAnalysis from './components/GCodeAnalysis.jsx'
 import gcodeDefinition from 'common/gcodeDefinition.js'
@@ -331,7 +331,7 @@ export default function FileEditor () {
     <Row gutter={16}>
       <Col span={16}>
         <Card
-        title={<Input onChange={(e) => setFilename(e.target.value)} prefix={<FileOutlined />} defaultValue={file.filename} />}
+        title={<Input onChange={(e) => setFilename(e.target.value)} prefix={<GcodeFileOutlined />} defaultValue={file.filename} />}
         extra={[
           <Divider key="0" type="vertical" />,
           <Button key="1" type="primary" onClick={handleSave}>Save</Button>

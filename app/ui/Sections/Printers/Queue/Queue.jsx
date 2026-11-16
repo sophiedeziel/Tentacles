@@ -4,6 +4,7 @@ import { useSubscription, useMutation } from '@apollo/client/react'
 
 import { Progress, Button } from 'antd'
 import { PageHeader } from '@ant-design/pro-layout'
+import { Printer3DOutlined } from '../../../components/icons'
 
 import PrintTable from './components/PrintTable'
 
@@ -65,7 +66,7 @@ export default function Queue () {
         <>
           <h2>Next job</h2>
           <p>{enqueuedJobs[0].executable?.filename}</p>
-          <Button type="primary" onClick={handleStart}>Start next job</Button>
+          <Button type="primary" icon={<Printer3DOutlined aria-hidden />} onClick={handleStart}>Start next job</Button>
         </>
       )
     } else {

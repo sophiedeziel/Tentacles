@@ -1,6 +1,6 @@
 import React from 'react'
 import { describe, expect, it } from 'vitest'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter, useLocation, useNavigate } from 'react-router'
 import SideMenu, { menuKeys } from './SideMenu'
 
@@ -44,6 +44,12 @@ describe('SideMenu', () => {
     expect(screen.getByText('Dashboard')).toBeInTheDocument()
     expect(screen.getByText('Printers')).toBeInTheDocument()
     expect(screen.getByText('Files')).toBeInTheDocument()
+  })
+
+  it('shows Printers with the 3D printer icon', () => {
+    renderAt('/files')
+
+    expect(within(item('Printers')).getByRole('img', { name: '3D printer' })).toBeInTheDocument()
   })
 
   it('hides the links to pages that do not exist yet', () => {
