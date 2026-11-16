@@ -56,15 +56,4 @@ RSpec.describe Resolvers::NetworkPrinters, type: :request do
       expect(scanner).to have_received(:call).with(refresh: true)
     end
   end
-
-  describe 'searchNetworkPrinters' do
-    it 'is deprecated' do
-      field = TentaclesSchema.query.get_field('searchNetworkPrinters')
-      expect(field.deprecation_reason).to eq('Use networkPrinters')
-    end
-
-    it 'still drops the addresses of saved printers' do
-      expect(query('{ searchNetworkPrinters }')['searchNetworkPrinters']).to eq(['192.168.1.60'])
-    end
-  end
 end

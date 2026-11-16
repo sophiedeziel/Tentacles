@@ -18,25 +18,21 @@ module Resolvers
                                 description: 'Scan again instead of reusing the last scan'
 
     sig { params(refresh: T::Boolean).returns(T::Array[T::Hash[Symbol, T.untyped]]) }
-    def self.scan(refresh:)
+    def resolve(refresh:)
       saved = ::Printer.order(:id).to_a.group_by { |printer| host_of(printer.uri) }
       ::PrinterScanner.new.call(refresh:).map do |address|
         { address:, url: "http://#{address}/", printer: saved[address]&.first }
       end
     end
 
+    private
+
     # "192.168.1.57" for "http://192.168.1.57:80/", nil for a blank or invalid URL
     sig { params(uri: T.nilable(String)).returns(T.nilable(String)) }
-    def self.host_of(uri)
+    def host_of(uri)
       URI.parse(uri.to_s).host
     rescue URI::InvalidURIError
       nil
-    end
-    private_class_method :host_of
-
-    sig { params(refresh: T::Boolean).returns(T::Array[T::Hash[Symbol, T.untyped]]) }
-    def resolve(refresh:)
-      self.class.scan(refresh:)
     end
   end
 end

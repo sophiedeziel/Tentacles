@@ -40,13 +40,6 @@ module Types
     def octoprint_uri
       object.uri
     end
-    # Never the PrusaLink password: only an OctoPrint printer's API key, until the field is removed
-    field :octoprint_key, String, null: true,
-                                  deprecation_reason: 'Secrets are no longer sent to the browser. ' \
-                                                      'Always null for the printers that are not OctoPrint printers.'
-    def octoprint_key
-      object.backend == 'octoprint' ? object.readable_secret : nil
-    end
     field :octoprint_version, String, null: true, deprecation_reason: 'Use `version`'
     def octoprint_version
       version

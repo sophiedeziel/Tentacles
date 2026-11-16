@@ -8,8 +8,7 @@ export const ADD_NETWORK_PRINTERS = gql`
   }
 `
 
-// The approval runs on the server: it asks OctoPrint, polls it and adds the printer. The API key never comes here,
-// so never select `printer { octoprintKey }`.
+// The approval runs on the server: it asks OctoPrint, polls it and adds the printer. The API key never comes here.
 const APP_KEY_REQUEST_FIELDS = 'id address state approvalUrl error printer { id name }'
 
 export const REQUEST_PRINTER_APP_KEY = gql`

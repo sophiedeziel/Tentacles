@@ -25,7 +25,7 @@ const SPECS_FIELDS = gql`
 `
 
 // The details page: the dashboard's printer fields (pushed live by useFleetLiveUpdates), the saved connection and
-// specs. Never select octoprintKey, and nothing that calls the printer (version, reportedSpecs): those load apart.
+// specs. Never select anything that calls the printer (version, reportedSpecs): those load apart.
 export const PRINTER_DETAILS = gql`
   query PrinterDetails($id: ID!) {
     printer(id: $id) {
