@@ -7,7 +7,7 @@ import {
 
 import 'antd/dist/reset.css'
 import SideMenu from './components/SideMenu'
-import TentacleMark from '../../components/TentacleMark/TentacleMark'
+import Wordmark from '../Wordmark/Wordmark'
 import { darkTheme, lightTheme } from '../theme'
 
 import * as classes from './AppLayout.module.less'
@@ -15,11 +15,7 @@ import * as classes from './AppLayout.module.less'
 const { Header, Content, Sider } = Layout
 
 function AppLayout ({ children }) {
-  const [collapsed, setCollaped] = useState(false)
-
-  const onCollapse = () => {
-    setCollaped(!collapsed)
-  }
+  const [collapsed, setCollapsed] = useState(false)
 
   const items = [
     {
@@ -34,11 +30,8 @@ function AppLayout ({ children }) {
     <ConfigProvider theme={ lightTheme } >
       <Layout style={{ minHeight: '100vh' }}>
         <ConfigProvider theme={darkTheme}>
-          <Sider collapsible collapsed={collapsed} onCollapse={onCollapse} trigger={null} >
-            <div className={classes.logo}>
-              <TentacleMark size={40} variant="reversed" title={collapsed ? 'Tentacles' : undefined} />
-              {!collapsed && <span className={classes.name}>Tentacles</span>}
-            </div>
+          <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed}>
+            <Wordmark collapsed={collapsed} />
             <SideMenu></SideMenu>
           </Sider>
         </ConfigProvider>

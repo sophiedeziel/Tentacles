@@ -49,3 +49,7 @@ yarn-debug.log*
 coverage/
 
 vendor/bundle
+
+# Conductor workspaces live in .conductor/; only the shared settings are tracked.
+/.conductor/*
+!/.conductor/settings.toml
