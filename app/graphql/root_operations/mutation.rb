@@ -22,6 +22,7 @@ module RootOperations
     field :reconnectPrinter, mutation: Mutations::Printers::ReconnectPrinter
     field :removePrinter, mutation: Mutations::Printers::RemovePrinter
     field :setPrinterFavorite, mutation: Mutations::Printers::SetPrinterFavorite
+    field :updatePrinter, mutation: Mutations::Printers::UpdatePrinter
 
     field :saveDashboard, mutation: Mutations::Dashboards::SaveDashboard
   end

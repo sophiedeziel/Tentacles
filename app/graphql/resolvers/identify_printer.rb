@@ -2,8 +2,9 @@
 # frozen_string_literal: true
 
 module Resolvers
-  # Tests the credentials of a printer before it's added: reads its name and server version through the backend's
-  # adapter (see PrinterBackends::Base#identify), from the server, so the browser never deals with CORS or Digest auth.
+  # Tests the credentials of a printer before it's added, or while it's edited: reads its name and server version
+  # through the backend's adapter (see PrinterBackends::Base#identify), from the server, so the browser never deals
+  # with CORS or Digest auth. With `printerId`, a blank secret is that printer's saved one (the page never shows it).
   #
   # Failures are GraphQL errors with a code in `extensions.code`: UNAUTHORIZED (rejected credentials), UNREACHABLE
   # (no answer), PRINTER_ERROR (anything else). Their messages never contain the secret.
@@ -22,21 +23,36 @@ module Resolvers
     argument :backend, Types::PrinterBackend, required: true
     argument :uri, String, required: true, description: "The URL of the printer's server"
     argument :username, String, required: false, description: 'The username, for PrusaLink (default: "maker")'
-    argument :secret, String, required: true, description: "OctoPrint's API key, or PrusaLink's password"
+    argument :secret, String, required: false,
+                              description: "OctoPrint's API key, or PrusaLink's password. Blank with `printerId`: " \
+                                           "that printer's saved one."
+    argument :printer_id, ID, required: false, description: 'The saved printer being edited, for its saved secret'
 
     sig do
-      params(backend: String, uri: String, secret: String, username: T.nilable(String))
-        .returns(T::Hash[Symbol, T.nilable(String)])
+      params(backend: String, uri: String, username: T.nilable(String), secret: T.nilable(String),
+             printer_id: T.nilable(String)).returns(T::Hash[Symbol, T.nilable(String)])
     end
-    def resolve(backend:, uri:, secret:, username: nil)
-      printer = ::Printer.new(backend:, uri: uri.presence, username: username.presence, secret: secret.presence)
+    def resolve(backend:, uri:, username: nil, secret: nil, printer_id: nil)
+      key = secret.presence || saved_secret(printer_id)
+      printer = ::Printer.new(backend:, uri: uri.presence, username: username.presence, secret: key)
       printer.api.identify
     # JSON::ParserError and KeyError: the octoprint gem fails to read the error of a server that isn't OctoPrint
     rescue PrinterBackends::Error, JSON::ParserError, KeyError, URI::InvalidURIError => e
-      raise execution_error(T.must(printer).api, uri, secret, e)
+      raise execution_error(T.must(printer).api, uri, key.to_s, e)
     end
 
     private
+
+    # The secret saved for that printer: nil without a printer, or when it can't be decrypted (it must be entered again)
+    sig { params(printer_id: T.nilable(String)).returns(T.nilable(String)) }
+    def saved_secret(printer_id)
+      return if printer_id.nil?
+
+      printer = ::Printer.find_by(id: printer_id)
+      raise GraphQL::ExecutionError.new('Printer not found', extensions: { code: 'PRINTER_ERROR' }) if printer.nil?
+
+      printer.readable_secret
+    end
 
     sig do
       params(api: PrinterBackends::Base, uri: String, secret: String, error: StandardError)
