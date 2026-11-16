@@ -10,7 +10,8 @@ import PrinterWidget from './PrinterWidget'
 const STREAM_RETRY_DELAY = 30000
 
 // A Printer widget of the layout: picks its printer out of the dashboard's data, streams its camera while it is
-// visible (never in edit mode) and wires its controls to the printer mutations
+// visible and wires its controls to the printer mutations. In edit mode it streams nothing and hides its controls,
+// which the edit toolbar would cover.
 export default function PrinterTile ({ widget, size, data }) {
   const client = useApolloClient()
   const printer = data.printersById[widget.printer?.id]
@@ -38,8 +39,9 @@ export default function PrinterTile ({ widget, size, data }) {
   const cameraStream = data.editing
     ? <CameraPlaceholder />
     : streamUrl && <CameraStream url={streamUrl} name={printer.name} onError={() => setStreamFailed(true)} />
+  const options = data.editing ? { ...widget.options, controls: false } : widget.options
   return (
-    <PrinterWidget printer={printer} size={size} options={widget.options} now={data.now} streamFailed={streamFailed}
+    <PrinterWidget printer={printer} size={size} options={options} now={data.now} streamFailed={streamFailed}
       cameraStream={cameraStream}
       renderAction={(action, view) => (
         <ControlButton key={action.key} action={action} view={view} onRun={run} live={data.live !== false}

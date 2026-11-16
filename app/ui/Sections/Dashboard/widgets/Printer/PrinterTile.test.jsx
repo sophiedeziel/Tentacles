@@ -56,6 +56,26 @@ describe('PrinterTile', () => {
     vi.unstubAllGlobals()
   })
 
+  // The edit toolbar sits over the bottom of the widget, where the controls are
+  it('hides its controls in edit mode', () => {
+    renderTile('PRINTING', [], { editing: true })
+    expect(screen.getByText('bracket_v3.gcode')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Pause' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument()
+  })
+
+  it('shows its controls out of edit mode', () => {
+    renderTile('PRINTING', [], { editing: false })
+    expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+  })
+
+  it('hides Start Next in edit mode', () => {
+    renderTile('OPERATIONAL', [], { editing: true })
+    expect(screen.getByText('Ready to print')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Start Next' })).not.toBeInTheDocument()
+  })
+
   it('sends the file the user confirmed, so a printer that moved on refuses', async () => {
     renderTile('PRINTING', [{
       request: { query: ACTIONS.pause.document, variables: { printerId: '1', expectedFileName: 'bracket_v3.gcode' } },
