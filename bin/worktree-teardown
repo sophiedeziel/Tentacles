@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Drops the databases that belong to this git worktree. Conductor runs it when
+# a workspace is archived. It only ever drops names that end in this
+# worktree's suffix, so the main checkout's databases are never touched.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+refuse() { echo "worktree-teardown: $1; not dropping anything." >&2; exit 1; }
+
+[ -f .git ] || refuse "not a linked git worktree"
+[ -z "${DB_SUFFIX+set}" ] || refuse "DB_SUFFIX is set"
+[ -z "${DB_NAME:-}" ] || refuse "DB_NAME is set"
+[ -z "${DATABASE_URL:-}" ] || refuse "DATABASE_URL is set"
+export RAILS_ENV=development
+unset TEST_ENV_NUMBER
+
+mysql_args=(-h "${DB_HOST:-127.0.0.1}" -P "${DB_PORT:-3306}" -u "${DB_USER:-root}")
+if [ -n "${DB_PASSWORD:-}" ]; then export MYSQL_PWD="$DB_PASSWORD"; fi
+
+suffix=$(bin/rails runner 'print Tentacles::WORKTREE_SUFFIX')
+[[ "$suffix" =~ ^_[a-z0-9_]+$ ]] || refuse "unexpected worktree suffix '$suffix'"
+
+# This worktree's dev and test databases, plus any numbered test databases
+# made with TEST_ENV_NUMBER.
+databases=$(mysql "${mysql_args[@]}" -N -e "SELECT SCHEMA_NAME FROM information_schema.SCHEMATA
+  WHERE SCHEMA_NAME IN ('tentacles_development$suffix', 'tentacles_test$suffix')
+     OR SCHEMA_NAME REGEXP '^tentacles_test${suffix}_[0-9]+\$'")
+
+for db in $databases; do
+  echo "Dropping $db"
+  mysql "${mysql_args[@]}" -e "DROP DATABASE IF EXISTS \`$db\`"
+done
+[ -n "$databases" ] || echo "No databases to drop for this worktree."

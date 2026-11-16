@@ -2,4 +2,5 @@
 .
 --ignore=tmp/
 --ignore=vendor/
+--ignore=.conductor/
 --suppress-payload-superclass-redefinition-for=RDoc::Markup::Heading

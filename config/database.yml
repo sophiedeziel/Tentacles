@@ -1,3 +1,5 @@
+# Tentacles::WORKTREE_SUFFIX (config/application.rb) gives each git worktree its
+# own databases; it is empty in the main checkout and on CI.
 default: &default
   adapter: mysql2
   encoding: utf8mb4
@@ -9,14 +11,15 @@ default: &default
 
 development:
   <<: *default
-  database: <%= ENV['DB_NAME'] || "tentacles_development" %>
+  database: <%= ENV['DB_NAME'] || "tentacles_development#{Tentacles::WORKTREE_SUFFIX}" %>
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
+# TEST_ENV_NUMBER lets several rspec processes share one worktree.
 test:
   <<: *default
-  database: tentacles_test
+  database: tentacles_test<%= Tentacles::WORKTREE_SUFFIX %><%= "_#{ENV['TEST_ENV_NUMBER']}" if ENV['TEST_ENV_NUMBER'].present? %>
 
 production:
   <<: *default

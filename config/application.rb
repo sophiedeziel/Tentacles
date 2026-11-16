@@ -21,6 +21,15 @@ require 'rails/test_unit/railtie'
 Bundler.require(*Rails.groups)
 
 module Tentacles
+  # Linked git worktrees (e.g. Conductor workspaces) get their own databases and
+  # ActionCable channels, suffixed with the worktree folder name, so checkouts
+  # running in parallel never share data. The main checkout and CI (where .git
+  # is a directory) keep the plain names. Override with DB_SUFFIX ("" opts out).
+  WORKTREE_SUFFIX = ENV.fetch('DB_SUFFIX') do
+    root = File.expand_path('..', __dir__)
+    File.file?(File.join(root, '.git')) ? "_#{File.basename(root).downcase.gsub(/[^a-z0-9]+/, '_')}" : ''
+  end
+
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.0

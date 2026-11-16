@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# Sets up a git worktree (e.g. a Conductor workspace) with its own databases.
+# Tentacles::WORKTREE_SUFFIX (config/application.rb) suffixes the database names
+# with the worktree's folder name, so this worktree's dev and test databases are
+# separate from every other checkout. Safe to run again at any time.
+#
+# The dev database starts as a copy of the main checkout's dev database
+# (tentacles_development) so your printers and settings come along.
+# Set WORKTREE_DB_SOURCE to copy from another database, or to "" to start
+# from schema + seeds instead.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+echo "== Installing tools =="
+asdf install || true
+
+echo "== Installing dependencies =="
+bundle check >/dev/null || bundle install
+bin/yarn install
+
+mysql_args=(-h "${DB_HOST:-127.0.0.1}" -P "${DB_PORT:-3306}" -u "${DB_USER:-root}")
+if [ -n "${DB_PASSWORD:-}" ]; then export MYSQL_PWD="$DB_PASSWORD"; fi
+db_exists() {
+  [ -n "$(mysql "${mysql_args[@]}" -N -e "SELECT 1 FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = '$1'")" ]
+}
+
+dev_db=$(bin/rails runner 'print ActiveRecord::Base.configurations.configs_for(env_name: "development").first.database')
+test_db=$(RAILS_ENV=test bin/rails runner 'print ActiveRecord::Base.configurations.configs_for(env_name: "test").first.database')
+source_db=${WORKTREE_DB_SOURCE-tentacles_development}
+echo "== Databases: $dev_db (development), $test_db (test) =="
+
+if [ -n "$source_db" ] && [ "$source_db" != "$dev_db" ] && ! db_exists "$dev_db" && db_exists "$source_db"; then
+  echo "== Copying $source_db into $dev_db =="
+  # A half-copied database would look ready on the next run, so drop it if
+  # the copy fails or is interrupted.
+  drop_partial_copy() {
+    mysql "${mysql_args[@]}" -e "DROP DATABASE IF EXISTS \`$dev_db\`"
+    echo "Copy failed or was interrupted; dropped $dev_db so the next run retries." >&2
+    exit 1
+  }
+  trap drop_partial_copy INT TERM
+  mysql "${mysql_args[@]}" -e "CREATE DATABASE \`$dev_db\` CHARACTER SET utf8mb4"
+  mysqldump "${mysql_args[@]}" --single-transaction --no-tablespaces --routines --set-gtid-purged=OFF "$source_db" \
+    | mysql "${mysql_args[@]}" "$dev_db" \
+    || drop_partial_copy
+  trap - INT TERM
+fi
+
+echo "== Preparing databases =="
+bin/rails db:prepare
+RAILS_ENV=test bin/rails db:prepare
+
+echo "== Removing old logs and tempfiles =="
+bin/rails log:clear tmp:clear
