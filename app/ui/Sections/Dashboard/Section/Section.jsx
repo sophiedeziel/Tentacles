@@ -74,9 +74,12 @@ function SectionEnd ({ section, index }) {
 
 // A run of widgets under an optional divider title, laid out on the section's own grid.
 // In edit mode (`editor`: the draft's { sections, dispatch }) the divider and the widgets get their edit tools, and
-// the widgets sort by drag and drop. `sortable` (SortableSection) lets the divider drag its section.
+// the widgets sort by drag and drop. `sortable` (SortableSection) lets the divider bar drag its section.
 export default function Section ({ section, data, index = 0, editor = null, sortable = null }) {
   const untitled = index === 0 ? 'Top of dashboard' : 'Untitled section'
+  // The whole divider bar picks its section up with a mouse or a finger; the keyboard picks it up from the ⋮⋮ handle,
+  // which is a button of its own
+  const { onKeyDown, ...pointerListeners } = sortable?.listeners || {}
   const cells = section.widgets.map((widget) => {
     const entry = REGISTRY[widget.type]
     const size = sizeOf(widget)
@@ -104,9 +107,9 @@ export default function Section ({ section, data, index = 0, editor = null, sort
       className={sortable?.isDragging ? classes.sectionDragging : classes.section}>
       {editor && index > 0 && (
         <DividerRow section={section} index={index} count={editor.sections.length} dispatch={editor.dispatch}
-          handle={sortable && (
+          dragListeners={sortable && pointerListeners} handle={sortable && (
             <button type="button" ref={sortable.setActivatorNodeRef} className={classes.handle}
-              {...sortable.attributes} {...sortable.listeners} aria-label={`Drag ${section.title || untitled}`}>
+              {...sortable.attributes} onKeyDown={onKeyDown} aria-label={`Drag ${section.title || untitled}`}>
               <HolderOutlined />
             </button>
           )} />
@@ -149,7 +152,7 @@ Section.propTypes = {
   sortable: PropTypes.object
 }
 
-// A divider's section in edit mode, sortable among the sections by its handle (the first section has no divider)
+// A divider's section in edit mode, sortable among the sections by its divider bar (the first section has no divider)
 export function SortableSection (props) {
   const sortable = useSortableItem(props.section.key, 'section')
   return <Section {...props} sortable={sortable} />

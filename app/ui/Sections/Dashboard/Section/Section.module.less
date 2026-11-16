@@ -38,6 +38,12 @@
   background: #fafafa;
 }
 
+// A divider whose bar drags it (all but its title and buttons)
+.dividerDrag {
+  composes: dividerEdit;
+  cursor: grab;
+}
+
 .handle {
   display: flex;
   padding: 4px 0;
@@ -46,6 +52,11 @@
   color: rgba(0, 0, 0, 0.45);
   font-size: 16px;
   cursor: grab;
+}
+
+.arrows {
+  display: flex;
+  gap: 8px;
 }
 
 .titleInput {
