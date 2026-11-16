@@ -48,7 +48,7 @@ gem 'bootsnap', require: false
 
 gem 'apollo_upload_server'
 gem 'graphql'
-gem 'octoprint', github: 'sophiedeziel/octoprint', branch: 'main' # For prototype purposes
+gem 'octoprint', '~> 0.1'
 gem 'prusalink', '~> 0.1'
 
 gem 'bindex' # shakapacker won't work without this
@@ -57,7 +57,6 @@ gem 'react_on_rails', '~> 17.0'
 gem 'shakapacker', '~> 10.3'
 
 gem 'colorize'
-gem 'pry' # TODO: fix octoprint gem to not require pry
 gem 'sidekiq', '~> 8.0'
 
 gem 'listen', '~> 3.10'
