@@ -35,7 +35,8 @@ function Row ({ icon, address, detail, danger = false, waiting = false, children
 }
 
 // One OctoPrint server found by the scan: Connect, the waiting request, or the printer already added at it.
-// `autoConnect` (from ?connect=) starts the request, then `onAutoConnect` turns it off: it starts once.
+// `autoConnect` (from ?connect=) starts the request, then `onAutoConnect` turns it off: it starts once. With no click
+// behind it, no tab is opened: the waiting row's primary button opens OctoPrint.
 function NetworkRow ({ entry, autoConnect, onAutoConnect, onStateChange }) {
   const navigate = useNavigate()
   const { address, printer } = entry
@@ -58,7 +59,9 @@ function NetworkRow ({ entry, autoConnect, onAutoConnect, onStateChange }) {
   if (state === 'WAITING') {
     return (
       <Row waiting icon={<Spin size="small" />} address={address} detail="Waiting for you to approve Tentacles in OctoPrint">
-        <Button key="open" size="small" onClick={appKey.openApproval}>Open OctoPrint Again</Button>
+        <Button key="open" size="small" type={appKey.tabOpened ? 'default' : 'primary'} onClick={appKey.openApproval}>
+          {appKey.tabOpened ? 'Open OctoPrint Again' : 'Open OctoPrint'}
+        </Button>
         <Button key="cancel" size="small" type="text" onClick={appKey.cancel}>Cancel Request</Button>
       </Row>
     )
@@ -68,7 +71,8 @@ function NetworkRow ({ entry, autoConnect, onAutoConnect, onStateChange }) {
   const detail = { DENIED, FAILED: appKey.error }[state] || NOT_ADDED
   return (
     <Row icon={icon(false)} address={address} detail={detail} danger={state === 'FAILED'}>
-      <Button key="connect" type="primary" size="small" loading={appKey.requesting} onClick={connect}
+      <Button key="connect" type="primary" size="small" loading={appKey.requesting}
+        onClick={() => connect({ withTab: true })}
         aria-label={`Connect ${address}`}>Connect</Button>
     </Row>
   )

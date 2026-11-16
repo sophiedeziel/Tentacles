@@ -17,9 +17,18 @@ const mutation = (query, variables, payload) => {
   const sent = []
   return { sent, mock: { request: { query, variables }, result: () => { sent.push(variables); return { data: payload } }, maxUsageCount: 5 } }
 }
-const requestKey = (payload = { request: appKeyRequest('WAITING'), errors: [] }) => mutation(
-  REQUEST_PRINTER_APP_KEY, { address: ADDRESS }, { requestPrinterAppKey: { __typename: 'RequestPrinterAppKeyPayload', ...payload } }
-)
+const requestKey = (payload = { request: appKeyRequest('WAITING'), errors: [] }, delay = 0) => {
+  const request = mutation(
+    REQUEST_PRINTER_APP_KEY, { address: ADDRESS }, { requestPrinterAppKey: { __typename: 'RequestPrinterAppKeyPayload', ...payload } }
+  )
+  return { ...request, mock: { ...request.mock, delay } }
+}
+const failedRequest = { request: { query: REQUEST_PRINTER_APP_KEY, variables: { address: ADDRESS } }, error: new Error('Network down') }
+
+// What window.open('', '_blank') hands back
+const placeholderTab = () => ({
+  opener: window, closed: false, close: vi.fn(), location: { href: 'about:blank' }, document: { title: '', body: { textContent: '' } }
+})
 const cancelKey = () => mutation(CANCEL_PRINTER_APP_KEY_REQUEST, { id: 'r1' }, {
   cancelPrinterAppKeyRequest: { __typename: 'CancelPrinterAppKeyRequestPayload', request: { __typename: 'AppKeyRequest', id: 'r1', state: 'CANCELLED' }, errors: [] }
 })
@@ -33,8 +42,8 @@ const renderAppKey = (mocks, onAdded = vi.fn()) => {
   return { onAdded, ...renderHook(() => useOctoprintAppKey(ADDRESS, { onAdded }), { wrapper }) }
 }
 
-const connected = async (result) => {
-  await act(() => result.current.connect())
+const connected = async (result, options) => {
+  await act(() => result.current.connect(options))
   expect(result.current.state).toBe('WAITING')
 }
 
@@ -45,23 +54,77 @@ describe('useOctoprintAppKey', () => {
     vi.useRealTimers()
   })
 
-  it('asks the server for a key, opens the approval in a new tab, then follows the request until ADDED', async () => {
+  it('asks the server for a key without opening a tab, then follows the request until ADDED', async () => {
     const printer = { __typename: 'Printer', id: '9', name: 'Ender 3 V2' }
     const { result, onAdded } = renderAppKey([requestKey().mock, push(appKeyRequest('ADDED', { printer }))])
     expect(result.current.state).toBeNull()
 
     await connected(result)
-    expect(window.open).toHaveBeenCalledWith(APPROVAL_URL, '_blank', 'noopener,noreferrer')
+    expect(window.open).not.toHaveBeenCalled()
+    expect(result.current.tabOpened).toBe(false)
 
     await waitFor(() => expect(result.current.state).toBe('ADDED'))
     expect(onAdded).toHaveBeenCalledWith(printer)
   })
 
-  it('reopens the approval page', async () => {
+  it('opens the tab during the click, before the server answers, and points it at the approval once the request started', async () => {
+    const tab = placeholderTab()
+    window.open.mockReturnValue(tab)
+    const { result } = renderAppKey([requestKey(undefined, 50).mock, never])
+
+    let connecting
+    act(() => { connecting = result.current.connect({ withTab: true }) })
+    expect(window.open).toHaveBeenCalledWith('', '_blank')
+    expect(tab).toMatchObject({ opener: null, location: { href: 'about:blank' }, document: { body: { textContent: 'Waiting for OctoPrint…' } } })
+    expect(result.current).toMatchObject({ requesting: true, state: null })
+
+    await act(() => connecting)
+    expect(result.current).toMatchObject({ state: 'WAITING', tabOpened: true })
+    expect(tab.location.href).toBe(APPROVAL_URL)
+    expect(tab.close).not.toHaveBeenCalled()
+    expect(window.open).toHaveBeenCalledTimes(1)
+  })
+
+  it.each([
+    ['OctoPrint could not be asked', () => requestKey({ request: null, errors: ['OctoPrint at http://192.168.1.57/ got too many requests.'] }).mock],
+    ['the request failed', () => failedRequest]
+  ])('closes the tab when %s', async (_, mock) => {
+    const tab = placeholderTab()
+    window.open.mockReturnValue(tab)
+    const { result } = renderAppKey([mock()])
+    await act(() => result.current.connect({ withTab: true }))
+    expect(result.current).toMatchObject({ state: 'FAILED', tabOpened: false })
+    expect(tab.close).toHaveBeenCalled()
+    expect(tab.location.href).toBe('about:blank')
+  })
+
+  it('closes the tab when the page was left before the server answered', async () => {
+    const tab = placeholderTab()
+    window.open.mockReturnValue(tab)
+    const cancel = cancelKey()
+    const { result, unmount } = renderAppKey([requestKey(undefined, 20).mock, cancel.mock])
+    let connecting
+    act(() => { connecting = result.current.connect({ withTab: true }) })
+    unmount()
+    await connecting
+    expect(tab.close).toHaveBeenCalled()
+    expect(tab.location.href).toBe('about:blank')
+    await waitFor(() => expect(cancel.sent).toEqual([{ id: 'r1' }]))
+  })
+
+  it('waits without a tab when the browser blocked it', async () => {
+    const { result } = renderAppKey([requestKey().mock, never])
+    await connected(result, { withTab: true })
+    expect(window.open).toHaveBeenCalledWith('', '_blank')
+    expect(result.current.tabOpened).toBe(false)
+  })
+
+  it('opens the approval page from a click', async () => {
     const { result } = renderAppKey([requestKey().mock, never])
     await connected(result)
     act(() => result.current.openApproval())
-    expect(window.open).toHaveBeenCalledTimes(2)
+    expect(window.open).toHaveBeenCalledWith(APPROVAL_URL, '_blank', 'noopener,noreferrer')
+    expect(result.current.tabOpened).toBe(true)
   })
 
   it.each([
