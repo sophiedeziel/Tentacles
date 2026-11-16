@@ -7,7 +7,7 @@ import { PageHeader } from '@ant-design/pro-layout'
 
 import Printers from './graphql/Printers.graphql'
 
-import PrinterAvatar from 'components/PrinterAvatar'
+import PrinterAvatar from 'components/PrinterAvatar/PrinterAvatar'
 
 import * as classes from 'common/Common.module.less'
 

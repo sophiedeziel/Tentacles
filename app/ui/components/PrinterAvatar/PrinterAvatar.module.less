@@ -1,0 +1,13 @@
+// The fleet list's printer tile (PrintersList.module.less .avatar): a 40 px rounded square, muted icon on light grey
+
+.avatar {
+  flex: none;
+  font-size: 20px;
+  background: rgba(0, 0, 0, 0.04);
+  color: rgba(0, 0, 0, 0.65);
+
+  // antd rounds its square avatars by 6 px with two classes
+  &:global(.ant-avatar-square) {
+    border-radius: 8px;
+  }
+}
