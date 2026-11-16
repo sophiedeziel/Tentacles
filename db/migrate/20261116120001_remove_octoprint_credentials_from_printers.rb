@@ -8,6 +8,9 @@
 #   plain-text key, the only one still usable.
 # Down puts the columns back from `uri` and `secret` for the OctoPrint printers, so that an older release still finds
 # its credentials.
+#
+# Was 20261116120000, a version AddSpecsFilledAtToPrinters also had. A database that ran it under that version has
+# no `octoprint_uri` left, so up skips it.
 class RemoveOctoprintCredentialsFromPrinters < ActiveRecord::Migration[8.1]
   # A minimal model, so that this migration doesn't depend on the Printer model as it evolves.
   # `encrypts` reads and writes `secret` the way Printer does.
@@ -19,6 +22,8 @@ class RemoveOctoprintCredentialsFromPrinters < ActiveRecord::Migration[8.1]
   end
 
   def up
+    return unless column_exists?(:printers, :octoprint_uri)
+
     backfill_credentials
 
     change_table :printers, bulk: true do |t|
