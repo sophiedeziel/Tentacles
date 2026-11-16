@@ -15,11 +15,11 @@ function DividerIcon () {
   )
 }
 
-// The page header's buttons: Edit Dashboard in view mode (when there is `onEdit`); Reset Layout, Add Divider, Add
-// Widget and Done in edit mode. `busy` is the edit-mode action running ('reset' or 'save'), which disables the others.
+// The page header's buttons: Edit Dashboard in view mode; Reset Layout, Add Divider, Add Widget and Done in edit mode.
+// `busy` is the edit-mode action running ('reset' or 'save'), which disables the others.
 export default function EditBar ({ editing, busy = null, onEdit, onReset, onAddDivider, onAddWidget, onDone }) {
   if (!editing) {
-    return onEdit ? <Button icon={<EditOutlined />} onClick={onEdit}>Edit Dashboard</Button> : null
+    return <Button icon={<EditOutlined />} onClick={onEdit}>Edit Dashboard</Button>
   }
 
   return (
