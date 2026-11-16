@@ -4,7 +4,7 @@ import { canConnect } from '../../Dashboard/widgets/Printer/printerView'
 
 export const FILTERS = ['All', 'Favorites', 'Needs Attention']
 
-const PRODUCTS = { OCTOPRINT: 'OctoPrint', PRUSALINK: 'PrusaLink' }
+export const PRODUCTS = { OCTOPRINT: 'OctoPrint', PRUSALINK: 'PrusaLink' }
 const WITH_JOB = ['PRINTING', 'PAUSED', 'CANCELLING']
 
 // "OctoPrint" or "PrusaLink": the server Tentacles talks to
