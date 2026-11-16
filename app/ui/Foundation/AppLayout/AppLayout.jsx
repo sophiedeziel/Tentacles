@@ -32,7 +32,7 @@ function AppLayout ({ children }) {
         <ConfigProvider theme={darkTheme}>
           <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed}>
             <Wordmark collapsed={collapsed} />
-            <SideMenu></SideMenu>
+            <SideMenu collapsed={collapsed} />
           </Sider>
         </ConfigProvider>
           <Layout >
