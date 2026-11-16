@@ -50,7 +50,7 @@
     "file-saver": "^2.0.5",
     "file-size": "^1.0.0",
     "gcode-preview": "3.0.0-alpha.7",
-    "glob": "^14.0.2",
+    "glob": "^14.0.6",
     "graphql": "^17.0.2",
     "graphql-ruby-client": "^1.14.9",
     "js-yaml": "^4.3.0",
