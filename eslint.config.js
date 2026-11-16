@@ -15,7 +15,8 @@ export default [
       'vendor/**',
       'tmp/**',
       'coverage/**',
-      'eslint.config.js'
+      'eslint.config.js',
+      '.conductor/**'
     ]
   },
   // Node.js config files

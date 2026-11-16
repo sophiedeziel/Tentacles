@@ -1,0 +1,18 @@
+"$schema" = "https://conductor.build/schemas/settings.repo.schema.json"
+
+[scripts]
+# Each workspace gets its own MySQL databases (see config/database.yml) and
+# its own ports, so workspaces can run side by side.
+setup = "bin/worktree-setup"
+archive = "bin/worktree-teardown"
+run_mode = "concurrent"
+
+[scripts.run.dev]
+available_in = [ "local" ]
+command = "PORT=$CONDUCTOR_PORT SHAKAPACKER_DEV_SERVER_PORT=$((CONDUCTOR_PORT + 1)) foreman start -m rails=1,webpack=1"
+default = true
+icon = "play"
+
+[scripts.run.test]
+command = "bin/rspec"
+icon = "test-tube"
