@@ -3,6 +3,7 @@ import { theme } from 'antd'
 // Brand colours
 export const BRAND_PURPLE = '#722ed1'
 export const BRAND_PURPLE_LIGHT = '#a565ff'
+export const BRAND_PURPLE_PALE = '#d3adf7'
 export const BRAND_NIGHT = '#110028'
 export const BRAND_NIGHT_DARK = '#080014'
 
@@ -10,7 +11,8 @@ export const BRAND_NIGHT_DARK = '#080014'
 const layoutComponents = {
   Layout: {
     headerBg: BRAND_NIGHT,
-    siderBg: BRAND_NIGHT
+    siderBg: BRAND_NIGHT,
+    triggerBg: BRAND_NIGHT_DARK
   },
   Menu: {
     darkItemBg: BRAND_NIGHT,

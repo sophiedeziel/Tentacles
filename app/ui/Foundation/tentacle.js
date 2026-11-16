@@ -1,4 +1,4 @@
-// The tentacle drawn behind the camera placeholder (from the Tentacles design system)
+// The tentacle mark from the Tentacles design system, on a 64×64 grid: the sider's Wordmark and the webcam placeholder draw it
 export const TENTACLE_PATH = [
   'M44.2,59.9 L44.2,59.1 L44.1,58.2 L44,57.4 L43.9,56.5 L43.8,55.7 L43.6,54.8 L43.4,54 L43.2,53.2',
   'L42.9,52.4 L42.6,51.6 L42.4,50.8 L42.1,50 L41.8,49.3 L41.4,48.5 L41.1,47.8 L40.7,47.1 L40.3,46.4',
