@@ -330,6 +330,14 @@ describe('PrinterDetails', () => {
       expect(await screen.findByText('Changes saved')).toBeInTheDocument()
     })
 
+    it('still shows the name\'s error beside its reload button', async () => {
+      renderAbout(MK4_SPECS, [], { name: 'MK4 #2' })
+      expect(await screen.findByText('PrusaLink reports MK4 #2')).toBeInTheDocument()
+      await userEvent.clear(field('Printer name'))
+      await save()
+      expect(await screen.findByText('Name is required')).toBeInTheDocument()
+    })
+
     it('reloads the name identifyPrinter reads', async () => {
       renderAbout(MK4_SPECS, [], { name: 'MK4 #2' })
       await userEvent.click(await screen.findByRole('button', { name: 'Reload printer name from PrusaLink' }))
