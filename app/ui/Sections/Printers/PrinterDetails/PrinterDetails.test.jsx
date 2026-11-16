@@ -252,6 +252,11 @@ describe('PrinterDetails', () => {
       renderAbout(MK4_SPECS)
       expect(await screen.findByRole('heading', { name: 'About This Printer' })).toBeInTheDocument()
       expect(screen.getByText('PrusaLink can fill in some of these fields')).toBeInTheDocument()
+      expect(screen.getByText(
+        'Empty fields are filled in from PrusaLink when Tentacles first reaches the printer, and again when its ' +
+        'address changes. A field that already has a value is never replaced, unless you click the reload icon next ' +
+        'to it, and that reloads only that field.'
+      )).toBeInTheDocument()
       expect(field('Brand')).toHaveValue('Prusa Research')
       expect(screen.getByText('Printer servers do not report a brand.')).toBeInTheDocument()
       expect(screen.getByTitle('Prusa Firmware')).toBeInTheDocument()

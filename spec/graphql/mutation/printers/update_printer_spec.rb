@@ -176,7 +176,10 @@ RSpec.describe Mutations::Printers::UpdatePrinter, type: :request do
   end
 
   describe 'uri' do
+    let(:filled_at) { 1.day.ago.change(usec: 0) }
+
     before do
+      printer.update!(specs_filled_at: filled_at)
       PrinterApiCache.set_disconnected(printer.id)
       redis.set("printer_api_#{printer.id}_version", 'cached')
       allow(Prusalink::Info).to receive(:get).and_return(Prusalink::Info.new(name: 'XL', nozzle_diameter: 0.6))
@@ -192,16 +195,18 @@ RSpec.describe Mutations::Printers::UpdatePrinter, type: :request do
       expect(data['errors']).to eq([])
       expect(printer.reload).to have_attributes(nozzle_diameter: 0.6, firmware_version: '6.2.0', model: 'MK4',
                                                 firmware: 'prusa_firmware', name: 'Prusa MK4')
+      expect(printer.specs_filled_at).to be_within(1.second).of(Time.current)
     end
 
-    it 'saves the new address even when the specs cannot be read' do
+    it 'saves the new address even when the specs cannot be read, and forgets that the old one was read' do
       allow(Prusalink::Info).to receive(:get).and_raise(Prusalink::Exceptions::ConnectionError, 'timeout')
       input.merge!(uri: 'http://192.168.1.60')
 
       update_printer
 
       expect(data['errors']).to eq([])
-      expect(printer.reload).to have_attributes(uri: 'http://192.168.1.60', nozzle_diameter: nil)
+      # The monitor fills them once the new address answers
+      expect(printer.reload).to have_attributes(uri: 'http://192.168.1.60', nozzle_diameter: nil, specs_filled_at: nil)
     end
 
     it 'forgets the disconnected flag and the cached answers when it changes' do
@@ -222,6 +227,7 @@ RSpec.describe Mutations::Printers::UpdatePrinter, type: :request do
       expect(PrinterApiCache.disconnected?(printer.id)).to be true
       expect(redis.get("printer_api_#{printer.id}_version")).to eq('cached')
       expect(Prusalink::Info).not_to have_received(:get)
+      expect(printer.reload.specs_filled_at).to eq(filled_at)
     end
 
     it 'keeps them when the printer is invalid' do

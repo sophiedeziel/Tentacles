@@ -8,11 +8,13 @@ module PrinterMonitor
   # Every tick reads the job and the temperatures through the printer's Reader. The snapshot is stored in Redis and
   # the GraphQL subscribers are notified only when it differs from the last one written.
   # Unreachable printers are reported as OFFLINE and polled less and less often (see Connectivity#delay).
+  # The first time the printer answers, its blank specs are filled in the background unless a fill already read its
+  # server (see #fill_specs_once).
   #
   #   worker = PrinterMonitor::Worker.new(printer).start
   #   worker.stop
   #   worker.join
-  class Worker
+  class Worker # rubocop:disable Metrics/ClassLength -- one line over since the specs fill check
     extend T::Sig
     include Runnable
 
@@ -40,6 +42,7 @@ module PrinterMonitor
       @webcam = T.let(WebcamTracker.new(printer, @reader), WebcamTracker)
       @connectivity = T.let(Connectivity.new(printer, interval:), Connectivity)
       @previous = T.let(nil, T.nilable(PrinterStatus))
+      @specs_checked = T.let(false, T::Boolean)
     end
 
     # Polls the printer once, publishes the snapshot if it changed and writes the heartbeat. Never raises.
@@ -60,11 +63,29 @@ module PrinterMonitor
       attributes = @reader.status_attributes
       @webcam.refresh
       connectivity.record_success
+      fill_specs_once
       build_status(attributes)
     rescue StandardError => e
       record_failure(e)
       build_status({ state_family: PrinterStateFamily::Offline, state_text: UNREACHABLE_STATE_TEXT,
                      error_text: error_text(e) })
+    end
+
+    # Enqueues FillPrinterSpecsJob when no fill has read the printer's server yet (`specs_filled_at` is nil), e.g. it
+    # was unreachable when it was added. Once per worker: the job sets the column, and a changed address (which clears
+    # it) restarts the worker. Never raises: the poll succeeded.
+    sig { void }
+    def fill_specs_once
+      return if @specs_checked
+
+      @specs_checked = true
+      # The worker's printer was loaded when it started: read the column again
+      return if Printer.where(id: printer.id).pick(:specs_filled_at)
+
+      FillPrinterSpecsJob.perform_later(printer.id)
+      log(:info, 'Filling its blank specs in the background: it answered, and no fill has read its server yet')
+    rescue StandardError => e
+      log_exception('Failed to enqueue FillPrinterSpecsJob', e)
     end
 
     sig { params(status: PrinterStatus).void }

@@ -32,6 +32,8 @@ module Mutations
         if printer.update(attributes(changes))
           if printer.saved_change_to_uri?
             forget_api_answers(printer)
+            # The new address hasn't been read: if it can't be now, the monitor fills the specs once it answers
+            printer.update_column(:specs_filled_at, nil) # rubocop:disable Rails/SkipsModelValidations
             # After forgetting: the specs come from the new address, not from the old one's cached answer
             printer.fill_specs_from_server
           end

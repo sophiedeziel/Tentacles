@@ -492,6 +492,47 @@ RSpec.describe PrinterMonitor::Worker do
     end
   end
 
+  describe 'blank specs' do
+    before { allow(Rails.logger).to receive(:info).and_call_original }
+
+    it 'enqueues FillPrinterSpecsJob on the first tick the printer answers, not on every tick' do
+      expect { 3.times { worker.tick } }.to have_enqueued_job(FillPrinterSpecsJob).with(printer.id).exactly(:once)
+      expect(Rails.logger).to have_received(:info)
+        .with(/Filling its blank specs in the background: it answered, and no fill has read its server yet/)
+    end
+
+    it 'waits for the printer to answer' do
+      go_offline
+      expect { 2.times { worker.tick } }.not_to have_enqueued_job(FillPrinterSpecsJob)
+
+      allow(Octoprint::Job).to receive(:get) { job }
+      expect { worker.tick }.to have_enqueued_job(FillPrinterSpecsJob).with(printer.id)
+    end
+
+    it 'does not enqueue it when a fill already read the server, even since the worker started' do
+      worker
+      Printer.find(printer.id).update!(specs_filled_at: Time.current)
+
+      expect { 2.times { worker.tick } }.not_to have_enqueued_job(FillPrinterSpecsJob)
+    end
+
+    it 'enqueues it again once the worker restarts, e.g. after the credentials changed' do
+      worker.tick
+      expect { described_class.new(printer, interval: 2.0).tick }
+        .to have_enqueued_job(FillPrinterSpecsJob).with(printer.id)
+    end
+
+    it 'keeps polling, and logs once, when it cannot be enqueued' do
+      allow(FillPrinterSpecsJob).to receive(:perform_later).and_raise(RedisClient::CannotConnectError, 'refused')
+      allow(Rails.logger).to receive(:error).and_call_original
+
+      expect { 2.times { worker.tick } }.not_to raise_error
+      expect(status).to have_attributes(state_family: PrinterStateFamily::Printing)
+      expect(worker.delay).to eq 2.0
+      expect(Rails.logger).to have_received(:error).with(/Failed to enqueue FillPrinterSpecsJob/).once
+    end
+  end
+
   describe 'printers.last_seen_at' do
     let(:start) { Time.zone.local(2026, 11, 15, 10, 0, 0) }
 
