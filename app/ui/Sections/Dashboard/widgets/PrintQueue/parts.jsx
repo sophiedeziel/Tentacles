@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import { Button, Progress, theme } from 'antd'
 import { Link } from 'react-router'
 
+import EmptyState from '../../../../components/EmptyState/EmptyState'
 import { PrintQueueOutlined } from '../../../../components/icons'
 import * as classes from './PrintQueueWidget.module.less'
 
@@ -64,8 +65,8 @@ export function SendFromFiles () {
   return <>Send G-code from <Link to="/files" style={{ color: token.colorPrimary }}>Files</Link> to start a print.</>
 }
 
-// The empty queue: text only at Medium, the illustration from Large up. Both point to Files, where prints are
-// enqueued.
+// The empty queue: text only at Medium, the shared empty state with its illustration from Large up. Both point to
+// Files, where prints are enqueued.
 export function EmptyQueue ({ illustration = false }) {
   if (!illustration) {
     return (
@@ -77,24 +78,8 @@ export function EmptyQueue ({ illustration = false }) {
   }
   return (
     <div className={classes.emptyIllustration}>
-      <EmptyQueueIllustration />
-      <strong>Queue is empty</strong>
-      <span><SendFromFiles /></span>
+      <EmptyState kind="queue" title="Queue is empty" description={<SendFromFiles />} />
     </div>
-  )
-}
-
-// An empty job card in a soft circle, with a tentacle curling over its corner
-function EmptyQueueIllustration () {
-  return (
-    <svg width="104" height="92" viewBox="0 0 104 92" aria-hidden="true">
-      <circle cx="52" cy="50" r="40" fill="#f9f0ff" />
-      <rect x="18" y="34" width="68" height="44" rx="6" fill="#fff" stroke="#d3adf7" strokeWidth="2" />
-      <rect x="18" y="34" width="68" height="44" rx="6" fill="#f9f0ff" opacity="0.6" />
-      <path d="M28 46h38M28 56h28M28 66h20" stroke="#d3adf7" strokeWidth="4" strokeLinecap="round" />
-      <path d="M68 35c-2-10 0-21 8-26c7-4 15 1 14 8c-1 6-8 7-11 3c-2-3 0-7 3-6"
-        fill="none" stroke="#722ed1" strokeWidth="6" strokeLinecap="round" />
-    </svg>
   )
 }
 

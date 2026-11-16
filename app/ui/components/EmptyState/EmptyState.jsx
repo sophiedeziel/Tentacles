@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Empty } from 'antd'
 
-import { BRAND_PURPLE, STATE_PALETTE } from '../../Foundation/theme'
+import { BRAND_PURPLE, BRAND_PURPLE_PALE, STATE_PALETTE } from '../../Foundation/theme'
 import { SUCKERS, TENTACLE_PATH } from '../../Foundation/tentacle'
 import * as classes from './EmptyState.module.less'
 
@@ -32,9 +32,26 @@ function PrintersIllustration () {
   )
 }
 
-// One illustration per kind of empty page; more kinds come with their pages (#2793)
+// An empty job card in the same soft circle, with a tentacle curling over its corner
+function QueueIllustration () {
+  return (
+    <svg viewBox="0 0 160 120" width="160" height="120" aria-hidden="true">
+      <circle cx="80" cy="62" r="52" fill={STATE_PALETTE.PRINTING.tint} />
+      <g transform="translate(15 -0.5) scale(1.25)">
+        <rect x="18" y="34" width="68" height="44" rx="6" fill="#fff" stroke={BRAND_PURPLE_PALE} strokeWidth="2" />
+        <rect x="18" y="34" width="68" height="44" rx="6" fill={STATE_PALETTE.PRINTING.tint} opacity="0.6" />
+        <path d="M28 46h38M28 56h28M28 66h20" stroke={BRAND_PURPLE_PALE} strokeWidth="4" strokeLinecap="round" />
+        <path d="M68 35c-2-10 0-21 8-26c7-4 15 1 14 8c-1 6-8 7-11 3c-2-3 0-7 3-6"
+          fill="none" stroke={BRAND_PURPLE} strokeWidth="6" strokeLinecap="round" />
+      </g>
+    </svg>
+  )
+}
+
+// One illustration per kind of empty page or widget; more kinds come with their pages (#2793)
 const ILLUSTRATIONS = {
-  printers: PrintersIllustration
+  printers: PrintersIllustration,
+  queue: QueueIllustration
 }
 
 // A page or card with nothing to show yet: an illustration for its `kind`, a title, a description, and what to do
