@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_15_180000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_16_090000) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -108,6 +108,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_180000) do
     t.string "uri"
     t.string "username"
     t.text "secret"
+    t.boolean "favorite", default: false, null: false
+    t.string "brand", limit: 100
+    t.string "model", limit: 100
+    t.string "firmware", limit: 100
+    t.string "firmware_version", limit: 50
+    t.decimal "build_volume_x", precision: 6, scale: 1
+    t.decimal "build_volume_y", precision: 6, scale: 1
+    t.decimal "build_volume_z", precision: 6, scale: 1
+    t.decimal "build_diameter", precision: 6, scale: 1
+    t.string "bed_shape"
+    t.integer "extruders"
+    t.decimal "nozzle_diameter", precision: 4, scale: 2
+    t.integer "max_hotend_temp"
+    t.integer "max_bed_temp"
+    t.boolean "heated_bed"
+    t.boolean "heated_chamber"
+    t.boolean "webcam"
+    t.json "materials"
   end
 
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"

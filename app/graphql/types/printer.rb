@@ -10,6 +10,14 @@ module Types
     field :backend, Types::PrinterBackend, null: false
     field :uri, String, null: true, description: "The URL of the printer's server"
     field :username, String, null: true, description: 'The username, for the backends that use one (PrusaLink)'
+    field :favorite, Boolean, null: false, description: 'Favorites come first in the fleet list'
+    field :specs, Types::PrinterSpecs, null: false,
+                                       description: 'What the printer is and can do, as saved in Tentacles. Reads ' \
+                                                    'columns only, never the printer: safe in list queries.'
+    def specs
+      object
+    end
+
     field :version, String, null: true,
                             description: 'The server and its version, e.g. "OctoPrint 1.11.2", or "Unavailable"'
     def version
