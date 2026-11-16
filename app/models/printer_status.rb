@@ -3,7 +3,7 @@
 
 # Snapshot of a printer's live state, built by the printer monitor and stored in Redis (see PrinterStatusStore).
 #
-# GraphQL resolvers read these snapshots instead of calling OctoPrint.
+# GraphQL resolvers read these snapshots instead of calling the printer.
 class PrinterStatus < T::Struct
   extend T::Sig
 
@@ -69,7 +69,7 @@ class PrinterStatus < T::Struct
   const :hotend, T.nilable(Temperature)
   const :bed, T.nilable(Temperature)
   const :camera, Camera, factory: -> { Camera.new }
-  # Last time the monitor reached OctoPrint
+  # Last time the monitor reached the printer
   const :last_seen_at, T.nilable(TimeLike)
   # When the snapshot was built
   const :updated_at, T.nilable(TimeLike)

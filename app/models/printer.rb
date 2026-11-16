@@ -18,9 +18,6 @@ class Printer < ApplicationRecord
   # Printers saved before `uri` and `secret` existed may lack them: the monitor reports their missing credentials
   validates :uri, :secret, presence: true, on: :create
 
-  # Keeps the old columns in sync until they are dropped, so that the previous release still works after a rollback
-  before_save :mirror_octoprint_credentials
-
   # The job under way: the active job of the queue, or the job the printer reports (`{ name:, progress: }`).
   # nil when there is none or when it can't be read.
   def current_job
@@ -38,13 +35,12 @@ class Printer < ApplicationRecord
     'printer_'
   end
 
-  # e.g. "OctoPrint 1.11.2", cached for 2 hours
+  # e.g. "OctoPrint 1.11.2" or "PrusaLink 2.1.2 (firmware 6.1.3)", cached for 2 hours
   def version
     using_api(cache: 2.hours) do
       api.version
     end
   end
-  alias octoprint_version version
 
   def job_status
     using_api do
@@ -141,16 +137,5 @@ class Printer < ApplicationRecord
     Rails.logger.error("Failed to get #{api.product_name} data for #{name} :\n\t#{error.message}")
     PrinterApiCache.set_disconnected(id) if error.is_a?(PrinterBackends::Unreachable)
     nil
-  end
-
-  # Until the cleanup drops them, `octoprint_uri` and `octoprint_key` mirror `uri` and `secret`. A blank or unreadable
-  # value never erases the old one: the previous release would lose credentials it could still use.
-  sig { void }
-  def mirror_octoprint_credentials
-    return unless backend == 'octoprint'
-
-    self.octoprint_uri = uri if uri.present?
-    key = readable_secret
-    self.octoprint_key = key if key.present?
   end
 end

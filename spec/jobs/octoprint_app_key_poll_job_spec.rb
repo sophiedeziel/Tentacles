@@ -50,9 +50,7 @@ RSpec.describe OctoprintAppKeyPollJob, type: :job do
       expect(pushes).to be_present
       expect(pushes.to_json).not_to include(api_key)
       expect(all_broadcasts.join).not_to include(api_key)
-      # Except the SQL INSERT of the printer: it shows the plaintext `octoprint_key` mirror column (as addPrinter
-      # does), at debug level only, which production doesn't log. The column is dropped in #2876.
-      expect(log.string.lines.grep_v(/INSERT INTO `printers`/).join).not_to include(api_key)
+      expect(log.string).not_to include(api_key)
     end
   end
 

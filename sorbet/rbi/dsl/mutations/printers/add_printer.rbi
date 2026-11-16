@@ -12,10 +12,8 @@ class Mutations::Printers::AddPrinter
       backend: ::String,
       uri: T.nilable(::String),
       username: T.nilable(::String),
-      secret: T.nilable(::String),
-      octoprint_uri: T.nilable(::String),
-      octoprint_key: T.nilable(::String)
+      secret: T.nilable(::String)
     ).returns(T.untyped)
   end
-  def resolve(name:, backend: T.unsafe(nil), uri: T.unsafe(nil), username: T.unsafe(nil), secret: T.unsafe(nil), octoprint_uri: T.unsafe(nil), octoprint_key: T.unsafe(nil)); end
+  def resolve(name:, backend: T.unsafe(nil), uri: T.unsafe(nil), username: T.unsafe(nil), secret: T.unsafe(nil)); end
 end

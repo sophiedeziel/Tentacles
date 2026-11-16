@@ -11,7 +11,7 @@ module Types
     field :status, String, null: true
     field :progress, Float, null: false
 
-    orphan_types Types::OctoprintJob
+    orphan_types Types::PrinterJob
 
     definition_methods do
       def resolve_type(object, _context)
@@ -19,7 +19,7 @@ module Types
         when ::Printer::Job
           Types::EnqueuedJob
         when Hash
-          Types::OctoprintJob
+          Types::PrinterJob
         end
       end
     end

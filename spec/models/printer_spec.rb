@@ -21,12 +21,6 @@ RSpec.describe Printer, :vcr, type: :model do
     end
   end
 
-  describe 'octoprint_version' do
-    subject { printer.octoprint_version }
-
-    it { is_expected.to eq('OctoPrint 1.7.3') }
-  end
-
   describe 'job_status' do
     subject { printer.job_status }
 
@@ -290,7 +284,11 @@ RSpec.describe Printer, :vcr, type: :model do
       expect(printer.version).to eq 'OctoPrint 1.7.3'
       expect(printer.version).to eq 'OctoPrint 1.7.3'
       expect(Octoprint::ServerVersion).to have_received(:get).once
-      expect(described_class.find(printer.id).octoprint_version).to eq 'OctoPrint 1.7.3'
+      expect(described_class.find(printer.id).version).to eq 'OctoPrint 1.7.3'
+    end
+
+    it 'reads it from the printer', vcr: { cassette_name: 'Printer/version/1_3_1' } do
+      expect(build(:printer).version).to eq 'OctoPrint 1.7.3'
     end
   end
 
@@ -362,27 +360,6 @@ RSpec.describe Printer, :vcr, type: :model do
       expect(described_class.find(printer.id).secret).to eq 'S3CR3T'
     end
   end
-
-  describe 'octoprint_uri and octoprint_key' do
-    let(:printer) { create(:printer, uri: 'http://octopi.local/', secret: 'KEY') }
-
-    it 'mirror uri and secret, so that the previous release still works after a rollback' do
-      expect(printer.reload).to have_attributes(octoprint_uri: 'http://octopi.local/', octoprint_key: 'KEY')
-
-      printer.update!(uri: 'http://octopi2.local/', secret: 'KEY2')
-      expect(printer.reload).to have_attributes(octoprint_uri: 'http://octopi2.local/', octoprint_key: 'KEY2')
-    end
-
-    it 'are not erased by a blank uri or secret' do
-      printer.update!(uri: '', secret: nil)
-      expect(printer.reload).to have_attributes(octoprint_uri: 'http://octopi.local/', octoprint_key: 'KEY')
-    end
-
-    it 'are left alone for PrusaLink printers, so that their password is never stored in plain text' do
-      printer = create(:printer, :prusalink)
-      expect(printer.reload).to have_attributes(octoprint_uri: nil, octoprint_key: nil, secret: 'printer-password')
-    end
-  end
 end
 
 RSpec.describe Printer, 'with a secret that cannot be decrypted' do
@@ -415,13 +392,12 @@ RSpec.describe Printer, 'with a secret that cannot be decrypted' do
     expect(PrinterApiCache.disconnected?(printer.id)).to be false
   end
 
-  it 'is still valid and can be saved, keeping its stored secret and the old OctoPrint key' do
+  it 'is still valid and can be saved, keeping its stored secret' do
     stored = described_class.connection.select_value("SELECT secret FROM printers WHERE id = #{printer.id}")
 
     printer.update!(name: 'Renamed')
 
-    expect(described_class.find(printer.id)).to have_attributes(name: 'Renamed',
-                                                                octoprint_key: 'A8DDB1359AAB415AB38C345129815DF4')
+    expect(described_class.find(printer.id).name).to eq 'Renamed'
     expect(described_class.connection.select_value("SELECT secret FROM printers WHERE id = #{printer.id}"))
       .to eq stored
   end
