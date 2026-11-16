@@ -57,11 +57,20 @@ function mainAction (family, octoprint, id) {
   return { key: 'openQueue', label: 'Open Queue', to: `/printers/${id}/queue` }
 }
 
+// The job controls of the ⋯ menu for a state (the dashboard's mutations and confirmations)
+function jobControls (family, canStartNext) {
+  if (family === 'PRINTING') return ['pause', 'cancel']
+  if (family === 'PAUSED') return ['resume', 'cancel']
+  if (family === 'OPERATIONAL' && canStartNext) return ['startNext']
+  return []
+}
+
 // The ⋯ menu, top to bottom. Reconnect is OctoPrint's: PrusaLink connects to its printer on its own.
 export function menuKeys (printer) {
   return [
     'details',
     ...(printer.uri ? ['openServer'] : []),
+    ...jobControls(printer.status?.stateFamily || 'OFFLINE', printer.canStartNext),
     ...(printer.backend === 'OCTOPRINT' ? ['reconnect'] : []),
     'remove'
   ]
