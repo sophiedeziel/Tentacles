@@ -11,6 +11,7 @@ class Printer < ApplicationRecord
   has_many :dashboard_widgets, dependent: :destroy
 
   include EncryptedSecret
+  include Specs
 
   validates :name, presence: true
   validates :backend, inclusion: { in: BACKENDS }

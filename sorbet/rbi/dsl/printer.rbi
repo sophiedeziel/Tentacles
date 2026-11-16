@@ -585,6 +585,276 @@ class Printer
     sig { void }
     def backend_will_change!; end
 
+    sig { returns(T.nilable(::String)) }
+    def bed_shape; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def bed_shape=(value); end
+
+    sig { returns(T::Boolean) }
+    def bed_shape?; end
+
+    sig { returns(T.nilable(::String)) }
+    def bed_shape_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def bed_shape_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def bed_shape_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def bed_shape_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def bed_shape_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def bed_shape_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def bed_shape_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def bed_shape_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def bed_shape_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def bed_shape_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def bed_shape_was; end
+
+    sig { void }
+    def bed_shape_will_change!; end
+
+    sig { returns(T.nilable(::String)) }
+    def brand; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def brand=(value); end
+
+    sig { returns(T::Boolean) }
+    def brand?; end
+
+    sig { returns(T.nilable(::String)) }
+    def brand_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def brand_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def brand_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def brand_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def brand_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def brand_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def brand_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def brand_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def brand_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def brand_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def brand_was; end
+
+    sig { void }
+    def brand_will_change!; end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def build_diameter; end
+
+    sig { params(value: T.nilable(::BigDecimal)).returns(T.nilable(::BigDecimal)) }
+    def build_diameter=(value); end
+
+    sig { returns(T::Boolean) }
+    def build_diameter?; end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def build_diameter_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def build_diameter_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def build_diameter_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::BigDecimal), T.nilable(::BigDecimal)])) }
+    def build_diameter_change; end
+
+    sig { returns(T.nilable([T.nilable(::BigDecimal), T.nilable(::BigDecimal)])) }
+    def build_diameter_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def build_diameter_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def build_diameter_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::BigDecimal), T.nilable(::BigDecimal)])) }
+    def build_diameter_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def build_diameter_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def build_diameter_previously_was; end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def build_diameter_was; end
+
+    sig { void }
+    def build_diameter_will_change!; end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def build_volume_x; end
+
+    sig { params(value: T.nilable(::BigDecimal)).returns(T.nilable(::BigDecimal)) }
+    def build_volume_x=(value); end
+
+    sig { returns(T::Boolean) }
+    def build_volume_x?; end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def build_volume_x_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def build_volume_x_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def build_volume_x_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::BigDecimal), T.nilable(::BigDecimal)])) }
+    def build_volume_x_change; end
+
+    sig { returns(T.nilable([T.nilable(::BigDecimal), T.nilable(::BigDecimal)])) }
+    def build_volume_x_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def build_volume_x_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def build_volume_x_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::BigDecimal), T.nilable(::BigDecimal)])) }
+    def build_volume_x_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def build_volume_x_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def build_volume_x_previously_was; end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def build_volume_x_was; end
+
+    sig { void }
+    def build_volume_x_will_change!; end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def build_volume_y; end
+
+    sig { params(value: T.nilable(::BigDecimal)).returns(T.nilable(::BigDecimal)) }
+    def build_volume_y=(value); end
+
+    sig { returns(T::Boolean) }
+    def build_volume_y?; end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def build_volume_y_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def build_volume_y_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def build_volume_y_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::BigDecimal), T.nilable(::BigDecimal)])) }
+    def build_volume_y_change; end
+
+    sig { returns(T.nilable([T.nilable(::BigDecimal), T.nilable(::BigDecimal)])) }
+    def build_volume_y_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def build_volume_y_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def build_volume_y_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::BigDecimal), T.nilable(::BigDecimal)])) }
+    def build_volume_y_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def build_volume_y_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def build_volume_y_previously_was; end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def build_volume_y_was; end
+
+    sig { void }
+    def build_volume_y_will_change!; end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def build_volume_z; end
+
+    sig { params(value: T.nilable(::BigDecimal)).returns(T.nilable(::BigDecimal)) }
+    def build_volume_z=(value); end
+
+    sig { returns(T::Boolean) }
+    def build_volume_z?; end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def build_volume_z_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def build_volume_z_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def build_volume_z_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::BigDecimal), T.nilable(::BigDecimal)])) }
+    def build_volume_z_change; end
+
+    sig { returns(T.nilable([T.nilable(::BigDecimal), T.nilable(::BigDecimal)])) }
+    def build_volume_z_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def build_volume_z_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def build_volume_z_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::BigDecimal), T.nilable(::BigDecimal)])) }
+    def build_volume_z_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def build_volume_z_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def build_volume_z_previously_was; end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def build_volume_z_was; end
+
+    sig { void }
+    def build_volume_z_will_change!; end
+
     sig { returns(::ActiveSupport::TimeWithZone) }
     def created_at; end
 
@@ -629,6 +899,276 @@ class Printer
 
     sig { void }
     def created_at_will_change!; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def extruders; end
+
+    sig { params(value: T.nilable(::Integer)).returns(T.nilable(::Integer)) }
+    def extruders=(value); end
+
+    sig { returns(T::Boolean) }
+    def extruders?; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def extruders_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def extruders_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def extruders_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def extruders_change; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def extruders_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def extruders_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def extruders_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def extruders_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def extruders_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def extruders_previously_was; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def extruders_was; end
+
+    sig { void }
+    def extruders_will_change!; end
+
+    sig { returns(T::Boolean) }
+    def favorite; end
+
+    sig { params(value: T::Boolean).returns(T::Boolean) }
+    def favorite=(value); end
+
+    sig { returns(T::Boolean) }
+    def favorite?; end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def favorite_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def favorite_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def favorite_came_from_user?; end
+
+    sig { returns(T.nilable([T::Boolean, T::Boolean])) }
+    def favorite_change; end
+
+    sig { returns(T.nilable([T::Boolean, T::Boolean])) }
+    def favorite_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def favorite_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def favorite_in_database; end
+
+    sig { returns(T.nilable([T::Boolean, T::Boolean])) }
+    def favorite_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def favorite_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def favorite_previously_was; end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def favorite_was; end
+
+    sig { void }
+    def favorite_will_change!; end
+
+    sig { returns(T.nilable(::String)) }
+    def firmware; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def firmware=(value); end
+
+    sig { returns(T::Boolean) }
+    def firmware?; end
+
+    sig { returns(T.nilable(::String)) }
+    def firmware_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def firmware_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def firmware_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def firmware_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def firmware_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def firmware_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def firmware_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def firmware_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def firmware_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def firmware_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def firmware_version; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def firmware_version=(value); end
+
+    sig { returns(T::Boolean) }
+    def firmware_version?; end
+
+    sig { returns(T.nilable(::String)) }
+    def firmware_version_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def firmware_version_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def firmware_version_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def firmware_version_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def firmware_version_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def firmware_version_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def firmware_version_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def firmware_version_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def firmware_version_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def firmware_version_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def firmware_version_was; end
+
+    sig { void }
+    def firmware_version_will_change!; end
+
+    sig { returns(T.nilable(::String)) }
+    def firmware_was; end
+
+    sig { void }
+    def firmware_will_change!; end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def heated_bed; end
+
+    sig { params(value: T.nilable(T::Boolean)).returns(T.nilable(T::Boolean)) }
+    def heated_bed=(value); end
+
+    sig { returns(T::Boolean) }
+    def heated_bed?; end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def heated_bed_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def heated_bed_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def heated_bed_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(T::Boolean), T.nilable(T::Boolean)])) }
+    def heated_bed_change; end
+
+    sig { returns(T.nilable([T.nilable(T::Boolean), T.nilable(T::Boolean)])) }
+    def heated_bed_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def heated_bed_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def heated_bed_in_database; end
+
+    sig { returns(T.nilable([T.nilable(T::Boolean), T.nilable(T::Boolean)])) }
+    def heated_bed_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def heated_bed_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def heated_bed_previously_was; end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def heated_bed_was; end
+
+    sig { void }
+    def heated_bed_will_change!; end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def heated_chamber; end
+
+    sig { params(value: T.nilable(T::Boolean)).returns(T.nilable(T::Boolean)) }
+    def heated_chamber=(value); end
+
+    sig { returns(T::Boolean) }
+    def heated_chamber?; end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def heated_chamber_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def heated_chamber_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def heated_chamber_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(T::Boolean), T.nilable(T::Boolean)])) }
+    def heated_chamber_change; end
+
+    sig { returns(T.nilable([T.nilable(T::Boolean), T.nilable(T::Boolean)])) }
+    def heated_chamber_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def heated_chamber_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def heated_chamber_in_database; end
+
+    sig { returns(T.nilable([T.nilable(T::Boolean), T.nilable(T::Boolean)])) }
+    def heated_chamber_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def heated_chamber_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def heated_chamber_previously_was; end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def heated_chamber_was; end
+
+    sig { void }
+    def heated_chamber_will_change!; end
 
     sig { returns(::Integer) }
     def id; end
@@ -765,6 +1305,186 @@ class Printer
     sig { void }
     def last_seen_at_will_change!; end
 
+    sig { returns(T.untyped) }
+    def materials; end
+
+    sig { params(value: T.untyped).returns(T.untyped) }
+    def materials=(value); end
+
+    sig { returns(T::Boolean) }
+    def materials?; end
+
+    sig { returns(T.untyped) }
+    def materials_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def materials_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def materials_came_from_user?; end
+
+    sig { returns(T.nilable([T.untyped, T.untyped])) }
+    def materials_change; end
+
+    sig { returns(T.nilable([T.untyped, T.untyped])) }
+    def materials_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def materials_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.untyped) }
+    def materials_in_database; end
+
+    sig { returns(T.nilable([T.untyped, T.untyped])) }
+    def materials_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def materials_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.untyped) }
+    def materials_previously_was; end
+
+    sig { returns(T.untyped) }
+    def materials_was; end
+
+    sig { void }
+    def materials_will_change!; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def max_bed_temp; end
+
+    sig { params(value: T.nilable(::Integer)).returns(T.nilable(::Integer)) }
+    def max_bed_temp=(value); end
+
+    sig { returns(T::Boolean) }
+    def max_bed_temp?; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def max_bed_temp_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def max_bed_temp_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def max_bed_temp_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def max_bed_temp_change; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def max_bed_temp_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def max_bed_temp_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def max_bed_temp_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def max_bed_temp_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def max_bed_temp_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def max_bed_temp_previously_was; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def max_bed_temp_was; end
+
+    sig { void }
+    def max_bed_temp_will_change!; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def max_hotend_temp; end
+
+    sig { params(value: T.nilable(::Integer)).returns(T.nilable(::Integer)) }
+    def max_hotend_temp=(value); end
+
+    sig { returns(T::Boolean) }
+    def max_hotend_temp?; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def max_hotend_temp_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def max_hotend_temp_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def max_hotend_temp_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def max_hotend_temp_change; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def max_hotend_temp_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def max_hotend_temp_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def max_hotend_temp_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def max_hotend_temp_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def max_hotend_temp_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def max_hotend_temp_previously_was; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def max_hotend_temp_was; end
+
+    sig { void }
+    def max_hotend_temp_will_change!; end
+
+    sig { returns(T.nilable(::String)) }
+    def model; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def model=(value); end
+
+    sig { returns(T::Boolean) }
+    def model?; end
+
+    sig { returns(T.nilable(::String)) }
+    def model_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def model_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def model_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def model_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def model_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def model_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def model_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def model_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def model_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def model_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def model_was; end
+
+    sig { void }
+    def model_will_change!; end
+
     sig { returns(T.nilable(::String)) }
     def name; end
 
@@ -809,6 +1529,51 @@ class Printer
 
     sig { void }
     def name_will_change!; end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def nozzle_diameter; end
+
+    sig { params(value: T.nilable(::BigDecimal)).returns(T.nilable(::BigDecimal)) }
+    def nozzle_diameter=(value); end
+
+    sig { returns(T::Boolean) }
+    def nozzle_diameter?; end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def nozzle_diameter_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def nozzle_diameter_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def nozzle_diameter_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::BigDecimal), T.nilable(::BigDecimal)])) }
+    def nozzle_diameter_change; end
+
+    sig { returns(T.nilable([T.nilable(::BigDecimal), T.nilable(::BigDecimal)])) }
+    def nozzle_diameter_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def nozzle_diameter_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def nozzle_diameter_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::BigDecimal), T.nilable(::BigDecimal)])) }
+    def nozzle_diameter_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def nozzle_diameter_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def nozzle_diameter_previously_was; end
+
+    sig { returns(T.nilable(::BigDecimal)) }
+    def nozzle_diameter_was; end
+
+    sig { void }
+    def nozzle_diameter_will_change!; end
 
     sig { returns(T.nilable(::String)) }
     def octoprint_key; end
@@ -904,7 +1669,43 @@ class Printer
     def restore_backend!; end
 
     sig { void }
+    def restore_bed_shape!; end
+
+    sig { void }
+    def restore_brand!; end
+
+    sig { void }
+    def restore_build_diameter!; end
+
+    sig { void }
+    def restore_build_volume_x!; end
+
+    sig { void }
+    def restore_build_volume_y!; end
+
+    sig { void }
+    def restore_build_volume_z!; end
+
+    sig { void }
     def restore_created_at!; end
+
+    sig { void }
+    def restore_extruders!; end
+
+    sig { void }
+    def restore_favorite!; end
+
+    sig { void }
+    def restore_firmware!; end
+
+    sig { void }
+    def restore_firmware_version!; end
+
+    sig { void }
+    def restore_heated_bed!; end
+
+    sig { void }
+    def restore_heated_chamber!; end
 
     sig { void }
     def restore_id!; end
@@ -916,7 +1717,22 @@ class Printer
     def restore_last_seen_at!; end
 
     sig { void }
+    def restore_materials!; end
+
+    sig { void }
+    def restore_max_bed_temp!; end
+
+    sig { void }
+    def restore_max_hotend_temp!; end
+
+    sig { void }
+    def restore_model!; end
+
+    sig { void }
     def restore_name!; end
+
+    sig { void }
+    def restore_nozzle_diameter!; end
 
     sig { void }
     def restore_octoprint_key!; end
@@ -936,17 +1752,92 @@ class Printer
     sig { void }
     def restore_username!; end
 
+    sig { void }
+    def restore_webcam!; end
+
     sig { returns(T.nilable([::String, ::String])) }
     def saved_change_to_backend; end
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def saved_change_to_backend?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_bed_shape; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_bed_shape?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_brand; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_brand?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([T.nilable(::BigDecimal), T.nilable(::BigDecimal)])) }
+    def saved_change_to_build_diameter; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_build_diameter?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([T.nilable(::BigDecimal), T.nilable(::BigDecimal)])) }
+    def saved_change_to_build_volume_x; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_build_volume_x?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([T.nilable(::BigDecimal), T.nilable(::BigDecimal)])) }
+    def saved_change_to_build_volume_y; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_build_volume_y?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([T.nilable(::BigDecimal), T.nilable(::BigDecimal)])) }
+    def saved_change_to_build_volume_z; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_build_volume_z?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
     sig { returns(T.nilable([::ActiveSupport::TimeWithZone, ::ActiveSupport::TimeWithZone])) }
     def saved_change_to_created_at; end
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def saved_change_to_created_at?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def saved_change_to_extruders; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_extruders?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([T::Boolean, T::Boolean])) }
+    def saved_change_to_favorite; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_favorite?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_firmware; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_firmware?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_firmware_version; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_firmware_version?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([T.nilable(T::Boolean), T.nilable(T::Boolean)])) }
+    def saved_change_to_heated_bed; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_heated_bed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([T.nilable(T::Boolean), T.nilable(T::Boolean)])) }
+    def saved_change_to_heated_chamber; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_heated_chamber?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { returns(T.nilable([::Integer, ::Integer])) }
     def saved_change_to_id; end
@@ -966,11 +1857,41 @@ class Printer
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def saved_change_to_last_seen_at?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
+    sig { returns(T.nilable([T.untyped, T.untyped])) }
+    def saved_change_to_materials; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_materials?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def saved_change_to_max_bed_temp; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_max_bed_temp?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def saved_change_to_max_hotend_temp; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_max_hotend_temp?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_model; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_model?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
     sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
     def saved_change_to_name; end
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def saved_change_to_name?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([T.nilable(::BigDecimal), T.nilable(::BigDecimal)])) }
+    def saved_change_to_nozzle_diameter; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_nozzle_diameter?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
     def saved_change_to_octoprint_key; end
@@ -1007,6 +1928,12 @@ class Printer
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def saved_change_to_username?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([T.nilable(T::Boolean), T.nilable(T::Boolean)])) }
+    def saved_change_to_webcam; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_webcam?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { returns(T.nilable(::String)) }
     def secret; end
@@ -1188,11 +2115,92 @@ class Printer
     sig { void }
     def username_will_change!; end
 
+    sig { returns(T.nilable(T::Boolean)) }
+    def webcam; end
+
+    sig { params(value: T.nilable(T::Boolean)).returns(T.nilable(T::Boolean)) }
+    def webcam=(value); end
+
+    sig { returns(T::Boolean) }
+    def webcam?; end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def webcam_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def webcam_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def webcam_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(T::Boolean), T.nilable(T::Boolean)])) }
+    def webcam_change; end
+
+    sig { returns(T.nilable([T.nilable(T::Boolean), T.nilable(T::Boolean)])) }
+    def webcam_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def webcam_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def webcam_in_database; end
+
+    sig { returns(T.nilable([T.nilable(T::Boolean), T.nilable(T::Boolean)])) }
+    def webcam_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def webcam_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def webcam_previously_was; end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def webcam_was; end
+
+    sig { void }
+    def webcam_will_change!; end
+
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def will_save_change_to_backend?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_bed_shape?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_brand?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_build_diameter?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_build_volume_x?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_build_volume_y?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_build_volume_z?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def will_save_change_to_created_at?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_extruders?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_favorite?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_firmware?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_firmware_version?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_heated_bed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_heated_chamber?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def will_save_change_to_id?(from: T.unsafe(nil), to: T.unsafe(nil)); end
@@ -1204,7 +2212,22 @@ class Printer
     def will_save_change_to_last_seen_at?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_materials?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_max_bed_temp?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_max_hotend_temp?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_model?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def will_save_change_to_name?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_nozzle_diameter?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def will_save_change_to_octoprint_key?(from: T.unsafe(nil), to: T.unsafe(nil)); end
@@ -1223,6 +2246,9 @@ class Printer
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def will_save_change_to_username?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_webcam?(from: T.unsafe(nil), to: T.unsafe(nil)); end
   end
 
   module GeneratedRelationMethods
