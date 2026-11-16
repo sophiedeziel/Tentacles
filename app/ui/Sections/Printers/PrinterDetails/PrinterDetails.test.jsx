@@ -9,7 +9,7 @@ import { createMemoryRouter } from 'react-router'
 import { RouterProvider } from 'react-router/dom'
 
 import PrinterDetails from './PrinterDetails'
-import { IDENTIFY_SAVED_PRINTER, PRINTER_DETAILS, PRINTER_VERSION, UPDATE_PRINTER } from './graphql/details'
+import { IDENTIFY_SAVED_PRINTER, PRINTER_DETAILS, PRINTER_VERSION, REPORTED_SPECS, UPDATE_PRINTER } from './graphql/details'
 import { REMOVE_PRINTER, SET_PRINTER_FAVORITE } from '../PrintersList/graphql/fleet'
 import { POSSIBLE_TYPES, PRINT_QUEUE_CHANGED, PRINTER_STATUS_CHANGED, TYPE_POLICIES } from '../../Dashboard/graphql/dashboard'
 import { PRINTERS } from '../../Dashboard/widgets/Printer/fixtures'
@@ -38,12 +38,29 @@ const PRINTER = {
   }
 }
 const later = { delay: 60000 }
-const BASE_MOCKS = [
+const identify = (secret, result, options = {}) => ({
+  request: {
+    query: IDENTIFY_SAVED_PRINTER,
+    variables: { backend: 'PRUSALINK', uri: 'http://192.168.1.21', username: 'maker', secret, printerId: '1' }
+  },
+  result,
+  ...options
+})
+// What the server reports after the page renders: reportedSpecs, and the name identifyPrinter reads (by default: no
+// answer, the printer is unreachable)
+const reportedMocks = (reportedSpecs = null, name = null) => [
+  { request: { query: REPORTED_SPECS, variables: { id: '1' } }, result: { data: { printer: { __typename: 'Printer', id: '1', reportedSpecs } } } },
+  identify(null, name
+    ? { data: { identifyPrinter: { __typename: 'PrinterIdentity', name, version: 'PrusaLink 2.1.2' } } }
+    : { errors: [new GraphQLError('Could not reach PrusaLink', { extensions: { code: 'UNREACHABLE' } })] })
+]
+const PAGE_MOCKS = [
   { request: { query: PRINTER_DETAILS, variables: { id: '1' } }, result: { data: { printer: PRINTER } } },
   { request: { query: PRINTER_VERSION, variables: { id: '1' } }, result: { data: { printer: { __typename: 'Printer', id: '1', version: 'PrusaLink 2.1.2 (firmware 6.2.0)' } } } },
   { request: { query: PRINTER_STATUS_CHANGED }, result: { data: { printerStatusChanged: PRINTER } }, ...later },
   { request: { query: PRINT_QUEUE_CHANGED }, result: { data: { printQueueChanged: null } }, ...later }
 ]
+const BASE_MOCKS = [...PAGE_MOCKS, ...reportedMocks()]
 
 const renderPage = (mocks = [], baseMocks = BASE_MOCKS) => {
   const cache = new InMemoryCache({ possibleTypes: POSSIBLE_TYPES, typePolicies: TYPE_POLICIES })
@@ -59,13 +76,6 @@ const renderPage = (mocks = [], baseMocks = BASE_MOCKS) => {
 const updated = (input, printer = {}) => ({
   request: { query: UPDATE_PRINTER, variables: { input: { id: '1', ...input } } },
   result: { data: { updatePrinter: { __typename: 'UpdatePrinterPayload', printer: { __typename: 'Printer', id: '1', name: PRINTER.name, uri: PRINTER.uri, username: 'maker', specs: PRINTER.specs, ...printer }, errors: [] } } }
-})
-const identify = (secret, result) => ({
-  request: {
-    query: IDENTIFY_SAVED_PRINTER,
-    variables: { backend: 'PRUSALINK', uri: 'http://192.168.1.21', username: 'maker', secret, printerId: '1' }
-  },
-  result
 })
 const field = (label) => screen.getByLabelText(label)
 const save = () => userEvent.click(screen.getByRole('button', { name: /Save Changes/ }))
@@ -118,8 +128,13 @@ describe('PrinterDetails', () => {
   })
 
   it('tests the connection with the saved password when none is typed', async () => {
-    renderPage([identify(null, { data: { identifyPrinter: { __typename: 'PrinterIdentity', name: 'Prusa MK4', version: 'PrusaLink 2.1.3' } } })])
-    await userEvent.click(await screen.findByRole('button', { name: /Test Connection/ }))
+    renderPage(
+      [identify(null, { data: { identifyPrinter: { __typename: 'PrinterIdentity', name: 'Prusa MK4', version: 'PrusaLink 2.1.3' } } })],
+      [...PAGE_MOCKS, ...reportedMocks(null, 'Prusa MK4')]
+    )
+    // The page's own read of the name is done: the test is a request of its own
+    expect(await screen.findByText('From PrusaLink')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /Test Connection/ }))
     expect(await screen.findByText('Connected')).toBeInTheDocument()
     expect(screen.getByText('PrusaLink 2.1.3')).toBeInTheDocument()
 
@@ -217,12 +232,13 @@ describe('PrinterDetails', () => {
       nozzleDiameter: 0.6,
       materials: ['PLA', 'PETG']
     }
-    // The page of a printer with these specs
-    const renderAbout = (saved, mocks = []) => {
+    // The page of a printer with these specs, and what its server reports
+    const renderAbout = (saved, mocks = [], { reported = null, name = null } = {}) => {
       const printer = { ...PRINTER, specs: specs(saved) }
       return renderPage(mocks, [
-        { ...BASE_MOCKS[0], result: { data: { printer } } },
-        ...BASE_MOCKS.slice(1)
+        { ...PAGE_MOCKS[0], result: { data: { printer } } },
+        ...PAGE_MOCKS.slice(1),
+        ...reportedMocks(reported && specs(reported), name)
       ])
     }
     const savedSpecs = (input, saved) => updated({ specs: input }, { specs: specs(saved) })
@@ -232,7 +248,7 @@ describe('PrinterDetails', () => {
       await userEvent.click(await screen.findByTitle(option, { selector: '.ant-select-item-option' }))
     }
 
-    it('shows the saved specs', async () => {
+    it('shows the saved specs, with no reload button while the server reports nothing', async () => {
       renderAbout(MK4_SPECS)
       expect(await screen.findByRole('heading', { name: 'About This Printer' })).toBeInTheDocument()
       expect(screen.getByText('PrusaLink can fill in some of these fields')).toBeInTheDocument()
@@ -243,6 +259,7 @@ describe('PrinterDetails', () => {
       expect(volume('Height (Z)')).toHaveValue('220')
       expect(screen.getByText('PrusaLink cameras are not read yet')).toBeInTheDocument()
       expect(screen.getByTitle('PETG')).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /Reload/ })).not.toBeInTheDocument()
       expect(screen.getByRole('button', { name: /Save Changes/ })).toBeDisabled()
     })
 
@@ -292,6 +309,32 @@ describe('PrinterDetails', () => {
       await pick('Materials', 'PLA')
       await save()
       expect(await screen.findByText('Changes saved')).toBeInTheDocument()
+    })
+
+    it('shows what the server reports, and reloads one field into the form', async () => {
+      const reported = { model: 'MK4', firmwareDisplayName: 'prusa_firmware', firmwareVersion: '6.2.1', nozzleDiameter: 0.4, materials: [] }
+      renderAbout(MK4_SPECS, [savedSpecs({ nozzleDiameter: 0.4 }, { ...MK4_SPECS, nozzleDiameter: 0.4 })], { reported, name: 'MK4 #2' })
+      expect(await screen.findByText('PrusaLink reports 0.4 mm')).toBeInTheDocument()
+      expect(screen.getByText('PrusaLink reports 6.2.1')).toBeInTheDocument()
+      expect(await screen.findByText('PrusaLink reports MK4 #2')).toBeInTheDocument()
+      expect(screen.getAllByText('From PrusaLink')).toHaveLength(2) // model, firmware
+      expect(screen.queryByRole('button', { name: 'Reload build volume from PrusaLink' })).not.toBeInTheDocument()
+
+      await userEvent.click(screen.getByRole('button', { name: 'Reload nozzle diameter from PrusaLink' }))
+      expect(field('Nozzle diameter')).toHaveValue('0.4')
+      expect(screen.getAllByText('From PrusaLink')).toHaveLength(3)
+      // Only that field: Save Changes writes it
+      expect(field('Firmware version')).toHaveValue('6.2.0')
+      expect(field('Printer name')).toHaveValue('Prusa MK4')
+      await save()
+      expect(await screen.findByText('Changes saved')).toBeInTheDocument()
+    })
+
+    it('reloads the name identifyPrinter reads', async () => {
+      renderAbout(MK4_SPECS, [], { name: 'MK4 #2' })
+      await userEvent.click(await screen.findByRole('button', { name: 'Reload printer name from PrusaLink' }))
+      expect(field('Printer name')).toHaveValue('MK4 #2')
+      expect(screen.getByRole('button', { name: /Save Changes/ })).toBeEnabled()
     })
 
   })
