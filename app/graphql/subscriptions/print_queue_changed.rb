@@ -17,9 +17,13 @@ module Subscriptions
       :no_response
     end
 
-    # The printer passed to the trigger
+    # The printer passed to the trigger. A removed printer can't be loaded back (the trigger is serialized with its
+    # GlobalID), so Printers::Remove passes `{ removed_printer: attributes }` instead: it comes back as a read-only
+    # stand-in, whose queue is empty.
     def update
-      object
+      return object unless object.is_a?(Hash)
+
+      ::Printer.new(object.with_indifferent_access.fetch(:removed_printer)).tap(&:readonly!)
     end
   end
 end

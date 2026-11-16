@@ -151,4 +151,15 @@ RSpec.describe FileRecord, type: :model do
       expect(file_record).to be_invalid # (same as to_not be_valid)
     end
   end
+
+  describe 'destroy' do
+    it 'deletes the jobs that print the file' do
+      job = create(:printer_job, executable: file)
+
+      file.destroy!
+
+      expect(Printer::Job.exists?(job.id)).to be false
+      expect(Printer.exists?(job.printer_id)).to be true
+    end
+  end
 end

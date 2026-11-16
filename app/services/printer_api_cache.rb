@@ -44,6 +44,14 @@ module PrinterApiCache
     end
   end
 
+  # Deletes every key of a printer: its cached answers and its disconnected flag (after the printer is removed)
+  def self.forget(id)
+    REDIS_POOL.with do |conn|
+      keys = conn.scan_each(match: "printer_api_#{id}_*").to_a << "printer_#{id}_disconnected"
+      conn.del(*keys)
+    end
+  end
+
   def self.serialize(value, time)
     { value:, expiration: (Time.zone.now + time).to_i }.to_json
   end

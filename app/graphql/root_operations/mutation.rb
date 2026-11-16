@@ -20,6 +20,7 @@ module RootOperations
     field :cancelPrint, mutation: Mutations::Printers::CancelPrint
     field :connectPrinter, mutation: Mutations::Printers::ConnectPrinter
     field :reconnectPrinter, mutation: Mutations::Printers::ReconnectPrinter
+    field :removePrinter, mutation: Mutations::Printers::RemovePrinter
 
     field :saveDashboard, mutation: Mutations::Dashboards::SaveDashboard
   end
