@@ -117,6 +117,30 @@ describe('layoutReducer', () => {
       expect(sections[1].widgets[0]).toMatchObject({ widthUnits: 4, heightUnits: 2, options: { camera: false } })
     })
 
+    it('gives the options only the new size shows that size\'s default', () => {
+      const queue = (id, widthUnits, heightUnits, options) => ({
+        ...printer(id, widthUnits, heightUnits), type: 'PRINT_QUEUE', printer: null, options
+      })
+      const draft = draftFrom({ sections: [{ id: '1', title: null, widgets: [
+        queue('11', 2, 2, { nowPrinting: false, startNext: true, rowPerPrinter: false, history: false }),
+        queue('12', 4, 2, { nowPrinting: true, startNext: true, rowPerPrinter: false, history: false })
+      ] }] })
+
+      // Large shows neither option, so growing to Extra Large turns on its table; the options Large showed stay
+      const grown = layoutReducer(draft, { type: 'resizeWidget', key: 'widget-11', size: 'XL' })
+      expect(grown[0].widgets[0].options).toEqual({ nowPrinting: false, startNext: true, rowPerPrinter: true, history: true })
+
+      // Extra Large showed them, so turned off they stay off at 4×4
+      const bigger = layoutReducer(draft, { type: 'resizeWidget', key: 'widget-12', size: 'XXL' })
+      expect(bigger[0].widgets[1].options).toMatchObject({ rowPerPrinter: false, history: false })
+    })
+
+    it('turns a small printer\'s camera on when it grows to Large, like a new Large one', () => {
+      const draft = draftFrom({ sections: [{ id: '1', title: null, widgets: [printer('11', 1, 1)] }] })
+      expect(layoutReducer(draft, { type: 'resizeWidget', key: 'widget-11', size: 'L' })[0].widgets[0].options)
+        .toMatchObject({ camera: true, timeLeft: true })
+    })
+
     it('ignores a size the type does not support', () => {
       const draft = draftFrom(LAYOUT)
       expect(layoutReducer(draft, { type: 'resizeWidget', key: 'widget-21', size: 'XXL' })).toBe(draft)
@@ -137,7 +161,7 @@ describe('layoutReducer', () => {
     expect(shape(sections)).toEqual([['11', '12', '13'], ['21'], ['31', '32', 'new']])
     expect(sections[2].widgets[2]).toMatchObject({
       id: null, type: 'PRINT_QUEUE', widthUnits: 4, heightUnits: 2, printer: null,
-      options: { nowPrinting: true, startNext: true, rowPerPrinter: false, history: false }
+      options: { nowPrinting: true, startNext: true, rowPerPrinter: true, history: true }
     })
   })
 
