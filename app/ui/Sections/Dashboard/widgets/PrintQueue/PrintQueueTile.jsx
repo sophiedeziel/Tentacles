@@ -30,7 +30,8 @@ function useQueueReloads (refetch, skip, queueVersion) {
 function noop () {}
 
 // A Print Queue widget of the layout: loads the queue and history rows its size shows (the printers come from the
-// dashboard), and wires Start Next to the guarded startNextPrint
+// dashboard), and wires Start Next to the guarded startNextPrint. In edit mode it hides Start Next, which the edit
+// toolbar would cover.
 export default function PrintQueueTile ({ widget, size, data }) {
   const client = useApolloClient()
   const printerId = widget.printer?.id ?? null
@@ -56,8 +57,9 @@ export default function PrintQueueTile ({ widget, size, data }) {
     return result[mutation].errors
   }
 
+  const options = data.editing ? { ...widget.options, startNext: false } : widget.options
   return (
-    <PrintQueueWidget printers={data.printers} printerId={printerId} size={size} options={widget.options}
+    <PrintQueueWidget printers={data.printers} printerId={printerId} size={size} options={options}
       queue={lists?.printQueue ?? null} history={lists?.jobHistory ?? null} now={data.now}
       renderStartNext={(printer) => (
         <ControlButton key={printer.id} action={START_NEXT} size="small" placement="topRight"
@@ -75,6 +77,7 @@ PrintQueueTile.propTypes = {
     printers: PropTypes.array.isRequired,
     now: PropTypes.number.isRequired,
     live: PropTypes.bool,
-    queueVersion: PropTypes.number
+    queueVersion: PropTypes.number,
+    editing: PropTypes.bool
   }).isRequired
 }
