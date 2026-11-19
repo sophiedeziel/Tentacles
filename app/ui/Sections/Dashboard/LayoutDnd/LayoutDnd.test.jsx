@@ -16,7 +16,7 @@ const sections = draftFrom({
     widgets: [{
       id: 'w1', type: 'PRINTER', widthUnits: 2, heightUnits: 1, printer: { id: '1' }, options: { ...ALL_OPTIONS, camera: false }
     }]
-  }]
+  }, { id: '2', title: 'Workshop', widgets: [] }]
 })
 
 const renderSections = () => render(
@@ -61,5 +61,56 @@ describe('LayoutDnd on touch screens', () => {
     fireEvent.mouseMove(document, { clientX: 90, clientY: 90 })
     expect(cell()).not.toHaveAttribute('aria-pressed')
     fireEvent.mouseUp(document)
+  })
+})
+
+describe('dragging a divider', () => {
+  // The ⋮⋮ handle, which says whether its section is picked up
+  const handle = () => screen.getByRole('button', { name: 'Drag Workshop' })
+  const bar = () => handle().parentElement
+  const press = (target) => {
+    fireEvent.mouseDown(target, { clientX: 50, clientY: 50 })
+    fireEvent.mouseMove(document, { clientX: 50, clientY: 90 })
+  }
+
+  it('picks the section up from anywhere on the bar', () => {
+    renderSections()
+    press(bar())
+    expect(handle()).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.mouseUp(document)
+  })
+
+  it('picks the section up when a finger rests on the bar', async () => {
+    renderSections()
+    fireEvent.touchStart(bar(), at(50, 50))
+    await wait(350)
+    expect(handle()).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.touchEnd(bar())
+  })
+
+  it('leaves the title and the buttons to work as usual', async () => {
+    renderSections()
+    const title = screen.getByRole('textbox', { name: 'Section name' })
+    for (const target of [title, screen.getByRole('button', { name: 'Move divider earlier' }),
+      screen.getByRole('button', { name: 'Remove Divider' })]) {
+      press(target)
+      expect(handle()).not.toHaveAttribute('aria-pressed')
+      fireEvent.mouseUp(document)
+    }
+    fireEvent.touchStart(title, at(50, 50))
+    await wait(350)
+    expect(handle()).not.toHaveAttribute('aria-pressed')
+    fireEvent.touchEnd(title)
+  })
+
+  it('picks the section up with the keyboard from the handle only', async () => {
+    renderSections()
+    screen.getByRole('textbox', { name: 'Section name' }).focus()
+    await userEvent.keyboard(' ')
+    expect(handle()).not.toHaveAttribute('aria-pressed')
+    handle().focus()
+    await userEvent.keyboard(' ')
+    expect(handle()).toHaveAttribute('aria-pressed', 'true')
+    await userEvent.keyboard('{Escape}')
   })
 })

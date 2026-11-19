@@ -48,12 +48,13 @@ EditBar.propTypes = {
   onDone: PropTypes.func
 }
 
-// Under the header while editing
+// Under the header while editing. The sizes are named as on the widget toolbar's buttons.
 export function EditNotice () {
   return (
     <p className={classes.notice}>
       Drag a widget and the dashboard rearranges as you move, so you see the result before you let go (Esc cancels).
-      Dividers start a new row: widgets never flow across them. Pick S, M or L to resize.
+      On a touch screen, hold a widget before you drag it. Dividers start a new row: widgets never flow across them.
+      Pick S, M, L, XL or XXL to resize.
     </p>
   )
 }
