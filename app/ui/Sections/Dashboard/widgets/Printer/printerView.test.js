@@ -129,11 +129,19 @@ describe('printerView', () => {
       expect(prusalink('PRINTING').actions.map((action) => action.key)).toEqual(['pause', 'cancel'])
     })
 
+    it('name PrusaLink while connecting', () => {
+      expect(prusalink('CONNECTING').headline).toBe('Connecting to PrusaLink')
+    })
+
     it('do not ask to reconnect after an error', () => {
       const error = { ...PRINTERS.ERROR.status, fileName: null }
       expect(view('ERROR', { printer: { backend: 'PRUSALINK', status: error } }).subline).toBe('Check the printer')
       expect(view('ERROR', { printer: { status: error } }).subline).toBe('Check the printer and reconnect')
     })
+  })
+
+  it('names the printer, not a server, while connecting to a backend it has no name for', () => {
+    expect(view('CONNECTING', { printer: { backend: 'BAMBU' } }).headline).toBe('Connecting to the printer')
   })
 
   it('formats temperatures with their unit', () => {
