@@ -26,6 +26,12 @@ describe('EmptyState', () => {
     expect(container.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   })
 
+  it('has an empty queue kind', () => {
+    const { container } = render(<EmptyState kind="queue" title="Queue is empty" description="Send G-code from Files." />)
+    expect(container.querySelector('.ant-empty-image svg')).toHaveAttribute('aria-hidden', 'true')
+    expect(screen.getByText('Queue is empty')).toBeInTheDocument()
+  })
+
   it('can go without a description or actions', () => {
     const { container } = render(<EmptyState kind="printers" title="No printers yet" />)
 

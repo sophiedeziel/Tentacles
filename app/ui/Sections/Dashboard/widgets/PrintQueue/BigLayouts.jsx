@@ -1,24 +1,10 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Tag } from 'antd'
-import { CheckCircleOutlined, CloseCircleOutlined, StopOutlined } from '@ant-design/icons'
 
+import JobStatus from '../../../../components/JobStatus/JobStatus'
 import PrinterStatus from '../../../../components/PrinterStatus/PrinterStatus'
 import { EmptyQueue, Header, NextRow, SendFromFiles, UpNextColumn } from './parts'
 import * as classes from './PrintQueueWidget.module.less'
-
-// How a finished job's status reads. The status comes as stored, so a status added later reads as itself.
-const JOB_STATUSES = {
-  completed: { label: 'Completed', color: 'success', icon: <CheckCircleOutlined /> },
-  error: { label: 'Failed', color: 'error', icon: <CloseCircleOutlined /> },
-  failed: { label: 'Failed', color: 'error', icon: <CloseCircleOutlined /> },
-  cancelled: { label: 'Cancelled', color: 'default', icon: <StopOutlined /> }
-}
-
-export function JobStatus ({ status }) {
-  const known = JOB_STATUSES[status] || { label: status.charAt(0).toUpperCase() + status.slice(1), color: 'default' }
-  return <Tag variant="filled" color={known.color} icon={known.icon} style={{ marginInlineEnd: 0 }}>{known.label}</Tag>
-}
 
 function HistoryRow ({ row, tall = false }) {
   return (
@@ -146,4 +132,3 @@ TableLayout.propTypes = layoutPropTypes
 ListLayout.propTypes = layoutPropTypes
 PrinterRow.propTypes = { row: PropTypes.object.isRequired, renderStartNext: PropTypes.func.isRequired }
 HistoryRow.propTypes = { row: PropTypes.object.isRequired, tall: PropTypes.bool }
-JobStatus.propTypes = { status: PropTypes.string.isRequired }
