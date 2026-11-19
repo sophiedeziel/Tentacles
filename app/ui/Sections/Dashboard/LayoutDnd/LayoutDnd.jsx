@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 import {
-  DndContext, DragOverlay, KeyboardSensor, PointerSensor, useDndContext, useDroppable, useSensor, useSensors
+  DndContext, DragOverlay, KeyboardSensor, MouseSensor, TouchSensor, useDndContext, useDroppable, useSensor, useSensors
 } from '@dnd-kit/core'
 import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -9,8 +9,10 @@ import { CSS } from '@dnd-kit/utilities'
 import layoutReducer from '../layout/layoutReducer'
 import { collisions, dragEndAction, dragOverAction } from './dragMoves'
 
-// A pointer has to move 8 px before a drag starts, so clicks on the widget tools still work
-const POINTER = { activationConstraint: { distance: 8 } }
+// A mouse has to move 8 px before a drag starts, so clicks on the widget tools still work. A finger has to rest
+// 250 ms first: moving sooner scrolls the page, as it does outside edit mode. Once a drag starts it stops the scroll.
+const MOUSE = { activationConstraint: { distance: 8 } }
+const TOUCH = { activationConstraint: { delay: 250, tolerance: 5 } }
 const KEYBOARD = { coordinateGetter: sortableKeyboardCoordinates }
 
 // Live moves reflow the grid under the pointer, which can put the pointer over another widget and move it back: a
@@ -62,7 +64,9 @@ export function useDragHandlers (sections, dispatch, clock = Date.now) {
 // Drag and drop for edit mode: widgets within and between sections, and dividers (with their widgets) among the
 // sections. `renderOverlay(active)` draws what follows the pointer ({ id, type }).
 export default function LayoutDnd ({ sections, dispatch, renderOverlay, children }) {
-  const sensors = useSensors(useSensor(PointerSensor, POINTER), useSensor(KeyboardSensor, KEYBOARD))
+  const sensors = useSensors(
+    useSensor(MouseSensor, MOUSE), useSensor(TouchSensor, TOUCH), useSensor(KeyboardSensor, KEYBOARD)
+  )
   const { active, ...handlers } = useDragHandlers(sections, dispatch)
 
   return (

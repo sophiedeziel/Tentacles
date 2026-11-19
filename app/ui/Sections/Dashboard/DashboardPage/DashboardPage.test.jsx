@@ -246,9 +246,10 @@ describe('DashboardPage', () => {
     })
   })
 
-  it('offers edit mode on desktop screens only', async () => {
+  it('offers edit mode on phones and tablets too', async () => {
+    // No breakpoint matches: below md
     renderPage(page())
-    expect(await screen.findByText('Prusa MK4')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /Edit Dashboard/ })).not.toBeInTheDocument()
+    await userEvent.click(await screen.findByRole('button', { name: /Edit Dashboard/ }))
+    expect(screen.getByRole('button', { name: 'Done' })).toBeInTheDocument()
   })
 })
