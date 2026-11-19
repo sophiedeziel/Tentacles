@@ -31,3 +31,28 @@ describe('PrinterStatus', () => {
     expect(screen.queryByText('Offline')).not.toBeInTheDocument()
   })
 })
+
+describe('PrinterStatus motion', () => {
+  const variants = ['tag', 'badge', 'icon']
+  // The element that carries the motion: the Tag, the Badge, or the icon's wrapper (titled with the state)
+  const statusElement = (variant) => variant === 'icon'
+    ? screen.getByTitle('State')
+    : screen.getByText('State').closest('.ant-tag, .ant-badge')
+
+  describe.each(variants)('as a %s', (variant) => {
+    it('pulses while printing', () => {
+      render(<PrinterStatus family="PRINTING" text="State" variant={variant} />)
+      expect(statusElement(variant)).toHaveAttribute('data-motion', 'pulse')
+    })
+
+    it.each(['CONNECTING', 'CANCELLING'])('breathes while %s', (family) => {
+      render(<PrinterStatus family={family} text="State" variant={variant} />)
+      expect(statusElement(variant)).toHaveAttribute('data-motion', 'breathe')
+    })
+
+    it.each(['PAUSED', 'OPERATIONAL', 'ERROR', 'OFFLINE'])('stays still when %s', (family) => {
+      render(<PrinterStatus family={family} text="State" variant={variant} />)
+      expect(statusElement(variant)).not.toHaveAttribute('data-motion')
+    })
+  })
+})
