@@ -14,7 +14,7 @@ module PrinterMonitor
   #   worker = PrinterMonitor::Worker.new(printer).start
   #   worker.stop
   #   worker.join
-  class Worker # rubocop:disable Metrics/ClassLength -- one line over since the specs fill check
+  class Worker
     extend T::Sig
     include Runnable
 

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require Rails.root.join('db/migrate/20261116120000_remove_octoprint_credentials_from_printers')
+require Rails.root.join('db/migrate/20261116120001_remove_octoprint_credentials_from_printers')
 
 RSpec.describe RemoveOctoprintCredentialsFromPrinters do
   let(:connection) { ActiveRecord::Base.connection }
@@ -105,6 +105,12 @@ RSpec.describe RemoveOctoprintCredentialsFromPrinters do
     it 'does not touch updated_at' do
       expect(printers.find(legacy_id).updated_at).to eq Time.utc(2020, 1, 1)
       expect(printers.find(unreadable_id).updated_at).to eq Time.utc(2020, 1, 1)
+    end
+
+    # It ran as 20261116120000 on some databases, so it runs again there under its new version
+    it 'does nothing once the OctoPrint columns are gone' do
+      expect { migration.up }.not_to raise_error
+      expect(printers.find(legacy_id)).to have_attributes(uri: 'http://octopi.local/', secret: 'A8DDB1359AAB')
     end
   end
 
