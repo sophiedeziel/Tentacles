@@ -27,8 +27,9 @@
 #   spooler notifications, cleanup). A best-effort follow-up rescues and logs its own errors.
 # - `save!` validates, then runs #persist. It raises ActiveModel::ValidationError when invalid, ReadOnlyRecord on a
 #   read-only model, and lets #persist's errors through.
-# - `save` returns false instead of raising for validation errors and for the errors declared with
-#   `rescue_into_errors`, whose message is added to `errors[:base]`. Unexpected errors still raise. A model words
+# - `save` returns false instead of raising for its own validation errors and for the errors declared with
+#   `rescue_into_errors`, whose message is added to `errors[:base]`. Unexpected errors still raise, the
+#   ActiveModel::ValidationError of another model's `save!` in #persist included. A model words
 #   those messages by overriding the private #error_message_for (e.g. to redact a secret); it defaults to the
 #   error's message.
 # - Reads use ActiveRecord's names too: `.find`, `.find_by`, `.where`, `.last`, `.exists?`, `#reload`.
@@ -66,7 +67,10 @@ class ApplicationModel
   sig { returns(T::Boolean) }
   def save
     save!
-  rescue ActiveModel::ValidationError
+  rescue ActiveModel::ValidationError => e
+    # Another model's, from a save! in #persist: a bug, like any other error
+    raise unless e.model.equal?(self)
+
     false
   rescue *expected_errors => e
     errors.add(:base, error_message_for(e))

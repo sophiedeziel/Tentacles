@@ -150,6 +150,13 @@ RSpec.describe Printer::Status do
       expect(changed?(file_name: 'other.gcode')).to be true
       expect(changed?(camera: Printer::Status::Camera.new(enabled: false))).to be true
     end
+
+    it 'detects a camera changed in place' do
+      status.changes_applied
+      status.camera&.enabled = false
+
+      expect(status).to be_changed
+    end
   end
 
   describe '#reload' do
@@ -237,6 +244,13 @@ RSpec.describe Printer::Status do
         expect(TentaclesSchema.subscriptions).to have_received(:trigger).with(:printer_status_changed, {}, printer)
       end
 
+      it 'round-trips a time left that does not fit in 32 bits' do
+        operational.print_time_left = 2**40
+        operational.save!
+
+        expect(described_class.find_by(printer_id: printer.id)&.print_time_left).to eq 2**40
+      end
+
       it 'neither stores nor pushes an incomplete snapshot' do
         allow(TentaclesSchema.subscriptions).to receive(:trigger)
 
@@ -279,6 +293,16 @@ RSpec.describe Printer::Status do
 
         expect(described_class.where(printer_id: [printer.id, other_printer.id])).to eq []
       end
+
+      it 'skips snapshots with an unknown or a missing temperature unit' do
+        snapshot = JSON.parse(operational.to_json)
+        redis.set("printer_status:#{printer.id}",
+                  snapshot.merge('hotend' => { actual: 210.0, unit: 'RANKINE' }).to_json)
+        redis.set("printer_status:#{other_printer.id}",
+                  snapshot.merge('printer_id' => other_printer.id, 'bed' => { actual: 60.0, unit: nil }).to_json)
+
+        expect(described_class.where(printer_id: [printer.id, other_printer.id])).to eq []
+      end
     end
 
     describe '.find_by' do
@@ -287,6 +311,15 @@ RSpec.describe Printer::Status do
 
         expect(described_class.find_by(printer_id: printer.id)).to eq operational
         expect(described_class.find_by(printer_id: other_printer.id)).to be_nil
+      end
+
+      it 'skips a snapshot with an unknown temperature unit, with a warning' do
+        snapshot = JSON.parse(operational.to_json).merge('bed' => { actual: 60.0, unit: 'kelvin' })
+        redis.set("printer_status:#{printer.id}", snapshot.to_json)
+        allow(Rails.logger).to receive(:warn)
+
+        expect(described_class.find_by(printer_id: printer.id)).to be_nil
+        expect(Rails.logger).to have_received(:warn).with(/Ignoring unreadable snapshot for printer #{printer.id}/)
       end
     end
 

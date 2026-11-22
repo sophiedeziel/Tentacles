@@ -136,6 +136,18 @@ RSpec.describe Printer::Backend::Octoprint::AppKey::Request do
     it_behaves_like 'an error', Printer::Backend::Error, 'http://192.168.1.57/ does not answer like OctoPrint'
   end
 
+  context 'when the app token is empty' do
+    before { octoprint.to_return(json(201, app_token: '', auth_dialog:)) }
+
+    it_behaves_like 'an error', Printer::Backend::Error, 'http://192.168.1.57/ does not answer like OctoPrint'
+  end
+
+  context 'when the app token is blank' do
+    before { octoprint.to_return(json(201, app_token: " \t", auth_dialog:)) }
+
+    it_behaves_like 'an error', Printer::Backend::Error, 'http://192.168.1.57/ does not answer like OctoPrint'
+  end
+
   context 'without a URL' do
     let(:request) { described_class.new }
 

@@ -113,7 +113,8 @@ Keep the Redis key formats when changing these models: running processes and sto
 - Primitives get a type: `attribute :interval, :float, default: 5.0`.
 - Objects stay untyped: `attribute :printer`.
 - `ApplicationModel::EnumType`, `ModelType`, `TimeType` and `ArrayType` cast T::Enums, nested models, times and arrays
-  (see `Printer::Status`).
+  (see `Printer::Status`). `validates :hotend, nested: true` validates a nested model with its own validations.
+- Integers serialized to JSON are `:big_integer`: `:integer` raises `ActiveModel::RangeError` from 2³¹.
 - State that isn't an input (threads, memoized reads) stays in instance variables.
 - Mixins are `ActiveSupport::Concern`s (`Printer::Monitor::Runnable`).
 - Value lists shared by two sides (a Redis message, a stored value) are a `T::Enum`: `Printer::StateFamily`,

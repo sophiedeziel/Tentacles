@@ -22,7 +22,8 @@ class Printer
             raise_unless_created(response)
 
             body = parse(response)
-            @app_token = T.let(string(body, 'app_token'), T.nilable(String))
+            # A blank token can't be polled: OctoPrint answers it with a token
+            @app_token = T.let(string(body, 'app_token').presence || not_octoprint, T.nilable(String))
             @auth_dialog_url = T.let(body['auth_dialog'].presence, T.nilable(String))
           end
 

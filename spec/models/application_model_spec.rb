@@ -89,6 +89,14 @@ RSpec.describe ApplicationModel do
 
       expect { model.save }.to raise_error(ArgumentError, 'bug')
     end
+
+    it "raises another model's validation error, raised while persisting" do
+      invalid = model_class.new
+      model = model_class.new(name: 'Ada')
+      model.define_singleton_method(:persist) { invalid.save! }
+
+      expect { model.save }.to raise_error(ActiveModel::ValidationError) { |error| expect(error.model).to be(invalid) }
+    end
   end
 
   describe '.rescue_into_errors' do

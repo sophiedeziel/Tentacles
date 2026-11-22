@@ -153,4 +153,10 @@ RSpec.describe Mutations::Printers::RequestPrinterAppKey, type: :request do
 
     it_behaves_like 'a request OctoPrint could not take', 'http://192.168.1.57/ does not answer like OctoPrint'
   end
+
+  context 'when OctoPrint answers an empty app token' do
+    before { octoprint.to_return(created(app_token: '', auth_dialog:)) }
+
+    it_behaves_like 'a request OctoPrint could not take', 'http://192.168.1.57/ does not answer like OctoPrint'
+  end
 end

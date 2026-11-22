@@ -29,7 +29,8 @@ class Printer
     # The state text of the snapshot the monitor writes when the printer's server doesn't answer
     UNREACHABLE_STATE_TEXT = 'Unreachable'
 
-    attribute :printer_id, :integer
+    # Integers are big_integer: :integer can't serialize values from 2³¹, so a junk one would make every save raise
+    attribute :printer_id, :big_integer
     attribute :state_family, EnumType.new(Printer::StateFamily)
     attribute :state_text, :string
     attribute :error_text, :string
@@ -37,7 +38,7 @@ class Printer
     # Completion of the current job, in percent (0 to 100)
     attribute :progress, :float
     # Estimated time left for the current job, in seconds
-    attribute :print_time_left, :integer
+    attribute :print_time_left, :big_integer
     attribute :hotend, ModelType.new(Temperature)
     attribute :bed, ModelType.new(Temperature)
     attribute :camera, ModelType.new(Camera), default: -> { Camera.new }
@@ -48,6 +49,8 @@ class Printer
 
     # Snapshots missing one of these (e.g. written before it existed) are unreadable
     validates :printer_id, :state_family, :state_text, :camera, presence: true
+    # Their unreadable values (an unknown temperature unit) make the snapshot unreadable too
+    validates :hotend, :bed, :camera, nested: true
 
     class << self
       extend T::Sig

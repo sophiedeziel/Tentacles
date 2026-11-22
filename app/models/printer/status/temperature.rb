@@ -15,6 +15,9 @@ class Printer
       # Snapshots written before the unit was stored are in °C, like everything OctoPrint reports
       attribute :unit, EnumType.new(TemperatureUnit), default: -> { TemperatureUnit::Celsius }
 
+      # Types::TemperatureStatus#unit needs one. Reading it also raises KeyError for an unknown unit (see EnumType).
+      validates :unit, presence: true
+
       # Rounded to 1°, for change detection
       sig { returns([T.nilable(Integer), T.nilable(Integer)]) }
       def rounded

@@ -23,10 +23,11 @@ class Printer
           state_family: status.state_family, state_text: status.state_text, error_text: status.error_text,
           file_name: status.file_name,
           progress: status.progress&.round,
-          print_time_left: status.print_time_left&.then { |seconds| (seconds / 60.0).round },
+          print_time_left: rounded_minutes(status.print_time_left),
           hotend: status.hotend&.rounded,
           bed: status.bed&.rounded,
-          camera: status.camera
+          # A copy, so that a camera changed in place counts as a change
+          camera: status.camera.dup
         }
       end
 
@@ -42,6 +43,13 @@ class Printer
       sig { void }
       def changes_applied
         @saved_attributes = T.let(comparable_attributes, T.nilable(T::Hash[Symbol, T.untyped]))
+      end
+
+      private
+
+      sig { params(seconds: T.nilable(Integer)).returns(T.nilable(Integer)) }
+      def rounded_minutes(seconds)
+        seconds && (seconds / 60.0).round
       end
     end
   end
