@@ -1,5 +1,6 @@
 import { statePalette } from '../../../../Foundation/theme'
 import { doneAt, formatAgo, formatClock, formatTimeLeft } from '../../../../utils/time'
+import { PRODUCTS } from '../../../Printers/PrintersList/fleetView'
 
 const IN_PROGRESS = ['PRINTING', 'PAUSED', 'CANCELLING']
 const UNREACHABLE = ['OFFLINE', 'CONNECTING', 'ERROR']
@@ -73,7 +74,7 @@ export default function printerView ({ printer, size, options, now, streamFailed
   let headline
   if (hasJob) headline = status.fileName || 'Unnamed job'
   else if (family === 'OPERATIONAL') headline = 'Ready to print'
-  else if (family === 'CONNECTING') headline = 'Connecting to OctoPrint'
+  else if (family === 'CONNECTING') headline = `Connecting to ${PRODUCTS[printer.backend] || 'the printer'}`
   else if (family === 'ERROR') headline = 'Stopped responding'
   else headline = 'Offline'
 
