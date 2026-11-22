@@ -2,7 +2,7 @@ import React from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import EditBar from './EditBar'
+import EditBar, { EditNotice } from './EditBar'
 
 const names = () => screen.getAllByRole('button').map((button) => button.textContent)
 
@@ -29,5 +29,11 @@ describe('EditBar', () => {
     render(<EditBar editing busy="save" onReset={vi.fn()} onAddDivider={vi.fn()} onDone={vi.fn()} />)
     expect(screen.getByRole('button', { name: 'Reset Layout' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Add Divider' })).toBeDisabled()
+  })
+
+  it('names every size in the edit hint, as the widget toolbar does', () => {
+    render(<EditNotice />)
+    expect(screen.getByText(/Pick S, M, L, XL or XXL to resize\./)).toBeInTheDocument()
+    expect(screen.getByText(/On a touch screen, hold a widget before you drag it\./)).toBeInTheDocument()
   })
 })
