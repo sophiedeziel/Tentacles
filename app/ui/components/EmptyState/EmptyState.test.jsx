@@ -21,10 +21,15 @@ describe('EmptyState', () => {
     expect(screen.getByRole('button', { name: 'Scan Network' })).toBeInTheDocument()
   })
 
-  it('keeps the illustration out of the accessibility tree: the title says it all', () => {
-    const { container } = render(<EmptyState kind="printers" title="No printers yet" />)
-    expect(container.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-  })
+  it.each(['printers', 'queue', 'files'])('draws a %s illustration, out of the accessibility tree: the title says it all',
+    (kind) => {
+      const { container } = render(<EmptyState kind={kind} title="Nothing yet" />)
+      const svg = container.querySelector('.ant-empty-image svg')
+
+      expect(svg).toHaveAttribute('aria-hidden', 'true')
+      expect(svg).toHaveAttribute('viewBox', '0 0 160 120')
+      expect(svg.querySelectorAll('path').length).toBeGreaterThan(1)
+    })
 
   it('can go without a description or actions', () => {
     const { container } = render(<EmptyState kind="printers" title="No printers yet" />)

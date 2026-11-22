@@ -1,10 +1,11 @@
 import React from 'react'
-import { useMatch } from 'react-router'
+import { useMatch, useNavigate } from 'react-router'
 import { useSubscription, useMutation } from '@apollo/client/react'
 
 import { Progress, Button } from 'antd'
 import { PageHeader } from '@ant-design/pro-layout'
-import { Printer3DOutlined } from '../../../components/icons'
+import EmptyState from '../../../components/EmptyState/EmptyState'
+import { GcodeFileOutlined, Printer3DOutlined } from '../../../components/icons'
 
 import PrintTable from './components/PrintTable'
 
@@ -14,6 +15,7 @@ import StartNextPrint from './graphql/StartNextPrint.graphql'
 export default function Queue () {
   const match = useMatch('/printers/:id/queue')
   const printerID = match.params.id
+  const navigate = useNavigate()
 
   const [startNextPrint] = useMutation(StartNextPrint)
 
@@ -87,17 +89,29 @@ export default function Queue () {
       </PageHeader>
 
       <br />
-      <h2>Enqueued ({enqueuedJobs.length})</h2>
-        <PrintTable
-          jobs={tableData(enqueuedJobs)}
-        />
+      {activeJob === undefined && enqueuedJobs.length === 0
+        ? (
+          <EmptyState kind="queue" title="Queue is empty"
+            description="Send G-code from Files to queue prints for this printer.">
+            <Button type="primary" icon={<GcodeFileOutlined aria-hidden />} onClick={() => navigate('/files')}>
+              Go to Files
+            </Button>
+          </EmptyState>
+          )
+        : (
+          <>
+            <h2>Enqueued ({enqueuedJobs.length})</h2>
+            <PrintTable jobs={tableData(enqueuedJobs)} />
+          </>
+          )}
 
-        <br />
-
-      <h2>History ({completedJobs.length})</h2>
-        <PrintTable
-          jobs={tableData(completedJobs)}
-        />
+      {completedJobs.length > 0 && (
+        <>
+          <br />
+          <h2>History ({completedJobs.length})</h2>
+          <PrintTable jobs={tableData(completedJobs)} />
+        </>
+      )}
     </>
   )
 }

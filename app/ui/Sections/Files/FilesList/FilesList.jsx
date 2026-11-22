@@ -9,8 +9,9 @@ import UploadFile from 'graphql/UploadFile.graphql'
 import ArchiveFiles from 'graphql/ArchiveFiles.graphql'
 import UnarchiveFiles from 'graphql/UnarchiveFiles.graphql'
 
-import { Table, Upload, Statistic, Spin, Button, Form, Tabs, Space, Dropdown, Tag } from 'antd'
-import { InboxOutlined } from '@ant-design/icons'
+import { Table, Upload, Statistic, Button, Form, Tabs, Space, Dropdown, Tag, Empty } from 'antd'
+import { InboxOutlined, UploadOutlined } from '@ant-design/icons'
+import EmptyState from 'components/EmptyState/EmptyState'
 import LabelApplicator from './components/LabelApplicator'
 import { PrintQueueOutlined } from '../../../components/icons'
 // import FileDetails from './components/FileDetails/FileDetails'
@@ -179,8 +180,8 @@ export default function FilesList () {
     }
   ]
 
-  const props = {
-    height: '200px',
+  // The drop zone under the table and the empty library's Upload files button upload the same way
+  const uploadProps = {
     name: 'upload',
     multiple: true,
     showUploadList: false,
@@ -265,22 +266,39 @@ export default function FilesList () {
     }
   ]
 
+  const noArchivedFiles = <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No archived files" />
+
+  if (filesFilters === 'active' && files.length === 0) {
+    return (
+      <>
+        <Tabs activeKey={filesFilters} onChange={handleTabChange} items={items} />
+        <EmptyState kind="files" title="No files yet"
+          description="Upload G-code or STL files to print them on any printer.">
+          <Upload {...uploadProps}>
+            <Button type="primary" icon={<UploadOutlined />}>Upload files</Button>
+          </Upload>
+        </EmptyState>
+      </>
+    )
+  }
+
   return (
     <>
-      <Statistic title="Number of files" value={ files.length } formatter={(value) => (value || <Spin/>)}/>
-      <Tabs defaultActiveKey="1" onChange={handleTabChange} items={items} />
+      <Statistic title="Number of files" value={ files.length } />
+      <Tabs activeKey={filesFilters} onChange={handleTabChange} items={items} />
       <Table
       columns={columns}
       dataSource={files}
       // expandable={{
       //   expandedRowRender: expandedRow
       // }}
+      locale={filesFilters === 'archived' ? { emptyText: noArchivedFiles } : undefined}
       pagination={false}
       rowKey={'id'}
       rowSelection={rowSelection}
       />
       <br />
-      <Dragger {...props}>
+      <Dragger {...uploadProps} height={200}>
         <p className="ant-upload-drag-icon">
           <InboxOutlined />
         </p>
