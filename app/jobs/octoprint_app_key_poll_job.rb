@@ -43,7 +43,7 @@ class OctoprintAppKeyPollJob < ApplicationJob
     request = Printer::AppKeyRequest.find(request_id)
     return false if request.nil?
 
-    poll = OctoprintAppKey::Poll.create!(url: request.url, app_token: request.app_token)
+    poll = Printer::Backend::Octoprint::AppKey::Poll.create!(url: request.url, app_token: request.app_token)
     return true if poll.decision == :waiting
 
     finish(request_id, poll.api_key)

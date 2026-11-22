@@ -10,7 +10,7 @@ class Printer
   #   Printer::AppKeyRequest.find(request.id) # nil once it's over or expired
   #   Printer::AppKeyRequest.take(request.id) # removes it, for one caller only
   #
-  # Not to be confused with OctoprintAppKey::Request, the call that asks OctoPrint for the key.
+  # The call that asks OctoPrint for the key is Printer::Backend::Octoprint::AppKey::Request.
   class AppKeyRequest < ApplicationModel
     # Longer than OctoPrint keeps a request waiting (10 minutes), so that the job always sees OctoPrint's answer
     TTL = T.let(15.minutes, ActiveSupport::Duration)
@@ -59,7 +59,7 @@ class Printer
     # (see requestPrinterAppKey).
     sig { returns(String) }
     def url
-      OctoprintAppKey.url(IPAddr.new(address))
+      Backend::Octoprint::AppKey.url(IPAddr.new(address))
     end
 
     # What Types::AppKeyRequest reads: everything but the app token (which approval_url holds, though: see

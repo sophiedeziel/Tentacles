@@ -1,8 +1,9 @@
 # typed: strict
 # frozen_string_literal: true
 
-# A scan of the local /24 network for OctoPrint servers (the addresses that answer the appkeys probe), the saved
-# printers' included. Kept in Redis, and reused for 15 minutes:
+# A scan of the local /24 network for OctoPrint servers (the addresses that answer the appkeys probe, see
+# Printer::Backend::Octoprint::AppKey.available?), the saved printers' included. Kept in Redis, and reused for 15
+# minutes:
 #
 #   scan = NetworkScan.create!                # reuses the last scan when it's under 15 minutes old
 #   scan = NetworkScan.create!(refresh: true) # scans again
@@ -53,7 +54,8 @@ class NetworkScan < ApplicationModel
 
   sig { void }
   def scan
-    assign_attributes(ips: all_network_ips.select { |ip| octoprint?(ip) }, scanned_at: Time.current)
+    found = all_network_ips.select { |ip| Printer::Backend::Octoprint::AppKey.available?(ip) }
+    assign_attributes(ips: found, scanned_at: Time.current)
     REDIS_POOL.with do |conn|
       conn.set(:printers_ips, ips.to_json)
       conn.set(:last_printer_scan, scanned_at.to_i)
@@ -65,17 +67,6 @@ class NetworkScan < ApplicationModel
     return [] unless local_ip
 
     network_scan.split("\n").map { |line| IP_REGEX.match(line) }.compact.pluck(1)
-  end
-
-  sig { params(ip: String).returns(T::Boolean) }
-  def octoprint?(ip)
-    uri = URI("http://#{ip}/plugin/appkeys/probe")
-    begin
-      res = Net::HTTP.get_response(uri)
-      res.is_a?(Net::HTTPSuccess) && res.code == '204'
-    rescue StandardError
-      false
-    end
   end
 
   sig { returns(T.nilable(String)) }

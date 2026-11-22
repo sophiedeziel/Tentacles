@@ -4,7 +4,7 @@ require 'rails_helper'
 require 'support/app_key_request_helpers'
 
 # OctoPrint's Application Keys plugin is stubbed with WebMock, without VCR
-RSpec.describe OctoprintAppKey::Poll do
+RSpec.describe Printer::Backend::Octoprint::AppKey::Poll do
   include AppKeyRequestHelpers
 
   let(:app_token) { AppKeyRequestHelpers::APP_TOKEN }

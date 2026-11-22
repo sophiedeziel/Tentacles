@@ -20,7 +20,7 @@ RSpec.describe NetworkScan do
     context 'when no address answers the probe' do
       before do
         allow(scan).to receive(:all_network_ips).and_return(['192.168.0.4'])
-        allow(scan).to receive(:octoprint?).and_return(false)
+        allow(Printer::Backend::Octoprint::AppKey).to receive(:available?).and_return(false)
       end
 
       it 'finds no ips' do
@@ -62,7 +62,7 @@ RSpec.describe NetworkScan do
         redis.set(:printers_ips, ['192.168.0.5'].to_json)
         redis.set(:last_printer_scan, 3.minutes.ago.to_i)
         allow(scan).to receive(:all_network_ips).and_return(['192.168.0.6'])
-        allow(scan).to receive(:octoprint?).and_return(true)
+        allow(Printer::Backend::Octoprint::AppKey).to receive(:available?).and_return(true)
       end
 
       it 'reuses it without scanning' do
@@ -84,7 +84,8 @@ RSpec.describe NetworkScan do
     it 'scans again when the last scan is older than 15 minutes' do
       redis.set(:printers_ips, ['192.168.0.5'].to_json)
       redis.set(:last_printer_scan, 16.minutes.ago.to_i)
-      allow(scan).to receive_messages(all_network_ips: ['192.168.0.6'], octoprint?: true)
+      allow(scan).to receive(:all_network_ips).and_return(['192.168.0.6'])
+      allow(Printer::Backend::Octoprint::AppKey).to receive(:available?).and_return(true)
 
       scan.save!
 

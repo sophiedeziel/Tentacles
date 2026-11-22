@@ -56,8 +56,8 @@ module Mutations
       # Asks OctoPrint at `ip` for a key, keeps the request and starts polling it
       sig { params(ip: IPAddr).returns(::Printer::AppKeyRequest) }
       def request_key(ip)
-        url = OctoprintAppKey.url(ip)
-        app_key = OctoprintAppKey::Request.create!(url:)
+        url = ::Printer::Backend::Octoprint::AppKey.url(ip)
+        app_key = ::Printer::Backend::Octoprint::AppKey::Request.create!(url:)
         request = ::Printer::AppKeyRequest.create!(address: ip.to_s, app_token: app_key.app_token,
                                                    approval_url: app_key.auth_dialog_url || url)
         OctoprintAppKeyPollJob.perform_later(T.must(request.id))
