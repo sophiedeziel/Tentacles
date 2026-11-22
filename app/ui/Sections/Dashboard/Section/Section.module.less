@@ -1,5 +1,5 @@
 // A section is a 4-column grid: widgets never flow across a divider.
-// Below md: 2 columns (XL and XXL clamp to 2 wide); below sm: 1 column.
+// Below md (tablets and phones): 2 columns, where XL and XXL clamp to 2 wide (the design keeps 2 columns down to phones).
 .section {
   margin-top: 24px;
 
@@ -94,16 +94,6 @@
 
   .cell {
     grid-column: span var(--width-units-md);
-  }
-}
-
-@media (max-width: 575.98px) {
-  .grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .cell {
-    grid-column: span 1;
   }
 }
 

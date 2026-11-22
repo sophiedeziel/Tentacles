@@ -25,6 +25,17 @@
   flex-wrap: wrap;
   align-items: flex-end;
   gap: 20px;
+
+  // Phones: the 4-wide previews are wider than the screen, so each type's sizes scroll sideways in one row, from
+  // the top so the small ones show first
+  @media (max-width: 575.98px) {
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    overflow-x: auto;
+    // Room for the hover lift and the focus outline
+    margin: -8px;
+    padding: 8px;
+  }
 }
 
 .choice {
