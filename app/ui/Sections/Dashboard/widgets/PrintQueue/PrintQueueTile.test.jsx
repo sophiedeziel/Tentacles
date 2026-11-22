@@ -29,10 +29,10 @@ const variables = (printerId, queueRows, historyRows) => ({
   printerId, queueRows, historyRows, withQueue: queueRows > 0, withHistory: historyRows > 0
 })
 
-const tile = (size, { printerId = null, options = {}, queueVersion = 0, live = true } = {}) => (
+const tile = (size, { printerId = null, options = {}, queueVersion = 0, live = true, editing = false } = {}) => (
   <PrintQueueTile size={size}
     widget={{ printer: printerId ? { id: printerId } : null, options: { ...ALL_OPTIONS, ...options } }}
-    data={{ printers: FLEET, now: FIXTURE_NOW.getTime(), live, queueVersion }} />
+    data={{ printers: FLEET, now: FIXTURE_NOW.getTime(), live, queueVersion, editing }} />
 )
 
 const renderTile = (element, mocks = []) => render(
@@ -96,5 +96,28 @@ describe('PrintQueueTile', () => {
     expect(started).not.toHaveBeenCalled()
     await userEvent.click(screen.getByRole('button', { name: 'Start Print' }))
     await waitFor(() => expect(started).toHaveBeenCalledTimes(1))
+  })
+
+  // The edit toolbar sits over the bottom of the widget, where the ready bar is
+  it('hides the ready bar and its Start Next in edit mode', async () => {
+    const { mock } = listsMock(variables(null, 8, 0), { printQueue: queueResult(QUEUE) })
+    renderTile(tile('L', { editing: true }), [mock])
+    expect(await screen.findByText('cable_clip_x20.gcode')).toBeInTheDocument()
+    expect(screen.queryByText('Prusa Mini+ is ready for spool_holder.gcode')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Start Next' })).not.toBeInTheDocument()
+  })
+
+  it('hides Start Next in the table in edit mode', () => {
+    const { mock } = listsMock(variables(null, 0, 0), {})
+    renderTile(tile('XL', { editing: true }), [mock])
+    expect(screen.getByRole('table', { name: 'Queues by printer' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Start Next' })).not.toBeInTheDocument()
+  })
+
+  it('shows the ready bar out of edit mode', async () => {
+    const { mock } = listsMock(variables(null, 8, 0), { printQueue: queueResult(QUEUE) })
+    renderTile(tile('L'), [mock])
+    expect(await screen.findByText('Prusa Mini+ is ready for spool_holder.gcode')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Start Next' })).toBeInTheDocument()
   })
 })
