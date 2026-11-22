@@ -48,7 +48,7 @@ class Printer
 
     sig { void }
     def start_spool
-      printer.notify_spooler(:add_printer)
+      printer.notify_spooler(SpoolerCommand::AddPrinter)
     rescue Redis::BaseError, ConnectionPool::TimeoutError => e
       Rails.logger.error("[Printer::Addition] Could not publish add_printer for printer #{printer.id}: #{e.message}")
     end

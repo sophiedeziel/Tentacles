@@ -1,3 +1,4 @@
+# typed: true
 # frozen_string_literal: true
 
 require File.expand_path('../config/environment', __dir__)
@@ -6,6 +7,8 @@ require_relative 'spooler/spool'
 require_relative 'spooler/operation'
 # require 'rainbow/refinement'
 class Spooler
+  extend T::Sig
+
   WAIT_TIME = 0.5.seconds
 
   def initialize
@@ -35,13 +38,13 @@ class Spooler
     end
   end
 
-  # One command published on the `printers` channel. Its errors are logged, so a bad message (e.g. for a printer
-  # removed since) never ends the subscription.
+  # One command published on the `printers` channel (see Printer::SpoolerCommand). Its errors are logged, so a bad
+  # message (an unknown command, a printer removed since, ...) never ends the subscription.
   def handle_message(message)
     message = JSON.parse(message).deep_symbolize_keys
-    command = message.delete(:command)
+    command = Printer::SpoolerCommand.deserialize(message.delete(:command))
     # The printer is already deleted: it can't be read
-    return remove_printer(message[:printer_id]) if command == 'remove_printer'
+    return remove_printer(message[:printer_id]) if command == Printer::SpoolerCommand::RemovePrinter
 
     printer = Printer.find(message[:printer_id])
     send_command(printer, command, message)
@@ -58,26 +61,36 @@ class Spooler
     log "Removed printer #{printer_id}"
   end
 
+  # The commands for a printer that still exists: remove_printer is handled by #handle_message, before the lookup.
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
+  sig do
+    params(
+      printer: Printer,
+      command: T.any(Printer::SpoolerCommand::AddPrinter, Printer::SpoolerCommand::StartPrint,
+                     Printer::SpoolerCommand::StopPrint, Printer::SpoolerCommand::Resume),
+      opts: T::Hash[Symbol, T.untyped]
+    ).void
+  end
   def send_command(printer, command, opts)
     case command
-    when 'add_printer'
+    when Printer::SpoolerCommand::AddPrinter
       if @workers[opts[:printer_id]].nil?
         @workers[printer.id] = Spool.new(printer)
         log "Added a new printer: #{printer.name}"
       end
-    when 'start_print'
+    when Printer::SpoolerCommand::StartPrint
       unless @workers[printer.id].working?
         log "Starting job on #{printer.name}"
         @workers[printer.id].resume
       end
-    when 'stop_print'
+    when Printer::SpoolerCommand::StopPrint
       log "Stopping print on #{printer.name}"
       @workers[printer.id].stop
-    when 'resume'
+    when Printer::SpoolerCommand::Resume
       log "Resuming work on #{printer.name}"
       @workers[printer.id].resume
+    else T.absurd(command)
     end
   end
   # rubocop:enable Metrics/AbcSize

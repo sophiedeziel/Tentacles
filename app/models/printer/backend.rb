@@ -36,6 +36,20 @@ class Printer
       MESSAGE = "Stored credentials can't be read, re-enter them"
     end
 
+    # The adapter of each `printers.backend`, the only list of the backends: Printer::BACKENDS is its keys and each
+    # adapter names its monitor reader (.reader_class). Adding a backend is one entry here. Class names rather than
+    # classes, so that loading Backend doesn't load the adapters (which need Backend): .adapter_class autoloads them.
+    ADAPTERS = T.let(
+      {
+        'octoprint' => 'Printer::Backend::Octoprint',
+        'prusalink' => 'Printer::Backend::Prusalink'
+      }.freeze,
+      T::Hash[String, String]
+    )
+
+    # A monitor reader class: built like the other models (`.new(printer:)`), its instances are Readers
+    ReaderClass = T.type_alias { T.all(T.class_of(ApplicationModel), T::Class[Printer::Monitor::Reader]) }
+
     # The Printer whose server this talks to
     attribute :printer
 
@@ -45,12 +59,21 @@ class Printer
       # The adapter of the printer's backend
       sig { params(printer: Printer).returns(Printer::Backend) }
       def for(printer)
-        case printer.backend
-        when 'octoprint' then Octoprint.new(printer:)
-        when 'prusalink' then Prusalink.new(printer:)
-        else raise ArgumentError, "Unknown printer backend #{printer.backend.inspect}"
-        end
+        adapter_class(printer.backend).new(printer:)
       end
+
+      # The adapter class of a backend: `Printer::Backend.adapter_class('prusalink') # => Printer::Backend::Prusalink`
+      sig { params(backend: T.nilable(String)).returns(T.class_of(Printer::Backend)) }
+      def adapter_class(backend)
+        name = ADAPTERS[backend.to_s]
+        raise ArgumentError, "Unknown printer backend #{backend.inspect}" unless name
+
+        T.cast(name.constantize, T.class_of(Printer::Backend))
+      end
+
+      # The class of the backend's monitor reader (see Printer::Monitor::Reader.for)
+      sig { abstract.returns(Printer::Backend::ReaderClass) }
+      def reader_class; end
     end
 
     # The server's name, for the messages shown to the user: "OctoPrint", "PrusaLink"

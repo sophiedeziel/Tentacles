@@ -29,6 +29,11 @@ class Printer
       class << self
         extend T::Sig
 
+        sig { override.returns(Printer::Backend::ReaderClass) }
+        def reader_class
+          Printer::Monitor::PrusalinkReader
+        end
+
         # Runs the block, raising the gem's errors as Printer::Backend errors with the same message
         sig { type_parameters(:T).params(block: T.proc.returns(T.type_parameter(:T))).returns(T.type_parameter(:T)) }
         def translate_errors(&block)

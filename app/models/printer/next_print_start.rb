@@ -56,7 +56,7 @@ class Printer
 
     # Publishing to the spooler goes through Redis rather than the printer
     def send_command
-      printer.notify_spooler(:start_print)
+      printer.notify_spooler(SpoolerCommand::StartPrint)
     rescue Redis::BaseError, ConnectionPool::TimeoutError => e
       Rails.logger.error("[Printer::NextPrintStart] Could not publish start_print for printer #{printer.id}: " \
                          "#{e.message}")

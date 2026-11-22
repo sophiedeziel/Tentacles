@@ -58,7 +58,7 @@ class Printer
 
     sig { void }
     def stop_spool
-      after_removal('stop its spool') { printer.notify_spooler(:remove_printer) }
+      after_removal('stop its spool') { printer.notify_spooler(SpoolerCommand::RemovePrinter) }
     end
 
     # The jobs were deleted with the printer (dependent: :delete_all), so their queue push is sent here, once. The

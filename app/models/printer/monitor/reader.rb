@@ -29,12 +29,9 @@ class Printer
       def camera; end
 
       sig { params(printer: Printer).returns(Reader) }
+      # The reader that the printer's adapter names (see Printer::Backend::ADAPTERS)
       def self.for(printer)
-        case printer.backend
-        when 'octoprint' then OctoprintReader.new(printer:)
-        when 'prusalink' then PrusalinkReader.new(printer:)
-        else raise ArgumentError, "Unknown printer backend #{printer.backend.inspect}"
-        end
+        Printer::Backend.adapter_class(printer.backend).reader_class.new(printer:)
       end
     end
   end

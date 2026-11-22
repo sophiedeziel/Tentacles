@@ -4,7 +4,8 @@
 class Printer < ApplicationRecord
   extend T::Sig
 
-  BACKENDS = %w[octoprint prusalink].freeze
+  # 'octoprint', 'prusalink': see Printer::Backend::ADAPTERS
+  BACKENDS = T.let(Printer::Backend::ADAPTERS.keys.freeze, T::Array[String])
 
   # delete_all: a single DELETE. Nothing is pushed per job: Printer::Removal pushes printQueueChanged once.
   has_many :jobs, class_name: 'Printer::Job', dependent: :delete_all
@@ -82,10 +83,10 @@ class Printer < ApplicationRecord
     TentaclesSchema.subscriptions.trigger(:printer_subscription, { id: }, {})
   end
 
-  # Publishes a command for this printer to the spooler (lib/spooler.rb): start_print, add_printer, remove_printer
-  sig { params(command: Symbol).void }
+  # Publishes a command for this printer to the spooler (lib/spooler.rb), e.g. Printer::SpoolerCommand::StartPrint
+  sig { params(command: Printer::SpoolerCommand).void }
   def notify_spooler(command)
-    REDIS_POOL.with { |conn| conn.publish('printers', { command:, printer_id: id }.to_json) }
+    REDIS_POOL.with { |conn| conn.publish('printers', { command: command.serialize, printer_id: id }.to_json) }
   end
 
   # The printer's API adapter (see Printer::Backend): `printer.api.pause`, `printer.api.state_family`, ...

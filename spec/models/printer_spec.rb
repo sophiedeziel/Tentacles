@@ -90,7 +90,7 @@ RSpec.describe Printer, :vcr, type: :model do
     before { stub_const('REDIS_POOL', ConnectionPool::Wrapper.new(size: 1, timeout: 1) { redis }) }
 
     it 'publishes the command with the printer id on the printers channel' do
-      printer.notify_spooler(:add_printer)
+      printer.notify_spooler(Printer::SpoolerCommand::AddPrinter)
 
       expect(redis).to have_received(:publish)
         .with('printers', { command: 'add_printer', printer_id: printer.id }.to_json)

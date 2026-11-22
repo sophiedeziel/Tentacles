@@ -67,16 +67,17 @@ module Dashboard
         section.assign_attributes(title: attributes[:title], position: index)
         collect_errors(section, "Section #{index + 1}")
         Array(attributes[:widgets]).each_with_index do |widget, position|
-          widgets << build_widget(widget, section, position, "Widget #{position + 1} in section #{index + 1}")
+          label = "Widget #{position + 1} in section #{index + 1}"
+          widgets << build_widget(attributes: widget, section:, position:, label:)
         end
         section
       end
 
-      def build_widget(attributes, section, position, label)
-        widget = find_or_build_widget(attributes, label)
+      def build_widget(attributes:, section:, position:, label:)
+        widget = find_or_build_widget(attributes:, label:)
         return unless widget
 
-        widget.assign_attributes(section:, position:, printer: printer(attributes, label),
+        widget.assign_attributes(section:, position:, printer: printer(attributes:, label:),
                                  width_units: attributes[:width_units], height_units: attributes[:height_units],
                                  options: attributes[:options].to_h.transform_keys(&:to_s))
         collect_errors(widget, label)
@@ -84,7 +85,7 @@ module Dashboard
       end
 
       # A widget keeps its row unless its type changed
-      def find_or_build_widget(attributes, label)
+      def find_or_build_widget(attributes:, label:)
         type = attributes[:type]
         unless Dashboard::Widget::TYPES.include?(type)
           @errors << "#{label}: unknown type"
@@ -95,7 +96,7 @@ module Dashboard
         @existing_widgets[id]&.type == type ? @existing_widgets.delete(id) : type.constantize.new
       end
 
-      def printer(attributes, label)
+      def printer(attributes:, label:)
         return if attributes[:printer_id].nil?
 
         printer = @printers[integer_id(attributes[:printer_id])]

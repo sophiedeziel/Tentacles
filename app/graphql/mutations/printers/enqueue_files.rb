@@ -34,7 +34,7 @@ module Mutations
           executable: file,
           printer:
         )
-        printer.notify_spooler(:start_print) if print_immediately
+        printer.notify_spooler(::Printer::SpoolerCommand::StartPrint) if print_immediately
         job
       end
     end
