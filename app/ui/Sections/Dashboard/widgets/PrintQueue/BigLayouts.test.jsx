@@ -4,7 +4,6 @@ import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 
 import PrintQueueWidget from './PrintQueueWidget'
-import { JobStatus } from './BigLayouts'
 import { ALL_OPTIONS, FIXTURE_NOW, FLEET, HISTORY, QUEUE, historyOf, queueOf } from './fixtures'
 import { PRINTERS } from '../Printer/fixtures'
 
@@ -82,13 +81,14 @@ describe('PrintQueueWidget at Extra Large and 4×4', () => {
 
   it('shows the empty-queue illustration when nothing is printing or queued', () => {
     const idle = [{ ...PRINTERS.OPERATIONAL, queuedCount: 0, canStartNext: false, nextJob: null }]
-    renderWidget('XXL', { printers: idle, queue: { totalCount: 0, jobs: [] }, history: [] })
+    const { container } = renderWidget('XXL', { printers: idle, queue: { totalCount: 0, jobs: [] }, history: [] })
     expect(screen.getByText('Queue is empty')).toBeInTheDocument()
+    expect(container.querySelector('.ant-empty-image svg')).toBeInTheDocument()
     expect(screen.queryByRole('table')).not.toBeInTheDocument()
   })
 
-  it('shows job statuses as stored, naming the known ones', () => {
-    const { container } = render(<><JobStatus status="completed" /><JobStatus status="error" /><JobStatus status="skipped" /></>)
-    expect(container).toHaveTextContent('CompletedFailedSkipped')
+  it('shows the history with the shared job status tags', () => {
+    renderWidget('XL', { options: { rowPerPrinter: false, history: true } })
+    expect(screen.getByText('Failed').closest('.ant-tag')).toHaveClass('ant-tag-error')
   })
 })
