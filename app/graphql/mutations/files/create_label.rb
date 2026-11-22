@@ -11,7 +11,7 @@ module Mutations
       field :label, Types::Label, null: true
 
       def resolve(name:, color:)
-        label = ::Label.new(name:, color:)
+        label = ::Library::Label.new(name:, color:)
 
         if label.save
           { label: }

@@ -115,7 +115,7 @@ module Mutations
           context 'when there is an error' do
             before do
               file
-              allow_any_instance_of(FileRecord).to receive(:save!).and_raise(ActiveRecord::RecordInvalid)
+              allow_any_instance_of(Library::Item).to receive(:save!).and_raise(ActiveRecord::RecordInvalid)
             end
 
             it 'returns a nil file' do

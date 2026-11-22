@@ -3,7 +3,7 @@
 
 module Resolvers
   # Tests the credentials of a printer before it's added, or while it's edited: reads its name and server version
-  # through the backend's adapter (see PrinterBackends::Base#identify), from the server, so the browser never deals
+  # through the backend's adapter (see Printer::Backend#identify), from the server, so the browser never deals
   # with CORS or Digest auth. With `printerId`, a blank secret is that printer's saved one (the page never shows it).
   #
   # Failures are GraphQL errors with a code in `extensions.code`: UNAUTHORIZED (rejected credentials), UNREACHABLE
@@ -37,7 +37,7 @@ module Resolvers
       printer = ::Printer.new(backend:, uri: uri.presence, username: username.presence, secret: key)
       printer.api.identify
     # JSON::ParserError and KeyError: the octoprint gem fails to read the error of a server that isn't OctoPrint
-    rescue PrinterBackends::Error, JSON::ParserError, KeyError, URI::InvalidURIError => e
+    rescue Printer::Backend::Error, JSON::ParserError, KeyError, URI::InvalidURIError => e
       raise execution_error(T.must(printer).api, uri, key.to_s, e)
     end
 
@@ -55,7 +55,7 @@ module Resolvers
     end
 
     sig do
-      params(api: PrinterBackends::Base, uri: String, secret: String, error: StandardError)
+      params(api: Printer::Backend, uri: String, secret: String, error: StandardError)
         .returns(GraphQL::ExecutionError)
     end
     def execution_error(api, uri, secret, error)
@@ -68,8 +68,8 @@ module Resolvers
     sig { params(error: StandardError).returns(String) }
     def code(error)
       case error
-      when PrinterBackends::Unauthorized then 'UNAUTHORIZED'
-      when PrinterBackends::Unreachable then 'UNREACHABLE'
+      when Printer::Backend::Unauthorized then 'UNAUTHORIZED'
+      when Printer::Backend::Unreachable then 'UNREACHABLE'
       else 'PRINTER_ERROR'
       end
     end
@@ -82,16 +82,16 @@ module Resolvers
     end
 
     # `detail`: see #detail
-    sig { params(api: PrinterBackends::Base, uri: String, error: StandardError, detail: String).returns(String) }
+    sig { params(api: Printer::Backend, uri: String, error: StandardError, detail: String).returns(String) }
     def message(api, uri, error, detail)
       product = api.product_name
       case error
-      when PrinterBackends::Unauthorized
-        "#{product} rejected the #{api.is_a?(PrinterBackends::Prusalink) ? 'username or password' : api.secret_name}"
-      when PrinterBackends::Unreachable then "Could not reach #{product} at #{uri}: #{detail}"
-      when PrinterBackends::MissingCredentials then "Enter the URL and the #{api.secret_name}"
+      when Printer::Backend::Unauthorized
+        "#{product} rejected the #{api.is_a?(Printer::Backend::Prusalink) ? 'username or password' : api.secret_name}"
+      when Printer::Backend::Unreachable then "Could not reach #{product} at #{uri}: #{detail}"
+      when Printer::Backend::MissingCredentials then "Enter the URL and the #{api.secret_name}"
       when URI::InvalidURIError then "#{uri} is not a valid URL"
-      when PrinterBackends::Error then "#{product} returned an error: #{detail}"
+      when Printer::Backend::Error then "#{product} returned an error: #{detail}"
       else "#{uri} does not answer like #{product}" # JSON::ParserError, KeyError: e.g. an HTML page
       end
     end

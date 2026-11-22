@@ -29,7 +29,7 @@ module Mutations
         return { request: nil, errors: [refusal(address)] } unless scanned
 
         { request: request_key(scanned).payload('waiting'), errors: [] }
-      rescue PrinterBackends::Error => e
+      rescue Printer::Backend::Error => e
         { request: nil, errors: [e.message] }
       end
 
@@ -49,19 +49,20 @@ module Mutations
       sig { params(address: String).returns(T.nilable(IPAddr)) }
       def scanned_ip(address)
         ip = self.class.parse_ip(address)
-        found = ip && ::PrinterScanner.new.last_scan.find { |scanned| self.class.parse_ip(scanned.to_s) == ip }
+        found = ip && ::NetworkScan.last&.ips&.find { |scanned| self.class.parse_ip(scanned.to_s) == ip }
         IPAddr.new(found) if found
       end
 
       # Asks OctoPrint at `ip` for a key, keeps the request and starts polling it
-      sig { params(ip: IPAddr).returns(PrinterAppKeyRequest) }
+      sig { params(ip: IPAddr).returns(::Printer::AppKeyRequest) }
       def request_key(ip)
-        url = OctoprintAppKeys.url(ip)
-        app_token, auth_dialog = OctoprintAppKeys.new(url).request
-        request = PrinterAppKeyRequest.create(address: ip.to_s, app_token:, approval_url: auth_dialog || url)
-        OctoprintAppKeyPollJob.perform_later(request.id)
+        url = OctoprintAppKey.url(ip)
+        app_key = OctoprintAppKey::Request.create!(url:)
+        request = ::Printer::AppKeyRequest.create!(address: ip.to_s, app_token: app_key.app_token,
+                                                   approval_url: app_key.auth_dialog_url || url)
+        OctoprintAppKeyPollJob.perform_later(T.must(request.id))
         request
-      rescue PrinterBackends::Error => e
+      rescue Printer::Backend::Error => e
         Rails.logger.warn("[requestPrinterAppKey] Could not ask #{url.inspect} for an app key: #{e.class}")
         raise
       end

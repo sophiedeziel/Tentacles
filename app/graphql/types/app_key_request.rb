@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module Types
-  # Resolves from PrinterAppKeyRequest#payload. Never holds the API key. OctoPrint puts the request's app token in the
-  # URL of its dialog (approvalUrl); it hands the key out once, to the first poll after approval: the job's.
+  # Resolves from Printer::AppKeyRequest#payload. Never holds the API key. OctoPrint puts the request's app token in
+  # the URL of its dialog (approvalUrl); it hands the key out once, to the first poll after approval: the job's.
   class AppKeyRequest < Base::Object
     description 'A request for an OctoPrint API key, which the user approves in OctoPrint. The key stays on the server.'
 

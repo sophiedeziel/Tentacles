@@ -39,7 +39,7 @@ RSpec.describe Mutations::Printers::CancelPrinterAppKeyRequest, type: :request d
     end
 
     it 'forgets it, so that the job stops, without telling OctoPrint' do
-      expect(PrinterAppKeyRequest.find(request.id)).to be_nil
+      expect(Printer::AppKeyRequest.find(request.id)).to be_nil
       expect(a_request(:any, //)).not_to have_been_made
     end
 

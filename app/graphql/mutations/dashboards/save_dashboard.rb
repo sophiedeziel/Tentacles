@@ -16,14 +16,14 @@ module Mutations
 
       def resolve(sections:)
         attributes = sections.map(&:to_attributes)
-        ::DashboardSection::Replacement.check_limits!(attributes)
+        ::Dashboard::Section::Replacement.check_limits!(attributes)
         mismatches = options_mismatches(sections)
         return failure(mismatches) if mismatches.any?
 
-        ::DashboardSection.replace_all!(attributes)
+        ::Dashboard::Section.replace_all!(attributes)
         broadcast
         { dashboard: Types::Dashboard.saved, errors: [] }
-      rescue ::DashboardSection::InvalidLayout => e
+      rescue ::Dashboard::Section::InvalidLayout => e
         failure(e.messages)
       rescue *CONFLICTS
         failure(['The dashboard changed while saving, try again'])

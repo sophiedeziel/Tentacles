@@ -8,10 +8,11 @@ RSpec.describe 'Printer actions with the job the user confirmed', type: :request
   let(:redis) { MockRedis.new.tap { |redis| redis.define_singleton_method(:publish) { |_channel, _message| 0 } } }
   let(:printer) { create(:printer, name: 'Prusa MK4') }
   let(:json) { response.parsed_body }
+  let(:refreshed_status) { instance_spy(Printer::Status) }
 
   before do
     stub_const('REDIS_POOL', ConnectionPool::Wrapper.new(size: 1, timeout: 1) { redis })
-    allow(PrinterMonitor).to receive(:refresh)
+    allow(Printer::Status).to receive(:find_or_initialize_by).and_return(refreshed_status)
   end
 
   def octoprint_job(state, file_name)

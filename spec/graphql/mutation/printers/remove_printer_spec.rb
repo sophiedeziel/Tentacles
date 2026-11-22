@@ -27,13 +27,13 @@ RSpec.describe Mutations::Printers::RemovePrinter, type: :request do
   end
 
   context 'with a printer that has jobs, widgets and a monitor snapshot' do
-    let(:section) { DashboardSection.create!(title: nil, position: 0) }
+    let(:section) { Dashboard::Section.create!(title: nil, position: 0) }
     let(:triggers) { [] }
 
     before do
       %w[enqueued active completed].each { |status| create(:printer_job, printer:, executable: file, status:) }
-      PrinterWidget.create!(dashboard_section: section, printer:, width_units: 2, height_units: 1, position: 0)
-      PrinterStatusStore.write(PrinterStatus.unknown(printer_id: printer.id, last_seen_at: nil))
+      Dashboard::PrinterWidget.create!(section: section, printer:, width_units: 2, height_units: 1, position: 0)
+      Printer::Status.unknown(printer_id: printer.id, last_seen_at: nil).save!
       allow(subscriptions).to receive(:trigger) { |*args| triggers << args.first }
       remove_printer(printer.id)
     end
@@ -46,9 +46,9 @@ RSpec.describe Mutations::Printers::RemovePrinter, type: :request do
     it 'removes the printer, its jobs, its widgets and its snapshot, and keeps its files' do
       expect(Printer.exists?(printer.id)).to be false
       expect(Printer::Job.where(printer_id: printer.id)).to be_empty
-      expect(DashboardWidget.where(printer_id: printer.id)).to be_empty
-      expect(PrinterStatusStore.read(printer.id)).to be_nil
-      expect(FileRecord.exists?(file.id)).to be true
+      expect(Dashboard::Widget.where(printer_id: printer.id)).to be_empty
+      expect(Printer::Status.find_by(printer_id: printer.id)).to be_nil
+      expect(Library::Item.exists?(file.id)).to be true
     end
 
     it 'pushes printQueueChanged and dashboardChanged once each' do
@@ -73,12 +73,16 @@ RSpec.describe Mutations::Printers::RemovePrinter, type: :request do
   end
 
   context 'when the printer changes while it is removed' do
-    before { allow(Printers::Remove).to receive(:call).and_raise(ActiveRecord::InvalidForeignKey) }
+    before do
+      allow(Printer).to receive(:find_by).with(id: printer.id.to_s).and_return(printer)
+      allow(printer).to receive(:destroy!).and_raise(ActiveRecord::InvalidForeignKey)
+    end
 
-    it 'returns an error' do
+    it 'returns an error and removes nothing' do
       remove_printer(printer.id)
 
       expect(data).to eq('removedPrinterId' => nil, 'errors' => ['The printer changed while removing it, try again'])
+      expect(Printer.exists?(printer.id)).to be true
     end
   end
 end

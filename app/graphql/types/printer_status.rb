@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Types
-  # Resolves ::PrinterStatus snapshots (written to Redis by the printer monitor)
+  # Resolves ::Printer::Status snapshots (written to Redis by the printer monitor)
   class PrinterStatus < Base::Object
     description 'Live state of a printer, as last reported by the printer monitor. Nullable fields are null when ' \
                 "the printer's server has no value (not printing, or not connected)."

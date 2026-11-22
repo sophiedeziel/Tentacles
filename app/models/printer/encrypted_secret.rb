@@ -5,7 +5,7 @@ class Printer
   # `printers.secret` (the OctoPrint API key, or the backend's password), encrypted.
   #
   # When the stored secret can't be decrypted (e.g. SECRET_KEY_BASE changed), reading it raises
-  # PrinterBackends::UnreadableCredentials instead of an Active Record error: the adapters, the monitor and the
+  # Printer::Backend::UnreadableCredentials instead of an Active Record error: the adapters, the monitor and the
   # actions treat it like missing credentials, for this printer only. The printer can still be validated and saved,
   # and its credentials entered again.
   module EncryptedSecret
@@ -24,14 +24,14 @@ class Printer
     def secret
       super
     rescue ActiveRecord::Encryption::Errors::Decryption
-      Kernel.raise PrinterBackends::UnreadableCredentials, PrinterBackends::UnreadableCredentials::MESSAGE
+      Kernel.raise Printer::Backend::UnreadableCredentials, Printer::Backend::UnreadableCredentials::MESSAGE
     end
 
     # The secret, or nil when it can't be decrypted
     sig { returns(T.nilable(String)) }
     def readable_secret
       secret
-    rescue PrinterBackends::UnreadableCredentials
+    rescue Printer::Backend::UnreadableCredentials
       nil
     end
 

@@ -12,13 +12,13 @@ module Mutations
       field :files, [Types::File], null: true
 
       def resolve(file_ids:, label_ids:)
-        labels = ::Label.where(id: label_ids)
-        files = ::FileRecord.where(id: file_ids).includes(:file_labels)
+        labels = ::Library::Label.where(id: label_ids)
+        files = ::Library::Item.where(id: file_ids).includes(:labelings)
 
         return { labels: [], files: [] } if labels.empty? || files.empty?
 
         files.each do |file|
-          file.file_labels.each { |file_label| file_label.destroy! if labels.map(&:id).include?(file_label.label_id) }
+          file.labelings.each { |labeling| labeling.destroy! if labels.map(&:id).include?(labeling.label_id) }
         end
 
         { labels:, files: }

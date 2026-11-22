@@ -33,26 +33,29 @@ class Printer
     end
 
     # Why a printer's server can't be read: the adapters' errors, and the answers of a server of another kind
-    READ_ERRORS = [PrinterBackends::Error, JSON::ParserError, KeyError, URI::InvalidURIError].freeze
+    READ_ERRORS = [Printer::Backend::Error, JSON::ParserError, KeyError, URI::InvalidURIError].freeze
 
-    # What the printer's server reports about it (PrinterBackends::Base#reported_specs), cached for 2 hours. nil when
-    # it can't be reached; other errors are raised (see Printer#using_api).
-    sig { returns(T.nilable(PrinterBackends::ReportedSpecs)) }
+    # What the printer's server reports about it (Printer::Backend#reported_specs), cached for 2 hours. nil when it
+    # can't be reached; other errors are raised (see Printer#using_api).
+    sig { returns(T.nilable(Printer::Backend::ReportedSpecs)) }
     def reported_specs
-      # Cached as JSON: the Hash of the struct, not the struct
+      # Cached as JSON: the reported attributes (the nil ones left out), not the model
       reported = T.bind(self, Printer).using_api(cache: 2.hours) do
-        api.reported_specs.serialize
+        api.reported_specs.attributes.compact
       end
-      PrinterBackends::ReportedSpecs.from_hash(reported.deep_stringify_keys) if reported
+      return nil unless reported
+
+      specs = Printer::Backend::ReportedSpecs
+      specs.new(reported.stringify_keys.slice(*specs.attribute_names)) # A cached attribute may have been removed since
     end
 
     # Copies each reported value into a column that is still nil, then saves: never overwrites a value (false
     # included). A value the columns refuse (e.g. a 0 mm nozzle) stays nil. Returns the columns filled.
-    sig { params(reported: PrinterBackends::ReportedSpecs).returns(T::Array[String]) }
+    sig { params(reported: Printer::Backend::ReportedSpecs).returns(T::Array[String]) }
     def fill_blank_specs(reported)
       T.bind(self, Printer)
       # The name is the user's: it is never blank
-      values = reported.serialize.except('name').select { |column, _| self[column].nil? }
+      values = reported.attributes.compact.except('name').select { |column, _| self[column].nil? }
       assign_attributes(values)
       filled = values.keys - refused_specs(values.keys)
       return filled if save

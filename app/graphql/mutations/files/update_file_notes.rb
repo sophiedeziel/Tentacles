@@ -13,7 +13,7 @@ module Mutations
       field :file, Types::File, null: true
 
       def resolve(id:, notes:)
-        file = ::FileRecord.find(id)
+        file = ::Library::Item.find(id)
 
         if file.update!(notes:)
           { file: }

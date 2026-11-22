@@ -48,9 +48,9 @@ RSpec.describe 'Query dashboard and defaultDashboard', type: :request do
   describe 'dashboard' do
     it 'creates the default layout the first time' do
       dashboard = nil
-      expect { dashboard = run_query('dashboard') }.to change(DashboardSection, :count).from(0).to(1)
+      expect { dashboard = run_query('dashboard') }.to change(Dashboard::Section, :count).from(0).to(1)
 
-      section = DashboardSection.sole
+      section = Dashboard::Section.sole
       expect(dashboard).to match(
         'updatedAt' => section.updated_at.utc.iso8601,
         'sections' => [{ 'id' => section.id.to_s, 'title' => nil, 'widgets' => default_widgets }]
@@ -58,11 +58,11 @@ RSpec.describe 'Query dashboard and defaultDashboard', type: :request do
     end
 
     it 'returns the saved layout, with its dividers, in order' do
-      garage = DashboardSection.create!(position: 1, title: 'Garage')
-      top = DashboardSection.create!(position: 0)
-      PrintQueueWidget.create!(dashboard_section: garage, printer:, width_units: 4, height_units: 4, position: 1,
-                               options: { 'history' => true })
-      PrinterWidget.create!(dashboard_section: garage, printer:, width_units: 1, height_units: 1, position: 0)
+      garage = Dashboard::Section.create!(position: 1, title: 'Garage')
+      top = Dashboard::Section.create!(position: 0)
+      Dashboard::PrintQueueWidget.create!(section: garage, printer:, width_units: 4, height_units: 4, position: 1,
+                                          options: { 'history' => true })
+      Dashboard::PrinterWidget.create!(section: garage, printer:, width_units: 1, height_units: 1, position: 0)
 
       sections = run_query('dashboard')['sections']
 
@@ -99,7 +99,7 @@ RSpec.describe 'Query dashboard and defaultDashboard', type: :request do
   describe 'defaultDashboard' do
     it 'returns the default layout without saving it' do
       dashboard = nil
-      expect { dashboard = run_query('defaultDashboard') }.not_to change(DashboardSection, :count)
+      expect { dashboard = run_query('defaultDashboard') }.not_to change(Dashboard::Section, :count)
 
       expect(dashboard).to match(
         'updatedAt' => nil,
@@ -108,7 +108,7 @@ RSpec.describe 'Query dashboard and defaultDashboard', type: :request do
     end
 
     it 'ignores the saved layout' do
-      DashboardSection.create!(position: 0)
+      Dashboard::Section.create!(position: 0)
 
       expect(run_query('defaultDashboard')['sections'].first['widgets']).to match(default_widgets(ids: false))
     end

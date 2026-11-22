@@ -55,8 +55,8 @@ RSpec.describe Spooler do
 
     context 'when a printer is removed mid-print' do
       let(:api) do
-        instance_spy(PrinterBackends::Base,
-                     print_progress: { state_family: PrinterStateFamily::Printing, progress: 10.0 })
+        instance_spy(Printer::Backend,
+                     print_progress: { state_family: Printer::StateFamily::Printing, progress: 10.0 })
       end
       let!(:job) { create(:printer_job, printer:) }
       let(:spool) { Spooler::Spool.new(printer) }

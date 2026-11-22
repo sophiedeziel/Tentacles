@@ -53,7 +53,7 @@ RSpec.describe Mutations::Printers::RequestPrinterAppKey, type: :request do
 
     it 'keeps the app token in Redis for 15 minutes, under the request id' do
       expect(id).to match(/\A\h{8}-\h{4}-\h{4}-\h{4}-\h{12}\z/)
-      expect(PrinterAppKeyRequest.find(id)).to have_attributes(address: '192.168.1.57', app_token:)
+      expect(Printer::AppKeyRequest.find(id)).to have_attributes(address: '192.168.1.57', app_token:)
       expect(redis.ttl("printer_app_key_request_#{id}")).to eq(15.minutes.to_i)
     end
 
@@ -129,7 +129,7 @@ RSpec.describe Mutations::Printers::RequestPrinterAppKey, type: :request do
       request_app_key
 
       expect(log.string).to include('[requestPrinterAppKey] Could not ask "http://192.168.1.57/" for an app key: ' \
-                                    'PrinterBackends::Unreachable')
+                                    'Printer::Backend::Unreachable')
     end
   end
 

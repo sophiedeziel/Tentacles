@@ -55,18 +55,18 @@ RSpec.describe Mutations::Dashboards::SaveDashboard, type: :request do
   it 'saves the tree and returns it with the new ids' do
     save(sections)
 
-    garage = DashboardSection.find_by!(title: 'Garage')
+    garage = Dashboard::Section.find_by!(title: 'Garage')
     expect(result['errors']).to eq([])
     expect(result['dashboard']).to eq(
       'updatedAt' => garage.updated_at.utc.iso8601,
       'sections' => [
-        { 'id' => DashboardSection.first.id.to_s, 'title' => nil, 'widgets' => [
-          { 'id' => PrintQueueWidget.sole.id.to_s, 'type' => 'PRINT_QUEUE', 'widthUnits' => 4, 'heightUnits' => 4,
-            'printer' => nil,
+        { 'id' => Dashboard::Section.first.id.to_s, 'title' => nil, 'widgets' => [
+          { 'id' => Dashboard::PrintQueueWidget.sole.id.to_s, 'type' => 'PRINT_QUEUE', 'widthUnits' => 4,
+            'heightUnits' => 4, 'printer' => nil,
             'options' => { 'nowPrinting' => true, 'startNext' => false, 'rowPerPrinter' => false, 'history' => true } }
         ] },
         { 'id' => garage.id.to_s, 'title' => 'Garage', 'widgets' => [
-          { 'id' => PrinterWidget.sole.id.to_s, 'type' => 'PRINTER', 'widthUnits' => 1, 'heightUnits' => 1,
+          { 'id' => Dashboard::PrinterWidget.sole.id.to_s, 'type' => 'PRINTER', 'widthUnits' => 1, 'heightUnits' => 1,
             'printer' => { 'id' => printer.id.to_s },
             'options' => { 'camera' => false, 'timeLeft' => true, 'temperatures' => true, 'upNext' => true,
                            'controls' => true } }
@@ -78,8 +78,8 @@ RSpec.describe Mutations::Dashboards::SaveDashboard, type: :request do
   it 'stores only the options sent' do
     save(sections)
 
-    expect(PrintQueueWidget.sole.options).to eq('history' => true, 'start_next' => false)
-    expect(PrinterWidget.sole.options).to eq('camera' => false)
+    expect(Dashboard::PrintQueueWidget.sole.options).to eq('history' => true, 'start_next' => false)
+    expect(Dashboard::PrinterWidget.sole.options).to eq('camera' => false)
   end
 
   it 'updates rows sent with their id and destroys the missing ones' do
@@ -93,8 +93,8 @@ RSpec.describe Mutations::Dashboards::SaveDashboard, type: :request do
          ] }])
 
     expect(result['errors']).to eq([])
-    expect(DashboardSection.sole.id.to_s).to eq(saved.last['id'])
-    expect(DashboardWidget.sole).to have_attributes(id: queue['id'].to_i, width_units: 2, printer:, options: {})
+    expect(Dashboard::Section.sole.id.to_s).to eq(saved.last['id'])
+    expect(Dashboard::Widget.sole).to have_attributes(id: queue['id'].to_i, width_units: 2, printer:, options: {})
   end
 
   it 'triggers dashboardChanged' do
@@ -119,7 +119,7 @@ RSpec.describe Mutations::Dashboards::SaveDashboard, type: :request do
                      "Widget 1 in section 2: 4×4 isn't a size this widget supports",
                      "Widget 1 in section 2: Printer can't be blank"]
       )
-      expect(DashboardSection.count).to eq(0)
+      expect(Dashboard::Section.count).to eq(0)
       expect(TentaclesSchema.subscriptions).not_to have_received(:trigger)
     end
   end
@@ -129,7 +129,7 @@ RSpec.describe Mutations::Dashboards::SaveDashboard, type: :request do
     save(sections)
 
     expect(result['errors']).to eq(["Widget 1 in section 2: options don't match the widget type"])
-    expect(DashboardSection.count).to eq(0)
+    expect(Dashboard::Section.count).to eq(0)
   end
 
   it 'refuses more than 200 widgets, before checking each one' do
@@ -141,7 +141,7 @@ RSpec.describe Mutations::Dashboards::SaveDashboard, type: :request do
 
   [ActiveRecord::LockWaitTimeout, ActiveRecord::Deadlocked, ActiveRecord::InvalidForeignKey].each do |error|
     it "returns a retry message on #{error.name.demodulize}" do
-      allow(DashboardSection).to receive(:replace_all!).and_raise(error)
+      allow(Dashboard::Section).to receive(:replace_all!).and_raise(error)
       save(sections)
 
       expect(result).to eq('dashboard' => nil, 'errors' => ['The dashboard changed while saving, try again'])
@@ -153,7 +153,7 @@ RSpec.describe Mutations::Dashboards::SaveDashboard, type: :request do
     save(sections)
 
     expect(result['errors']).to eq([])
-    expect(DashboardSection.count).to eq(2)
+    expect(Dashboard::Section.count).to eq(2)
   end
 
   describe 'the options input (one_of)' do
@@ -166,7 +166,7 @@ RSpec.describe Mutations::Dashboards::SaveDashboard, type: :request do
     it 'refuses both printer and printQueue options, or none' do
       expect(graphql_errors({ printer: {}, printQueue: {} })).to include(/requires exactly one argument/)
       expect(graphql_errors({})).to include(/requires exactly one argument/)
-      expect(DashboardSection.count).to eq(0)
+      expect(Dashboard::Section.count).to eq(0)
     end
   end
 end

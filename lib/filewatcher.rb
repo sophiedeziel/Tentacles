@@ -20,7 +20,7 @@ class Filewatcher
   private
 
   def create_file_record(path)
-    FileRecord.create(notes: '') do |file|
+    Library::Item.create(notes: '') do |file|
       file.file.attach(io: File.open(path), filename: File.basename(path))
     end
   end

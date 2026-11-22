@@ -58,15 +58,15 @@ RSpec.describe Spooler::Print do
     end
 
     it 'raises the errors of the upload: the print cannot start' do
-      allow(UploadFilesToPrintersJob).to receive(:perform_now).and_raise(PrinterBackends::Unreachable, 'timeout')
+      allow(UploadFilesToPrintersJob).to receive(:perform_now).and_raise(Printer::Backend::Unreachable, 'timeout')
       allow(Octoprint::Job).to receive(:get)
 
-      expect { operation.execute }.to raise_error(PrinterBackends::Unreachable, 'timeout')
+      expect { operation.execute }.to raise_error(Printer::Backend::Unreachable, 'timeout')
       expect(Octoprint::Job).not_to have_received(:get)
     end
 
-    # On main, Spooler::Print passed `select: true, print: true`, which Printer#upload doesn't accept
-    it 'calls the upload job with arguments that Printer#upload accepts' do
+    # On main, Spooler::Print passed `select: true, print: true`, which Printer::Upload doesn't accept
+    it 'calls the upload job with arguments that Printer::Upload accepts' do
       allow(UploadFilesToPrintersJob).to receive(:perform_now).and_call_original
       allow(printer.api).to receive(:upload)
       allow(Printer).to receive(:where).and_call_original

@@ -20,7 +20,7 @@ RSpec.describe 'Printer actions on a PrusaLink printer', type: :request do
   def expect_failure(message)
     expect(json['errors']).to be_nil
     expect(result).to eq('success' => false, 'errors' => [message], 'printer' => returned_printer)
-    expect(PrinterMonitor).not_to have_received(:refresh)
+    expect(Printer::Status).not_to have_received(:find_or_initialize_by)
   end
 
   def expect_no_command
@@ -53,7 +53,8 @@ RSpec.describe 'Printer actions on a PrusaLink printer', type: :request do
           it 'succeeds and refreshes the printer status' do
             expect(json['errors']).to be_nil
             expect(result).to eq('success' => true, 'errors' => [], 'printer' => returned_printer)
-            expect(PrinterMonitor).to have_received(:refresh).once.with(printer)
+            expect(Printer::Status).to have_received(:find_or_initialize_by).once.with(printer:)
+            expect(refreshed_status).to have_received(:reload).once
           end
         end
       end

@@ -7,14 +7,14 @@ RSpec.describe Mutations::Printers::ConnectPrinter, type: :request do
   it_behaves_like 'a printer action',
                   mutation: 'connectPrinter',
                   commands: [[Octoprint::Connection, :connect, { port: 'AUTO', baudrate: 0 }]],
-                  allowed: [PrinterStateFamily::Offline],
+                  allowed: [Printer::StateFamily::Offline],
                   refusals: {
-                    PrinterStateFamily::Printing => 'Prusa MK4 is already connected',
-                    PrinterStateFamily::Paused => 'Prusa MK4 is already connected',
-                    PrinterStateFamily::Cancelling => 'Prusa MK4 is already connected',
-                    PrinterStateFamily::Operational => 'Prusa MK4 is already connected',
-                    PrinterStateFamily::Connecting => 'Prusa MK4 is already connecting',
-                    PrinterStateFamily::Error => 'Prusa MK4 is in error, reconnect it instead'
+                    Printer::StateFamily::Printing => 'Prusa MK4 is already connected',
+                    Printer::StateFamily::Paused => 'Prusa MK4 is already connected',
+                    Printer::StateFamily::Cancelling => 'Prusa MK4 is already connected',
+                    Printer::StateFamily::Operational => 'Prusa MK4 is already connected',
+                    Printer::StateFamily::Connecting => 'Prusa MK4 is already connecting',
+                    Printer::StateFamily::Error => 'Prusa MK4 is in error, reconnect it instead'
                   }
 
   describe 'connection parameters' do

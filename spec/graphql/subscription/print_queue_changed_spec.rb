@@ -79,9 +79,9 @@ RSpec.describe Subscriptions::PrintQueueChanged do
 
   it "pushes the printer's new queue fields to every subscriber when a job is enqueued" do
     printer = create(:printer)
-    PrinterStatusStore.write(PrinterStatus.new(printer_id: printer.id, state_family: PrinterStateFamily::Operational,
-                                               state_text: 'Operational',
-                                               camera: PrinterStatus::Camera.new(enabled: false)))
+    Printer::Status.new(printer_id: printer.id, state_family: Printer::StateFamily::Operational,
+                        state_text: 'Operational',
+                        camera: Printer::Status::Camera.new(enabled: false)).save!
     first = subscribe.context[:subscription_id]
     second = subscribe.context[:subscription_id]
 
@@ -102,16 +102,16 @@ RSpec.describe Subscriptions::PrintQueueChanged do
     create(:printer_job, printer:)
     pubsub.clear # the push of the create
     subscription_id = subscribe.context[:subscription_id]
-    allow(PrinterBackends).to receive(:for)
+    allow(Printer::Backend).to receive(:for)
 
-    Printers::Remove.call(printer)
+    Printer::Removal.new(printer:).save!
     deliver_events
 
     expected = { 'id' => printer.id.to_s, 'queuedCount' => 0, 'canStartNext' => false, 'nextJob' => nil }
     expect(deliveries(subscription_id)).to eq(
       [{ 'result' => { 'data' => { 'printQueueChanged' => expected } }, 'more' => true }]
     )
-    expect(PrinterBackends).not_to have_received(:for)
+    expect(Printer::Backend).not_to have_received(:for)
   end
 
   it 'pushes nothing on progress updates' do

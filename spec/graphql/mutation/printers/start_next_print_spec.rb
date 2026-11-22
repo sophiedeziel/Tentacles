@@ -38,7 +38,7 @@ RSpec.describe Mutations::Printers::StartNextPrint, type: :request do
     end
 
     it 'leaves the status refresh to the spooler' do
-      expect(PrinterMonitor).not_to have_received(:refresh)
+      expect(Printer::Status).not_to have_received(:find_or_initialize_by)
     end
   end
 
@@ -49,7 +49,7 @@ RSpec.describe Mutations::Printers::StartNextPrint, type: :request do
     expect(json).to eq('data' => { 'startNextPrint' => { 'success' => true } })
   end
 
-  (PRINTER_ACTION_STATES.keys - [PrinterStateFamily::Operational]).each do |family|
+  (PRINTER_ACTION_STATES.keys - [Printer::StateFamily::Operational]).each do |family|
     context "when the printer is #{family.serialize}" do
       let(:job_state) { PRINTER_ACTION_STATES.fetch(family) }
 

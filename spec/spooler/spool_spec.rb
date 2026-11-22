@@ -125,7 +125,7 @@ RSpec.describe Spooler::Spool do
         expect(printer_job.reload.status).to eq 'error'
         expect(polls).to be_empty
         expect(operation).to have_received(:log)
-          .with(/Could not start the print: PrinterBackends::Error: Prusa MK4 has no writable storage/)
+          .with(/Could not start the print: Printer::Backend::Error: Prusa MK4 has no writable storage/)
         expect(subscriptions).to have_received(:trigger)
           .with(:printer_subscription, { id: printer.id }, {}).at_least(:twice)
       end
@@ -139,7 +139,7 @@ RSpec.describe Spooler::Spool do
       it 'marks the job as an error' do
         run_job
         expect(printer_job.reload.status).to eq 'error'
-        expect(operation).to have_received(:log).with(/PrinterBackends::Unreachable: Net::ReadTimeout/)
+        expect(operation).to have_received(:log).with(/Printer::Backend::Unreachable: Net::ReadTimeout/)
       end
     end
   end

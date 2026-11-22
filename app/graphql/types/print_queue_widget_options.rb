@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Types
-  # The options of a ::PrintQueueWidget (missing ones read as their default)
+  # The options of a ::Dashboard::PrintQueueWidget (missing ones read as their default)
   class PrintQueueWidgetOptions < Base::Object
     description "A Print Queue widget's options"
     default_broadcastable true

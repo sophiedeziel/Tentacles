@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Subscriptions
-  # Pushed on every change of an OctoPrint app key request (see PrinterAppKeyRequest#push):
+  # Pushed on every change of an OctoPrint app key request (see Printer::AppKeyRequest#push):
   #
   #   TentaclesSchema.subscriptions.trigger(:printer_app_key_changed, { id: request.id }, request.payload('denied'))
   class PrinterAppKeyChanged < Subscriptions::BaseSubscription

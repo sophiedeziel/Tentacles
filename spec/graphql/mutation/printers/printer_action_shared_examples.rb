@@ -8,13 +8,13 @@ require 'support/unreadable_secret'
 
 # One OctoPrint state text per family
 PRINTER_ACTION_STATES = {
-  PrinterStateFamily::Printing => 'Printing',
-  PrinterStateFamily::Paused => 'Paused',
-  PrinterStateFamily::Cancelling => 'Cancelling',
-  PrinterStateFamily::Operational => 'Operational',
-  PrinterStateFamily::Connecting => 'Detecting baudrate',
-  PrinterStateFamily::Error => 'Offline after error',
-  PrinterStateFamily::Offline => 'Offline'
+  Printer::StateFamily::Printing => 'Printing',
+  Printer::StateFamily::Paused => 'Paused',
+  Printer::StateFamily::Cancelling => 'Cancelling',
+  Printer::StateFamily::Operational => 'Operational',
+  Printer::StateFamily::Connecting => 'Detecting baudrate',
+  Printer::StateFamily::Error => 'Offline after error',
+  Printer::StateFamily::Offline => 'Offline'
 }.freeze
 
 RSpec.shared_context 'with a printer action request' do |mutation|
@@ -24,6 +24,8 @@ RSpec.shared_context 'with a printer action request' do |mutation|
   let(:json) { response.parsed_body }
   let(:result) { json['data'][mutation] }
   let(:returned_printer) { { 'id' => printer.id.to_s, 'name' => 'Prusa MK4' } }
+  # The status the inline refresh reloads (see Printer::Command#refresh_status)
+  let(:refreshed_status) { instance_spy(Printer::Status) }
   let(:query) do
     <<~GQL
       mutation($input: #{mutation.upcase_first}Input!) {
@@ -35,7 +37,7 @@ RSpec.shared_context 'with a printer action request' do |mutation|
   before do
     stub_const('REDIS_POOL', ConnectionPool::Wrapper.new(size: 1, timeout: 1) { redis })
     allow(Octoprint::Job).to receive(:get) { Octoprint::Job.deserialize({ state: job_state, job: {} }) }
-    allow(PrinterMonitor).to receive(:refresh)
+    allow(Printer::Status).to receive(:find_or_initialize_by).and_return(refreshed_status)
   end
 
   def run_mutation(printer_id = printer.id)
@@ -50,7 +52,7 @@ RSpec.shared_examples 'a printer action that fails gracefully' do |commands:|
   def expect_failure(message)
     expect(json['errors']).to be_nil
     expect(result).to eq('success' => false, 'errors' => [message], 'printer' => returned_printer)
-    expect(PrinterMonitor).not_to have_received(:refresh)
+    expect(Printer::Status).not_to have_received(:find_or_initialize_by)
   end
 
   def expect_no_command(commands)
@@ -169,7 +171,7 @@ RSpec.shared_examples 'a printer action' do |mutation:, commands:, allowed:, ref
   before { commands.each { |receiver, method| allow(receiver).to receive(method).and_return(true) } }
 
   it 'covers every state family' do
-    expect(allowed + refusals.keys).to match_array(PrinterStateFamily.values)
+    expect(allowed + refusals.keys).to match_array(Printer::StateFamily.values)
   end
 
   allowed.each do |family|
@@ -187,7 +189,8 @@ RSpec.shared_examples 'a printer action' do |mutation:, commands:, allowed:, ref
       end
 
       it 'refreshes the printer status once' do
-        expect(PrinterMonitor).to have_received(:refresh).once.with(printer)
+        expect(Printer::Status).to have_received(:find_or_initialize_by).once.with(printer:)
+        expect(refreshed_status).to have_received(:reload).once
       end
 
       it 'succeeds and returns the printer' do
@@ -206,7 +209,7 @@ RSpec.shared_examples 'a printer action' do |mutation:, commands:, allowed:, ref
       it 'refuses with a readable error, without sending anything' do
         expect(result).to eq('success' => false, 'errors' => [message], 'printer' => returned_printer)
         commands.each { |receiver, method| expect(receiver).not_to have_received(method) }
-        expect(PrinterMonitor).not_to have_received(:refresh)
+        expect(Printer::Status).not_to have_received(:find_or_initialize_by)
       end
     end
   end

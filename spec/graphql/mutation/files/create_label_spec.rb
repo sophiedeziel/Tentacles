@@ -21,7 +21,7 @@ module Mutations
           it 'creates a label' do
             expect do
               post '/graphql', params: { query:, variables: }
-            end.to change { Label.count }.by(1)
+            end.to change { Library::Label.count }.by(1)
           end
 
           it 'returns the label' do
@@ -48,7 +48,7 @@ module Mutations
             it 'does not create a label' do
               expect do
                 post '/graphql', params: { query:, variables: }
-              end.to change { Label.count }.by(0)
+              end.to change { Library::Label.count }.by(0)
             end
 
             it 'returns a nil label' do

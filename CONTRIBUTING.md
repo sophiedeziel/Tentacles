@@ -75,7 +75,7 @@ Impact means what changes for users, deployers, data, performance or later work.
 
 Where the reviewer's attention matters most, riskiest first.
 
-- Name the file or method, and what to check: "the state mapping in `PrinterStateFamily.for_prusalink`: is `BUSY` really operational?"
+- Name the file or method, and what to check: "the state mapping in `Printer::StateFamily.for_prusalink`: is `BUSY` really operational?"
 - Include anything CI can't check: a manual or hardware test that wasn't done, a migration on production data, behaviour on a real printer.
 - Say what's safe to skim: generated RBIs, `db/schema.rb`, lockfiles, cassettes.
 

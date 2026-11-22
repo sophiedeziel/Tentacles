@@ -8,7 +8,7 @@ module InputObjects
     argument :title, String, required: false, description: "The divider's title, null for the first section"
     argument :widgets, [InputObjects::DashboardWidgetInput], required: true, description: 'In grid order'
 
-    # As DashboardSection.replace_all! takes it
+    # As Dashboard::Section.replace_all! takes it
     def to_attributes
       { id:, title:, widgets: widgets.map(&:to_attributes) }
     end

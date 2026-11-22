@@ -40,7 +40,7 @@ RSpec.describe FillPrinterSpecsJob, type: :job do
     end
 
     it 'saves when it read the server, so that the monitor does not enqueue it again' do
-      allow(printer).to receive(:reported_specs).and_return(PrinterBackends::ReportedSpecs.new(model: 'MK4'))
+      allow(printer).to receive(:reported_specs).and_return(Printer::Backend::ReportedSpecs.new(model: 'MK4'))
 
       described_class.perform_now(printer.id)
 

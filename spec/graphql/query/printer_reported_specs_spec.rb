@@ -45,7 +45,7 @@ RSpec.describe Types::Printer, 'reportedSpecs', type: :request do
   end
 
   it 'is null, without calling the server, while the printer is flagged disconnected' do
-    PrinterApiCache.set_disconnected(printer.id)
+    Printer::Disconnection.create!(printer_id: printer.id)
 
     query_printer
 

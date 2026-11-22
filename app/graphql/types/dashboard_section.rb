@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Types
-  # A ::DashboardSection
+  # A ::Dashboard::Section
   class DashboardSection < Base::Object
     description 'A run of dashboard widgets, under a divider except for the first section'
     default_broadcastable true

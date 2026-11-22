@@ -77,7 +77,7 @@ class Spooler
 
       job.update(status: 'completed')
       @current_operation.update_subscribers
-    rescue PrinterBackends::Error => e
+    rescue Printer::Backend::Error => e
       @current_operation.log("Could not start the print: #{e.class}: #{e.message}".red)
       job.update(status: 'error')
       @current_operation.update_subscribers
@@ -85,7 +85,7 @@ class Spooler
 
     def build_operation(job)
       type = {
-        'FileRecord' => Print
+        'Library::Item' => Print
       }[job.executable_type]
 
       type.new(@printer, job)

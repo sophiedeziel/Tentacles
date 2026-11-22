@@ -101,7 +101,7 @@ RSpec.describe Subscriptions::DashboardChanged do
 
   it 'pushes the saved layout to every subscriber, running the update once (broadcast)' do
     printer = create(:printer, name: 'Prusa MK4')
-    DashboardSection.ensure_default!
+    Dashboard::Section.ensure_default!
     first = subscribe.context[:subscription_id]
     second = subscribe.context[:subscription_id]
     expect(Types::Dashboard).to receive(:saved).once.and_call_original
