@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Types
-  # The options of a ::PrinterWidget (missing ones read as their default)
+  # The options of a ::Dashboard::PrinterWidget (missing ones read as their default)
   class PrinterWidgetOptions < Base::Object
     description "A Printer widget's options"
     default_broadcastable true

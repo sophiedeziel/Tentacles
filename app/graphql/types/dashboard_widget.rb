@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Types
-  # A ::DashboardWidget (PrinterWidget or PrintQueueWidget)
+  # A ::Dashboard::Widget (Dashboard::PrinterWidget or Dashboard::PrintQueueWidget)
   class DashboardWidget < Base::Object
     description 'A widget of the dashboard. S to XXL are UI names for its span: S 1×1, M 2×1, L 2×2, XL 4×2, XXL 4×4.'
     default_broadcastable true

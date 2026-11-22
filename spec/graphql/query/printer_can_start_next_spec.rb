@@ -10,9 +10,9 @@ RSpec.describe 'Query printers { canStartNext }', type: :request do
 
   before { stub_const('REDIS_POOL', ConnectionPool::Wrapper.new(size: 1, timeout: 1) { redis }) }
 
-  def snapshot(printer, family = PrinterStateFamily::Operational)
-    PrinterStatusStore.write(PrinterStatus.new(printer_id: printer.id, state_family: family,
-                                               state_text: family.serialize))
+  def snapshot(printer, family = Printer::StateFamily::Operational)
+    Printer::Status.new(printer_id: printer.id, state_family: family,
+                        state_text: family.serialize).save!
   end
 
   def enqueue(printer, status = 'enqueued')
@@ -43,7 +43,7 @@ RSpec.describe 'Query printers { canStartNext }', type: :request do
     expect(can_start_next[printer.id]).to be true
   end
 
-  (PrinterStateFamily.values - [PrinterStateFamily::Operational]).each do |family|
+  (Printer::StateFamily.values - [Printer::StateFamily::Operational]).each do |family|
     it "is false when the printer is #{family.serialize}" do
       printer = ready_printer
       snapshot(printer, family)

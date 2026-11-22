@@ -7,21 +7,21 @@ RSpec.describe Mutations::Printers::PausePrint, type: :request do
   it_behaves_like 'a printer action',
                   mutation: 'pausePrint',
                   commands: [[Octoprint::Job, :pause]],
-                  allowed: [PrinterStateFamily::Printing],
+                  allowed: [Printer::StateFamily::Printing],
                   refusals: {
-                    PrinterStateFamily::Paused => 'Prusa MK4 is no longer printing',
-                    PrinterStateFamily::Cancelling => 'Prusa MK4 is no longer printing',
-                    PrinterStateFamily::Operational => 'Prusa MK4 is no longer printing',
-                    PrinterStateFamily::Connecting => 'Prusa MK4 is no longer printing',
-                    PrinterStateFamily::Error => 'Prusa MK4 is no longer printing',
-                    PrinterStateFamily::Offline => 'Prusa MK4 is no longer printing'
+                    Printer::StateFamily::Paused => 'Prusa MK4 is no longer printing',
+                    Printer::StateFamily::Cancelling => 'Prusa MK4 is no longer printing',
+                    Printer::StateFamily::Operational => 'Prusa MK4 is no longer printing',
+                    Printer::StateFamily::Connecting => 'Prusa MK4 is no longer printing',
+                    Printer::StateFamily::Error => 'Prusa MK4 is no longer printing',
+                    Printer::StateFamily::Offline => 'Prusa MK4 is no longer printing'
                   }
 
   describe 'the inline monitor tick' do
     include_context 'with a printer action request', 'pausePrint'
 
     before do
-      allow(PrinterMonitor).to receive(:refresh).and_call_original
+      allow(Printer::Status).to receive(:find_or_initialize_by).and_call_original
       allow(TentaclesSchema.subscriptions).to receive(:trigger)
       states = %w[Printing Pausing]
       allow(Octoprint::Job).to receive(:get) { Octoprint::Job.deserialize({ state: states.shift || 'Paused', job: {} }) }
@@ -35,8 +35,8 @@ RSpec.describe Mutations::Printers::PausePrint, type: :request do
       run_mutation
 
       expect(result['success']).to be true
-      expect(PrinterStatusStore.read(printer.id)).to have_attributes(state_family: PrinterStateFamily::Paused,
-                                                                     state_text: 'Pausing')
+      expect(Printer::Status.find_by(printer_id: printer.id)).to have_attributes(state_family: Printer::StateFamily::Paused,
+                                                                                 state_text: 'Pausing')
       expect(TentaclesSchema.subscriptions).to have_received(:trigger).with(:printer_status_changed, {}, printer).once
     end
   end

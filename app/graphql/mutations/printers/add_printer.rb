@@ -17,11 +17,11 @@ module Mutations
 
       # One keyword per argument, as Tapioca generates the signature from the arguments
       def resolve(name:, backend: 'octoprint', uri: nil, username: nil, secret: nil)
-        printer = ::Printers::Add.call(name:, backend:, uri: uri.presence, username: username.presence,
-                                       secret: secret.presence)
-        return { printer:, errors: [] } if printer.persisted?
+        addition = ::Printer::Addition.new(name:, backend:, uri: uri.presence, username: username.presence,
+                                           secret: secret.presence)
+        return { printer: addition.printer, errors: [] } if addition.save
 
-        { printer: nil, errors: printer.errors.full_messages }
+        { printer: nil, errors: addition.errors.full_messages }
       end
     end
   end

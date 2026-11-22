@@ -100,6 +100,8 @@ RSpec.describe Spooler::Spool do
       expect(polls).to eq [%w[IDLE active], %w[BUSY active], %w[PRINTING active], %w[PRINTING active],
                            %w[FINISHED active]]
       expect(printer_job.reload).to have_attributes(status: 'completed', progress: 63)
+      # Once per new status (active, completed), not per progress write
+      expect(subscriptions).to have_received(:trigger).with(:print_queue_changed, {}, printer).twice
     end
 
     it 'keeps the job active through a pause and a resume, until the print finishes' do
@@ -125,9 +127,10 @@ RSpec.describe Spooler::Spool do
         expect(printer_job.reload.status).to eq 'error'
         expect(polls).to be_empty
         expect(operation).to have_received(:log)
-          .with(/Could not start the print: PrinterBackends::Error: Prusa MK4 has no writable storage/)
+          .with(/Could not start the print: Printer::Backend::Error: Prusa MK4 has no writable storage/)
         expect(subscriptions).to have_received(:trigger)
           .with(:printer_subscription, { id: printer.id }, {}).at_least(:twice)
+        expect(subscriptions).to have_received(:trigger).with(:print_queue_changed, {}, printer).twice
       end
     end
 
@@ -139,7 +142,7 @@ RSpec.describe Spooler::Spool do
       it 'marks the job as an error' do
         run_job
         expect(printer_job.reload.status).to eq 'error'
-        expect(operation).to have_received(:log).with(/PrinterBackends::Unreachable: Net::ReadTimeout/)
+        expect(operation).to have_received(:log).with(/Printer::Backend::Unreachable: Net::ReadTimeout/)
       end
     end
   end

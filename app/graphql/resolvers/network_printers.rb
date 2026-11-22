@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 module Resolvers
-  # The scan of PrinterScanner, with the saved printer at each address: the one whose URL has that host (the first
+  # The NetworkScan, with the saved printer at each address: the one whose URL has that host (the first
   # added when several do)
   class NetworkPrinters < GraphQL::Schema::Resolver
     extend T::Sig
@@ -20,7 +20,7 @@ module Resolvers
     sig { params(refresh: T::Boolean).returns(T::Array[T::Hash[Symbol, T.untyped]]) }
     def resolve(refresh:)
       saved = ::Printer.order(:id).to_a.group_by { |printer| host_of(printer.uri) }
-      ::PrinterScanner.new.call(refresh:).map do |address|
+      ::NetworkScan.create!(refresh:).ips.map do |address|
         { address:, url: "http://#{address}/", printer: saved[address]&.first }
       end
     end

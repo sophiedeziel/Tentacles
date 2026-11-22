@@ -7,32 +7,43 @@ RSpec.describe UploadFilesToPrintersJob, type: :job do
     let(:file) { create(:file_record) }
     let(:path) { Rails.root.join("tmp/#{file.filename}").to_s }
 
-    it 'uploads files to printers' do
-      printer = create(:printer)
+    context 'with the upload stubbed' do
+      let(:upload) { instance_double(Printer::Upload, save!: true) }
 
-      expect_any_instance_of(Printer).to receive(:upload).with(path, print: false)
+      before { allow(Printer::Upload).to receive(:new).and_return(upload) }
 
-      UploadFilesToPrintersJob.perform_now([file.id], [printer.id])
+      def expect_upload(printer, print:)
+        expect(Printer::Upload).to have_received(:new).with(printer:, path:, print:)
+        expect(upload).to have_received(:save!)
+      end
+
+      it 'uploads files to printers' do
+        printer = create(:printer)
+
+        UploadFilesToPrintersJob.perform_now([file.id], [printer.id])
+
+        expect_upload(printer, print: false)
+      end
+
+      it 'starts printing the files when asked to' do
+        printer = create(:printer)
+
+        UploadFilesToPrintersJob.perform_now([file.id], [printer.id], print: true)
+
+        expect_upload(printer, print: true)
+      end
+
+      it 'accepts the string IDs of the SendFilesToPrinters mutation' do
+        printer = create(:printer)
+
+        UploadFilesToPrintersJob.perform_now([file.id.to_s], [printer.id.to_s])
+
+        expect_upload(printer, print: false)
+      end
     end
 
-    it 'starts printing the files when asked to' do
-      printer = create(:printer)
-
-      expect_any_instance_of(Printer).to receive(:upload).with(path, print: true)
-
-      UploadFilesToPrintersJob.perform_now([file.id], [printer.id], print: true)
-    end
-
-    it 'accepts the string IDs of the SendFilesToPrinters mutation' do
-      printer = create(:printer)
-
-      expect_any_instance_of(Printer).to receive(:upload).with(path, print: false)
-
-      UploadFilesToPrintersJob.perform_now([file.id.to_s], [printer.id.to_s])
-    end
-
-    # Spooler::Print used to pass `select: true, print: true`, which Printer#upload doesn't accept
-    it 'refuses the keywords Printer#upload does not accept' do
+    # Spooler::Print used to pass `select: true, print: true`, which Printer::Upload doesn't accept
+    it 'refuses the keywords Printer::Upload does not accept' do
       printer = create(:printer)
 
       expect { UploadFilesToPrintersJob.perform_now([file.id], [printer.id], select: true, print: true) }
@@ -77,7 +88,7 @@ RSpec.describe UploadFilesToPrintersJob, type: :job do
         allow(Prusalink::Storage).to receive(:list).and_return([])
 
         expect { UploadFilesToPrintersJob.perform_now([file.id], [printer.id], print: true) }
-          .to raise_error(PrinterBackends::Error, 'Prusa MK4 has no writable storage. Insert a USB drive')
+          .to raise_error(Printer::Backend::Error, 'Prusa MK4 has no writable storage. Insert a USB drive')
       end
     end
   end

@@ -36,21 +36,19 @@ RSpec.describe 'Query printers { status }', type: :request do
     stub_const('REDIS_POOL', ConnectionPool::Wrapper.new(size: 1, timeout: 1) { redis })
 
     with_snapshot.each do |printer|
-      PrinterStatusStore.write(
-        PrinterStatus.new(
-          printer_id: printer.id,
-          state_family: PrinterStateFamily::Printing,
-          state_text: 'Printing from SD',
-          file_name: "part_#{printer.id}.gcode",
-          progress: 42.5,
-          print_time_left: 3600,
-          hotend: PrinterStatus::Temperature.new(actual: 210.3, target: 210.0),
-          bed: PrinterStatus::Temperature.new(actual: 59.8, target: 60.0),
-          camera: PrinterStatus::Camera.new(enabled: true, stream_url: 'http://octopi.local/webcam/?action=stream'),
-          last_seen_at:,
-          updated_at:
-        )
-      )
+      Printer::Status.new(
+        printer_id: printer.id,
+        state_family: Printer::StateFamily::Printing,
+        state_text: 'Printing from SD',
+        file_name: "part_#{printer.id}.gcode",
+        progress: 42.5,
+        print_time_left: 3600,
+        hotend: Printer::Status::Temperature.new(actual: 210.3, target: 210.0),
+        bed: Printer::Status::Temperature.new(actual: 59.8, target: 60.0),
+        camera: Printer::Status::Camera.new(enabled: true, stream_url: 'http://octopi.local/webcam/?action=stream'),
+        last_seen_at:,
+        updated_at:
+      ).save!
     end
     without_snapshot.each { |printer| printer.update!(last_seen_at: 1.hour.ago.round) }
   end
@@ -112,9 +110,9 @@ RSpec.describe 'Query printers { status }', type: :request do
 
   it 'tells a server that does not answer from one that is up without its printer' do
     unreachable, closed = with_snapshot.first(2)
-    [[unreachable, PrinterStatus::UNREACHABLE_STATE_TEXT], [closed, 'Closed']].each do |printer, state_text|
-      PrinterStatusStore.write(PrinterStatus.new(printer_id: printer.id, state_family: PrinterStateFamily::Offline,
-                                                 state_text:, updated_at:))
+    [[unreachable, Printer::Status::UNREACHABLE_STATE_TEXT], [closed, 'Closed']].each do |printer, state_text|
+      Printer::Status.new(printer_id: printer.id, state_family: Printer::StateFamily::Offline,
+                          state_text:, updated_at:).save!
     end
 
     post '/graphql', params: { query: }
@@ -134,7 +132,7 @@ RSpec.describe 'Query printers { status }', type: :request do
 
   it 'falls back to Unknown when a snapshot is unreadable' do
     printer = with_snapshot.first
-    redis.set(PrinterStatusStore.key(printer.id), 'not json')
+    redis.set(Printer::Status.key(printer.id), 'not json')
 
     post '/graphql', params: { query: }
 
@@ -143,8 +141,8 @@ RSpec.describe 'Query printers { status }', type: :request do
   end
 
   it 'falls back to Unknown for snapshots written before a prop was added, or null' do
-    redis.set(PrinterStatusStore.key(with_snapshot.first.id), { printer_id: with_snapshot.first.id }.to_json)
-    redis.set(PrinterStatusStore.key(with_snapshot.second.id), 'null')
+    redis.set(Printer::Status.key(with_snapshot.first.id), { printer_id: with_snapshot.first.id }.to_json)
+    redis.set(Printer::Status.key(with_snapshot.second.id), 'null')
 
     post '/graphql', params: { query: }
 
@@ -163,23 +161,21 @@ RSpec.describe 'Query printers { status }', type: :request do
   end
 
   it 'serializes every state family' do
-    PrinterStateFamily.values.zip(printers).each do |family, printer|
-      PrinterStatusStore.write(PrinterStatus.new(printer_id: printer.id, state_family: family, state_text: 'x'))
+    Printer::StateFamily.values.zip(printers).each do |family, printer|
+      Printer::Status.new(printer_id: printer.id, state_family: family, state_text: 'x').save!
     end
 
     post '/graphql', params: { query: }
 
-    expect(PrinterStateFamily.values.zip(printers).map { |_family, printer| statuses[printer.id]['stateFamily'] })
+    expect(Printer::StateFamily.values.zip(printers).map { |_family, printer| statuses[printer.id]['stateFamily'] })
       .to eq(%w[PRINTING PAUSED CANCELLING OPERATIONAL CONNECTING ERROR OFFLINE])
   end
   describe 'value formats' do
     let(:printer) { with_snapshot.first }
 
     def status_with(**attributes)
-      PrinterStatusStore.write(
-        PrinterStatus.new(printer_id: printer.id, state_family: PrinterStateFamily::Printing, state_text: 'Printing',
-                          **attributes)
-      )
+      Printer::Status.new(printer_id: printer.id, state_family: Printer::StateFamily::Printing, state_text: 'Printing',
+                          **attributes).save!
       current_status
     end
 
@@ -205,19 +201,19 @@ RSpec.describe 'Query printers { status }', type: :request do
     end
 
     it 'returns a target of 0 when OctoPrint has none' do
-      hotend = status_with(hotend: PrinterStatus::Temperature.new(actual: 24.6, target: nil))['hotend']
+      hotend = status_with(hotend: Printer::Status::Temperature.new(actual: 24.6, target: nil))['hotend']
 
       expect(hotend).to eq('actual' => 25.0, 'target' => 0.0, 'unit' => 'CELSIUS')
     end
 
     it 'returns a null temperature without a current reading' do
-      expect(status_with(bed: PrinterStatus::Temperature.new(actual: nil, target: 60.0))['bed']).to be_nil
+      expect(status_with(bed: Printer::Status::Temperature.new(actual: nil, target: 60.0))['bed']).to be_nil
     end
 
     it 'reads snapshots written before the unit was stored as CELSIUS' do
       snapshot = { printer_id: printer.id, state_family: 'PRINTING', state_text: 'Printing',
                    hotend: { actual: 200.0, target: 200.0 } }
-      redis.set(PrinterStatusStore.key(printer.id), snapshot.to_json)
+      redis.set(Printer::Status.key(printer.id), snapshot.to_json)
 
       post '/graphql', params: { query: }
 

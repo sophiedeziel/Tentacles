@@ -8,14 +8,14 @@ RSpec.describe Mutations::Printers::ReconnectPrinter, type: :request do
                   mutation: 'reconnectPrinter',
                   commands: [[Octoprint::Connection, :disconnect],
                              [Octoprint::Connection, :connect, { port: 'AUTO', baudrate: 0 }]],
-                  allowed: [PrinterStateFamily::Error],
+                  allowed: [Printer::StateFamily::Error],
                   refusals: {
-                    PrinterStateFamily::Printing => 'Prusa MK4 is no longer in error',
-                    PrinterStateFamily::Paused => 'Prusa MK4 is no longer in error',
-                    PrinterStateFamily::Cancelling => 'Prusa MK4 is no longer in error',
-                    PrinterStateFamily::Operational => 'Prusa MK4 is no longer in error',
-                    PrinterStateFamily::Connecting => 'Prusa MK4 is no longer in error',
-                    PrinterStateFamily::Offline => 'Prusa MK4 is no longer in error'
+                    Printer::StateFamily::Printing => 'Prusa MK4 is no longer in error',
+                    Printer::StateFamily::Paused => 'Prusa MK4 is no longer in error',
+                    Printer::StateFamily::Cancelling => 'Prusa MK4 is no longer in error',
+                    Printer::StateFamily::Operational => 'Prusa MK4 is no longer in error',
+                    Printer::StateFamily::Connecting => 'Prusa MK4 is no longer in error',
+                    Printer::StateFamily::Offline => 'Prusa MK4 is no longer in error'
                   }
 
   describe 'order of the commands' do

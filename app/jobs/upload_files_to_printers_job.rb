@@ -4,7 +4,7 @@
 class UploadFilesToPrintersJob < ApplicationJob
   extend T::Sig
 
-  # This job uploads files to multiple printers, through each printer's API adapter (see Printer#upload).
+  # This job uploads files to multiple printers, through each printer's API adapter (see Printer::Upload).
   # It expects file_ids and printer_ids as parameters, and `print: true` to start printing the files once uploaded.
   # The files are moved to a temporary location before uploading.
   queue_as :default
@@ -15,14 +15,14 @@ class UploadFilesToPrintersJob < ApplicationJob
       .void
   end
   def perform(file_ids, printer_ids, print: false)
-    files = FileRecord.where(id: file_ids).map(&:file)
+    files = Library::Item.where(id: file_ids).map(&:file)
     printers = Printer.where(id: printer_ids)
 
     paths = move_files(files)
 
     printers.each do |printer|
       paths.each do |path|
-        printer.upload(path.to_s, print:)
+        Printer::Upload.new(printer:, path: path.to_s, print:).save!
       end
     end
   end

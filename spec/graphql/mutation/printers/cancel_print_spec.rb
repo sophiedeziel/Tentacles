@@ -7,12 +7,12 @@ RSpec.describe Mutations::Printers::CancelPrint, type: :request do
   it_behaves_like 'a printer action',
                   mutation: 'cancelPrint',
                   commands: [[Octoprint::Job, :cancel]],
-                  allowed: [PrinterStateFamily::Printing, PrinterStateFamily::Paused],
+                  allowed: [Printer::StateFamily::Printing, Printer::StateFamily::Paused],
                   refusals: {
-                    PrinterStateFamily::Cancelling => 'Prusa MK4 is no longer printing',
-                    PrinterStateFamily::Operational => 'Prusa MK4 is no longer printing',
-                    PrinterStateFamily::Connecting => 'Prusa MK4 is no longer printing',
-                    PrinterStateFamily::Error => 'Prusa MK4 is no longer printing',
-                    PrinterStateFamily::Offline => 'Prusa MK4 is no longer printing'
+                    Printer::StateFamily::Cancelling => 'Prusa MK4 is no longer printing',
+                    Printer::StateFamily::Operational => 'Prusa MK4 is no longer printing',
+                    Printer::StateFamily::Connecting => 'Prusa MK4 is no longer printing',
+                    Printer::StateFamily::Error => 'Prusa MK4 is no longer printing',
+                    Printer::StateFamily::Offline => 'Prusa MK4 is no longer printing'
                   }
 end

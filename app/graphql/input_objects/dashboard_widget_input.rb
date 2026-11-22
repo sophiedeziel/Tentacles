@@ -15,7 +15,7 @@ module InputObjects
       options.widget_type == type
     end
 
-    # As DashboardSection.replace_all! takes it
+    # As Dashboard::Section.replace_all! takes it
     def to_attributes
       { id:, type:, width_units:, height_units:, printer_id:, options: options.to_options }
     end

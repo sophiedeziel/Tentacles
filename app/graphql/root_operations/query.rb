@@ -26,28 +26,28 @@ module RootOperations
       description 'files'
     end
     def files
-      ::FileRecord.includes(:labels).with_attached_file
+      ::Library::Item.includes(:labels).with_attached_file
     end
 
     field :file, Types::File, null: true do
       argument :id, ID, required: true
     end
     def file(id:)
-      ::FileRecord.find_by(id: id)
+      ::Library::Item.find_by(id: id)
     end
 
     field :labels, Types::Label.connection_type, null: false do
       description 'labels'
     end
     def labels
-      ::Label.all
+      ::Library::Label.all
     end
 
     field :label, Types::Label, null: true do
       argument :id, ID, required: true
     end
     def label(id:)
-      ::Label.find_by(id: id)
+      ::Library::Label.find_by(id: id)
     end
 
     field :network_printers, resolver: Resolvers::NetworkPrinters
@@ -58,7 +58,7 @@ module RootOperations
                                         description: 'The dashboard layout, created from the default layout the ' \
                                                      'first time'
     def dashboard
-      ::DashboardSection.ensure_default!
+      ::Dashboard::Section.ensure_default!
       Types::Dashboard.saved
     end
 
@@ -66,7 +66,7 @@ module RootOperations
                                                 description: 'The default layout, not saved (null ids): a Print ' \
                                                              'Queue XL for all printers, then a Printer M per printer'
     def default_dashboard
-      { sections: ::DashboardSection.build_default, updated_at: nil }
+      { sections: ::Dashboard::Section.build_default, updated_at: nil }
     end
 
     # The most rows a queue or history field returns: the largest widget shows 16
@@ -96,7 +96,9 @@ module RootOperations
     field :monitor_healthy, Boolean, null: false,
                                      resolver_method: :monitor_healthy?,
                                      description: 'Whether the printer monitor reported in the last 15 seconds'
-    delegate :monitor_healthy?, to: :PrinterStatusStore
+    def monitor_healthy?
+      ::Printer::Monitor::Heartbeat.healthy?
+    end
 
     private
 

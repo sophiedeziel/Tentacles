@@ -3,10 +3,10 @@
 require 'rails_helper'
 
 RSpec.describe Resolvers::NetworkPrinters, type: :request do
-  let(:scanner) { instance_double(PrinterScanner, call: ['192.168.1.57', '192.168.1.60']) }
+  let(:scan) { NetworkScan.new(ips: ['192.168.1.57', '192.168.1.60']) }
   let!(:saved) { create(:printer, name: 'Prusa MK4', uri: 'http://192.168.1.57:80/') }
 
-  before { allow(PrinterScanner).to receive(:new).and_return(scanner) }
+  before { allow(NetworkScan).to receive(:create!).and_return(scan) }
 
   def json = response.parsed_body
 
@@ -47,13 +47,13 @@ RSpec.describe Resolvers::NetworkPrinters, type: :request do
       query(graphql)
       query(graphql, { refresh: nil })
 
-      expect(scanner).to have_received(:call).with(refresh: false).twice
+      expect(NetworkScan).to have_received(:create!).with(refresh: false).twice
     end
 
     it 'scans again with refresh: true' do
       query(graphql, { refresh: true })
 
-      expect(scanner).to have_received(:call).with(refresh: true)
+      expect(NetworkScan).to have_received(:create!).with(refresh: true)
     end
   end
 end

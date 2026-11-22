@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Types
-  # A ::PrinterStatus::Temperature with a reading (see Types::PrinterStatus#temperature)
+  # A ::Printer::Status::Temperature with a reading (see Types::PrinterStatus#temperature)
   class TemperatureStatus < Base::Object
     description 'A heater temperature'
     default_broadcastable true

@@ -4,7 +4,7 @@
 # Follows an OctoPrint app key request (see requestPrinterAppKey) until the user decides in OctoPrint:
 #
 # - 202: still waiting, poll again
-# - 200: approved. Identifies the printer with the key and adds it (Printers::Add), then pushes ADDED with it
+# - 200: approved. Identifies the printer with the key and adds it (Printer::Addition), then pushes ADDED with it
 # - 404: denied or expired, pushes DENIED
 # - OctoPrint unreachable, or the printer can't be added: pushes FAILED with the reason
 #
@@ -30,8 +30,8 @@ class OctoprintAppKeyPollJob < ApplicationJob
       waiting_after_poll?(request_id)
     end
     self.class.perform_later(request_id) if waiting
-  rescue PrinterBackends::Error => e
-    fail_request(PrinterAppKeyRequest.take(request_id), e.message, e)
+  rescue Printer::Backend::Error => e
+    fail_request(Printer::AppKeyRequest.take(request_id), e.message, e)
   end
 
   private
@@ -40,13 +40,13 @@ class OctoprintAppKeyPollJob < ApplicationJob
   # from Redis (cancelled or expired), in which case OctoPrint isn't called.
   sig { params(request_id: String).returns(T::Boolean) }
   def waiting_after_poll?(request_id)
-    request = PrinterAppKeyRequest.find(request_id)
+    request = Printer::AppKeyRequest.find(request_id)
     return false if request.nil?
 
-    state, api_key = OctoprintAppKeys.new(request.url).poll(request.app_token)
-    return true if state == :waiting
+    poll = Printer::Backend::Octoprint::AppKey::Poll.create!(url: request.url, app_token: request.app_token)
+    return true if poll.decision == :waiting
 
-    finish(request_id, api_key)
+    finish(request_id, poll.api_key)
     false
   end
 
@@ -54,42 +54,45 @@ class OctoprintAppKeyPollJob < ApplicationJob
   # earlier wins.
   sig { params(request_id: String, api_key: T.nilable(String)).void }
   def finish(request_id, api_key)
-    request = PrinterAppKeyRequest.take(request_id)
+    request = Printer::AppKeyRequest.take(request_id)
     return if request.nil?
 
     api_key ? add_printer(request, api_key) : request.push('denied')
   end
 
-  sig { params(request: PrinterAppKeyRequest, api_key: String).void }
+  sig { params(request: Printer::AppKeyRequest, api_key: String).void }
   def add_printer(request, api_key)
-    printer = Printers::Add.call(name: printer_name(request, api_key), backend: 'octoprint', uri: request.url,
-                                 secret: api_key)
-    errors = printer.errors.full_messages
-    errors.empty? ? request.push('added', printer:) : request.push('failed', error: errors.to_sentence)
+    addition = Printer::Addition.new(name: printer_name(request, api_key), backend: 'octoprint', uri: request.url,
+                                     secret: api_key)
+    if addition.save
+      request.push('added', printer: addition.printer)
+    else
+      request.push('failed', error: addition.errors.full_messages.to_sentence)
+    end
   # JSON::ParserError and KeyError: the octoprint gem fails to read the error of a server that isn't OctoPrint
-  rescue PrinterBackends::Error, JSON::ParserError, KeyError => e
+  rescue Printer::Backend::Error, JSON::ParserError, KeyError => e
     fail_request(request, identify_error(request.url, e), e)
   end
 
   # The name of OctoPrint's default printer profile, else the address
-  sig { params(request: PrinterAppKeyRequest, api_key: String).returns(String) }
+  sig { params(request: Printer::AppKeyRequest, api_key: String).returns(String) }
   def printer_name(request, api_key)
     name = ::Printer.new(backend: 'octoprint', uri: request.url, secret: api_key).api.identify[:name]
-    name.presence || request.address
+    name.presence || T.must(request.address)
   end
 
   # The gem's messages are not shown: they can hold anything the server answered
   sig { params(url: String, error: StandardError).returns(String) }
   def identify_error(url, error)
     case error
-    when PrinterBackends::Unreachable then "Could not reach OctoPrint at #{url}"
-    when PrinterBackends::Unauthorized then 'OctoPrint rejected the new API key'
+    when Printer::Backend::Unreachable then "Could not reach OctoPrint at #{url}"
+    when Printer::Backend::Unauthorized then 'OctoPrint rejected the new API key'
     else "OctoPrint at #{url} could not be read with the new API key"
     end
   end
 
   # `request`: taken from Redis, nil when it was already gone (cancelled meanwhile)
-  sig { params(request: T.nilable(PrinterAppKeyRequest), message: String, error: StandardError).void }
+  sig { params(request: T.nilable(Printer::AppKeyRequest), message: String, error: StandardError).void }
   def fail_request(request, message, error)
     return if request.nil?
 

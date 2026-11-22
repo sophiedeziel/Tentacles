@@ -65,7 +65,7 @@ RSpec.describe OctoprintAppKeyPollJob, type: :job do
       expect(job).to have_received(:sleep).with(1).exactly(described_class::POLLS_PER_RUN - 1).times
       expect(described_class).to have_been_enqueued.with(request.id).exactly(:once)
       expect(enqueued_jobs.last).not_to have_key(:at)
-      expect(PrinterAppKeyRequest.find(request.id)).to have_attributes(app_token: AppKeyRequestHelpers::APP_TOKEN)
+      expect(Printer::AppKeyRequest.find(request.id)).to have_attributes(app_token: AppKeyRequestHelpers::APP_TOKEN)
       expect(pushes).to be_empty
     end
   end
@@ -94,7 +94,7 @@ RSpec.describe OctoprintAppKeyPollJob, type: :job do
                               'approvalUrl' => request.approval_url, 'error' => nil,
                               'printer' => { 'id' => printer.id.to_s, 'name' => 'Prusa i3 MK3S',
                                              'uri' => octoprint_url } }])
-      expect(PrinterAppKeyRequest.find(request.id)).to be_nil
+      expect(Printer::AppKeyRequest.find(request.id)).to be_nil
       expect(described_class).not_to have_been_enqueued
     end
 
@@ -119,7 +119,7 @@ RSpec.describe OctoprintAppKeyPollJob, type: :job do
     it 'pushes DENIED, forgets the request and adds nothing' do
       expect(pushes).to eq([{ 'id' => request.id, 'address' => '192.168.1.57', 'state' => 'DENIED',
                               'approvalUrl' => request.approval_url, 'error' => nil, 'printer' => nil }])
-      expect(PrinterAppKeyRequest.find(request.id)).to be_nil
+      expect(Printer::AppKeyRequest.find(request.id)).to be_nil
       expect(Printer.count).to eq(0)
       expect(described_class).not_to have_been_enqueued
     end
@@ -135,9 +135,9 @@ RSpec.describe OctoprintAppKeyPollJob, type: :job do
       expect(pushes).to contain_exactly(
         include('state' => 'FAILED', 'error' => 'Could not reach OctoPrint at http://192.168.1.57/', 'printer' => nil)
       )
-      expect(PrinterAppKeyRequest.find(request.id)).to be_nil
+      expect(Printer::AppKeyRequest.find(request.id)).to be_nil
       expect(log.string).to include("[OctoprintAppKeyPollJob] Request #{request.id} at http://192.168.1.57/ " \
-                                    'failed: PrinterBackends::Unreachable')
+                                    'failed: Printer::Backend::Unreachable')
     end
   end
 

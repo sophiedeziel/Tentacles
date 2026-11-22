@@ -12,8 +12,8 @@ module Mutations
       field :files, [Types::File], null: true
 
       def resolve(file_ids:, label_ids:)
-        labels = ::Label.where(id: label_ids)
-        files = ::FileRecord.where(id: file_ids)
+        labels = ::Library::Label.where(id: label_ids)
+        files = ::Library::Item.where(id: file_ids)
 
         return { labels: [], files: [] } if labels.empty? || files.empty?
 

@@ -20,19 +20,19 @@ RSpec.describe 'Query monitorHealthy', type: :request do
   end
 
   it 'is true when the heartbeat is less than 15 seconds old' do
-    PrinterStatusStore.beat!(at: now - 14.seconds)
+    Printer::Monitor::Heartbeat.create!(at: now - 14.seconds)
 
     expect(monitor_healthy).to be(true)
   end
 
   it 'is false when the heartbeat is older than 15 seconds' do
-    PrinterStatusStore.beat!(at: now - 16.seconds)
+    Printer::Monitor::Heartbeat.create!(at: now - 16.seconds)
 
     expect(monitor_healthy).to be(false)
   end
 
   it 'becomes false as time passes without a heartbeat' do
-    PrinterStatusStore.beat!(at: now)
+    Printer::Monitor::Heartbeat.create!(at: now)
     expect(monitor_healthy).to be(true)
 
     travel(20.seconds)

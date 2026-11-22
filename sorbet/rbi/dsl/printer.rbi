@@ -369,10 +369,10 @@ class Printer
 
     # This method is created by ActiveRecord on the `Printer` class because it declared `has_many :dashboard_widgets`.
     # 🔗 [Rails guide for `has_many` association](https://guides.rubyonrails.org/association_basics.html#the-has-many-association)
-    sig { returns(::DashboardWidget::PrivateCollectionProxy) }
+    sig { returns(::Dashboard::Widget::PrivateCollectionProxy) }
     def dashboard_widgets; end
 
-    sig { params(value: T::Enumerable[::DashboardWidget]).void }
+    sig { params(value: T::Enumerable[::Dashboard::Widget]).void }
     def dashboard_widgets=(value); end
 
     sig { returns(T::Array[T.untyped]) }

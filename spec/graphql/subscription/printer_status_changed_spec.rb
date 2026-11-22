@@ -80,16 +80,16 @@ RSpec.describe Subscriptions::PrinterStatusChanged do
   describe 'execution' do
     let(:printer) { create(:printer, name: 'Ender 3') }
 
+    # Stored without #save!, which would push printerStatusChanged
     before do
-      PrinterStatusStore.write(
-        PrinterStatus.new(
-          printer_id: printer.id,
-          state_family: PrinterStateFamily::Operational,
-          state_text: 'Operational',
-          hotend: PrinterStatus::Temperature.new(actual: 24.5, target: 0.0),
-          camera: PrinterStatus::Camera.new(enabled: true, stream_url: 'http://octopi.local/webcam/?action=stream')
-        )
+      status = Printer::Status.new(
+        printer_id: printer.id,
+        state_family: Printer::StateFamily::Operational,
+        state_text: 'Operational',
+        hotend: Printer::Status::Temperature.new(actual: 24.5, target: 0.0),
+        camera: Printer::Status::Camera.new(enabled: true, stream_url: 'http://octopi.local/webcam/?action=stream')
       )
+      redis.set(Printer::Status.key(printer.id), status.to_json)
     end
 
     it 'sends nothing on subscribe' do

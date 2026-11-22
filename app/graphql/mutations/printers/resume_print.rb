@@ -3,6 +3,7 @@
 
 module Mutations
   module Printers
+    # Saves a Printer::Resumption
     class ResumePrint < PrinterAction
       description 'Resumes the paused print of a printer (allowed while PAUSED)'
 
@@ -12,13 +13,7 @@ module Mutations
 
       private
 
-      def refusal(printer, family)
-        "#{printer.name} is no longer paused" unless family == PrinterStateFamily::Paused
-      end
-
-      def send_command(printer)
-        printer.api.resume(job_id: live_job_id)
-      end
+      def command_class = ::Printer::Resumption
     end
   end
 end

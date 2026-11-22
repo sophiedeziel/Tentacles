@@ -53,10 +53,21 @@ RSpec.describe Spooler do
       expect(workers.keys).to eq [printer.id]
     end
 
+    it 'logs an unknown command and keeps listening' do
+      spooler
+      messages.push({ command: 'reboot', printer_id: printer.id },
+                    { command: 'add_printer', printer_id: printer.id })
+
+      spooler.subcribe_to_commands
+
+      expect(spooler).to have_received(:log).with(/key not found: "reboot"/)
+      expect(workers.keys).to eq [printer.id]
+    end
+
     context 'when a printer is removed mid-print' do
       let(:api) do
-        instance_spy(PrinterBackends::Base,
-                     print_progress: { state_family: PrinterStateFamily::Printing, progress: 10.0 })
+        instance_spy(Printer::Backend,
+                     print_progress: { state_family: Printer::StateFamily::Printing, progress: 10.0 })
       end
       let!(:job) { create(:printer_job, printer:) }
       let(:spool) { Spooler::Spool.new(printer) }

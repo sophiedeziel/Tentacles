@@ -17,7 +17,7 @@ module Mutations
 
       sig { params(id: String).returns(T::Hash[Symbol, T.untyped]) }
       def resolve(id:)
-        request = PrinterAppKeyRequest.take(id)
+        request = ::Printer::AppKeyRequest.take(id)
         return { request: nil, errors: ['This request is already over'] } if request.nil?
 
         request.push('cancelled')

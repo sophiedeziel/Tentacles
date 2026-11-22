@@ -3,31 +3,15 @@
 
 module Mutations
   module Printers
-    # Connects OctoPrint to the printer (allowed while OFFLINE, once OctoPrint itself answers). The serial port and
-    # baudrate are autodetected and OctoPrint uses its default printer profile.
-    # Refused for the backends that connect on their own (PrusaLink).
+    # Saves a Printer::Connection: connects OctoPrint to an OFFLINE printer. Refused for the backends that connect on
+    # their own (PrusaLink).
     class ConnectPrinter < PrinterAction
       description "Connects the printer's server to an OFFLINE printer (OctoPrint: autodetected port and baudrate, " \
                   'default profile). Refused for the backends that connect on their own (PrusaLink)'
 
       private
 
-      def connection_command?
-        true
-      end
-
-      def refusal(printer, family)
-        case family
-        when PrinterStateFamily::Offline then nil
-        when PrinterStateFamily::Connecting then "#{printer.name} is already connecting"
-        when PrinterStateFamily::Error then "#{printer.name} is in error, reconnect it instead"
-        else "#{printer.name} is already connected"
-        end
-      end
-
-      def send_command(printer)
-        printer.api.connect
-      end
+      def command_class = ::Printer::Connection
     end
   end
 end

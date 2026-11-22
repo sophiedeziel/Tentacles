@@ -3,6 +3,7 @@
 
 module Mutations
   module Printers
+    # Saves a Printer::Pause
     class PausePrint < PrinterAction
       description 'Pauses the print under way on a printer (allowed while PRINTING)'
 
@@ -12,13 +13,7 @@ module Mutations
 
       private
 
-      def refusal(printer, family)
-        "#{printer.name} is no longer printing" unless family == PrinterStateFamily::Printing
-      end
-
-      def send_command(printer)
-        printer.api.pause(job_id: live_job_id)
-      end
+      def command_class = ::Printer::Pause
     end
   end
 end

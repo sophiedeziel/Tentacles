@@ -11,13 +11,15 @@ module Mutations
       field :jobs, [Types::Job], null: true
 
       def resolve(file_ids:, printer_ids:)
-        jobs = file_ids.flat_map do |file_id|
-          file = ::FileRecord.find(file_id)
-          printer_ids.map do |printer_id|
-            create_job(file, printer_id)
-          end
+        jobs = []
+        file_ids.each do |file_id|
+          file = ::Library::Item.find(file_id)
+          printer_ids.each { |printer_id| jobs << create_job(file, printer_id) }
         end
         { jobs: }
+      ensure
+        # Once per printer, for the jobs enqueued, even when a later file or printer wasn't found
+        jobs.select(&:persisted?).uniq(&:printer_id).each(&:push_print_queue_changed)
       end
 
       private
@@ -30,17 +32,9 @@ module Mutations
           name: "Job for file #{file.id}",
           status: 'enqueued',
           executable: file,
-          printer_id:
+          printer:
         )
-
-        if print_immediately
-          REDIS_POOL.with do |conn|
-            conn.publish('printers',
-                         { command: :start_print,
-                           printer_id: }.to_json)
-          end
-        end
-
+        printer.notify_spooler(::Printer::SpoolerCommand::StartPrint) if print_immediately
         job
       end
     end

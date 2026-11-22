@@ -60,7 +60,8 @@ module Mutations
       # calls the new address
       sig { params(printer: ::Printer).void }
       def forget_api_answers(printer)
-        PrinterApiCache.forget(printer.id)
+        ::Printer::ApiCache.delete_by(printer_id: printer.id)
+        ::Printer::Disconnection.delete_by(printer_id: printer.id)
       rescue Redis::BaseError, ConnectionPool::TimeoutError => e
         Rails.logger.error("[updatePrinter] Could not forget the API answers of printer #{printer.id}: #{e.message}")
       end

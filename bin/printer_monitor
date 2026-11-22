@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-# Polls every printer's OctoPrint and publishes their live status (see PrinterMonitor::Supervisor).
+# Polls every printer's OctoPrint and publishes their live status (see Printer::Monitor::Supervisor).
 require_relative '../config/environment'
 
 $stdout.sync = true
@@ -12,4 +12,4 @@ end
 # Load the app up front rather than autoloading constants from the worker threads
 Rails.application.eager_load!
 
-PrinterMonitor::Supervisor.new.run
+Printer::Monitor::Supervisor.new.run

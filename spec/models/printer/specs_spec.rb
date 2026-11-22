@@ -111,8 +111,8 @@ RSpec.describe Printer::Specs, type: :model do
   describe '#fill_blank_specs' do
     let(:printer) { create(:printer, :prusalink, model: 'Custom MK4', heated_bed: false) }
     let(:reported) do
-      PrinterBackends::ReportedSpecs.new(name: 'Workshop XL', model: 'MK4', firmware: 'prusa_firmware',
-                                         nozzle_diameter: 0.6, heated_bed: true, extruders: 1)
+      Printer::Backend::ReportedSpecs.new(name: 'Workshop XL', model: 'MK4', firmware: 'prusa_firmware',
+                                          nozzle_diameter: 0.6, heated_bed: true, extruders: 1)
     end
 
     it 'fills the nil columns only, and saves them' do
@@ -124,7 +124,7 @@ RSpec.describe Printer::Specs, type: :model do
     end
 
     it 'leaves nil a column that refuses the reported value' do
-      reported = PrinterBackends::ReportedSpecs.new(nozzle_diameter: 0.0, extruders: 2)
+      reported = Printer::Backend::ReportedSpecs.new(nozzle_diameter: 0.0, extruders: 2)
 
       expect(printer.fill_blank_specs(reported)).to eq ['extruders']
       expect(printer.reload).to have_attributes(nozzle_diameter: nil, extruders: 2)
@@ -151,13 +151,20 @@ RSpec.describe Printer::Specs, type: :model do
     it 'is cached for 2 hours, and comes back from the cache with the same values' do
       first = printer.reported_specs
 
-      expect(Printer.find(printer.id).reported_specs.serialize).to eq first.serialize
+      expect(Printer.find(printer.id).reported_specs.attributes.compact).to eq first.attributes.compact
       expect(first).to have_attributes(name: 'XL', firmware: 'prusa_firmware', nozzle_diameter: 0.6)
       expect(Prusalink::Info).to have_received(:get).once
     end
 
+    it 'ignores the cached values that are no longer reported specs' do
+      cached = Printer::ApiCache.new(value: { model: 'MK4', removed_spec: 1 })
+      allow(Printer::ApiCache).to receive(:find_or_create_by).and_return(cached)
+
+      expect(printer.reported_specs.attributes.compact).to eq('model' => 'MK4')
+    end
+
     it 'is nil, without calling the server, while the printer is flagged disconnected' do
-      PrinterApiCache.set_disconnected(printer.id)
+      Printer::Disconnection.create!(printer_id: printer.id)
 
       expect(printer.reported_specs).to be_nil
       expect(Prusalink::Info).not_to have_received(:get)
@@ -170,7 +177,7 @@ RSpec.describe Printer::Specs, type: :model do
     before { stub_const('REDIS_POOL', ConnectionPool::Wrapper.new(size: 1, timeout: 1) { MockRedis.new }) }
 
     it 'fills the blank specs with what the server reports, and saves when it read the server' do
-      allow(printer).to receive(:reported_specs).and_return(PrinterBackends::ReportedSpecs.new(model: 'MK4'))
+      allow(printer).to receive(:reported_specs).and_return(Printer::Backend::ReportedSpecs.new(model: 'MK4'))
 
       expect(printer.fill_specs_from_server).to eq ['model']
       expect(printer.reload.model).to eq 'MK4'
@@ -179,7 +186,7 @@ RSpec.describe Printer::Specs, type: :model do
 
     it 'saves when it read the server, even with nothing to fill' do
       printer.update!(model: 'MK4')
-      allow(printer).to receive(:reported_specs).and_return(PrinterBackends::ReportedSpecs.new(model: 'XL'))
+      allow(printer).to receive(:reported_specs).and_return(Printer::Backend::ReportedSpecs.new(model: 'XL'))
 
       expect(printer.fill_specs_from_server).to eq []
       expect(printer.reload.specs_filled_at).to be_within(1.second).of(Time.current)
@@ -198,7 +205,7 @@ RSpec.describe Printer::Specs, type: :model do
 
       expect(printer.fill_specs_from_server).to be_nil
       expect(Rails.logger).to have_received(:error)
-        .with("Could not read the specs of printer #{printer.id}: PrinterBackends::Unauthorized: [401]")
+        .with("Could not read the specs of printer #{printer.id}: Printer::Backend::Unauthorized: [401]")
     end
   end
 end

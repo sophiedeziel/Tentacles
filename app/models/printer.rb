@@ -4,11 +4,12 @@
 class Printer < ApplicationRecord
   extend T::Sig
 
-  BACKENDS = %w[octoprint prusalink].freeze
+  # 'octoprint', 'prusalink': see Printer::Backend::ADAPTERS
+  BACKENDS = T.let(Printer::Backend::ADAPTERS.keys.freeze, T::Array[String])
 
-  # delete_all, not destroy: Printers::Remove pushes printQueueChanged once instead of once per job
+  # delete_all: a single DELETE. Nothing is pushed per job: Printer::Removal pushes printQueueChanged once.
   has_many :jobs, class_name: 'Printer::Job', dependent: :delete_all
-  has_many :dashboard_widgets, dependent: :destroy
+  has_many :dashboard_widgets, class_name: 'Dashboard::Widget', dependent: :destroy
 
   include EncryptedSecret
   include Specs
@@ -52,20 +53,21 @@ class Printer < ApplicationRecord
     jobs.enqueued.count
   end
 
-  # Errors (including timeouts) are raised to the caller: an upload must not fail silently, nor mark the printer
-  # as disconnected, so this doesn't go through using_api and its cache.
-  sig { params(path: String, print: T::Boolean).void }
-  def upload(path, print: false)
-    api.upload(path, print:)
-  end
-
-  # Runs the block (which calls #api) unless the printer was found unreachable in the last 10 minutes, caching its
-  # result for `cache` seconds. Returns nil, and remembers it for 10 minutes, when the printer can't be reached.
-  # Returns nil too when the stored secret can't be decrypted. Other errors are raised.
+  # Runs the block (which calls #api) unless the printer was found unreachable in the last 10 minutes (see
+  # Printer::Disconnection), caching its result according to `cache` (see Printer::ApiCache.find_or_create_by):
+  # - a duration: the cached answer, else the block's result, cached for that long
+  # - false (the default): the cached answer, else the block's result, which isn't cached
+  # - nil: the block's result, without reading the cache
+  # Returns nil, and remembers it for 10 minutes, when the printer can't be reached. Returns nil too when the stored
+  # secret can't be decrypted. Other errors are raised. An unsaved printer is never cached nor marked disconnected.
   def using_api(cache: false, &)
-    method = T.must(T.must(caller[0])[/'.*'/])[1..-2]
-    PrinterApiCache.use_cache(id:, method:, time: cache, &)
-  rescue PrinterBackends::Unreachable, PrinterBackends::UnreadableCredentials => e
+    return yield if new_record? # Nothing to key the cache with
+    return log_disconnected if Disconnection.exists?(printer_id: id)
+    return yield if cache.nil?
+
+    api_method = api_method_of(caller_locations(1, 1))
+    ApiCache.find_or_create_by(printer_id: id, api_method:, expires_in: cache, &).value
+  rescue Printer::Backend::Unreachable, Printer::Backend::UnreadableCredentials => e
     api_unavailable(e)
   end
 
@@ -81,25 +83,25 @@ class Printer < ApplicationRecord
     TentaclesSchema.subscriptions.trigger(:printer_subscription, { id: }, {})
   end
 
-  # Publishes a command for this printer to the spooler (lib/spooler.rb): start_print, add_printer, remove_printer
-  sig { params(command: Symbol).void }
+  # Publishes a command for this printer to the spooler (lib/spooler.rb), e.g. Printer::SpoolerCommand::StartPrint
+  sig { params(command: Printer::SpoolerCommand).void }
   def notify_spooler(command)
-    REDIS_POOL.with { |conn| conn.publish('printers', { command:, printer_id: id }.to_json) }
+    REDIS_POOL.with { |conn| conn.publish('printers', { command: command.serialize, printer_id: id }.to_json) }
   end
 
-  # The printer's API adapter (see PrinterBackends::Base): `printer.api.pause`, `printer.api.state_family`, ...
+  # The printer's API adapter (see Printer::Backend): `printer.api.pause`, `printer.api.state_family`, ...
   # The adapter holds the printer's own clients: the client gems' global configuration is never touched.
   #
   # Rebuilt when the backend or the credentials changed (e.g. after a `reload` in the long-lived spooler).
-  sig { returns(PrinterBackends::Base) }
+  sig { returns(Printer::Backend) }
   def api
     credentials = api_credentials
     adapter = @api
     return adapter if adapter && @api_credentials == credentials
 
-    adapter = PrinterBackends.for(self)
+    adapter = Printer::Backend.for(self)
     @api_credentials = T.let(credentials, T.nilable(T::Array[T.nilable(String)]))
-    @api = T.let(adapter, T.nilable(PrinterBackends::Base))
+    @api = T.let(adapter, T.nilable(Printer::Backend))
     adapter
   end
 
@@ -112,30 +114,38 @@ class Printer < ApplicationRecord
   # Why the next job of the queue can't be started, or nil when it can: the printer must be OPERATIONAL, with
   # something in its queue and no active job. The single rule behind Printer.canStartNext and startNextPrint.
   #
-  #   Printer.start_next_blocker(state_family: PrinterStateFamily::Printing, enqueued: true, active: false)
+  #   Printer.start_next_blocker(state_family: Printer::StateFamily::Printing, enqueued: true, active: false)
   #   # => :not_ready
   sig do
-    params(state_family: PrinterStateFamily, enqueued: T::Boolean, active: T::Boolean).returns(T.nilable(Symbol))
+    params(state_family: Printer::StateFamily, enqueued: T::Boolean, active: T::Boolean).returns(T.nilable(Symbol))
   end
   def self.start_next_blocker(state_family:, enqueued:, active:)
     return :active_job if active
     return :empty_queue unless enqueued
-    return :not_ready unless state_family == PrinterStateFamily::Operational
+    return :not_ready unless state_family == Printer::StateFamily::Operational
 
     nil
   end
 
-  sig { params(state_family: PrinterStateFamily, enqueued: T::Boolean, active: T::Boolean).returns(T::Boolean) }
+  sig { params(state_family: Printer::StateFamily, enqueued: T::Boolean, active: T::Boolean).returns(T::Boolean) }
   def self.start_next_allowed?(state_family:, enqueued:, active:)
     start_next_blocker(state_family:, enqueued:, active:).nil?
   end
 
   private
 
-  sig { params(error: PrinterBackends::Error).returns(NilClass) }
+  sig { returns(NilClass) }
+  def log_disconnected = nil.tap { Rails.logger.info("Printer #{id} is disconnected, not calling API") }
+
+  # The name of the method that called #using_api (e.g. "Printer#version"), under which its answers are cached. From
+  # the caller's location, as this method's own caller would be sorbet-runtime's wrapper.
+  sig { params(locations: T.nilable(T::Array[Thread::Backtrace::Location])).returns(String) }
+  def api_method_of(locations) = T.must(locations&.first&.label)
+
+  sig { params(error: Printer::Backend::Error).returns(NilClass) }
   def api_unavailable(error)
     Rails.logger.error("Failed to get #{api.product_name} data for #{name} :\n\t#{error.message}")
-    PrinterApiCache.set_disconnected(id) if error.is_a?(PrinterBackends::Unreachable)
+    Disconnection.create!(printer_id: id) if persisted? && error.is_a?(Printer::Backend::Unreachable)
     nil
   end
 end

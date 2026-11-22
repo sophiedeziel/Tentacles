@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Types
-  # A Hash: { sections: [::DashboardSection], updated_at: }. See .for.
+  # A Hash: { sections: [::Dashboard::Section], updated_at: }. See .for.
   class Dashboard < Base::Object
     description 'The global dashboard layout: no users, the last save wins'
     # No field depends on the context, so dashboardChanged can broadcast them
@@ -16,7 +16,7 @@ module Types
 
     # The saved layout, widgets and printers preloaded
     def self.saved
-      sections = ::DashboardSection.includes(widgets: :printer).to_a
+      sections = ::Dashboard::Section.includes(widgets: :printer).to_a
       { sections:, updated_at: sections.filter_map(&:updated_at).max }
     end
   end

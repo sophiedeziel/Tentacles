@@ -36,10 +36,10 @@ class Spooler
 
     def initialize(printer, job)
       super
-      @file = FileRecord.find(job.executable_id)
+      @file = Library::Item.find(job.executable_id)
     end
 
-    # Raises the upload's errors (PrinterBackends::Error): the print can't start
+    # Raises the upload's errors (Printer::Backend::Error): the print can't start
     def execute
       log '1. Start the print: upload the file to the printer'.cyan
       update_subscribers
@@ -83,7 +83,7 @@ class Spooler
         @started = true
         return false
       end
-      return true if @started || family != PrinterStateFamily::Operational
+      return true if @started || family != ::Printer::StateFamily::Operational
 
       @start_polls += 1
       return false if @start_polls < MAX_START_POLLS
@@ -98,10 +98,10 @@ class Spooler
       progress = @printer.api.print_progress
       @poll_failing = false
       family = progress[:state_family]
-      printing_updates(progress[:progress]) if family == PrinterStateFamily::Printing
+      printing_updates(progress[:progress]) if family == ::Printer::StateFamily::Printing
       family
     # A server that isn't OctoPrint can answer with HTML (JSON::ParserError) or without an `error` key (KeyError)
-    rescue PrinterBackends::Error, JSON::ParserError, KeyError => e
+    rescue Printer::Backend::Error, JSON::ParserError, KeyError => e
       log("Could not read the print's state, retrying: #{e.class}: #{e.message}".red) unless @poll_failing
       @poll_failing = true
       nil

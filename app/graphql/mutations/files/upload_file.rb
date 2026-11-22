@@ -12,7 +12,7 @@ module Mutations
       field :file, Types::File, null: true
 
       def resolve(file_attributes:)
-        file = ::FileRecord.new(file_attributes.to_h)
+        file = ::Library::Item.new(file_attributes.to_h)
         if file.save!
           { file: }
         else

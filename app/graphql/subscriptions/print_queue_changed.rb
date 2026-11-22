@@ -18,7 +18,7 @@ module Subscriptions
     end
 
     # The printer passed to the trigger. A removed printer can't be loaded back (the trigger is serialized with its
-    # GlobalID), so Printers::Remove passes `{ removed_printer: attributes }` instead: it comes back as a read-only
+    # GlobalID), so Printer::Removal passes `{ removed_printer: attributes }` instead: it comes back as a read-only
     # stand-in, whose queue is empty.
     def update
       return object unless object.is_a?(Hash)

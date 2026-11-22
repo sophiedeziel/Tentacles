@@ -3,6 +3,7 @@
 
 module Mutations
   module Printers
+    # Saves a Printer::Cancellation
     class CancelPrint < PrinterAction
       description 'Cancels the print under way on a printer (allowed while PRINTING or PAUSED)'
 
@@ -10,18 +11,9 @@ module Mutations
                                             description: 'The file the user confirmed for: refuses when the ' \
                                                          'printer is printing another one'
 
-      CANCELLABLE = T.let([PrinterStateFamily::Printing, PrinterStateFamily::Paused].freeze,
-                          T::Array[PrinterStateFamily])
-
       private
 
-      def refusal(printer, family)
-        "#{printer.name} is no longer printing" unless CANCELLABLE.include?(family)
-      end
-
-      def send_command(printer)
-        printer.api.cancel(job_id: live_job_id)
-      end
+      def command_class = ::Printer::Cancellation
     end
   end
 end

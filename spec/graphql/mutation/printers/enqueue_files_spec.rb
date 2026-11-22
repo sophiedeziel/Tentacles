@@ -10,7 +10,7 @@ RSpec.describe Mutations::Printers::EnqueueFiles, type: :request do
   let(:redis) { MockRedis.new.tap { |redis| redis.define_singleton_method(:publish) { |_channel, _message| 0 } } }
   let(:printer) { create(:printer) }
   let(:file) { create(:file_record) }
-  let(:start_print_message) { { command: :start_print, printer_id: printer.id.to_s }.to_json }
+  let(:start_print_message) { { command: :start_print, printer_id: printer.id }.to_json }
   let(:query) do
     <<~GQL
       mutation($input: EnqueueFilesInput!) { enqueueFiles(input: $input) { jobs { id } } }
@@ -52,5 +52,36 @@ RSpec.describe Mutations::Printers::EnqueueFiles, type: :request do
 
     expect(printer.queue.count).to eq 3
     expect(redis).not_to have_received(:publish)
+  end
+
+  describe 'printQueueChanged' do
+    let(:other_printer) { create(:printer) }
+    # The printQueueChanged triggers, as [printer id, ...]
+    let(:pushes) { [] }
+
+    before do
+      allow(TentaclesSchema.subscriptions).to receive(:trigger) do |name, _arguments, object|
+        pushes << object.id if name == :print_queue_changed
+      end
+    end
+
+    def enqueue_ids(file_ids, printer_ids)
+      post '/graphql', params: { query:, variables: { input: { fileIds: file_ids, printerIds: printer_ids } } }
+    end
+
+    it 'is pushed once per printer, once all the files are enqueued' do
+      enqueue_ids([file.id.to_s, create(:file_record).id.to_s], [printer.id.to_s, other_printer.id.to_s])
+
+      expect([printer.queue.count, other_printer.queue.count]).to eq [2, 2]
+      expect(pushes).to contain_exactly(printer.id, other_printer.id)
+    end
+
+    it 'is pushed for the jobs enqueued before a file that is not found' do
+      enqueue_ids([file.id.to_s, '0'], [printer.id.to_s])
+
+      expect(response).to have_http_status(:not_found)
+      expect(printer.queue.count).to eq 1
+      expect(pushes).to eq [printer.id]
+    end
   end
 end

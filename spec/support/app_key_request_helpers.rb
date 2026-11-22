@@ -89,7 +89,7 @@ module AppKeyRequestHelpers
 
   # Waiting in OctoPrint, as requestPrinterAppKey leaves it
   def create_request(app_token: APP_TOKEN)
-    PrinterAppKeyRequest.create(address: '192.168.1.57', app_token:,
-                                approval_url: octoprint_url("plugin/appkeys/auth/#{app_token}"))
+    Printer::AppKeyRequest.create!(address: '192.168.1.57', app_token:,
+                                   approval_url: octoprint_url("plugin/appkeys/auth/#{app_token}"))
   end
 end

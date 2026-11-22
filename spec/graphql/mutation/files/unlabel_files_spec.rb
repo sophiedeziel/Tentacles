@@ -45,14 +45,14 @@ module Mutations
 
           context 'when the label is not attached to the file' do
             before do
-              file.file_labels.destroy_all
+              file.labelings.destroy_all
               file.labels << create(:label, name: 'other label')
             end
 
             it 'does not change other labels' do
               expect do
                 post '/graphql', params: { query:, variables: }
-              end.to change { FileLabel.count }.by(0)
+              end.to change { Library::Labeling.count }.by(0)
             end
 
             it 'returns the label and the file' do
@@ -109,7 +109,7 @@ module Mutations
             it 'does not create a label' do
               expect do
                 post '/graphql', params: { query:, variables: }
-              end.to change { Label.count }.by(0)
+              end.to change { Library::Label.count }.by(0)
             end
 
             it 'returns a nil label' do
@@ -131,7 +131,7 @@ module Mutations
 
           context 'when there is an error' do
             before do
-              allow_any_instance_of(FileLabel).to receive(:destroy!).and_raise(ActiveRecord::RecordInvalid)
+              allow_any_instance_of(Library::Labeling).to receive(:destroy!).and_raise(ActiveRecord::RecordInvalid)
             end
 
             it 'returns a nil label' do

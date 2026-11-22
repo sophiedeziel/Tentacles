@@ -56,25 +56,25 @@ RSpec.describe Printer, :vcr, type: :model do
   describe 'destroy' do
     let(:printer) { create(:printer) }
     let(:file) { create(:file_record) }
-    let(:section) { DashboardSection.create!(title: nil, position: 0) }
+    let(:section) { Dashboard::Section.create!(title: nil, position: 0) }
 
     before do
       %w[enqueued active completed error].each { |status| create(:printer_job, printer:, executable: file, status:) }
-      PrinterWidget.create!(dashboard_section: section, printer:, width_units: 2, height_units: 1, position: 0)
+      Dashboard::PrinterWidget.create!(section: section, printer:, width_units: 2, height_units: 1, position: 0)
     end
 
     it 'deletes its jobs, queued, under way and finished, and its dashboard widgets' do
       printer.destroy!
 
       expect(Printer::Job.where(printer_id: printer.id)).to be_empty
-      expect(DashboardWidget.where(printer_id: printer.id)).to be_empty
+      expect(Dashboard::Widget.where(printer_id: printer.id)).to be_empty
     end
 
     it 'keeps the files in the library' do
-      expect { printer.destroy! }.not_to(change { FileRecord.count })
+      expect { printer.destroy! }.not_to(change { Library::Item.count })
     end
 
-    it 'deletes the jobs without their callbacks: no printQueueChanged per job (Printers::Remove sends one)' do
+    it 'deletes the jobs without pushing printQueueChanged per job (Printer::Removal sends one)' do
       allow(TentaclesSchema.subscriptions).to receive(:trigger)
 
       printer.destroy!
@@ -90,50 +90,10 @@ RSpec.describe Printer, :vcr, type: :model do
     before { stub_const('REDIS_POOL', ConnectionPool::Wrapper.new(size: 1, timeout: 1) { redis }) }
 
     it 'publishes the command with the printer id on the printers channel' do
-      printer.notify_spooler(:add_printer)
+      printer.notify_spooler(Printer::SpoolerCommand::AddPrinter)
 
       expect(redis).to have_received(:publish)
         .with('printers', { command: 'add_printer', printer_id: printer.id }.to_json)
-    end
-  end
-
-  describe 'upload' do
-    let(:file_path) { 'spec/fixture_files/test.gcode' }
-
-    subject { printer.upload(file_path) }
-
-    it 'uploads the file', vcr: { cassette_name: 'Printer/upload/1_8_1' } do
-      expect { subject }.not_to raise_error
-    end
-
-    it 'uses a client with long timeouts for large files', vcr: { cassette_name: 'Printer/upload/1_8_1' } do
-      allow(Octoprint::Client).to receive(:new).and_call_original
-      subject
-      expect(Octoprint::Client).to have_received(:new)
-        .with(hash_including(host: printer.uri, api_key: printer.secret, open_timeout: 5, timeout: 120))
-    end
-
-    [Octoprint::Exceptions::ConnectionError, Octoprint::Exceptions::TimeoutError].each do |error_class|
-      context "when the upload fails with #{error_class.name.demodulize}" do
-        let(:printer) { create(:printer) }
-        let(:redis) { MockRedis.new }
-
-        before do
-          stub_const('REDIS_POOL', ConnectionPool::Wrapper.new(size: 1, timeout: 1) { redis })
-          allow(Octoprint::Files).to receive(:upload).and_raise(error_class, 'execution expired')
-          allow(PrinterApiCache).to receive(:set_disconnected)
-        end
-
-        it 'raises the error' do
-          expect { subject }.to raise_error(PrinterBackends::Unreachable, 'execution expired')
-        end
-
-        it 'does not mark the printer as disconnected' do
-          expect { subject }.to raise_error(PrinterBackends::Unreachable)
-          expect(PrinterApiCache).not_to have_received(:set_disconnected)
-          expect(PrinterApiCache.disconnected?(printer.id)).to be false
-        end
-      end
     end
   end
 
@@ -141,7 +101,7 @@ RSpec.describe Printer, :vcr, type: :model do
     subject(:api) { printer.api }
 
     it 'is the adapter of the printer backend' do
-      expect(api).to be_a(PrinterBackends::Octoprint).and have_attributes(printer:)
+      expect(api).to be_a(Printer::Backend::Octoprint).and have_attributes(printer:)
     end
 
     it 'is memoized' do
@@ -150,7 +110,7 @@ RSpec.describe Printer, :vcr, type: :model do
 
     it 'is the PrusaLink adapter of a PrusaLink printer' do
       printer = build(:printer, :prusalink)
-      expect(printer.api).to be_a(PrinterBackends::Prusalink).and have_attributes(printer:)
+      expect(printer.api).to be_a(Printer::Backend::Prusalink).and have_attributes(printer:)
     end
 
     %i[uri secret username].each do |attribute|
@@ -178,7 +138,7 @@ RSpec.describe Printer, :vcr, type: :model do
       printer.secret = ''
 
       expect { printer.api.client }.to raise_error(Octoprint::Exceptions::MissingCredentialsError)
-      expect { printer.api.version }.to raise_error(PrinterBackends::MissingCredentials)
+      expect { printer.api.version }.to raise_error(Printer::Backend::MissingCredentials)
     end
 
     it 'sets the client for the current thread only' do
@@ -205,7 +165,7 @@ RSpec.describe Printer, :vcr, type: :model do
         let(:printer) { build(:printer, **attributes) }
 
         it 'raises MissingCredentials' do
-          expect { api.job_status }.to raise_error(PrinterBackends::MissingCredentials)
+          expect { api.job_status }.to raise_error(Printer::Backend::MissingCredentials)
         end
       end
     end
@@ -228,7 +188,7 @@ RSpec.describe Printer, :vcr, type: :model do
       let(:printer) { build(:printer, :disconnected) }
 
       it 'raises an error' do
-        expect { subject }.to raise_error(PrinterBackends::MissingCredentials)
+        expect { subject }.to raise_error(Printer::Backend::MissingCredentials)
       end
     end
 
@@ -251,7 +211,7 @@ RSpec.describe Printer, :vcr, type: :model do
 
         it 'marks the printer as disconnected' do
           subject
-          expect(PrinterApiCache.disconnected?(printer.id)).to be true
+          expect(Printer::Disconnection.exists?(printer_id: printer.id)).to be true
         end
 
         it 'logs the error' do
@@ -266,7 +226,7 @@ RSpec.describe Printer, :vcr, type: :model do
       let(:printer) { build(:printer, :wrong_credentials) }
 
       it 'raises an error' do
-        expect { subject }.to raise_error(PrinterBackends::Unauthorized)
+        expect { subject }.to raise_error(Printer::Backend::Unauthorized)
       end
     end
   end
@@ -289,6 +249,51 @@ RSpec.describe Printer, :vcr, type: :model do
 
     it 'reads it from the printer', vcr: { cassette_name: 'Printer/version/1_3_1' } do
       expect(build(:printer).version).to eq 'OctoPrint 1.7.3'
+    end
+  end
+
+  describe 'using_api caching' do
+    let(:printer) { create(:printer) }
+    let(:redis) { MockRedis.new }
+
+    before { stub_const('REDIS_POOL', ConnectionPool::Wrapper.new(size: 1, timeout: 1) { redis }) }
+
+    def call_api(cache:, &)
+      printer.using_api(cache:, &)
+    end
+
+    it 'does not call the API of a disconnected printer' do
+      Printer::Disconnection.create!(printer_id: printer.id)
+
+      expect(call_api(cache: 2.hours) { raise 'called' }).to be_nil
+    end
+
+    it 'reads the cached answer but does not store one with cache: false' do
+      expect(call_api(cache: false) { 'first' }).to eq 'first'
+      expect(redis.keys).to be_empty
+
+      call_api(cache: 2.hours) { 'cached' }
+      expect(call_api(cache: false) { raise 'called' }).to eq 'cached'
+    end
+
+    it 'neither reads nor stores the cache with cache: nil' do
+      call_api(cache: 2.hours) { 'cached' }
+
+      expect(call_api(cache: nil) { 'fresh' }).to eq 'fresh'
+    end
+
+    it 'caches the answers under the name of the calling method' do
+      allow(Octoprint::ServerVersion).to receive(:get)
+        .and_return(Octoprint::ServerVersion.new(api: '0.1', server: '1.7.3', text: 'OctoPrint 1.7.3'))
+      allow(Octoprint::Job).to receive(:get).and_return(Octoprint::Job.deserialize({ state: 'Operational', job: {} }))
+
+      expect([printer.version, printer.job_status]).to eq ['OctoPrint 1.7.3', 'Operational']
+      expect(redis.keys).to eq ["printer_api_#{printer.id}_Printer#version"]
+    end
+
+    it 'does not cache the answers of an unsaved printer' do
+      expect(build(:printer).using_api(cache: 2.hours) { 'answer' }).to eq 'answer'
+      expect(redis.keys).to be_empty
     end
   end
 
@@ -371,9 +376,9 @@ RSpec.describe Printer, 'with a secret that cannot be decrypted' do
   before { stub_const('REDIS_POOL', ConnectionPool::Wrapper.new(size: 1, timeout: 1) { redis }) }
 
   it 'raises UnreadableCredentials, a MissingCredentials error, when the secret is read' do
-    expect { printer.secret }.to raise_error(PrinterBackends::UnreadableCredentials,
+    expect { printer.secret }.to raise_error(Printer::Backend::UnreadableCredentials,
                                              "Stored credentials can't be read, re-enter them")
-    expect(PrinterBackends::UnreadableCredentials).to be < PrinterBackends::MissingCredentials
+    expect(Printer::Backend::UnreadableCredentials).to be < Printer::Backend::MissingCredentials
   end
 
   it 'has no readable secret' do
@@ -383,13 +388,13 @@ RSpec.describe Printer, 'with a secret that cannot be decrypted' do
 
   it 'raises UnreadableCredentials from the API without calling the printer' do
     allow(Octoprint::Job).to receive(:get)
-    expect { printer.api.job_status }.to raise_error(PrinterBackends::UnreadableCredentials)
+    expect { printer.api.job_status }.to raise_error(Printer::Backend::UnreadableCredentials)
     expect(Octoprint::Job).not_to have_received(:get)
   end
 
   it 'returns nil from the cached API calls, without marking the printer disconnected' do
     expect([printer.job_status, printer.version, printer.current_job]).to eq [nil, nil, nil]
-    expect(PrinterApiCache.disconnected?(printer.id)).to be false
+    expect(Printer::Disconnection.exists?(printer_id: printer.id)).to be false
   end
 
   it 'is still valid and can be saved, keeping its stored secret' do
@@ -400,6 +405,14 @@ RSpec.describe Printer, 'with a secret that cannot be decrypted' do
     expect(described_class.find(printer.id).name).to eq 'Renamed'
     expect(described_class.connection.select_value("SELECT secret FROM printers WHERE id = #{printer.id}"))
       .to eq stored
+  end
+
+  it 'can be saved through every save path' do
+    expect(printer.save).to be true
+    expect(printer.update(name: 'Renamed')).to be true
+    expect(printer.update_attribute(:favorite, true)).to be true # rubocop:disable Rails/SkipsModelValidations
+    expect(make_secret_unreadable(printer).toggle!(:favorite)).to be true # rubocop:disable Rails/SkipsModelValidations
+    expect(described_class.find(printer.id)).to have_attributes(name: 'Renamed', favorite: false)
   end
 
   it 'can have its credentials entered again' do
