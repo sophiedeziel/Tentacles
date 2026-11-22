@@ -50,7 +50,13 @@ RSpec.describe DashboardSection do
       queue, printer_widget = described_class.build_default.first.widgets
 
       expect(printer_widget).to have_attributes(id: nil, camera: false, time_left: true, controls: true)
-      expect(queue).to have_attributes(id: nil, now_printing: true, start_next: true, row_per_printer: false)
+      expect(queue).to have_attributes(id: nil, now_printing: true, start_next: true)
+    end
+
+    it 'shows one row per printer and the history in the Print Queue' do
+      queue = described_class.build_default.first.widgets.first
+
+      expect(queue).to have_attributes(row_per_printer: true, history: true)
     end
 
     it 'saves nothing' do

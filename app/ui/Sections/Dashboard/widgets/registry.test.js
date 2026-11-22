@@ -48,5 +48,12 @@ describe('registry', () => {
       expect(keys(queue.optionsFor('L'))).toEqual(['nowPrinting', 'startNext'])
       expect(keys(queue.optionsFor('XXL'))).toEqual(['nowPrinting', 'startNext', 'rowPerPrinter', 'history'])
     })
+
+    it('turns one row per printer and history on by default at Extra Large and 4×4 only', () => {
+      const queue = REGISTRY.PRINT_QUEUE
+      expect(queue.sizes.map((size) => queue.defaultOptions(size).rowPerPrinter)).toEqual([false, false, false, true, true])
+      expect(queue.sizes.map((size) => queue.defaultOptions(size).history)).toEqual([false, false, false, true, true])
+      expect(queue.defaultOptions('XL')).toMatchObject({ nowPrinting: true, startNext: true })
+    })
   })
 })
