@@ -25,7 +25,7 @@ class Printer
       end
     end
 
-    def persist
+    def send_command
       printer.api.connect
     end
   end

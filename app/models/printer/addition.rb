@@ -19,8 +19,6 @@ class Printer
 
     validate :printer_must_be_valid
 
-    after_save :start_spool, :fill_specs
-
     # The attributes left out get the printer's defaults (backend: 'octoprint')
     sig { returns(::Printer) }
     def printer
@@ -44,6 +42,8 @@ class Printer
     sig { void }
     def persist
       printer.save!
+      start_spool
+      fill_specs
     end
 
     sig { void }

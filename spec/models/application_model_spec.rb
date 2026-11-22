@@ -14,35 +14,22 @@ RSpec.describe ApplicationModel do
       validates :name, presence: true
       rescue_into_errors error_class
 
-      before_save { (@log ||= []) << :before }
-      after_save { @log << :after }
-
       private
 
       def persist
         raise fail_with if fail_with
 
-        @log << :persist
+        (@log ||= []) << :persist
       end
     end)
   end
 
   describe '#save!' do
-    it 'validates, then persists inside the save callbacks' do
+    it 'validates, then persists' do
       model = model_class.new(name: 'Ada')
 
       expect(model.save!).to be(true)
-      expect(model.log).to eq(%i[before persist after])
-    end
-
-    it 'runs the after_save callbacks even when #persist returns false' do
-      model = model_class.new(name: 'Ada')
-      allow(model).to receive(:persist).and_return(false)
-      model.instance_variable_set(:@log, [])
-
-      model.save!
-
-      expect(model.log).to eq(%i[before after])
+      expect(model.log).to eq(%i[persist])
     end
 
     it 'raises ActiveModel::ValidationError when invalid, without persisting' do
@@ -127,7 +114,7 @@ RSpec.describe ApplicationModel do
 
   describe '.create and .create!' do
     it 'builds and saves' do
-      expect(model_class.create(name: 'Ada').log).to eq(%i[before persist after])
+      expect(model_class.create(name: 'Ada').log).to eq(%i[persist])
       expect(model_class.create(name: '').errors).to be_present
       expect { model_class.create!(name: '') }.to raise_error(ActiveModel::ValidationError)
     end

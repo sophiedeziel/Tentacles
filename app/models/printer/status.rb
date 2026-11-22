@@ -49,10 +49,6 @@ class Printer
     # Snapshots missing one of these (e.g. written before it existed) are unreadable
     validates :printer_id, :state_family, :state_text, :camera, presence: true
 
-    # The printerStatusChanged subscribers get the printer (see Subscriptions::PrinterStatusChanged). Once they did,
-    # the state counts as saved (see #changed?): when pushing fails, the next tick saves it again.
-    after_save :push_status_changed, :changes_applied
-
     class << self
       extend T::Sig
 
@@ -160,9 +156,14 @@ class Printer
 
     private
 
+    # Writes the snapshot, then pushes printerStatusChanged: its subscribers get the printer (see
+    # Subscriptions::PrinterStatusChanged). Once they did, the state counts as saved (see #changed?): when pushing
+    # fails, the next tick saves it again.
     sig { void }
     def persist
       REDIS_POOL.with { |conn| conn.set(self.class.key(T.must(printer_id)), to_json) }
+      push_status_changed
+      changes_applied
     end
 
     sig { void }

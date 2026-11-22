@@ -86,6 +86,7 @@ RSpec.describe Subscriptions::PrintQueueChanged do
     second = subscribe.context[:subscription_id]
 
     job = create(:printer_job, printer:)
+    job.push_print_queue_changed
     deliver_events
 
     expected = { 'id' => printer.id.to_s, 'queuedCount' => 1, 'canStartNext' => true,
@@ -100,7 +101,6 @@ RSpec.describe Subscriptions::PrintQueueChanged do
   it 'pushes a removed printer with an empty queue, without contacting it' do
     printer = create(:printer)
     create(:printer_job, printer:)
-    pubsub.clear # the push of the create
     subscription_id = subscribe.context[:subscription_id]
     allow(Printer::Backend).to receive(:for)
 
@@ -116,7 +116,6 @@ RSpec.describe Subscriptions::PrintQueueChanged do
 
   it 'pushes nothing on progress updates' do
     job = create(:printer_job, status: 'active')
-    pubsub.clear # the push of the create
     subscription_id = subscribe.context[:subscription_id]
 
     job.update!(progress: 42)

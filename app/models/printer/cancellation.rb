@@ -17,7 +17,7 @@ class Printer
     end
 
     # To the job that was checked, not to one that started since
-    def persist
+    def send_command
       printer.api.cancel(job_id: live_job.job_id)
     end
   end

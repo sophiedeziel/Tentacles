@@ -74,7 +74,7 @@ RSpec.describe Printer, :vcr, type: :model do
       expect { printer.destroy! }.not_to(change { Library::Item.count })
     end
 
-    it 'deletes the jobs without their callbacks: no printQueueChanged per job (Printer::Removal sends one)' do
+    it 'deletes the jobs without pushing printQueueChanged per job (Printer::Removal sends one)' do
       allow(TentaclesSchema.subscriptions).to receive(:trigger)
 
       printer.destroy!
@@ -405,6 +405,14 @@ RSpec.describe Printer, 'with a secret that cannot be decrypted' do
     expect(described_class.find(printer.id).name).to eq 'Renamed'
     expect(described_class.connection.select_value("SELECT secret FROM printers WHERE id = #{printer.id}"))
       .to eq stored
+  end
+
+  it 'can be saved through every save path' do
+    expect(printer.save).to be true
+    expect(printer.update(name: 'Renamed')).to be true
+    expect(printer.update_attribute(:favorite, true)).to be true # rubocop:disable Rails/SkipsModelValidations
+    expect(make_secret_unreadable(printer).toggle!(:favorite)).to be true # rubocop:disable Rails/SkipsModelValidations
+    expect(described_class.find(printer.id)).to have_attributes(name: 'Renamed', favorite: false)
   end
 
   it 'can have its credentials entered again' do

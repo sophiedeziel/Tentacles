@@ -6,7 +6,7 @@ class Printer < ApplicationRecord
 
   BACKENDS = %w[octoprint prusalink].freeze
 
-  # delete_all, not destroy: Printer::Removal pushes printQueueChanged once instead of once per job
+  # delete_all: a single DELETE. Nothing is pushed per job: Printer::Removal pushes printQueueChanged once.
   has_many :jobs, class_name: 'Printer::Job', dependent: :delete_all
   has_many :dashboard_widgets, class_name: 'Dashboard::Widget', dependent: :destroy
 

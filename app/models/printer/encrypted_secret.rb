@@ -17,8 +17,19 @@ class Printer
       T.bind(self, T.class_of(Printer))
 
       encrypts :secret
+    end
 
-      before_save :forget_unreadable_secret
+    # Saving compares every attribute with its stored value, which decrypts the secret: an unreadable one is forgotten
+    # first (see #forget_unreadable_secret). Every save goes through #save or #save!: update, update!, create, create!,
+    # update_attribute, toggle! and autosaved associations too.
+    def save(**, &)
+      forget_unreadable_secret
+      super
+    end
+
+    def save!(**, &)
+      forget_unreadable_secret
+      super
     end
 
     def secret
@@ -42,9 +53,9 @@ class Printer
 
     private
 
-    # Saving compares every attribute with its stored value, which decrypts the secret. When it can't be decrypted,
-    # the stored value is forgotten so that the printer can still be saved: its secret stays as it is in the
-    # database, or is replaced when a new one was assigned (the credentials are entered again).
+    # When the stored secret can't be decrypted, its stored value is forgotten so that the printer can still be saved:
+    # its secret stays as it is in the database, or is replaced when a new one was assigned (the credentials are
+    # entered again).
     sig { void }
     def forget_unreadable_secret
       T.bind(self, Printer).attribute_in_database(:secret)

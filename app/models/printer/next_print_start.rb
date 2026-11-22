@@ -20,8 +20,6 @@ class Printer
 
     rescue_into_errors SpoolerUnreachable
 
-    skip_callback :save, :after, :refresh_status
-
     private
 
     def refusal(family)
@@ -51,8 +49,13 @@ class Printer
       "#{printer.name}'s next job is now #{next_job.executable.try(:filename) || next_job.name}"
     end
 
+    # The spooler publishes the new state once it started the job
+    def refresh_after_command?
+      false
+    end
+
     # Publishing to the spooler goes through Redis rather than the printer
-    def persist
+    def send_command
       printer.notify_spooler(:start_print)
     rescue Redis::BaseError, ConnectionPool::TimeoutError => e
       Rails.logger.error("[Printer::NextPrintStart] Could not publish start_print for printer #{printer.id}: " \

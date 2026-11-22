@@ -25,15 +25,22 @@ class Printer
 
     rescue_into_errors Conflict
 
+    private
+
     # Once the printer is destroyed, the cleanup and the pushes are best effort: a failure is logged and the next
     # steps still run.
-    after_save :forget_redis_keys, :stop_spool, :push_print_queue_changed, :push_dashboard_changed
-
-    private
+    sig { void }
+    def persist
+      destroy_printer
+      forget_redis_keys
+      stop_spool
+      push_print_queue_changed
+      push_dashboard_changed
+    end
 
     # Nothing changed when it raises
     sig { void }
-    def persist
+    def destroy_printer
       printer.destroy!
     rescue *CONFLICTS
       raise Conflict, 'The printer changed while removing it, try again' # the ActiveRecord error is its #cause
@@ -54,7 +61,7 @@ class Printer
       after_removal('stop its spool') { printer.notify_spooler(:remove_printer) }
     end
 
-    # The jobs were deleted without callbacks (dependent: :delete_all), so their queue push is sent here, once. The
+    # The jobs were deleted with the printer (dependent: :delete_all), so their queue push is sent here, once. The
     # printer can't be loaded back by the subscription, so its attributes are sent (see Subscriptions::PrintQueueChanged).
     sig { void }
     def push_print_queue_changed

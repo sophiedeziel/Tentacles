@@ -15,15 +15,16 @@ class Printer
   # 2. the state family must allow the command (#refusal)
   # 3. the live job must still be the file the user confirmed (`expected_file_name`, the file the screen showed): a
   #    stale screen must not pause or cancel another print
-  # After the command, one monitor tick runs inline (after_save) so that the new state is pushed to the subscribers
-  # before the response returns.
+  # After the command, #persist runs one monitor tick (#refresh_status) so that the new state is pushed to the
+  # subscribers before the response returns.
   #
   # #save doesn't raise for printer API or network failures: it returns false with a readable, redacted message in
   # `errors[:base]` (see #error_message_for). Reading the live job calls the printer, so #valid? raises them.
   #
   # Subclasses implement:
   # - `refusal(family)`: the error message when the command isn't allowed in that state family, else nil
-  # - `persist`: the command, sent through `printer.api` (with `live_job.job_id` for the job commands)
+  # - `send_command`: the command, sent through `printer.api` (with `live_job.job_id` for the job commands)
+  # - `refresh_after_command?`, optionally: false to skip the monitor tick
   class Command < ApplicationModel
     extend T::Helpers
 
@@ -42,8 +43,6 @@ class Printer
     # `error` key: KeyError) and a malformed URL. The adapter wraps the network errors.
     rescue_into_errors Printer::Backend::Error, JSON::ParserError, KeyError, URI::InvalidURIError
 
-    after_save :refresh_status
-
     # The printer's state and job, read from the printer the first time it's needed (raises the adapter's errors)
     sig { returns(LiveJob) }
     def live_job
@@ -55,6 +54,22 @@ class Printer
     # The error message when the command isn't allowed in that state family, or nil when it is
     sig { abstract.params(family: Printer::StateFamily).returns(T.nilable(String)) }
     def refusal(family); end
+
+    # Sends the command to the printer (raises the adapter's errors)
+    sig { abstract.void }
+    def send_command; end
+
+    # Whether the monitor tick follows the command
+    sig { returns(T::Boolean) }
+    def refresh_after_command?
+      true
+    end
+
+    sig { void }
+    def persist
+      send_command
+      refresh_status if refresh_after_command?
+    end
 
     # Whether the command connects the server to the printer. Refused, without reading the state, for the backends
     # that connect on their own (see Printer::Backend#connects_on_its_own?).

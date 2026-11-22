@@ -8,11 +8,14 @@
 #   class Printer::Removal < ApplicationModel
 #     attribute :printer
 #     validates :printer, presence: true
-#     after_save :forget_redis_keys
 #
 #     private
 #
-#     def persist = printer.destroy!
+#     def persist
+#       printer.destroy!
+#       forget_redis_keys
+#       stop_spool
+#     end
 #   end
 #
 #   Printer::Removal.new(printer:).save   # => false, with `errors`, when it's invalid or an expected error occurs
@@ -20,8 +23,10 @@
 #
 # - Attributes use ActiveModel::Attributes (`attribute :interval, :float, default: 5.0`).
 # - Validations use ActiveModel::Validations (`validates`, `validate`).
-# - `save!` validates, then runs #persist (the side effect) inside the save callbacks. It raises
-#   ActiveModel::ValidationError when invalid, ReadOnlyRecord on a read-only model, and lets #persist's errors through.
+# - No callbacks: #persist runs every step of the save, in order, inline (the write, then its follow-ups: pushes,
+#   spooler notifications, cleanup). A best-effort follow-up rescues and logs its own errors.
+# - `save!` validates, then runs #persist. It raises ActiveModel::ValidationError when invalid, ReadOnlyRecord on a
+#   read-only model, and lets #persist's errors through.
 # - `save` returns false instead of raising for validation errors and for the errors declared with
 #   `rescue_into_errors`, whose message is added to `errors[:base]`. Unexpected errors still raise. A model words
 #   those messages by overriding the private #error_message_for (e.g. to redact a secret); it defaults to the
@@ -31,12 +36,9 @@ class ApplicationModel
   extend T::Sig
   include ActiveModel::Model
   include ActiveModel::Attributes
-  extend ActiveModel::Callbacks
 
   # Raised when saving a model whose #readonly? is true
   class ReadOnlyRecord < StandardError; end
-
-  define_model_callbacks :save
 
   class_attribute :expected_errors, instance_writer: false, default: [].freeze
 
@@ -76,11 +78,7 @@ class ApplicationModel
     raise ReadOnlyRecord, "#{self.class.name} is read-only" if readonly?
 
     validate!
-    # Returns true: ActiveModel skips the after_save callbacks when the block returns false
-    run_callbacks(:save) do
-      persist
-      true
-    end
+    persist
     true
   end
 
@@ -103,7 +101,8 @@ class ApplicationModel
 
   private
 
-  # What saving means for this model: the database write, the HTTP call, the Redis write...
+  # What saving means for this model: the database write, the HTTP call, the Redis write..., then its follow-up
+  # steps, in order
   sig { void }
   def persist
     raise NotImplementedError, "#{self.class.name} has nothing to save"

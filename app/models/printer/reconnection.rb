@@ -19,7 +19,7 @@ class Printer
       "#{printer.name} is no longer in error" unless family == StateFamily::Error
     end
 
-    def persist
+    def send_command
       printer.api.reconnect
     end
   end

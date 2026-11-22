@@ -70,22 +70,26 @@ class Spooler
     # left active, which would block the printer's queue, and the spool thread keeps running
     def start_and_monitor
       job = @current_operation.job
-      job.update(status: 'active')
-      @current_operation.update_subscribers
+      change_status(job, 'active')
 
       @current_operation.execute
 
-      job.update(status: 'completed')
-      @current_operation.update_subscribers
+      change_status(job, 'completed')
     rescue Printer::Backend::Error => e
       @current_operation.log("Could not start the print: #{e.class}: #{e.message}".red)
-      job.update(status: 'error')
+      # Not change_status: the printer subscription push could raise here and stop the spool thread
+      job.push_print_queue_changed if job.update(status: 'error')
+    end
+
+    # A new status changes the printer's queue, so its widgets are pushed printQueueChanged (progress writes aren't)
+    def change_status(job, status)
+      job.push_print_queue_changed if job.update(status:)
       @current_operation.update_subscribers
     end
 
     def build_operation(job)
       type = {
-        'Library::Item' => Print
+        Library::Item.polymorphic_name => Print
       }[job.executable_type]
 
       type.new(@printer, job)
