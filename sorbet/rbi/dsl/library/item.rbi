@@ -428,6 +428,9 @@ class Library::Item
     sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Blob) }
     def build_file_blob(*args, &blk); end
 
+    sig { params(args: T.untyped, blk: T.untyped).returns(::Library::GcodeSummary) }
+    def build_gcode_summary(*args, &blk); end
+
     sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Attachment) }
     def create_file_attachment(*args, &blk); end
 
@@ -440,6 +443,12 @@ class Library::Item
     sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Blob) }
     def create_file_blob!(*args, &blk); end
 
+    sig { params(args: T.untyped, blk: T.untyped).returns(::Library::GcodeSummary) }
+    def create_gcode_summary(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::Library::GcodeSummary) }
+    def create_gcode_summary!(*args, &blk); end
+
     sig { returns(T.nilable(::ActiveStorage::Attachment)) }
     def file_attachment; end
 
@@ -451,6 +460,12 @@ class Library::Item
 
     sig { params(value: T.nilable(::ActiveStorage::Blob)).void }
     def file_blob=(value); end
+
+    sig { returns(T.nilable(::Library::GcodeSummary)) }
+    def gcode_summary; end
+
+    sig { params(value: T.nilable(::Library::GcodeSummary)).void }
+    def gcode_summary=(value); end
 
     sig { returns(T::Array[T.untyped]) }
     def job_ids; end
@@ -500,11 +515,17 @@ class Library::Item
     sig { returns(T.nilable(::ActiveStorage::Blob)) }
     def reload_file_blob; end
 
+    sig { returns(T.nilable(::Library::GcodeSummary)) }
+    def reload_gcode_summary; end
+
     sig { void }
     def reset_file_attachment; end
 
     sig { void }
     def reset_file_blob; end
+
+    sig { void }
+    def reset_gcode_summary; end
   end
 
   module GeneratedAssociationRelationMethods

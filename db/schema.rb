@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_22_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_22_140000) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -76,6 +76,43 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_130000) do
     t.datetime "updated_at", null: false
     t.boolean "is_not_archived", default: true
     t.datetime "archived_at", precision: nil
+  end
+
+  create_table "gcode_summaries", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "file_record_id", null: false
+    t.string "status", default: "pending", null: false
+    t.integer "analysis_version", default: 0, null: false
+    t.datetime "analysed_at"
+    t.string "error"
+    t.string "slicer"
+    t.string "slicer_version"
+    t.integer "print_seconds"
+    t.decimal "min_x", precision: 7, scale: 2
+    t.decimal "max_x", precision: 7, scale: 2
+    t.decimal "min_y", precision: 7, scale: 2
+    t.decimal "max_y", precision: 7, scale: 2
+    t.decimal "max_z", precision: 7, scale: 2
+    t.string "footprint_source"
+    t.integer "tool_count"
+    t.integer "tool_changes"
+    t.json "filament_changes", default: -> { "(json_array())" }, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["file_record_id"], name: "index_gcode_summaries_on_file_record_id", unique: true
+  end
+
+  create_table "gcode_summary_tools", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "gcode_summary_id", null: false
+    t.integer "tool", null: false
+    t.string "material"
+    t.string "material_raw"
+    t.string "colour_hex"
+    t.decimal "grams", precision: 8, scale: 2
+    t.decimal "millimetres", precision: 10, scale: 1
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["gcode_summary_id", "tool"], name: "index_gcode_summary_tools_on_gcode_summary_id_and_tool", unique: true
+    t.index ["material"], name: "index_gcode_summary_tools_on_material"
   end
 
   create_table "labels", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -146,6 +183,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_130000) do
   add_foreign_key "dashboard_widgets", "printers"
   add_foreign_key "file_labels", "file_records"
   add_foreign_key "file_labels", "labels"
+  add_foreign_key "gcode_summaries", "file_records", on_delete: :cascade
+  add_foreign_key "gcode_summary_tools", "gcode_summaries", on_delete: :cascade
   add_foreign_key "printer_jobs", "printers"
   add_foreign_key "printer_loaded_filaments", "printers", on_delete: :cascade
 end
