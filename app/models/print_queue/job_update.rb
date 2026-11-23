@@ -17,7 +17,8 @@ module PrintQueue
   # below the copies done and printing (PrintQueue::CopiesChange.below_floor), for an entry no longer in the queue, and
   # for a printer list naming a printer that can never print it (PrintQueue::PrinterChoice).
   #
-  # A same-printer batch is unbound when same_printer goes off, or when its printer is no longer allowed. Asks for a
+  # The printer a same-printer batch is bound to is PrintQueue::BatchPrinter's: unbound when same_printer goes off or
+  # its printer is no longer allowed, bound to the printer it already prints on when same_printer goes on. Asks for a
   # dispatch pass: the change may make a printer eligible.
   class JobUpdate < EntryOperation
     attribute :copies, :integer
@@ -52,24 +53,17 @@ module PrintQueue
     #: -> void
     def change
       @previous = job.bound_printer
-      printers = printer_choice.printers
-      job.bound_printer = nil unless still_bound?(printers)
-      job.assign_attributes(copies:, material:, colour:, same_printer:, all_capable:, printers:)
+      job.bound_printer = batch_printer
+      job.assign_attributes(copies:, material:, colour:, same_printer:, all_capable:, printers: printer_choice.printers)
       job.save!
     end
 
-    # Whether a bound batch stays bound: same_printer still on, and its printer still allowed
-    #: (Array[Printer] printers) -> bool
-    def still_bound?(printers)
-      bound_id = job.bound_printer_id
-      return false if bound_id.nil? || !same_printer
-
-      all_capable == true || printers.any? { |printer| printer.id == bound_id }
-    end
+    #: -> Printer?
+    def batch_printer = PrintQueue::BatchPrinter.new(job:, same_printer:, all_capable:, printer_ids:).printer
 
     # The printer it was bound to, even once released
     #: -> Array[Printer]
-    def pushed_printers = [@previous].compact
+    def pushed_printers = [@previous, job.bound_printer].compact.uniq
 
     #: -> bool
     def dispatches? = true

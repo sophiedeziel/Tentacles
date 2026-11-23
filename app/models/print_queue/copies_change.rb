@@ -52,13 +52,19 @@ module PrintQueue
       job.save!
     end
 
-    # Off: unbound too
+    # Off: unbound too. On: bound to the printer it already prints on, if any (PrintQueue::BatchPrinter)
     #: -> void
     def change_same_printer
       @released = job.same_printer? && !same_printer
       @previous = job.bound_printer
+      job.bound_printer = batch_printer
       job.same_printer = same_printer
-      job.bound_printer = nil unless same_printer
+    end
+
+    #: -> Printer?
+    def batch_printer
+      PrintQueue::BatchPrinter.new(job:, same_printer:, all_capable: job.all_capable?,
+                                   printer_ids: job.job_printers.map(&:printer_id)).printer
     end
 
     # A finished entry with copies waiting again goes back into the queue, at the bottom

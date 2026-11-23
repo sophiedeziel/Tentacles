@@ -49,6 +49,34 @@ RSpec.describe PrintQueue::CopiesChange do
       expect(job.reload).to have_attributes(copies: 7, same_printer: true)
     end
 
+    it 'binds the batch to the printer its copy is printing on (Print More Copies of a print under way)' do
+      job.update!(copies: 1)
+      printing = copy('active')
+
+      expect(described_class.new(job:, copies: 3, same_printer: true).save).to be true
+      expect(job.reload).to have_attributes(copies: 3, same_printer: true, bound_printer: printing.printer)
+    end
+
+    it 'binds the batch to the printer of its latest copy started, not of a failed one' do
+      copy('completed')
+      latest = copy('active')
+      copy('error')
+
+      operation = described_class.new(job:, copies: 5, same_printer: true)
+
+      expect(operation.save).to be true
+      expect(job.reload.bound_printer).to eq latest.printer
+    end
+
+    it 'leaves the batch unbound when the printer of its copy is not in its printer list' do
+      listed = create(:printer)
+      job.update!(all_capable: false, printers: [listed])
+      copy('active')
+
+      expect(described_class.new(job:, copies: 5, same_printer: true).save).to be true
+      expect(job.reload).to have_attributes(same_printer: true, bound_printer: nil)
+    end
+
     it 'lets a bound batch go to any printer, pushing the printer it was bound to, and asks for a dispatch pass' do
       printer = create(:printer)
       job.update!(same_printer: true, bound_printer: printer)

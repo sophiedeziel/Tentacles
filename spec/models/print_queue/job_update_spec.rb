@@ -76,6 +76,25 @@ RSpec.describe PrintQueue::JobUpdate do
     end
   end
 
+  describe 'same printer turned on' do
+    it 'binds the batch to the printer its copy is printing on, and pushes it' do
+      printing = create(:printer_job, :copy, print_job: job, status: 'active', printer: mk4)
+
+      update(same_printer: true)
+
+      expect(job.reload).to have_attributes(same_printer: true, bound_printer: printing.printer)
+      expect_pushed_once([mk4])
+    end
+
+    it 'leaves it unbound when that printer is not among the printers chosen' do
+      create(:printer_job, :copy, print_job: job, status: 'active', printer: mk4)
+
+      update(same_printer: true, all_capable: false, printer_ids: [voron.id])
+
+      expect(job.reload).to have_attributes(same_printer: true, bound_printer: nil)
+    end
+  end
+
   describe 'refusals' do
     it 'is refused below the copies done and printing' do
       2.times { copy('completed') }
