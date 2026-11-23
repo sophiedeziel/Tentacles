@@ -25,6 +25,17 @@ class Printer
     # The last finished first: a finished job isn't written to again, so updated_at is when it finished
     scope :newest_first, -> { order(updated_at: :desc, id: :desc) }
 
+    # How long the part sat on the bed: the seconds between the end of the print and the bed being cleared. nil until
+    # it's cleared (or for a job that never finished).
+    def bed_dwell
+      return unless finished_at && bed_cleared_at
+
+      bed_cleared_at - finished_at
+    end
+
+    # A copy of a global queue entry: its print events are the queue's (PrintQueue::PrintStart, PrintEnd, ...)
+    def copy? = !print_job_id.nil?
+
     # Queue widgets follow the queue through printQueueChanged. The spooler writes progress twice a second, so only
     # what changes a queue pushes: a new job, a removed one, a new status. Whoever writes that change pushes it, once
     # it's committed (once per printer for several jobs written together):
