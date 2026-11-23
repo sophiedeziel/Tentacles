@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
-import { Alert, App, Button, Card, Skeleton, Switch, Tooltip, Typography } from 'antd'
+import { Alert, App, Button, Card, Skeleton, Switch, Typography } from 'antd'
 import { PauseCircleOutlined, PlusOutlined } from '@ant-design/icons'
 
 import EmptyState from '../../components/EmptyState/EmptyState'
 import useNow from '../../utils/useNow'
 import { useBedCleared } from './BedCleared'
 import { useCopies } from './Copies'
+import { FilePickerModal } from './FilePicker'
 import { PrintingMenu } from './menus'
 import { Muted } from './parts'
 import { AvailablePrinters } from './PrinterTables'
@@ -25,13 +26,9 @@ const DESCRIPTION = 'One queue for every printer. A free printer takes the first
 const canReconnect = (printer) => printer.backend === 'OCTOPRINT' &&
   ['OFFLINE', 'ERROR', undefined].includes(printer.status?.stateFamily)
 
-// There is no screen to add files to the queue yet: Add to Queue is shown, disabled, where it will go
-function AddToQueue () {
-  return (
-    <Tooltip title="Coming soon">
-      <span><Button type="primary" icon={<PlusOutlined />} disabled>Add to Queue</Button></span>
-    </Tooltip>
-  )
+// Add to Queue opens the file picker, then the chosen file's Add to Queue page
+function AddToQueue ({ onAdd }) {
+  return <Button type="primary" icon={<PlusOutlined />} onClick={onAdd}>Add to Queue</Button>
 }
 
 // A button that runs `action` (resolving once done), loading meanwhile
@@ -64,7 +61,7 @@ function DispatchSwitch ({ paused, actions }) {
 }
 
 // The title and what the queue does; the dispatch switch and Add to Queue on the right, once there is a queue
-function Header ({ paused, actions, tools = true }) {
+function Header ({ paused, actions, onAdd, tools = true }) {
   return (
     <div className={classes.header}>
       <div className={classes.heading}>
@@ -74,7 +71,7 @@ function Header ({ paused, actions, tools = true }) {
       {tools && (
         <div className={classes.tools}>
           <DispatchSwitch paused={paused} actions={actions} />
-          <AddToQueue />
+          <AddToQueue onAdd={onAdd} />
         </div>
       )}
     </div>
@@ -94,13 +91,13 @@ function PausedBanner ({ waitingPrints, onResume }) {
 }
 
 // Nothing waiting, printing or to clear
-function EmptyQueue () {
+function EmptyQueue ({ onAdd }) {
   return (
     <section aria-label="The queue is empty">
       <Card styles={{ body: { padding: '56px 24px' } }}>
         <EmptyState kind="queue" title="The queue is empty"
           description="Add a file and say how many copies you need. Printers with the right filament pick the prints up on their own.">
-          <AddToQueue />
+          <AddToQueue onAdd={onAdd} />
         </EmptyState>
       </Card>
     </section>
@@ -112,6 +109,8 @@ function QueueContent () {
   const [dragging, setDragging] = useState(false)
   // The Waiting row to show (Show Batch in Waiting): its id, and when it was asked for
   const [reveal, setReveal] = useState(null)
+  // The file picker of Add to Queue
+  const [picking, setPicking] = useState(false)
   const { queue, loaded, error, reload } = useGlobalQueue({ holding: dragging })
   const actions = useQueueActions(reload)
   const bedCleared = useBedCleared({ dispatchPaused: !!queue?.dispatchPaused, onDone: reload })
@@ -132,10 +131,10 @@ function QueueContent () {
 
   return (
     <div className={classes.page}>
-      <Header paused={paused} actions={actions} tools={!empty} />
+      <Header paused={paused} actions={actions} tools={!empty} onAdd={() => setPicking(true)} />
       {paused && <PausedBanner waitingPrints={waitingPrints} onResume={actions.resumeDispatch} />}
       {empty
-        ? <EmptyQueue />
+        ? <EmptyQueue onAdd={() => setPicking(true)} />
         : (
           <>
             <AvailablePrinters toClear={queue.printersToClear} available={queue.availablePrinters}
@@ -161,14 +160,19 @@ function QueueContent () {
           )}
       {bedCleared.modal}
       {copies.modal}
+      <FilePickerModal open={picking} onClose={() => setPicking(false)} />
     </div>
   )
 }
 
 const actionsShape = PropTypes.shape({ pauseDispatch: PropTypes.func.isRequired, resumeDispatch: PropTypes.func.isRequired })
+AddToQueue.propTypes = { onAdd: PropTypes.func.isRequired }
+EmptyQueue.propTypes = { onAdd: PropTypes.func.isRequired }
 ActionButton.propTypes = { action: PropTypes.func.isRequired, children: PropTypes.node.isRequired }
 DispatchSwitch.propTypes = { paused: PropTypes.bool.isRequired, actions: actionsShape.isRequired }
-Header.propTypes = { paused: PropTypes.bool.isRequired, actions: actionsShape.isRequired, tools: PropTypes.bool }
+Header.propTypes = {
+  paused: PropTypes.bool.isRequired, actions: actionsShape.isRequired, onAdd: PropTypes.func.isRequired, tools: PropTypes.bool
+}
 PausedBanner.propTypes = { waitingPrints: PropTypes.number.isRequired, onResume: PropTypes.func.isRequired }
 
 // The global print queue, at /queue (only while its flag is on): available printers (beds to clear first), printing,
