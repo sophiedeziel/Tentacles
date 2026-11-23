@@ -10,6 +10,7 @@ module RootOperations
     field :createLabel, mutation: Mutations::Files::CreateLabel
     field :labelFiles, mutation: Mutations::Files::LabelFiles
     field :unlabelFiles, mutation: Mutations::Files::UnlabelFiles
+    field :reanalyseGcode, mutation: Mutations::Files::ReanalyseGcode
 
     field :addPrinter, mutation: Mutations::Printers::AddPrinter
     field :enqueueFiles, mutation: Mutations::Printers::EnqueueFiles

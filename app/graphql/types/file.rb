@@ -17,6 +17,17 @@ module Types
     field :top_file_comments, String, null: true
     field :file_content, String, null: true
     field :gcode_analysis, Types::GcodeAnalysis, null: true
+    field :gcode_summary, Types::GcodeSummary, null: true,
+                                               description: 'What the file needs to print: null when it is not ' \
+                                                            'G-code, PENDING until it is read'
     field :labels, Label.connection_type, null: false
+
+    # Batched for a list of files. A file not read yet has no row: an unsaved one reads PENDING
+    def gcode_summary
+      return unless object.gcode?
+
+      dataloader.with(Sources::GcodeSummarySource).load(object.id) ||
+        ::Library::GcodeSummary.new(file_record_id: object.id)
+    end
   end
 end
