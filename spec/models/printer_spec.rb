@@ -83,6 +83,65 @@ RSpec.describe Printer, :vcr, type: :model do
     end
   end
 
+  describe 'loaded filaments' do
+    let(:printer) { create(:printer) }
+
+    it 'starts with one filament slot, none set, taking jobs' do
+      expect(printer).to have_attributes(filament_slots: 1, takes_jobs: true, filament_set?: false)
+    end
+
+    it 'has a filament set once a slot has one' do
+      create(:printer_loaded_filament, printer:)
+
+      expect(printer.filament_set?).to be true
+    end
+
+    it 'deletes its loaded filaments when destroyed' do
+      create(:printer_loaded_filament, printer:)
+
+      printer.destroy!
+
+      expect(Printer::LoadedFilament.where(printer_id: printer.id)).to be_empty
+    end
+
+    it 'has its loaded filaments deleted by the database too (ON DELETE CASCADE)' do
+      create(:printer_loaded_filament, printer:)
+
+      described_class.where(id: printer.id).delete_all
+
+      expect(Printer::LoadedFilament.where(printer_id: printer.id)).to be_empty
+    end
+
+    it 'requires at least one filament slot' do
+      printer.filament_slots = 0
+
+      expect(printer).not_to be_valid
+      expect(printer.errors[:filament_slots]).to eq ['must be greater than or equal to 1']
+    end
+  end
+
+  describe '#push_status_changed' do
+    let(:printer) { create(:printer) }
+
+    it 'pushes printerStatusChanged with the printer' do
+      allow(TentaclesSchema.subscriptions).to receive(:trigger)
+
+      printer.push_status_changed
+
+      expect(TentaclesSchema.subscriptions).to have_received(:trigger).with(:printer_status_changed, {}, printer).once
+    end
+
+    it 'logs a failed push instead of raising' do
+      allow(TentaclesSchema.subscriptions).to receive(:trigger).and_raise(Redis::CannotConnectError, 'Redis is down')
+      allow(Rails.logger).to receive(:error)
+
+      expect { printer.push_status_changed }.not_to raise_error
+      expect(Rails.logger).to have_received(:error)
+        .with("[Printer] Could not push printerStatusChanged for printer #{printer.id}: Redis::CannotConnectError: " \
+              'Redis is down')
+    end
+  end
+
   describe 'notify_spooler' do
     let(:printer) { create(:printer) }
     let(:redis) { instance_double(Redis, publish: 1) }

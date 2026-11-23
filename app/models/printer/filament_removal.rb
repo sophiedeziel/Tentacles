@@ -1,0 +1,38 @@
+# typed: strict
+# frozen_string_literal: true
+
+class Printer
+  # Removes the filament loaded in a slot of a printer, for clearLoadedFilament: the slot's filament is "not set"
+  # again.
+  #
+  #   removal = Printer::FilamentRemoval.new(printer:) # slot: 1
+  #   removal.save!
+  #   removal.removed? # false when the slot had no filament: a success that changes nothing
+  #
+  # printerStatusChanged is pushed (best effort, see Printer#push_status_changed) only when a filament was removed:
+  # nothing changed otherwise.
+  class FilamentRemoval < ApplicationModel
+    attribute :printer
+    attribute :slot, :integer, default: 1
+
+    validates :printer, :slot, presence: true
+
+    # Whether #save removed a filament
+    sig { returns(T::Boolean) }
+    def removed?
+      @removed == true
+    end
+
+    private
+
+    sig { void }
+    def persist
+      @removed = T.let(printer.loaded_filaments.where(slot:).delete_all.positive?,
+                       T.nilable(T::Boolean))
+      return unless @removed
+
+      printer.loaded_filaments.reset # Read again by the push's subscribers
+      printer.push_status_changed
+    end
+  end
+end

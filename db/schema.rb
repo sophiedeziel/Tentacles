@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_22_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_22_130000) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -97,6 +97,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_120000) do
     t.index ["printer_id", "status", "created_at"], name: "index_printer_jobs_on_printer_id_and_status_and_created_at"
   end
 
+  create_table "printer_loaded_filaments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "printer_id", null: false
+    t.integer "slot", default: 1, null: false
+    t.string "material", null: false
+    t.string "colour", null: false
+    t.string "colour_key", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["material", "colour_key"], name: "index_printer_loaded_filaments_on_material_and_colour_key"
+    t.index ["printer_id", "slot"], name: "index_printer_loaded_filaments_on_printer_id_and_slot", unique: true
+  end
+
   create_table "printers", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -125,6 +137,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_120000) do
     t.boolean "webcam"
     t.json "materials"
     t.datetime "specs_filled_at"
+    t.integer "filament_slots", default: 1, null: false
+    t.boolean "takes_jobs", default: true, null: false
   end
 
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
@@ -133,4 +147,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_120000) do
   add_foreign_key "file_labels", "file_records"
   add_foreign_key "file_labels", "labels"
   add_foreign_key "printer_jobs", "printers"
+  add_foreign_key "printer_loaded_filaments", "printers", on_delete: :cascade
 end

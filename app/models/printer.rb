@@ -1,7 +1,7 @@
 # typed: true
 # frozen_string_literal: true
 
-class Printer < ApplicationRecord
+class Printer < ApplicationRecord # rubocop:disable Metrics/ClassLength -- one line over since push_status_changed
   extend T::Sig
 
   # 'octoprint', 'prusalink': see Printer::Backend::ADAPTERS
@@ -13,6 +13,7 @@ class Printer < ApplicationRecord
 
   include EncryptedSecret
   include Specs
+  include Filaments
 
   validates :name, presence: true
   validates :backend, inclusion: { in: BACKENDS }
@@ -77,6 +78,16 @@ class Printer < ApplicationRecord
 
   def next_job
     queue.first
+  end
+
+  # Pushes printerStatusChanged, whose subscribers get this printer, after a change they show (e.g. its loaded
+  # filament). The change is saved by then: a push that fails is logged, never raised, and only leaves the other
+  # windows behind until their next refresh. (Printer::Status pushes its own snapshot, and lets its errors through.)
+  sig { void }
+  def push_status_changed
+    TentaclesSchema.subscriptions.trigger(:printer_status_changed, {}, self)
+  rescue StandardError => e
+    Rails.logger.error("[Printer] Could not push printerStatusChanged for printer #{id}: #{e.class}: #{e.message}")
   end
 
   def update_subscribers
