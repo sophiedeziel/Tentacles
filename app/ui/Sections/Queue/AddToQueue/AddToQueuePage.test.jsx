@@ -351,6 +351,19 @@ describe('AddToQueuePage', () => {
     expect(calls.estimates.slice(asked).map((variables) => variables.copies)).not.toContain(2)
   })
 
+  it('saves no material for a file with several filaments: each is the material its G-code says', async () => {
+    const twoTools = summary({ toolCount: 2, tools: [tool(), tool({ tool: 1, material: 'PETG', materialRaw: 'PETG' })] })
+    const calls = renderPage({ fileData: file(twoTools) })
+    await loaded()
+
+    expect(screen.getByText('Several filaments: each one is the material its G-code says')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Add to Queue' }))
+
+    await screen.findByText('The queue page')
+    expect(calls.saves[0].material).toBeNull()
+    expect(calls.fits.at(-1).material).toBeNull()
+  })
+
   it('saves the untouched selection as every printer that can print it, then goes back to the queue', async () => {
     const calls = renderPage()
     await loaded()

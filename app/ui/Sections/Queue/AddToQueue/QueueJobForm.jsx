@@ -52,7 +52,8 @@ export default function QueueJobForm ({
 
   const gcode = useMemo(() => gcodeFilament(file.gcodeSummary), [file.gcodeSummary])
 
-  const material = fields.material || null
+  // A file with several filaments prints with the materials its G-code says (phase 9): none is saved for it
+  const material = gcode.tools > 1 ? null : fields.material || null
   const colour = savedColour(fields.colour)
   const fitsQuery = useQuery(PRINTER_FITS, { variables: { fileId: file.id, material, colour } })
   const fits = (fitsQuery.data ?? fitsQuery.previousData)?.printerFits ?? null
