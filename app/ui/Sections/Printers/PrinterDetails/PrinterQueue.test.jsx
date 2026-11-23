@@ -75,7 +75,7 @@ const row = (name, key) => rows(name).find((each) => each.dataset.rowKey === key
 describe('PrinterQueue', () => {
   describe('the bed banner', () => {
     it('names the copy on the bed, and confirms Bed Cleared in the queue page\'s modal with what is next for it', async () => {
-      const confirm = mutation(CONFIRM_BED_CLEARED, 'confirmBedCleared', { printerId: '1' })
+      const confirm = mutation(CONFIRM_BED_CLEARED, 'confirmBedCleared', { printerId: '1', expectedPrintId: '40' })
       const { reload } = renderQueue(queuePrinter(), { mocks: [confirm.mock] })
 
       const banner = section('Print finished: remove the part')
@@ -92,7 +92,7 @@ describe('PrinterQueue', () => {
       expect(dialog).toHaveTextContent('Check that the part and any leftover filament are off the bed first.')
 
       await userEvent.click(within(dialog).getByRole('button', { name: 'Bed Is Clear' }))
-      await waitFor(() => expect(confirm.sent).toEqual([{ printerId: '1' }]))
+      await waitFor(() => expect(confirm.sent).toEqual([{ printerId: '1', expectedPrintId: '40' }]))
       await waitFor(() => expect(reload).toHaveBeenCalled())
     })
 
@@ -105,10 +105,11 @@ describe('PrinterQueue', () => {
       expect(dialog).toHaveTextContent("Prusa MK4 isn't taking jobs from the queue, so it won't start the next one.")
     })
 
-    it('says the last print when it does not know which', () => {
+    it('says the last print when it does not know which, without Bed Cleared (it has no print to name)', () => {
       renderQueue(queuePrinter({ printOnBed: null }))
       expect(section('Remove the last print'))
         .toHaveTextContent('This printer takes no new job until you confirm the bed is clear.')
+      expect(screen.queryByRole('button', { name: 'Bed Cleared' })).not.toBeInTheDocument()
     })
 
     it('is not shown once the bed is clear', () => {

@@ -39,15 +39,16 @@ export function TakesJobsSwitch ({ printer, reload }) {
 }
 
 // The print still on the bed, and Bed Cleared (the queue page's modal and wording, with what the printer takes next):
-// the printer takes nothing from the queue until then. Tinted with the theme's primary colours: it asks for an
-// action, it doesn't warn.
+// the printer takes nothing from the queue until then. The modal clears the print the banner names (printOnBed).
+// Tinted with the theme's primary colours: it asks for an action, it doesn't warn.
 export function BedBanner ({ printer, dispatchPaused, reload }) {
   const id = useId()
   const { token } = theme.useToken()
   const bedCleared = useBedCleared({ dispatchPaused, onDone: reload })
   const { title, text } = bedBannerView(printer.printOnBed)
   const ask = () => bedCleared.ask({
-    id: printer.id, name: printer.name, takesJobs: printer.takesJobs, takesNext: printer.takesNext
+    id: printer.id, name: printer.name, takesJobs: printer.takesJobs, takesNext: printer.takesNext,
+    printOnBed: printer.printOnBed
   })
 
   return (
@@ -57,7 +58,8 @@ export function BedBanner ({ printer, dispatchPaused, reload }) {
         <h2 id={id} className={classes.cardTitle}>{title}</h2>
         <Muted>{text}</Muted>
       </div>
-      <Button type="primary" onClick={ask}>Bed Cleared</Button>
+      {/* Bed Cleared names the print it clears (expectedPrintId): none to name, nothing to confirm */}
+      {printer.printOnBed && <Button type="primary" onClick={ask}>Bed Cleared</Button>}
       {bedCleared.modal}
     </section>
   )
@@ -177,6 +179,7 @@ const printerShape = PropTypes.shape({
   takesJobs: PropTypes.bool.isRequired,
   bedNeedsClearing: PropTypes.bool,
   printOnBed: PropTypes.shape({
+    id: PropTypes.string.isRequired,
     copyNumber: PropTypes.number,
     result: PropTypes.string,
     printJob: PropTypes.shape({ copies: PropTypes.number, file: fileShape.isRequired })

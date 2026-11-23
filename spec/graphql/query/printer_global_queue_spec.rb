@@ -2,8 +2,8 @@
 
 require 'rails_helper'
 
-# The global queue as a printer's page reads it: Printer.upNext, skipped, bedNeedsClearing, printOnBed,
-# PrintJob.waitingPosition and LoadedFilament.waitingJobsAskingCount
+# The global queue as a printer's page reads it: Printer.upNext, skipped, PrintJob.waitingPosition and
+# LoadedFilament.waitingJobsAskingCount (bedNeedsClearing and printOnBed: printer_bed_spec.rb)
 RSpec.describe 'Query printer, its global queue fields', type: :request do
   # The printers' snapshots, by printer id: Printer::Status.where reads them from here
   let(:statuses) { {} }
@@ -63,9 +63,8 @@ RSpec.describe 'Query printer, its global queue fields', type: :request do
     printer_fields = TentaclesSchema.get_type('Printer').fields
     signature = ->(type, name) { TentaclesSchema.get_type(type).fields.fetch(name).type.to_type_signature }
 
-    expect(%w[bedNeedsClearing printOnBed upNext skipped].index_with { |name| signature.call('Printer', name) }).to eq(
-      'bedNeedsClearing' => 'Boolean!', 'printOnBed' => 'Print', 'upNext' => '[PrintJob!]!',
-      'skipped' => '[SkippedPrintJob!]!'
+    expect(%w[upNext skipped].index_with { |name| signature.call('Printer', name) }).to eq(
+      'upNext' => '[PrintJob!]!', 'skipped' => '[SkippedPrintJob!]!'
     )
     expect(printer_fields.keys).to include('takesJobs')
     expect(TentaclesSchema.get_type('SkippedPrintJob').fields.transform_values { |field| field.type.to_type_signature })
@@ -173,41 +172,6 @@ RSpec.describe 'Query printer, its global queue fields', type: :request do
       seed.call(5)
 
       expect(count.call).to eq one
-    end
-  end
-
-  describe 'bedNeedsClearing and printOnBed' do
-    it 'give the print still on the bed' do
-      mk4 = printer
-      on_bed = copy(entry, mk4, 'completed', started_at: 2.hours.ago, finished_at: 1.hour.ago)
-      clear = printer(name: 'Clear')
-
-      fields = 'bedNeedsClearing printOnBed { id printJob { file { filename } } }'
-
-      expect(printer_fields(mk4, fields)).to eq(
-        'bedNeedsClearing' => true,
-        'printOnBed' => { 'id' => id(on_bed), 'printJob' => { 'file' => { 'filename' => 'test.gcode' } } }
-      )
-      expect(printer_fields(clear, fields)).to eq('bedNeedsClearing' => false, 'printOnBed' => nil)
-    end
-
-    it 'read one query for every printer of a list' do
-      3.times do |index|
-        copy(entry, printer(name: "Printer #{index}"), 'completed', started_at: 2.hours.ago, finished_at: 1.hour.ago)
-      end
-
-      queries = sql_queries { run('{ printers { id bedNeedsClearing printOnBed { id } } }') }
-
-      expect(queries.grep(/ROW_NUMBER/).size).to eq 1
-    end
-
-    it 'say the bed is clear while the global queue is off' do
-      mk4 = printer
-      copy(entry, mk4, 'completed', started_at: 2.hours.ago, finished_at: 1.hour.ago)
-      allow(PrintQueue).to receive(:enabled?).and_return(false)
-
-      expect(printer_fields(mk4, 'bedNeedsClearing printOnBed { id }'))
-        .to eq('bedNeedsClearing' => false, 'printOnBed' => nil)
     end
   end
 
