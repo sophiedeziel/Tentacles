@@ -19,6 +19,10 @@ module Library
     # What the file needs to print (G-code only), read from the file by Gcode::Summary
     has_one :gcode_summary, class_name: 'Library::GcodeSummary', foreign_key: :file_record_id, inverse_of: :item,
                             dependent: :destroy
+    # Its entries in the global queue. dependent: nil on purpose: the foreign key doesn't cascade, so a file with an
+    # entry (even a finished one) can't be deleted
+    has_many :print_jobs, class_name: 'PrintQueue::Job', foreign_key: :file_record_id, inverse_of: :item,
+                          dependent: nil
 
     validates :file, presence: true
 
@@ -53,6 +57,11 @@ module Library
 
     def deleted?
       false
+    end
+
+    # Whether the file is in the global queue: an entry of it has copies waiting or printing
+    def queued?
+      print_jobs.unfinished.exists?
     end
 
     def download_url

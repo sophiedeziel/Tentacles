@@ -8,6 +8,7 @@
 class Printer::Job
   include GeneratedAssociationMethods
   include GeneratedAttributeMethods
+  include EnumMethodsModule
   extend CommonRelationMethods
   extend GeneratedRelationMethods
 
@@ -17,6 +18,9 @@ class Printer::Job
   def to_ary; end
 
   class << self
+    sig { returns(T::Hash[T.any(String, Symbol), String]) }
+    def bed_cleared_bies; end
+
     sig do
       params(
         attributes: T.untyped,
@@ -415,9 +419,32 @@ class Printer::Job
     def third_to_last!; end
   end
 
+  module EnumMethodsModule
+    sig { void }
+    def bed_cleared_by_automatic!; end
+
+    sig { returns(T::Boolean) }
+    def bed_cleared_by_automatic?; end
+
+    sig { void }
+    def bed_cleared_by_person!; end
+
+    sig { returns(T::Boolean) }
+    def bed_cleared_by_person?; end
+  end
+
   module GeneratedAssociationMethods
+    sig { params(args: T.untyped, blk: T.untyped).returns(::PrintQueue::Job) }
+    def build_print_job(*args, &blk); end
+
     sig { params(args: T.untyped, blk: T.untyped).returns(::Printer) }
     def build_printer(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::PrintQueue::Job) }
+    def create_print_job(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::PrintQueue::Job) }
+    def create_print_job!(*args, &blk); end
 
     sig { params(args: T.untyped, blk: T.untyped).returns(::Printer) }
     def create_printer(*args, &blk); end
@@ -437,6 +464,18 @@ class Printer::Job
     sig { returns(T::Boolean) }
     def executable_previously_changed?; end
 
+    sig { returns(T.nilable(::PrintQueue::Job)) }
+    def print_job; end
+
+    sig { params(value: T.nilable(::PrintQueue::Job)).void }
+    def print_job=(value); end
+
+    sig { returns(T::Boolean) }
+    def print_job_changed?; end
+
+    sig { returns(T::Boolean) }
+    def print_job_previously_changed?; end
+
     sig { returns(T.nilable(::Printer)) }
     def printer; end
 
@@ -452,11 +491,17 @@ class Printer::Job
     sig { returns(T.untyped) }
     def reload_executable; end
 
+    sig { returns(T.nilable(::PrintQueue::Job)) }
+    def reload_print_job; end
+
     sig { returns(T.nilable(::Printer)) }
     def reload_printer; end
 
     sig { void }
     def reset_executable; end
+
+    sig { void }
+    def reset_print_job; end
 
     sig { void }
     def reset_printer; end
@@ -474,6 +519,12 @@ class Printer::Job
 
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateAssociationRelation) }
     def arel_columns(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(PrivateAssociationRelation) }
+    def bed_cleared_by_automatic(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(PrivateAssociationRelation) }
+    def bed_cleared_by_person(*args, &blk); end
 
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateAssociationRelation) }
     def create_with(*args, &blk); end
@@ -546,6 +597,12 @@ class Printer::Job
 
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateAssociationRelation) }
     def none(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(PrivateAssociationRelation) }
+    def not_bed_cleared_by_automatic(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(PrivateAssociationRelation) }
+    def not_bed_cleared_by_person(*args, &blk); end
 
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateAssociationRelation) }
     def null_relation?(*args, &blk); end
@@ -624,6 +681,141 @@ class Printer::Job
   end
 
   module GeneratedAttributeMethods
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def bed_cleared_at; end
+
+    sig { params(value: T.nilable(::ActiveSupport::TimeWithZone)).returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def bed_cleared_at=(value); end
+
+    sig { returns(T::Boolean) }
+    def bed_cleared_at?; end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def bed_cleared_at_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def bed_cleared_at_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def bed_cleared_at_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def bed_cleared_at_change; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def bed_cleared_at_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def bed_cleared_at_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def bed_cleared_at_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def bed_cleared_at_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def bed_cleared_at_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def bed_cleared_at_previously_was; end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def bed_cleared_at_was; end
+
+    sig { void }
+    def bed_cleared_at_will_change!; end
+
+    sig { returns(T.nilable(::String)) }
+    def bed_cleared_by; end
+
+    sig { params(value: T.nilable(T.any(::String, ::Symbol))).returns(T.nilable(T.any(::String, ::Symbol))) }
+    def bed_cleared_by=(value); end
+
+    sig { returns(T::Boolean) }
+    def bed_cleared_by?; end
+
+    sig { returns(T.nilable(::String)) }
+    def bed_cleared_by_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def bed_cleared_by_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def bed_cleared_by_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def bed_cleared_by_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def bed_cleared_by_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def bed_cleared_by_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def bed_cleared_by_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def bed_cleared_by_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def bed_cleared_by_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def bed_cleared_by_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def bed_cleared_by_was; end
+
+    sig { void }
+    def bed_cleared_by_will_change!; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def copy_number; end
+
+    sig { params(value: T.nilable(::Integer)).returns(T.nilable(::Integer)) }
+    def copy_number=(value); end
+
+    sig { returns(T::Boolean) }
+    def copy_number?; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def copy_number_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def copy_number_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def copy_number_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def copy_number_change; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def copy_number_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def copy_number_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def copy_number_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def copy_number_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def copy_number_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def copy_number_previously_was; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def copy_number_was; end
+
+    sig { void }
+    def copy_number_will_change!; end
+
     sig { returns(::ActiveSupport::TimeWithZone) }
     def created_at; end
 
@@ -758,6 +950,96 @@ class Printer::Job
 
     sig { void }
     def executable_type_will_change!; end
+
+    sig { returns(T.untyped) }
+    def filament; end
+
+    sig { params(value: T.untyped).returns(T.untyped) }
+    def filament=(value); end
+
+    sig { returns(T::Boolean) }
+    def filament?; end
+
+    sig { returns(T.untyped) }
+    def filament_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def filament_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def filament_came_from_user?; end
+
+    sig { returns(T.nilable([T.untyped, T.untyped])) }
+    def filament_change; end
+
+    sig { returns(T.nilable([T.untyped, T.untyped])) }
+    def filament_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def filament_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.untyped) }
+    def filament_in_database; end
+
+    sig { returns(T.nilable([T.untyped, T.untyped])) }
+    def filament_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def filament_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.untyped) }
+    def filament_previously_was; end
+
+    sig { returns(T.untyped) }
+    def filament_was; end
+
+    sig { void }
+    def filament_will_change!; end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def finished_at; end
+
+    sig { params(value: T.nilable(::ActiveSupport::TimeWithZone)).returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def finished_at=(value); end
+
+    sig { returns(T::Boolean) }
+    def finished_at?; end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def finished_at_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def finished_at_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def finished_at_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def finished_at_change; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def finished_at_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def finished_at_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def finished_at_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def finished_at_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def finished_at_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def finished_at_previously_was; end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def finished_at_was; end
+
+    sig { void }
+    def finished_at_will_change!; end
 
     sig { returns(::Integer) }
     def id; end
@@ -894,6 +1176,51 @@ class Printer::Job
     sig { void }
     def name_will_change!; end
 
+    sig { returns(T.nilable(::Integer)) }
+    def print_job_id; end
+
+    sig { params(value: T.nilable(::Integer)).returns(T.nilable(::Integer)) }
+    def print_job_id=(value); end
+
+    sig { returns(T::Boolean) }
+    def print_job_id?; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def print_job_id_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def print_job_id_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def print_job_id_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def print_job_id_change; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def print_job_id_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def print_job_id_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def print_job_id_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def print_job_id_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def print_job_id_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def print_job_id_previously_was; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def print_job_id_was; end
+
+    sig { void }
+    def print_job_id_will_change!; end
+
     sig { returns(::Integer) }
     def printer_id; end
 
@@ -985,6 +1312,15 @@ class Printer::Job
     def progress_will_change!; end
 
     sig { void }
+    def restore_bed_cleared_at!; end
+
+    sig { void }
+    def restore_bed_cleared_by!; end
+
+    sig { void }
+    def restore_copy_number!; end
+
+    sig { void }
     def restore_created_at!; end
 
     sig { void }
@@ -992,6 +1328,12 @@ class Printer::Job
 
     sig { void }
     def restore_executable_type!; end
+
+    sig { void }
+    def restore_filament!; end
+
+    sig { void }
+    def restore_finished_at!; end
 
     sig { void }
     def restore_id!; end
@@ -1003,16 +1345,40 @@ class Printer::Job
     def restore_name!; end
 
     sig { void }
+    def restore_print_job_id!; end
+
+    sig { void }
     def restore_printer_id!; end
 
     sig { void }
     def restore_progress!; end
 
     sig { void }
+    def restore_started_at!; end
+
+    sig { void }
     def restore_status!; end
 
     sig { void }
     def restore_updated_at!; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def saved_change_to_bed_cleared_at; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_bed_cleared_at?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_bed_cleared_by; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_bed_cleared_by?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def saved_change_to_copy_number; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_copy_number?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { returns(T.nilable([::ActiveSupport::TimeWithZone, ::ActiveSupport::TimeWithZone])) }
     def saved_change_to_created_at; end
@@ -1032,6 +1398,18 @@ class Printer::Job
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def saved_change_to_executable_type?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
+    sig { returns(T.nilable([T.untyped, T.untyped])) }
+    def saved_change_to_filament; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_filament?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def saved_change_to_finished_at; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_finished_at?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
     sig { returns(T.nilable([::Integer, ::Integer])) }
     def saved_change_to_id; end
 
@@ -1050,6 +1428,12 @@ class Printer::Job
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def saved_change_to_name?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def saved_change_to_print_job_id; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_print_job_id?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
     sig { returns(T.nilable([::Integer, ::Integer])) }
     def saved_change_to_printer_id; end
 
@@ -1062,6 +1446,12 @@ class Printer::Job
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def saved_change_to_progress?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def saved_change_to_started_at; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_started_at?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
     sig { returns(T.nilable([::String, ::String])) }
     def saved_change_to_status; end
 
@@ -1073,6 +1463,51 @@ class Printer::Job
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def saved_change_to_updated_at?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def started_at; end
+
+    sig { params(value: T.nilable(::ActiveSupport::TimeWithZone)).returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def started_at=(value); end
+
+    sig { returns(T::Boolean) }
+    def started_at?; end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def started_at_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def started_at_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def started_at_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def started_at_change; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def started_at_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def started_at_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def started_at_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def started_at_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def started_at_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def started_at_previously_was; end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def started_at_was; end
+
+    sig { void }
+    def started_at_will_change!; end
 
     sig { returns(::String) }
     def status; end
@@ -1165,6 +1600,15 @@ class Printer::Job
     def updated_at_will_change!; end
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_bed_cleared_at?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_bed_cleared_by?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_copy_number?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def will_save_change_to_created_at?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
@@ -1172,6 +1616,12 @@ class Printer::Job
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def will_save_change_to_executable_type?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_filament?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_finished_at?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def will_save_change_to_id?(from: T.unsafe(nil), to: T.unsafe(nil)); end
@@ -1183,10 +1633,16 @@ class Printer::Job
     def will_save_change_to_name?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_print_job_id?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def will_save_change_to_printer_id?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def will_save_change_to_progress?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_started_at?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def will_save_change_to_status?(from: T.unsafe(nil), to: T.unsafe(nil)); end
@@ -1207,6 +1663,12 @@ class Printer::Job
 
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateRelation) }
     def arel_columns(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(PrivateRelation) }
+    def bed_cleared_by_automatic(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(PrivateRelation) }
+    def bed_cleared_by_person(*args, &blk); end
 
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateRelation) }
     def create_with(*args, &blk); end
@@ -1279,6 +1741,12 @@ class Printer::Job
 
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateRelation) }
     def none(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(PrivateRelation) }
+    def not_bed_cleared_by_automatic(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(PrivateRelation) }
+    def not_bed_cleared_by_person(*args, &blk); end
 
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateRelation) }
     def null_relation?(*args, &blk); end
