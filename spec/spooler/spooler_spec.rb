@@ -7,12 +7,80 @@ RSpec.describe Spooler do
   let(:spooler) { Spooler.new }
 
   describe '#run' do
-    subject { spooler.run }
-
-    it 'runs the spooler in a loop' do
+    it 'starts the sweep, then listens to the commands' do
+      allow(spooler).to receive(:start_sweep)
       allow(spooler).to receive(:subcribe_to_commands)
-      expect(spooler).to receive(:loop).and_yield
-      subject
+
+      spooler.run
+
+      expect(spooler).to have_received(:start_sweep).ordered
+      expect(spooler).to have_received(:subcribe_to_commands).ordered
+    end
+  end
+
+  describe '#start_sweep' do
+    it 'sweeps now, then every PrintQueue::SWEEP_INTERVAL, in a thread of its own' do
+      swept = Queue.new
+      allow(spooler).to receive(:sweep) { swept << Thread.current }
+      stub_const('PrintQueue::SWEEP_INTERVAL', 0.01)
+
+      thread = spooler.start_sweep
+      2.times { expect(swept.pop(timeout: 5)).to eq thread }
+    ensure
+      thread&.kill&.join
+    end
+  end
+
+  describe '#sweep' do
+    let(:printer) { create(:printer) }
+    let(:other) { create(:printer) }
+    let(:workers) { spooler.instance_variable_get(:@workers) }
+    let(:sweep) { instance_double(PrintQueue::Sweep, save!: true, printer_ids: [printer.id, other.id]) }
+
+    before do
+      spooler # Before the printers: their spools are the doubles below
+      allow(PrintQueue).to receive(:enabled?).and_return(true)
+      allow(PrintQueue::Sweep).to receive(:new).and_return(sweep)
+      allow(spooler).to receive(:log)
+      [printer, other].each do |swept|
+        workers[swept.id] = instance_double(Spooler::Spool, working?: false, resume: true)
+      end
+    end
+
+    it 'runs a sweep and resumes the idle spools of the printers with an enqueued copy' do
+      allow(workers[other.id]).to receive(:working?).and_return(true)
+
+      spooler.sweep
+
+      expect(sweep).to have_received(:save!)
+      expect(workers[printer.id]).to have_received(:resume)
+      expect(workers[other.id]).not_to have_received(:resume)
+    end
+
+    it 'skips a printer without a spool' do
+      workers.delete(other.id)
+
+      spooler.sweep
+
+      expect(workers[printer.id]).to have_received(:resume)
+    end
+
+    it 'logs its errors' do
+      allow(sweep).to receive(:save!).and_raise(ActiveRecord::StatementInvalid, 'Lost connection')
+
+      spooler.sweep
+
+      expect(spooler).to have_received(:log).with(/Sweep failed: ActiveRecord::StatementInvalid: Lost connection/)
+      expect(workers[printer.id]).not_to have_received(:resume)
+    end
+
+    it 'does nothing while the global queue is off' do
+      allow(PrintQueue).to receive(:enabled?).and_return(false)
+
+      spooler.sweep
+
+      expect(PrintQueue::Sweep).not_to have_received(:new)
+      expect(workers[printer.id]).not_to have_received(:resume)
     end
   end
 
@@ -64,17 +132,35 @@ RSpec.describe Spooler do
       expect(workers.keys).to eq [printer.id]
     end
 
-    it 'logs a dispatch request, for the whole queue, and keeps listening' do
-      spooler
-      allow(Printer).to receive(:find).and_call_original
-      messages.push({ command: 'dispatch' }, { command: 'add_printer', printer_id: printer.id })
+    describe 'dispatch, for the whole queue' do
+      let(:dispatch) { instance_double(PrintQueue::Dispatch, save!: true) }
 
-      spooler.subcribe_to_commands
+      before do
+        spooler
+        allow(PrintQueue::Dispatch).to receive(:new).and_return(dispatch)
+        allow(Printer).to receive(:find).and_call_original
+      end
 
-      expect(spooler).to have_received(:log).with('dispatch: not handled yet')
-      expect(spooler).not_to have_received(:log).with(/Couldn't find Printer/)
-      expect(Printer).to have_received(:find).once.with(printer.id)
-      expect(workers.keys).to eq [printer.id]
+      it 'runs a dispatch pass, without looking a printer up, and keeps listening' do
+        messages.push({ command: 'dispatch' }, { command: 'add_printer', printer_id: printer.id })
+
+        spooler.subcribe_to_commands
+
+        expect(dispatch).to have_received(:save!).once
+        expect(spooler).not_to have_received(:log).with(/Couldn't find Printer/)
+        expect(Printer).to have_received(:find).once.with(printer.id)
+        expect(workers.keys).to eq [printer.id]
+      end
+
+      it 'logs a pass that failed and keeps listening' do
+        allow(dispatch).to receive(:save!).and_raise(ActiveRecord::Deadlocked, 'Deadlock found')
+        messages.push({ command: 'dispatch' }, { command: 'add_printer', printer_id: printer.id })
+
+        spooler.subcribe_to_commands
+
+        expect(spooler).to have_received(:log).with(/Dispatch failed: ActiveRecord::Deadlocked: Deadlock found/)
+        expect(workers.keys).to eq [printer.id]
+      end
     end
 
     context 'when a printer is removed mid-print' do

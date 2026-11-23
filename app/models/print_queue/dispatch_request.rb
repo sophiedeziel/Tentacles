@@ -9,7 +9,7 @@ module PrintQueue
   #   PrintQueue::DispatchRequest.new.save # => true, even when Redis is down
   #
   # Best effort: the queue change it follows is committed already, so a Redis error is logged, never raised, and the
-  # spooler's periodic sweep (global queue phase 3, PR 4) catches up. Does nothing while the global queue is off.
+  # spooler's periodic sweep (PrintQueue::Sweep) catches up. Does nothing while the global queue is off.
   class DispatchRequest < ApplicationModel
     private
 
