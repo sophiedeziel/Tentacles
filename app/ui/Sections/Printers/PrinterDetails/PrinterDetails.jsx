@@ -65,7 +65,7 @@ function useReported (printer) {
 
 // One form for the whole page: Save Changes sends what changed in one updatePrinter. Favorite, Loaded Filament,
 // Remove and the queue's part (Takes Jobs, Bed Cleared, Release) act at once.
-function DetailsForm ({ printer }) {
+function DetailsForm ({ printer, queueEnabled }) {
   const { message } = App.useApp()
   const client = useApolloClient()
   const navigate = useNavigate()
@@ -77,7 +77,6 @@ function DetailsForm ({ printer }) {
   const blocker = useUnsavedChangesGuard(dirty, leaving)
   const [initialValues] = useState(() => formValues(printer))
   const reported = useReported(printer)
-  const { enabled: queueEnabled } = useQueueEnabled()
   const queue = usePrinterQueue(printer.id, { enabled: queueEnabled })
   const queuePrinter = queueEnabled ? queue.printer : null
   const hints = specsHints(printer.backend, values, reported)
@@ -178,10 +177,14 @@ function DetailsPage () {
   const { id } = useParams()
   // cache-and-network: never edits (or shows the state of) a printer cached earlier
   const { data, error, refetch } = useQuery(PRINTER_DETAILS, { variables: { id }, fetchPolicy: 'cache-and-network' })
+  // Whether the global queue is on decides the page's layout, so the form waits for that answer: rendered in the
+  // queue-off layout first, then moved to the queue's, its fields would be remounted under the person typing in them
+  // (focus and keystrokes lost)
+  const queue = useQueueEnabled()
   useFleetLiveUpdates(refetch)
 
   if (error && !data) return <Alert type="error" title="Could not load the printer" description={error.message} />
-  if (!data) return <Skeleton active />
+  if (!data || queue.loading) return <Skeleton active />
   if (!data.printer) {
     return (
       <Alert type="warning" showIcon title="Printer not found"
@@ -189,7 +192,7 @@ function DetailsPage () {
     )
   }
   // A new form for another printer
-  return <DetailsForm key={data.printer.id} printer={data.printer} />
+  return <DetailsForm key={data.printer.id} printer={data.printer} queueEnabled={queue.enabled} />
 }
 
 const printerShape = PropTypes.shape({
@@ -201,7 +204,7 @@ const printerShape = PropTypes.shape({
 }).isRequired
 
 FavoriteButton.propTypes = { printer: printerShape }
-DetailsForm.propTypes = { printer: printerShape }
+DetailsForm.propTypes = { printer: printerShape, queueEnabled: PropTypes.bool.isRequired }
 
 // A printer's page, at /printers/:id: its live state in the header, its part of the global queue (while it is on),
 // its connection and About This Printer to edit in one form, its Loaded Filament, and Remove. While the global queue
