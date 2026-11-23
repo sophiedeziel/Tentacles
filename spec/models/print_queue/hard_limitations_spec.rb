@@ -95,6 +95,13 @@ RSpec.describe PrintQueue::HardLimitations do
       expect(limitations(needs(materials: %w[PETG]), materials: [])).to be_none
     end
 
+    it 'holds nothing against a printer saved without a materials list (nil)' do
+      printer = create(:printer)
+      printer.update_column(:materials, nil) # rubocop:disable Rails/SkipsModelValidations
+
+      expect(described_class.new(needs: needs(materials: %w[PETG]), printer: Printer.find(printer.id))).to be_none
+    end
+
     it 'holds nothing against a material Not known' do
       expect(limitations(needs(materials: [nil]), materials: %w[PLA])).to be_none
     end
