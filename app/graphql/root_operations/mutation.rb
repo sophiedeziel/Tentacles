@@ -25,6 +25,8 @@ module RootOperations
     field :updatePrinter, mutation: Mutations::Printers::UpdatePrinter
     field :requestPrinterAppKey, mutation: Mutations::Printers::RequestPrinterAppKey
     field :cancelPrinterAppKeyRequest, mutation: Mutations::Printers::CancelPrinterAppKeyRequest
+    field :setLoadedFilament, mutation: Mutations::Printers::SetLoadedFilament
+    field :clearLoadedFilament, mutation: Mutations::Printers::ClearLoadedFilament
 
     field :saveDashboard, mutation: Mutations::Dashboards::SaveDashboard
   end
