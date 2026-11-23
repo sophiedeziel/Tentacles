@@ -210,12 +210,13 @@ describe('the Waiting ⋯ menu', () => {
     await loaded()
 
     expect(menuItems(await openMenu(row('Waiting', '11')))).toEqual([
-      'Move to Top', 'Move to Bottom', 'Hold', 'Print More Copies', 'Open File', 'Remove from Queue'
+      'Move to Top', 'Move to Bottom', 'Hold', 'Edit Printers and Options', 'Print More Copies', 'Open File',
+      'Remove from Queue'
     ])
     await userEvent.keyboard('{Escape}')
     expect(menuItems(await openMenu(row('Waiting', BATCH.id)))).toEqual([
-      'Move to Top', 'Move to Bottom', 'Hold', 'Change Number of Copies', 'Show Copies', 'Release to Other Printers',
-      'Open File', 'Remove from Queue'
+      'Move to Top', 'Move to Bottom', 'Hold', 'Edit Printers and Options', 'Change Number of Copies', 'Show Copies',
+      'Release to Other Printers', 'Open File', 'Remove from Queue'
     ])
     await userEvent.keyboard('{Escape}')
     expect(menuItems(await openMenu(row('Waiting', HELD.id)))).toContain('Release')
@@ -263,6 +264,15 @@ describe('the Waiting ⋯ menu', () => {
     await pick(row('Waiting', '11'), 'Open File')
 
     expect(screen.getByTestId('path')).toHaveTextContent('/files/20')
+  })
+
+  it('opens the Edit page of the job', async () => {
+    renderPage(queue())
+    await loaded()
+
+    await pick(row('Waiting', BATCH.id), 'Edit Printers and Options')
+
+    expect(screen.getByTestId('path')).toHaveTextContent(`/queue/${BATCH.id}/edit`)
   })
 
   it('releases a held job from its What Happens Next', async () => {

@@ -174,3 +174,26 @@ export function jobVariables ({ copies, material, colour, samePrinter, position,
     held
   }
 }
+
+// The Edit page's form, from the print job as saved: its material (null: the G-code's, filled like a new job's), its
+// colour (null: Any Colour, a value the G-code never replaces), and its printers: untouched for a job every printer
+// that can print it may take (all_capable), its list ticked otherwise. Its position is read-only (Move to Top, Move
+// to Bottom), sent as BOTTOM, which the estimate ignores for a job edited.
+export function editedJob (job) {
+  return {
+    copies: job.copies,
+    material: job.material ?? null,
+    colour: job.colour ?? ANY_COLOUR,
+    samePrinter: job.samePrinter,
+    position: 'BOTTOM',
+    held: job.held,
+    selection: job.allCapable
+      ? { touched: false, ticked: [] }
+      : { touched: true, ticked: job.printers.map((printer) => printer.id) }
+  }
+}
+
+// What updatePrintJob takes from the form's variables: every option but the file, its place and its hold
+export function updateVariables (id, { copies, material, colour, samePrinter, printerIds }) {
+  return { id, copies, material, colour, samePrinter, printerIds }
+}
