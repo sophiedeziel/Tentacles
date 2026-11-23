@@ -16,14 +16,12 @@
 # Stops when the request is gone from Redis: cancelled (cancelPrinterAppKeyRequest) or expired. The API key is only
 # held in memory here and saved with the printer: it's never pushed, stored in Redis or logged.
 class OctoprintAppKeyPollJob < ApplicationJob
-  extend T::Sig
-
   queue_as :default
 
   POLL_INTERVAL = 1 # second
   POLLS_PER_RUN = 5
 
-  sig { params(request_id: String).void }
+  #: (String request_id) -> void
   def perform(request_id)
     waiting = POLLS_PER_RUN.times.all? do |index|
       sleep(POLL_INTERVAL) if index.positive?
@@ -38,7 +36,7 @@ class OctoprintAppKeyPollJob < ApplicationJob
 
   # Polls OctoPrint once. true while the user hasn't decided; false once the request is over: finished here, or gone
   # from Redis (cancelled or expired), in which case OctoPrint isn't called.
-  sig { params(request_id: String).returns(T::Boolean) }
+  #: (String request_id) -> bool
   def waiting_after_poll?(request_id)
     request = Printer::AppKeyRequest.find(request_id)
     return false if request.nil?
@@ -52,7 +50,7 @@ class OctoprintAppKeyPollJob < ApplicationJob
 
   # Denied when there's no key. The request is taken first: a cancel that comes later finds nothing, one that came
   # earlier wins.
-  sig { params(request_id: String, api_key: T.nilable(String)).void }
+  #: (String request_id, String? api_key) -> void
   def finish(request_id, api_key)
     request = Printer::AppKeyRequest.take(request_id)
     return if request.nil?
@@ -60,7 +58,7 @@ class OctoprintAppKeyPollJob < ApplicationJob
     api_key ? add_printer(request, api_key) : request.push('denied')
   end
 
-  sig { params(request: Printer::AppKeyRequest, api_key: String).void }
+  #: (Printer::AppKeyRequest request, String api_key) -> void
   def add_printer(request, api_key)
     addition = Printer::Addition.new(name: printer_name(request, api_key), backend: 'octoprint', uri: request.url,
                                      secret: api_key)
@@ -75,14 +73,14 @@ class OctoprintAppKeyPollJob < ApplicationJob
   end
 
   # The name of OctoPrint's default printer profile, else the address
-  sig { params(request: Printer::AppKeyRequest, api_key: String).returns(String) }
+  #: (Printer::AppKeyRequest request, String api_key) -> String
   def printer_name(request, api_key)
     name = ::Printer.new(backend: 'octoprint', uri: request.url, secret: api_key).api.identify[:name]
     name.presence || T.must(request.address)
   end
 
   # The gem's messages are not shown: they can hold anything the server answered
-  sig { params(url: String, error: StandardError).returns(String) }
+  #: (String url, StandardError error) -> String
   def identify_error(url, error)
     case error
     when Printer::Backend::Unreachable then "Could not reach OctoPrint at #{url}"
@@ -92,7 +90,7 @@ class OctoprintAppKeyPollJob < ApplicationJob
   end
 
   # `request`: taken from Redis, nil when it was already gone (cancelled meanwhile)
-  sig { params(request: T.nilable(Printer::AppKeyRequest), message: String, error: StandardError).void }
+  #: (Printer::AppKeyRequest? request, String message, StandardError error) -> void
   def fail_request(request, message, error)
     return if request.nil?
 

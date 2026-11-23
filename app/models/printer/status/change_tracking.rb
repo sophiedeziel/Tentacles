@@ -12,13 +12,12 @@ class Printer
     #   status.save! if status.changed?                         # save! marks the changes as applied
     module ChangeTracking
       extend ActiveSupport::Concern
-      extend T::Sig
 
       # The values that matter for change detection: temperatures rounded to 1°, progress to 1 % and time left to
       # 1 minute. Timestamps are left out, so a snapshot only counts as changed when the printer's state did.
-      sig { returns(T::Hash[Symbol, T.untyped]) }
+      #: -> Hash[Symbol, untyped]
       def comparable_attributes
-        status = T.cast(self, Printer::Status)
+        status = self #: as Printer::Status
         {
           state_family: status.state_family, state_text: status.state_text, error_text: status.error_text,
           file_name: status.file_name,
@@ -32,7 +31,7 @@ class Printer
       end
 
       # True for a new snapshot
-      sig { returns(T::Boolean) }
+      #: -> bool
       def changed?
         saved = @saved_attributes
         saved.nil? || comparable_attributes != saved
@@ -40,14 +39,14 @@ class Printer
 
       # Marks the current state as the saved one (#changed? compares to it), like ActiveModel::Dirty#changes_applied.
       # Done by #save! and by the finders.
-      sig { void }
+      #: -> void
       def changes_applied
-        @saved_attributes = T.let(comparable_attributes, T.nilable(T::Hash[Symbol, T.untyped]))
+        @saved_attributes = comparable_attributes #: Hash[Symbol, untyped]?
       end
 
       private
 
-      sig { params(seconds: T.nilable(Integer)).returns(T.nilable(Integer)) }
+      #: (Integer? seconds) -> Integer?
       def rounded_minutes(seconds)
         seconds && (seconds / 60.0).round
       end

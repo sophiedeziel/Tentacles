@@ -16,25 +16,25 @@ class Printer
 
           validates :app_token, presence: true
 
-          sig { returns(T.nilable(Symbol)) }
+          #: Symbol?
           attr_reader :decision
 
-          sig { returns(T.nilable(String)) }
+          #: String?
           attr_reader :api_key
 
           private
 
-          sig { void }
+          #: -> void
           def persist
             response = http { |connection| connection.get("plugin/appkeys/request/#{app_token}") }
             decision = decision_of(response)
             # Read before anything is set: an unreadable approval leaves no decision behind
             api_key = string(parse(response), 'api_key') if decision == :approved
-            @decision = T.let(decision, T.nilable(Symbol))
-            @api_key = T.let(api_key, T.nilable(String))
+            @decision = decision #: Symbol?
+            @api_key = api_key #: String?
           end
 
-          sig { params(response: Faraday::Response).returns(Symbol) }
+          #: (Faraday::Response response) -> Symbol
           def decision_of(response)
             case response.status
             when 202 then :waiting

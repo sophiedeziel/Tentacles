@@ -7,11 +7,9 @@
 # printer whose server was never read answers (Printer::Monitor::Worker). Best effort: a printer whose server can't be
 # read keeps its blank specs, logged; the monitor tries again after it restarts.
 class FillPrinterSpecsJob < ApplicationJob
-  extend T::Sig
-
   queue_as :default
 
-  sig { params(printer_id: Integer).void }
+  #: (Integer printer_id) -> void
   def perform(printer_id)
     # Removed since it was enqueued
     printer = Printer.find_by(id: printer_id)

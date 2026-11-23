@@ -50,3 +50,11 @@ Metrics/CyclomaticComplexity:
 Metrics/ModuleLength:
   Exclude:
     - 'spec/**/*'
+
+# Sorbet reads inline RBS signatures (`#: (String name) -> void`)
+Layout/LeadingCommentSpace:
+  AllowRBSInlineAnnotation: true
+
+# Sorbet requires the body of an `# @abstract` method to be a forwarding `super` (`def tick = super`)
+Lint/UselessMethodDefinition:
+  Enabled: false

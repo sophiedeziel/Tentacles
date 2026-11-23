@@ -14,7 +14,7 @@ class NetworkScan < ApplicationModel
   IP_REGEX = /((?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))/
 
   # How long a scan is reused when not refreshed
-  REUSED_FOR = T.let(15.minutes, ActiveSupport::Duration)
+  REUSED_FOR = 15.minutes #: ActiveSupport::Duration
 
   # Scan again instead of reusing a recent scan
   attribute :refresh, :boolean, default: false
@@ -23,10 +23,8 @@ class NetworkScan < ApplicationModel
   attribute :scanned_at, :datetime
 
   class << self
-    extend T::Sig
-
     # The last scan, however old; nil before the first one
-    sig { returns(T.nilable(NetworkScan)) }
+    #: -> NetworkScan?
     def last
       ips, scanned_at = REDIS_POOL.with { |conn| conn.mget(:printers_ips, :last_printer_scan) }
       return if ips.nil?
@@ -37,14 +35,14 @@ class NetworkScan < ApplicationModel
 
   private
 
-  sig { void }
+  #: -> void
   def persist
     reused = reusable_scan
     reused ? assign_attributes(ips: reused.ips, scanned_at: reused.scanned_at) : scan
   end
 
   # The last scan when it's under REUSED_FOR old; never with `refresh`
-  sig { returns(T.nilable(NetworkScan)) }
+  #: -> NetworkScan?
   def reusable_scan
     return if refresh
 
@@ -52,7 +50,7 @@ class NetworkScan < ApplicationModel
     last if last && last.scanned_at.to_i > REUSED_FOR.ago.to_i
   end
 
-  sig { void }
+  #: -> void
   def scan
     found = all_network_ips.select { |ip| Printer::Backend::Octoprint::AppKey.available?(ip) }
     assign_attributes(ips: found, scanned_at: Time.current)
@@ -62,20 +60,20 @@ class NetworkScan < ApplicationModel
     end
   end
 
-  sig { returns(T::Array[String]) }
+  #: -> Array[String]
   def all_network_ips
     return [] unless local_ip
 
     network_scan.split("\n").map { |line| IP_REGEX.match(line) }.compact.pluck(1)
   end
 
-  sig { returns(T.nilable(String)) }
+  #: -> String?
   def local_ip
     Socket.ip_address_list.detect(&:ipv4_private?)&.ip_address
   end
 
-  sig { returns(String) }
+  #: -> String
   def network_scan
-    @network_scan ||= T.let(`nmap -sP #{local_ip}/24`, T.nilable(String))
+    @network_scan ||= `nmap -sP #{local_ip}/24` #: String?
   end
 end

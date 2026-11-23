@@ -1,11 +1,9 @@
 # typed: true
 # frozen_string_literal: true
 
-class Printer < ApplicationRecord # rubocop:disable Metrics/ClassLength -- one line over since push_status_changed
-  extend T::Sig
-
+class Printer < ApplicationRecord
   # 'octoprint', 'prusalink': see Printer::Backend::ADAPTERS
-  BACKENDS = T.let(Printer::Backend::ADAPTERS.keys.freeze, T::Array[String])
+  BACKENDS = Printer::Backend::ADAPTERS.keys.freeze #: Array[String]
 
   # delete_all: a single DELETE. Nothing is pushed per job: Printer::Removal pushes printQueueChanged once.
   has_many :jobs, class_name: 'Printer::Job', dependent: :delete_all
@@ -83,7 +81,7 @@ class Printer < ApplicationRecord # rubocop:disable Metrics/ClassLength -- one l
   # Pushes printerStatusChanged, whose subscribers get this printer, after a change they show (e.g. its loaded
   # filament). The change is saved by then: a push that fails is logged, never raised, and only leaves the other
   # windows behind until their next refresh. (Printer::Status pushes its own snapshot, and lets its errors through.)
-  sig { void }
+  #: -> void
   def push_status_changed
     TentaclesSchema.subscriptions.trigger(:printer_status_changed, {}, self)
   rescue StandardError => e
@@ -95,7 +93,7 @@ class Printer < ApplicationRecord # rubocop:disable Metrics/ClassLength -- one l
   end
 
   # Publishes a command for this printer to the spooler (lib/spooler.rb), e.g. Printer::SpoolerCommand::StartPrint
-  sig { params(command: Printer::SpoolerCommand).void }
+  #: (Printer::SpoolerCommand command) -> void
   def notify_spooler(command)
     REDIS_POOL.with { |conn| conn.publish('printers', { command: command.serialize, printer_id: id }.to_json) }
   end
@@ -104,20 +102,20 @@ class Printer < ApplicationRecord # rubocop:disable Metrics/ClassLength -- one l
   # The adapter holds the printer's own clients: the client gems' global configuration is never touched.
   #
   # Rebuilt when the backend or the credentials changed (e.g. after a `reload` in the long-lived spooler).
-  sig { returns(Printer::Backend) }
+  #: -> Printer::Backend
   def api
     credentials = api_credentials
     adapter = @api
     return adapter if adapter && @api_credentials == credentials
 
     adapter = Printer::Backend.for(self)
-    @api_credentials = T.let(credentials, T.nilable(T::Array[T.nilable(String)]))
-    @api = T.let(adapter, T.nilable(Printer::Backend))
+    @api_credentials = credentials #: Array[String?]?
+    @api = adapter #: Printer::Backend?
     adapter
   end
 
   # What the API adapter is built from: when they change, so does the adapter (and the monitor's worker)
-  sig { returns(T::Array[T.nilable(String)]) }
+  #: -> Array[String?]
   def api_credentials
     [backend, uri, username, readable_secret]
   end
@@ -127,9 +125,11 @@ class Printer < ApplicationRecord # rubocop:disable Metrics/ClassLength -- one l
   #
   #   Printer.start_next_blocker(state_family: Printer::StateFamily::Printing, enqueued: true, active: false)
   #   # => :not_ready
-  sig do
-    params(state_family: Printer::StateFamily, enqueued: T::Boolean, active: T::Boolean).returns(T.nilable(Symbol))
-  end
+  #: (
+  #|   state_family: Printer::StateFamily,
+  #|   enqueued: bool,
+  #|   active: bool
+  #| ) -> Symbol?
   def self.start_next_blocker(state_family:, enqueued:, active:)
     return :active_job if active
     return :empty_queue unless enqueued
@@ -138,22 +138,22 @@ class Printer < ApplicationRecord # rubocop:disable Metrics/ClassLength -- one l
     nil
   end
 
-  sig { params(state_family: Printer::StateFamily, enqueued: T::Boolean, active: T::Boolean).returns(T::Boolean) }
+  #: (state_family: Printer::StateFamily, enqueued: bool, active: bool) -> bool
   def self.start_next_allowed?(state_family:, enqueued:, active:)
     start_next_blocker(state_family:, enqueued:, active:).nil?
   end
 
   private
 
-  sig { returns(NilClass) }
+  #: -> NilClass
   def log_disconnected = nil.tap { Rails.logger.info("Printer #{id} is disconnected, not calling API") }
 
   # The name of the method that called #using_api (e.g. "Printer#version"), under which its answers are cached. From
   # the caller's location, as this method's own caller would be sorbet-runtime's wrapper.
-  sig { params(locations: T.nilable(T::Array[Thread::Backtrace::Location])).returns(String) }
-  def api_method_of(locations) = T.must(locations&.first&.label)
+  #: (Array[Thread::Backtrace::Location]? locations) -> String
+  def api_method_of(locations) = locations&.first&.label #: as !nil
 
-  sig { params(error: Printer::Backend::Error).returns(NilClass) }
+  #: (Printer::Backend::Error error) -> NilClass
   def api_unavailable(error)
     Rails.logger.error("Failed to get #{api.product_name} data for #{name} :\n\t#{error.message}")
     Disconnection.create!(printer_id: id) if persisted? && error.is_a?(Printer::Backend::Unreachable)

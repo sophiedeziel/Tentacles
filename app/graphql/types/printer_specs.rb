@@ -5,8 +5,6 @@ module Types
   # Resolves anything with the readers of the Printer::Specs columns (brand, firmware, bed_shape, build_volume_x, ...):
   # a ::Printer for its saved specs, a Printer::Backend::ReportedSpecs for what its server reports.
   class PrinterSpecs < Base::Object
-    extend T::Sig
-
     description 'What a printer is and can do, shown in "About This Printer". Null when not set.'
     default_broadcastable true
 
@@ -27,7 +25,7 @@ module Types
     field :webcam, Boolean, null: true
     field :materials, [String], null: false, description: 'Materials it prints, e.g. ["PLA", "PETG"]'
 
-    sig { returns(T.nilable(String)) }
+    #: -> String?
     def firmware
       firmware = object.firmware
       return if firmware.nil?
@@ -35,13 +33,13 @@ module Types
       ::Printer::Specs::KNOWN_FIRMWARES.include?(firmware) ? firmware : 'other'
     end
 
-    sig { returns(T.nilable(String)) }
+    #: -> String?
     def firmware_display_name
       object.firmware
     end
 
     # The Hash BuildVolume resolves its type from: { x:, y:, z: }, or { diameter:, height: } for a circular bed
-    sig { returns(T.nilable(T::Hash[Symbol, Float])) }
+    #: -> Hash[Symbol, Float]?
     def build_volume
       if object.bed_shape == 'circular'
         dimensions(diameter: object.build_diameter, height: object.build_volume_z)
@@ -51,14 +49,14 @@ module Types
     end
 
     # Printers saved before the column existed have nil
-    sig { returns(T::Array[String]) }
+    #: -> Array[String]
     def materials
       object.materials || []
     end
 
     private
 
-    sig { params(sizes: T.nilable(Numeric)).returns(T.nilable(T::Hash[Symbol, Float])) }
+    #: (**Numeric? sizes) -> Hash[Symbol, Float]?
     def dimensions(**sizes)
       sizes.transform_values(&:to_f) if sizes.values.none?(&:nil?)
     end

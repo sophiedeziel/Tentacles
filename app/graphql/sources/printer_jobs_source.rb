@@ -7,28 +7,38 @@ module Sources
   #
   #   dataloader.with(Sources::PrinterJobsSource).load(printer.id) # => Sources::PrinterJobsSource::Queue
   class PrinterJobsSource < GraphQL::Dataloader::Source
-    extend T::Sig
-
     STATUSES = %w[enqueued active].freeze
 
-    class Queue < T::Struct
-      extend T::Sig
-
+    # A printer's queue, read-only
+    class Queue
       # How many jobs wait in the printer's queue
-      const :enqueued_count, Integer
+      #: Integer
+      attr_reader :enqueued_count
+
       # The first job of the queue (Printer#next_job), nil when the queue is empty
-      const :next_job, T.nilable(::Printer::Job)
+      #: ::Printer::Job?
+      attr_reader :next_job
+
       # Whether the printer has a job under way
-      const :active, T::Boolean
+      #: bool
+      attr_reader :active
+
+      #: (enqueued_count: Integer, next_job: ::Printer::Job?, active: bool) -> void
+      def initialize(enqueued_count:, next_job:, active:)
+        @enqueued_count = enqueued_count
+        @next_job = next_job
+        @active = active
+        freeze
+      end
 
       # Whether the printer's queue has at least one job
-      sig { returns(T::Boolean) }
+      #: -> bool
       def enqueued?
         enqueued_count.positive?
       end
     end
 
-    sig { params(printer_ids: T::Array[Integer]).returns(T::Array[Queue]) }
+    #: (Array[Integer] printer_ids) -> Array[Queue]
     def fetch(printer_ids)
       firsts = first_jobs(printer_ids).index_by { |job| [job.printer_id, job.status] }
       printer_ids.map do |printer_id|
@@ -42,7 +52,7 @@ module Sources
 
     # The first job (in queue order: created_at, then id) of each printer and status, with the number of jobs of
     # that printer and status in `status_count`
-    sig { params(printer_ids: T::Array[Integer]).returns(T::Array[::Printer::Job]) }
+    #: (Array[Integer] printer_ids) -> Array[::Printer::Job]
     def first_jobs(printer_ids)
       ranked = ::Printer::Job.where(printer_id: printer_ids, status: STATUSES).select(
         'printer_jobs.*',

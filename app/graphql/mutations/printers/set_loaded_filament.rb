@@ -5,8 +5,6 @@ module Mutations
   module Printers
     # Saved from the Loaded Filament card of the printer's page, on its own (not with the page's specs)
     class SetLoadedFilament < Base::Mutation
-      extend T::Sig
-
       description "Sets the filament loaded in a slot of a printer, replacing the slot's filament. Pushes " \
                   'printerStatusChanged.'
 
@@ -19,9 +17,12 @@ module Mutations
       field :printer, Types::Printer, null: true, description: 'The printer, null when it was not found'
       field :errors, [Types::UserError], null: false, description: 'Why it was not saved, empty when it was'
 
-      sig do
-        params(printer_id: String, material: String, colour: String, slot: Integer).returns(T::Hash[Symbol, T.untyped])
-      end
+      #: (
+      #|   printer_id: String,
+      #|   material: String,
+      #|   colour: String,
+      #|   ?slot: Integer
+      #| ) -> Hash[Symbol, untyped]
       def resolve(printer_id:, material:, colour:, slot: 1)
         printer = ::Printer.find_by(id: printer_id)
         return { printer: nil, errors: [Types::UserError.base('Printer not found')] } if printer.nil?

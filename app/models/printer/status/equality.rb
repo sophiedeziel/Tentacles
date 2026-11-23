@@ -9,18 +9,17 @@ class Printer
     #   Printer::Status::Camera.new(enabled: true) == Printer::Status::Camera.new(enabled: true) # => true
     module Equality
       extend ActiveSupport::Concern
-      extend T::Sig
 
-      sig { params(other: T.untyped).returns(T::Boolean) }
+      #: (untyped other) -> bool
       def ==(other)
-        T.bind(self, ApplicationModel)
+        #: self as ApplicationModel
         other.instance_of?(self.class) && other.attributes == attributes
       end
       alias eql? ==
 
-      sig { returns(Integer) }
+      #: -> Integer
       def hash
-        T.bind(self, ApplicationModel)
+        #: self as ApplicationModel
         [self.class, attributes].hash
       end
     end

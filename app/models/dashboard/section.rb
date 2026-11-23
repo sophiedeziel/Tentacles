@@ -8,8 +8,6 @@ module Dashboard
   #   Dashboard::Section.ensure_default!
   #   Dashboard::Section.includes(widgets: :printer).to_a # the layout, in order
   class Section < ApplicationRecord
-    extend T::Sig
-
     MAX_SECTIONS = 50
     MAX_WIDGETS = 200
     MAX_TITLE_LENGTH = 100
@@ -39,7 +37,7 @@ module Dashboard
     validate :first_section_untitled
 
     # Creates the default layout when there is none (on the first `dashboard` query)
-    sig { void }
+    #: -> void
     def self.ensure_default!
       return if exists?
 
@@ -51,7 +49,7 @@ module Dashboard
     # The default layout, unsaved (no ids): one section with a Print Queue XL (4×2) for all printers, with one row per
     # printer and history on, then a Printer M (2×1) per printer with the camera off. Printers past the widget limit
     # are left out.
-    sig { returns(T::Array[Dashboard::Section]) }
+    #: -> Array[Dashboard::Section]
     def self.build_default
       printers = ::Printer.order(:id).limit(MAX_WIDGETS - 1).to_a
       widgets = printers.each_with_index.map do |printer, index|
@@ -67,13 +65,13 @@ module Dashboard
 
     # Replaces the whole layout in one transaction: rows with an id are updated, rows without one are created, and rows
     # missing from `sections` are destroyed. Raises InvalidLayout. See Dashboard::Section::Replacement for the format.
-    sig { params(sections: T::Array[T::Hash[Symbol, T.untyped]]).void }
+    #: (Array[Hash[Symbol, untyped]] sections) -> void
     def self.replace_all!(sections)
       Replacement.new(sections).call
     end
 
     # rubocop:disable Naming/BlockForwarding -- Sorbet sigs need a named block
-    sig { params(block: T.proc.void).void }
+    #: { -> void } -> void
     def self.with_layout_lock(&block)
       name = connection.quote("#{connection.current_database}:#{LOCK_NAME}")
       locked = connection.select_value("SELECT GET_LOCK(#{name}, #{LOCK_TIMEOUT})") == 1
@@ -87,7 +85,7 @@ module Dashboard
     # rubocop:enable Naming/BlockForwarding
 
     # Built once more when a printer is deleted between build_default and the save
-    sig { void }
+    #: -> void
     def self.create_default!
       attempts = 0
       begin
@@ -101,7 +99,7 @@ module Dashboard
     end
     private_class_method :create_default!
 
-    sig { returns(T::Boolean) }
+    #: -> bool
     def first?
       position == 0 # rubocop:disable Style/NumericPredicate -- position is nil on a new section
     end

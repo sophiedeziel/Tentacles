@@ -4,3 +4,5 @@
 --ignore=vendor/
 --ignore=.conductor/
 --suppress-payload-superclass-redefinition-for=RDoc::Markup::Heading
+--enable-experimental-rbs-comments
+--parser=prism

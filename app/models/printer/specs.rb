@@ -9,14 +9,13 @@ class Printer
   # circular (delta) bed, whose X and Y stay nil. `firmware` is free text: GraphQL maps the KNOWN_FIRMWARES to their
   # PrinterFirmware value, and anything else to OTHER.
   module Specs
-    extend T::Sig
     extend ActiveSupport::Concern
 
     KNOWN_FIRMWARES = %w[marlin klipper prusa_firmware reprapfirmware].freeze
     BED_SHAPES = %w[rectangular circular].freeze
 
     included do
-      T.bind(self, T.class_of(Printer))
+      #: self as singleton(Printer)
 
       attribute :materials, :json, default: -> { [] }
 
@@ -37,7 +36,7 @@ class Printer
 
     # What the printer's server reports about it (Printer::Backend#reported_specs), cached for 2 hours. nil when it
     # can't be reached; other errors are raised (see Printer#using_api).
-    sig { returns(T.nilable(Printer::Backend::ReportedSpecs)) }
+    #: -> Printer::Backend::ReportedSpecs?
     def reported_specs
       # Cached as JSON: the reported attributes (the nil ones left out), not the model
       reported = T.bind(self, Printer).using_api(cache: 2.hours) do
@@ -51,10 +50,10 @@ class Printer
 
     # Copies each reported value into a column that is still nil, then saves: never overwrites a value (false
     # included). A value the columns refuse (e.g. a 0 mm nozzle) stays nil. Returns the columns filled.
-    sig { params(reported: Printer::Backend::ReportedSpecs).returns(T::Array[String]) }
+    #: (Printer::Backend::ReportedSpecs reported) -> Array[String]
     def fill_blank_specs(reported)
-      T.bind(self, Printer)
       # The name is the user's: it is never blank
+      #: self as Printer
       values = reported.attributes.compact.except('name').select { |column, _| self[column].nil? }
       assign_attributes(values)
       filled = values.keys - refused_specs(values.keys)
@@ -67,7 +66,7 @@ class Printer
     # Fills the blank specs with what the printer's server reports (#reported_specs, cached 2 hours), when a printer
     # is added or its address changes, and by FillPrinterSpecsJob. Saves when it read the server in `specs_filled_at`
     # (the monitor fills the printers where it is nil). Best effort: nil, logged, when the server can't be read.
-    sig { returns(T.nilable(T::Array[String])) }
+    #: -> Array[String]?
     def fill_specs_from_server
       reported = reported_specs
       return nil unless reported
@@ -84,9 +83,9 @@ class Printer
     private
 
     # Puts back nil the columns that refuse their new value, and returns them
-    sig { params(columns: T::Array[String]).returns(T::Array[String]) }
+    #: (Array[String] columns) -> Array[String]
     def refused_specs(columns)
-      T.bind(self, Printer)
+      #: self as Printer
       return [] if valid?
 
       refused = columns & errors.attribute_names.map(&:to_s)

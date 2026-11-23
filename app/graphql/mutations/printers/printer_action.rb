@@ -11,12 +11,8 @@ module Mutations
     #
     # Subclasses implement `command_class`, and declare the expectations their command takes (`expectedFileName`,
     # `expectedJobId`) as arguments.
+    # @abstract
     class PrinterAction < Base::Mutation
-      extend T::Sig
-      extend T::Helpers
-
-      abstract!
-
       argument :printer_id, ID, required: true
 
       field :success, Boolean, null: false
@@ -37,8 +33,9 @@ module Mutations
       private
 
       # The Printer::Command the mutation saves
-      sig { abstract.returns(T.class_of(::Printer::Command)) }
-      def command_class; end
+      # @abstract
+      #: -> singleton(::Printer::Command)
+      def command_class = super
     end
   end
 end

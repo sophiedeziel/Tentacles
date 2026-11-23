@@ -4,8 +4,6 @@
 module Types
   # One validation error of a mutation, with the input field it concerns (null when it concerns no field)
   class UserError < Base::Object
-    extend T::Sig
-
     description 'Why a mutation refused its input'
 
     field :field, String, null: true, description: 'The input field it concerns, e.g. "colour". Null when it ' \
@@ -16,7 +14,7 @@ module Types
     # message
     #
     #   Types::UserError.from(change.errors) # => [{ field: 'colour', message: "Colour can't be blank" }]
-    sig { params(errors: ActiveModel::Errors).returns(T::Array[T::Hash[Symbol, T.nilable(String)]]) }
+    #: (ActiveModel::Errors errors) -> Array[Hash[Symbol, String?]]
     def self.from(errors)
       errors.map do |error|
         field = error.attribute == :base ? nil : error.attribute.to_s.camelize(:lower)
@@ -25,7 +23,7 @@ module Types
     end
 
     # A user error that concerns no field
-    sig { params(message: String).returns(T::Hash[Symbol, T.nilable(String)]) }
+    #: (String message) -> Hash[Symbol, String?]
     def self.base(message)
       { field: nil, message: }
     end

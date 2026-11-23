@@ -15,7 +15,7 @@ class Printer
       include Logging
 
       MAX_BACKOFF = 30.0
-      PERSIST_EVERY = T.let(1.minute, ActiveSupport::Duration)
+      PERSIST_EVERY = 1.minute #: ActiveSupport::Duration
 
       attribute :printer
       # Seconds between ticks while the printer answers
@@ -31,16 +31,16 @@ class Printer
 
       # The attributes always have a value (the defaults, and the Worker passes the interval), but the generated RBI
       # types them as nilable: these readers say they aren't.
-      sig { returns(Float) }
-      def interval = T.must(super)
+      #: -> Float
+      def interval = super #: as !nil
 
-      sig { returns(Integer) }
-      def failures = T.must(super)
+      #: -> Integer
+      def failures = super #: as !nil
 
-      sig { returns(Integer) }
-      def publish_failures = T.must(super)
+      #: -> Integer
+      def publish_failures = super #: as !nil
 
-      sig { void }
+      #: -> void
       def record_success
         now = Time.current
         # A TimeWithZone, which is_a?(Time): the generated RBI types the time attributes as Time
@@ -51,7 +51,7 @@ class Printer
       end
 
       # Returns whether the printer just went offline (it answered on the previous tick)
-      sig { returns(T::Boolean) }
+      #: -> bool
       def record_failure
         went_offline = failures.zero? && !last_success_at.nil?
         self.failures += 1
@@ -59,20 +59,20 @@ class Printer
         went_offline
       end
 
-      sig { void }
+      #: -> void
       def record_publish_success
         self.publish_failures = 0
       end
 
       # Returns the number of consecutive publish failures, this one included
-      sig { returns(Integer) }
+      #: -> Integer
       def record_publish_failure
         self.publish_failures += 1
       end
 
       # Seconds to wait before the next tick: the interval, doubled after each consecutive failure (up to 30 s),
       # whether the printer can't be reached or the status can't be published
-      sig { returns(Float) }
+      #: -> Float
       def delay
         streak = [failures, publish_failures].max
         return interval if streak.zero?
@@ -82,20 +82,20 @@ class Printer
       end
 
       # The last time the printer answered, from memory or (before the first success) from the database
-      sig { returns(T.nilable(Printer::Status::TimeLike)) }
+      #: -> Printer::Status::TimeLike?
       def last_seen_at
         last_success_at || printer.last_seen_at
       end
 
       private
 
-      sig { returns(Float) }
+      #: -> Float
       def max_delay
         [MAX_BACKOFF, interval].max
       end
 
       # update_column rather than touch(:last_seen_at): touch would also bump printers.updated_at once a minute
-      sig { void }
+      #: -> void
       def persist_last_seen
         seen_at = last_success_at
         return if seen_at.nil?

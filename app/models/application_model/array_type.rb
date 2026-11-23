@@ -11,45 +11,44 @@ class ApplicationModel
   #   specs.materials = nil              # => nil (not [], unless the attribute has `default: -> { [] }`)
   #   type.serialize(specs.materials)    # => ["PLA", "PETG"]
   class ArrayType < ActiveModel::Type::Value
-    extend T::Sig
-
     # The Ruby class of the elements of each element type, for the RBIs that `bin/tapioca dsl` generates
-    ELEMENT_CLASSES = T.let({ string: String, integer: Integer, float: Float, boolean: T::Boolean }.freeze,
-                            T::Hash[Symbol, T.untyped])
+    ELEMENT_CLASSES = {
+      string: String, integer: Integer, float: Float, boolean: T::Boolean
+    }.freeze #: Hash[Symbol, untyped]
 
-    sig { returns(ActiveModel::Type::Value) }
+    #: ActiveModel::Type::Value
     attr_reader :element_type
 
-    sig { params(element_type: Symbol).void }
+    #: (Symbol element_type) -> void
     def initialize(element_type)
       super()
       @element_type = ActiveModel::Type.lookup(element_type)
     end
 
-    sig { returns(Symbol) }
+    #: -> Symbol
     def type
       :array
     end
 
-    sig { params(value: T.nilable(T::Array[T.untyped])).returns(T.nilable(T::Array[T.untyped])) }
+    #: (Array[untyped]? value) -> Array[untyped]?
     def serialize(value)
       value&.map { |element| element_type.serialize(element) }
     end
 
-    sig { params(other: T.untyped).returns(T::Boolean) }
+    #: (untyped other) -> bool
     def ==(other)
       super && other.element_type == element_type
     end
 
     # The attribute's type in the RBIs that `bin/tapioca dsl` generates
-    sig { returns(T::Types::Base) }
+    #: -> T::Types::Base
     def __tapioca_type
       T::Utils.coerce(T.nilable(T::Array[ELEMENT_CLASSES.fetch(element_type.type, T.untyped)]))
     end
 
     private
 
-    sig { params(value: T.untyped).returns(T::Array[T.untyped]) }
+    #: (untyped value) -> Array[untyped]
     def cast_value(value)
       Array(value).map { |element| element_type.cast(element) }
     end

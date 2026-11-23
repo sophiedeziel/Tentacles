@@ -18,17 +18,16 @@ class Printer
     validates :printer, :slot, presence: true
 
     # Whether #save removed a filament
-    sig { returns(T::Boolean) }
+    #: -> bool
     def removed?
       @removed == true
     end
 
     private
 
-    sig { void }
+    #: -> void
     def persist
-      @removed = T.let(printer.loaded_filaments.where(slot:).delete_all.positive?,
-                       T.nilable(T::Boolean))
+      @removed = printer.loaded_filaments.where(slot:).delete_all.positive? #: bool?
       return unless @removed
 
       printer.loaded_filaments.reset # Read again by the push's subscribers

@@ -19,7 +19,7 @@ class Printer
 
     private
 
-    sig { void }
+    #: -> void
     def persist
       printer.api.upload(path, print: self.print) # self: not Kernel#print
     end

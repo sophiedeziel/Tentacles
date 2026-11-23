@@ -9,7 +9,7 @@ class Printer
   #   Printer::Disconnection.exists?(printer_id: 1)    # => true until then
   #   Printer::Disconnection.delete_by(printer_id: 1) # e.g. once its address changed
   class Disconnection < ApplicationModel
-    DEFAULT_DURATION = T.let(10.minutes, ActiveSupport::Duration)
+    DEFAULT_DURATION = 10.minutes #: ActiveSupport::Duration
 
     attribute :printer_id, :integer
     # How long the printer counts as disconnected, from the save
@@ -19,15 +19,13 @@ class Printer
     validates :printer_id, :expires_in, presence: true
 
     class << self
-      extend T::Sig
-
-      sig { params(printer_id: Integer).returns(String) }
+      #: (Integer printer_id) -> String
       def key(printer_id)
         "printer_#{printer_id}_disconnected"
       end
 
       # Whether the printer was found disconnected less than 10 minutes ago
-      sig { params(printer_id: Integer).returns(T::Boolean) }
+      #: (printer_id: Integer) -> bool
       def exists?(printer_id:)
         json = REDIS_POOL.with { |conn| conn.get(key(printer_id)) }
         return false if json.nil?
@@ -36,7 +34,7 @@ class Printer
       end
 
       # Deletes the flag without reading it (like ActiveRecord's delete_by)
-      sig { params(printer_id: Integer).void }
+      #: (printer_id: Integer) -> void
       def delete_by(printer_id:)
         REDIS_POOL.with { |conn| conn.del(key(printer_id)) }
       end
@@ -44,7 +42,7 @@ class Printer
 
     private
 
-    sig { void }
+    #: -> void
     def persist
       Rails.logger.info("Setting #{printer_id} to disconnected")
       self.expires_at = Time.current + expires_in

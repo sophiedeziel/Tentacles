@@ -20,17 +20,15 @@ class Printer
     attribute :job_id, :integer
 
     class << self
-      extend T::Sig
-
       # Reads it from the printer in a single round trip (two for PrusaLink during a job), through the adapter's
       # #live_job. Never nil: raises the adapter's errors (Printer::Backend::Error, ...) when it can't be read.
-      sig { params(printer: Printer).returns(LiveJob) }
+      #: (printer: Printer) -> LiveJob
       def find_by(printer:)
         new(printer:, **printer.api.live_job)
       end
     end
 
-    sig { returns(T::Boolean) }
+    #: -> bool
     def readonly?
       true
     end

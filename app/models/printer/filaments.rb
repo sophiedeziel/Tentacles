@@ -6,11 +6,10 @@ class Printer
   # a Printer::LoadedFilament has no filament set. Changed through Printer::FilamentChange and
   # Printer::FilamentRemoval.
   module Filaments
-    extend T::Sig
     extend ActiveSupport::Concern
 
     included do
-      T.bind(self, T.class_of(Printer))
+      #: self as singleton(Printer)
 
       # delete_all: a single DELETE, nothing to push (the database cascades too)
       has_many :loaded_filaments, class_name: 'Printer::LoadedFilament', inverse_of: :printer, dependent: :delete_all
@@ -19,7 +18,7 @@ class Printer
     end
 
     # Whether a filament is loaded in any slot (none until someone sets it)
-    sig { returns(T::Boolean) }
+    #: -> bool
     def filament_set? = T.bind(self, Printer).loaded_filaments.any?
   end
 end

@@ -13,17 +13,15 @@ class Printer
       # The Redis key predates the Printer::Monitor namespace: kept, so a running monitor stays healthy across a deploy
       KEY = 'printer_monitor:heartbeat'
       # The monitor counts as healthy when its last heartbeat is more recent than this
-      HEALTHY_WITHIN = T.let(15.seconds, ActiveSupport::Duration)
+      HEALTHY_WITHIN = 15.seconds #: ActiveSupport::Duration
 
       attribute :at, TimeType.new, default: -> { Time.current }
 
       validates :at, presence: true
 
       class << self
-        extend T::Sig
-
         # nil without a heartbeat, or with an unreadable one. Redis errors are raised.
-        sig { returns(T.nilable(Printer::Monitor::Heartbeat)) }
+        #: -> Printer::Monitor::Heartbeat?
         def last
           value = REDIS_POOL.with { |conn| conn.get(KEY) }
           value.present? ? new(at: Float(value)) : nil
@@ -32,7 +30,7 @@ class Printer
         end
 
         # False when Redis can't be reached either
-        sig { params(now: Printer::Status::TimeLike).returns(T::Boolean) }
+        #: (?now: Printer::Status::TimeLike) -> bool
         def healthy?(now: Time.current)
           at = last&.at
           !at.nil? && now - at < HEALTHY_WITHIN
@@ -45,7 +43,7 @@ class Printer
       private
 
       # Stored as epoch seconds
-      sig { void }
+      #: -> void
       def persist
         REDIS_POOL.with { |conn| conn.set(KEY, at.to_f.to_s) }
       end

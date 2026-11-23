@@ -27,15 +27,14 @@ class Printer
       CONNECTS_ON_ITS_OWN = 'PrusaLink printers connect on their own'
 
       class << self
-        extend T::Sig
-
-        sig { override.returns(Printer::Backend::ReaderClass) }
+        # @override
+        #: -> Printer::Backend::ReaderClass
         def reader_class
           Printer::Monitor::PrusalinkReader
         end
 
         # Runs the block, raising the gem's errors as Printer::Backend errors with the same message
-        sig { type_parameters(:T).params(block: T.proc.returns(T.type_parameter(:T))).returns(T.type_parameter(:T)) }
+        #: [T] { -> T } -> T
         def translate_errors(&block)
           block.call
         rescue ::Prusalink::Exceptions::MissingCredentialsError
@@ -51,35 +50,39 @@ class Printer
         # The `printer` of PrusaLink's /api/version when it names a model ("MK4", "XL"), nil when it's a version
         # number ("1.0.0", "6.2.0+8899") or missing: the MK4, XL and MINI firmware don't send it, and its format isn't
         # documented
-        sig { params(printer: T.nilable(String)).returns(T.nilable(String)) }
+        #: (String? printer) -> String?
         def readable_model(printer)
           model = printer.to_s.strip
           model if model.match?(/[[:alpha:]]/) && !model.match?(/\A\d+(\.\d+)+/)
         end
 
         # The state family of a PrusaLink status (see Printer::StateFamily.for_prusalink)
-        sig { params(status: ::Prusalink::Status).returns(Printer::StateFamily) }
+        #: (::Prusalink::Status status) -> Printer::StateFamily
         def state_family(status)
           Printer::StateFamily.for_prusalink(status.printer&.state, job: !status.job.nil?)
         end
       end
 
-      sig { override.returns(String) }
+      # @override
+      #: -> String
       def product_name
         'PrusaLink'
       end
 
-      sig { override.returns(String) }
+      # @override
+      #: -> String
       def secret_name
         'password'
       end
 
-      sig { override.returns(T::Boolean) }
+      # @override
+      #: -> bool
       def connects_on_its_own?
         true
       end
 
-      sig { override.returns(T.nilable(T::Hash[Symbol, T.untyped])) }
+      # @override
+      #: -> Hash[Symbol, untyped]?
       def current_job
         job = use { ::Prusalink::Job.get }
         file = job&.file
@@ -91,24 +94,28 @@ class Printer
       end
 
       # PrusaLink's state, capitalized: "Printing", "Attention", ...
-      sig { override.returns(T.nilable(String)) }
+      # @override
+      #: -> String?
       def job_status
         status.printer&.state&.capitalize
       end
 
-      sig { override.returns(Printer::StateFamily) }
+      # @override
+      #: -> Printer::StateFamily
       def state_family
         self.class.state_family(status)
       end
 
-      sig { override.returns(T::Hash[Symbol, T.untyped]) }
+      # @override
+      #: -> Hash[Symbol, untyped]
       def print_progress
         current = status
         { state_family: self.class.state_family(current), progress: current.job&.progress&.to_f }
       end
 
       # The Status has the state and the job's id, the Job its file: read only when there is a job
-      sig { override.returns(T::Hash[Symbol, T.untyped]) }
+      # @override
+      #: -> Hash[Symbol, untyped]
       def live_job
         current = status
         job = use { ::Prusalink::Job.get } if current.job
@@ -117,7 +124,8 @@ class Printer
       end
 
       # e.g. "PrusaLink 2.1.2 (firmware 6.2.0+8899)"
-      sig { override.returns(T.nilable(String)) }
+      # @override
+      #: -> String?
       def version
         server = use { ::Prusalink::ServerVersion.get }
         firmware = server.firmware.presence
@@ -125,7 +133,8 @@ class Printer
       end
 
       # The name set on the printer, or the host of its URL
-      sig { override.returns(T::Hash[Symbol, T.nilable(String)]) }
+      # @override
+      #: -> Hash[Symbol, String?]
       def identify
         info = use { ::Prusalink::Info.get }
         { name: info&.name.presence || URI(printer.uri.to_s).host, version: }
@@ -133,7 +142,8 @@ class Printer
 
       # The name and nozzle from the printer's info, the firmware version and model from the server version. The
       # firmware is always Prusa's. The cameras aren't read yet.
-      sig { override.returns(ReportedSpecs) }
+      # @override
+      #: -> ReportedSpecs
       def reported_specs
         info = use { ::Prusalink::Info.get }
         server = use { ::Prusalink::ServerVersion.get }
@@ -143,44 +153,51 @@ class Printer
       end
 
       # The camera isn't supported yet
-      sig { override.returns(T.nilable(String)) }
+      # @override
+      #: -> String?
       def webcam_url
         nil
       end
 
-      sig { override.params(job_id: T.nilable(Integer)).void }
+      # @override
+      #: (?job_id: Integer?) -> void
       def pause(job_id: nil)
         id = job_id || current_job_id
         use { ::Prusalink::Job.pause(id) }
       end
 
-      sig { override.params(job_id: T.nilable(Integer)).void }
+      # @override
+      #: (?job_id: Integer?) -> void
       def resume(job_id: nil)
         id = job_id || current_job_id
         use { ::Prusalink::Job.resume(id) }
       end
 
-      sig { override.params(job_id: T.nilable(Integer)).void }
+      # @override
+      #: (?job_id: Integer?) -> void
       def cancel(job_id: nil)
         id = job_id || current_job_id
         use { ::Prusalink::Job.stop(id) }
       end
 
-      sig { override.void }
+      # @override
+      #: -> void
       def connect
         raise Error, CONNECTS_ON_ITS_OWN
       end
 
-      sig { override.void }
+      # @override
+      #: -> void
       def reconnect
         raise Error, CONNECTS_ON_ITS_OWN
       end
 
       # Uploads the file (G-code or binary G-code, sent as it is) to the root of the first writable storage, replacing
       # a file of the same name. With its own client: large files take much longer than the API client's timeouts.
-      sig { override.params(path: String, print: T::Boolean).void }
+      # @override
+      #: (String path, ?print: bool) -> void
       def upload(path, print: false)
-        storage = T.let(writable_storage.path, String)
+        storage = writable_storage.path #: String
         self.class.translate_errors do
           upload_client.use do
             ::Prusalink::Files.upload(path, storage:, path: ::File.basename(path), print_after_upload: print,
@@ -191,32 +208,26 @@ class Printer
 
       # The printer's PrusaLink client, for Printer::Monitor::PrusalinkReader.
       # Raises Prusalink::Exceptions::MissingCredentialsError when the URI or the password is blank.
-      sig { returns(::Prusalink::Client) }
+      #: -> ::Prusalink::Client
       def client
-        @client ||= T.let(
-          ::Prusalink::Client.new(host: printer.uri.presence, password: printer.secret.presence,
-                                  username: printer.username.presence || ::Prusalink::Client::DEFAULT_USERNAME,
-                                  open_timeout: OPEN_TIMEOUT, timeout: TIMEOUT),
-          T.nilable(::Prusalink::Client)
-        )
+        @client ||= ::Prusalink::Client.new(host: printer.uri.presence, password: printer.secret.presence,
+                                            username: printer.username.presence || ::Prusalink::Client::DEFAULT_USERNAME,
+                                            open_timeout: OPEN_TIMEOUT, timeout: TIMEOUT) #: ::Prusalink::Client?
       end
 
       private
 
       # Raises Prusalink::Exceptions::MissingCredentialsError when the URI or the password is blank
-      sig { returns(::Prusalink::Client) }
+      #: -> ::Prusalink::Client
       def upload_client
-        @upload_client ||= T.let(
-          ::Prusalink::Client.new(host: printer.uri.presence, password: printer.secret.presence,
-                                  username: printer.username.presence || ::Prusalink::Client::DEFAULT_USERNAME,
-                                  open_timeout: UPLOAD_OPEN_TIMEOUT, timeout: UPLOAD_TIMEOUT),
-          T.nilable(::Prusalink::Client)
-        )
+        @upload_client ||= ::Prusalink::Client.new(host: printer.uri.presence, password: printer.secret.presence,
+                                                   username: printer.username.presence || ::Prusalink::Client::DEFAULT_USERNAME,
+                                                   open_timeout: UPLOAD_OPEN_TIMEOUT, timeout: UPLOAD_TIMEOUT) #: ::Prusalink::Client?
       end
 
       # The first available storage that isn't read only: the USB drive on MK4, XL and MINI, the local storage of
       # PrusaLink on a Raspberry Pi. Raises Printer::Backend::Error when there is none (e.g. no USB drive inserted).
-      sig { returns(::Prusalink::Storage) }
+      #: -> ::Prusalink::Storage
       def writable_storage
         storages = use { ::Prusalink::Storage.list }
         storages.find { |storage| storage.available? && !storage.read_only? && storage.path.present? } ||
@@ -224,13 +235,13 @@ class Printer
       end
 
       # Raises Printer::Backend::Error when PrusaLink answers without a status
-      sig { returns(::Prusalink::Status) }
+      #: -> ::Prusalink::Status
       def status
         use { ::Prusalink::Status.get } || raise(Error, 'PrusaLink answered without a status')
       end
 
       # The id of the job under way. Raises NoJob when there is none (e.g. it ended after the state was read).
-      sig { returns(Integer) }
+      #: -> Integer
       def current_job_id
         id = use { ::Prusalink::Job.get }&.id
         raise NoJob, 'No job under way' if id.nil?
@@ -239,7 +250,7 @@ class Printer
       end
 
       # rubocop:disable Naming/BlockForwarding, Style/ArgumentsForwarding -- Sorbet sigs need a named block
-      sig { type_parameters(:T).params(block: T.proc.returns(T.type_parameter(:T))).returns(T.type_parameter(:T)) }
+      #: [T] { -> T } -> T
       def use(&block)
         self.class.translate_errors { client.use(&block) }
       end

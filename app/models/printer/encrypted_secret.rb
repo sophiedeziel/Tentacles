@@ -9,12 +9,10 @@ class Printer
   # actions treat it like missing credentials, for this printer only. The printer can still be validated and saved,
   # and its credentials entered again.
   module EncryptedSecret
-    extend T::Sig
-    extend T::Helpers
     extend ActiveSupport::Concern
 
     included do
-      T.bind(self, T.class_of(Printer))
+      #: self as singleton(Printer)
 
       encrypts :secret
     end
@@ -39,7 +37,7 @@ class Printer
     end
 
     # The secret, or nil when it can't be decrypted
-    sig { returns(T.nilable(String)) }
+    #: -> String?
     def readable_secret
       secret
     rescue Printer::Backend::UnreadableCredentials
@@ -56,7 +54,7 @@ class Printer
     # When the stored secret can't be decrypted, its stored value is forgotten so that the printer can still be saved:
     # its secret stays as it is in the database, or is replaced when a new one was assigned (the credentials are
     # entered again).
-    sig { void }
+    #: -> void
     def forget_unreadable_secret
       T.bind(self, Printer).attribute_in_database(:secret)
     rescue ActiveRecord::Encryption::Errors::Decryption

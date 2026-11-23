@@ -12,7 +12,7 @@ RSpec.describe Printer::Command do
   before { allow(printer.api).to receive(:pause) }
 
   it 'is abstract' do
-    expect { described_class.new(printer:) }.to raise_error(RuntimeError, /abstract/)
+    expect { described_class.new(printer:) }.to raise_error(NotImplementedError, /abstract/)
   end
 
   it 'exposes the live job it checked' do
