@@ -158,6 +158,33 @@ RSpec.describe PrintQueue::Estimate do
       expect(estimate.starts).to have_attributes(kind: :starting, dispatch_paused: true)
     end
 
+    describe 'a bound batch edited' do
+      let(:mk4) { printer }
+      let(:voron) { printer }
+      let(:edited) { entry(position: 1, copies: 3, same_printer: true, bound_printer: mk4) }
+
+      def edit(**attributes) = described_class.new(item: edited.item, job: edited, same_printer: true, **attributes)
+
+      it 'stays on its printer while that printer is chosen' do
+        expect(edit(all_capable: false, printer_ids: [mk4.id, voron.id]).starts)
+          .to have_attributes(kind: :batch_on_printer, printer: mk4)
+      end
+
+      it 'is let go, as saving would, when its printer is no longer chosen' do
+        starts = edit(all_capable: false, printer_ids: [voron.id]).starts
+
+        expect(starts.printer).not_to eq mk4
+        expect(starts).to have_attributes(kind: :starting, printer: voron)
+      end
+
+      it 'is let go when its printer can never print the material asked for' do
+        mk4.update!(materials: ['PLA'])
+        voron.loaded_filaments.first.update!(material: 'PETG')
+
+        expect(edit(material: 'PETG').starts).to have_attributes(kind: :starting, printer: voron)
+      end
+    end
+
     it 'is nil when no copy is left to start' do
       edited = entry(position: 1, copies: 1)
       copy(edited, 'completed')

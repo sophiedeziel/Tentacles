@@ -15,7 +15,8 @@ module PrintQueue
   #   estimate.starts        # => PrintQueue::Forecast::Outcome(kind: :after_current_print, printer: mk4, ...)
   #
   # Editing an entry (`job`): it keeps its place (`position` is ignored), the form replaces it in the queue, and only
-  # its copies still to start are counted (copies done, printing or failed are not printed again).
+  # its copies still to start are counted (copies done, printing or failed are not printed again). A same-printer
+  # batch is bound as saving would bind it (PrintQueue::BatchPrinter).
   #
   # When it starts is a kind of What Happens Next, without a time: the time comes with the queue simulation.
   class Estimate < ApplicationModel
@@ -139,8 +140,14 @@ module PrintQueue
     def edited(entry)
       edited = job #: as !nil
       entry.id = edited.id
-      entry.bound_printer_id = edited.bound_printer_id if same_printer
+      entry.bound_printer_id = batch_printer(edited, entry.needs)&.id
       entry.copy_counts = edited.copy_counts
+    end
+
+    # The printer saving binds it to: the rule PrintQueue::JobUpdate saves with
+    #: (PrintQueue::Job edited, PrintQueue::Needs needs) -> Printer?
+    def batch_printer(edited, needs)
+      PrintQueue::BatchPrinter.new(job: edited, same_printer:, all_capable:, printer_ids:, needs:).printer
     end
 
     # Its place: the edited entry's, else first or last among the entries still in the queue
