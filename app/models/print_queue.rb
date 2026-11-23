@@ -42,11 +42,25 @@ module PrintQueue
   #: -> bool
   def self.enabled? = Rails.configuration.x.global_print_queue == true
 
-  # How the queue starts, pauses, resumes and cancels copies on the printers (see PrintQueue::Connector). The
-  # scenario specs swap it for a fake (global queue phase 3, PR 6).
+  # How the queue starts, pauses, resumes and cancels copies on the printers (see PrintQueue::Connector):
+  # PrintQueue::Connector::Spooler unless another one was set (PrintQueue.connector=).
   #: -> PrintQueue::Connector
   def self.connector
     @connector ||= PrintQueue::Connector::Spooler.new #: PrintQueue::Connector?
+  end
+
+  # Swaps the connector, for this process: nil goes back to the default. The scenario specs and the console set a
+  # PrintQueue::Connector::Fake (spec/rails_helper.rb resets it after each example).
+  #
+  #   PrintQueue.connector = PrintQueue::Connector::Fake.new
+  #
+  # Process-wide, not per thread: the passes that start copies run on other threads than the one that set it (the
+  # spooler's main thread on a dispatch request, its sweep thread, a spool thread in the scenario specs), and they
+  # must all use it. Setting it is a single reference write; it's swapped between examples, not while copies
+  # dispatch. In the console it only changes that process: a spooler running elsewhere keeps its own.
+  #: (PrintQueue::Connector? connector) -> void
+  def self.connector=(connector)
+    @connector = connector
   end
 
   # Pushes printQueueChanged for each printer whose queue changed, once a queue change is committed. Phase 4 adds the

@@ -3,10 +3,14 @@
 
 module PrintQueue
   # How the global queue talks to the printers about a copy (a Printer::Job of an entry): the "in" side of the
-  # connector. PrintQueue.connector returns the one in use, PrintQueue::Connector::Spooler (through the spooler and
-  # the printer's API). The fake connector of the scenario specs (global queue phase 3, PR 6) replaces it.
+  # connector. PrintQueue.connector returns the one in use: PrintQueue::Connector::Spooler (through the spooler and
+  # the printer's API), or PrintQueue::Connector::Fake (the scenario specs, the console).
   #
-  #   PrintQueue.connector.start(printer_job) # the dispatcher, once the copy is committed
+  #   PrintQueue.connector.start(printer_job)  # the dispatcher, once the copy is committed
+  #   PrintQueue.connector.cancel(printer_job) # PrintQueue::CopyCancellation, for a copy under way
+  #
+  # Its out side, what happens to the copy on the printer, is the queue's events (PrintQueue::PrintStart,
+  # PrintQueue::PrintEnd, ...), recorded by the spool and the monitor, or fired by the fake.
   #
   # A connector has nothing to save (#save raises NotImplementedError): the queue's commands go through it.
   # @abstract
@@ -18,7 +22,8 @@ module PrintQueue
     #: (Printer::Job printer_job) -> void
     def start(printer_job) = super
 
-    # Pauses the copy's print. The command comes back saved: false with its `errors` when refused or when it failed.
+    # Pauses the copy's print. The command comes back without errors when it was accepted, with its `errors` when it
+    # was refused or failed.
     # @abstract
     #: (Printer::Job printer_job) -> Printer::Command
     def pause(printer_job) = super

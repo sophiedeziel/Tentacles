@@ -67,4 +67,7 @@ RSpec.configure do |config|
   # config.filter_gems_from_backtrace("gem name")
 
   config.include FactoryBot::Syntax::Methods
+
+  # An example that swapped the global queue's connector (a PrintQueue::Connector::Fake) leaves the default behind
+  config.after { PrintQueue.connector = nil }
 end

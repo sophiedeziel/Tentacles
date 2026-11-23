@@ -20,19 +20,25 @@ module PrintQueue
                            "#{printer_job.printer_id}: #{e.class}: #{e.message}")
       end
 
+      # Pause, resume and cancel are sent only while the printer still prints the copy's file (Printer::Command's
+      # expected_file_name guard): a copy never pauses or cancels another print, e.g. one started on the printer itself.
       # @override
       #: (Printer::Job printer_job) -> Printer::Command
-      def pause(printer_job) = saved(Printer::Pause.new(printer: printer_job.printer))
+      def pause(printer_job) = saved(Printer::Pause.new(**command_attributes(printer_job)))
 
       # @override
       #: (Printer::Job printer_job) -> Printer::Command
-      def resume(printer_job) = saved(Printer::Resumption.new(printer: printer_job.printer))
+      def resume(printer_job) = saved(Printer::Resumption.new(**command_attributes(printer_job)))
 
       # @override
       #: (Printer::Job printer_job) -> Printer::Command
-      def cancel(printer_job) = saved(Printer::Cancellation.new(printer: printer_job.printer))
+      def cancel(printer_job) = saved(Printer::Cancellation.new(**command_attributes(printer_job)))
 
       private
+
+      # The copy's name is its file's name: the name it's uploaded under, which the printer reports back
+      #: (Printer::Job printer_job) -> Hash[Symbol, untyped]
+      def command_attributes(printer_job) = { printer: printer_job.printer, expected_file_name: printer_job.name }
 
       #: (Printer::Command command) -> Printer::Command
       def saved(command)

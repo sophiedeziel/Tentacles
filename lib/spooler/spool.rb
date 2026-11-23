@@ -33,11 +33,11 @@ class Spooler
     end
 
     # Stops the spool for good (its printer was removed). The operation under way isn't interrupted: nothing is sent
-    # to the printer, and a print under way keeps running.
+    # to the printer, and a print under way keeps running. Returns once the spool's thread has ended.
     def discard
       @discarded = true
       @active = false
-      @thread.kill
+      @thread.kill.join
     end
 
     private

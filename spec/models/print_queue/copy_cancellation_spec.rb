@@ -10,13 +10,10 @@ RSpec.describe PrintQueue::CopyCancellation do
   let(:job) { create(:print_job, copies: 2) }
   let(:status) { 'enqueued' }
   let(:printer_job) { create(:printer_job, :copy, print_job: job, printer:, status:) }
-  # Printer::Cancellation reads the printer's live state: stubbed, it succeeds unless told otherwise
-  let(:printer_cancellation) { Printer::Cancellation.new(printer:) }
+  # The printer, played by the fake connector: it accepts the cancel unless given a refusal
+  let(:connector) { PrintQueue::Connector::Fake.new }
 
-  before do
-    allow(Printer::Cancellation).to receive(:new).with(printer:).and_return(printer_cancellation)
-    allow(printer_cancellation).to receive(:save).and_return(true)
-  end
+  before { PrintQueue.connector = connector }
 
   def cancel
     described_class.new(printer_job:).tap(&:save)
@@ -32,7 +29,7 @@ RSpec.describe PrintQueue::CopyCancellation do
       expect(printer_job.reload).to have_attributes(status: 'cancelled',
                                                     finished_at: be_within(1.second).of(Time.current))
       expect(printer_job.cancel_requested_at).to eq printer_job.finished_at
-      expect(Printer::Cancellation).not_to have_received(:new)
+      expect(connector.commands).to be_empty
     end
 
     it 'counts it as failed: it uses up its copy' do
@@ -54,18 +51,18 @@ RSpec.describe PrintQueue::CopyCancellation do
       expect_refused(described_class.new(printer_job:),
                      'Copy 1 of test.gcode has just started, cancel it again to stop its print')
       expect(printer_job.cancel_requested_at).to be_nil
-      expect(Printer::Cancellation).not_to have_received(:new)
+      expect(connector.commands).to be_empty
     end
   end
 
   context 'when the copy is under way' do
     let(:status) { 'active' }
 
-    it 'asks the printer to cancel its print, leaving the copy active for the print ended handler' do
+    it 'asks the printer to cancel its print (the connector), leaving the copy active for the print ended handler' do
       expect(cancel.errors).to be_empty
       expect(printer_job.reload).to have_attributes(status: 'active', finished_at: nil,
                                                     cancel_requested_at: be_within(1.second).of(Time.current))
-      expect(printer_cancellation).to have_received(:save).once
+      expect(connector.received(:cancel)).to eq [printer_job]
     end
 
     it 'keeps when the cancellation was first asked' do
@@ -74,7 +71,7 @@ RSpec.describe PrintQueue::CopyCancellation do
 
       expect(cancel.errors).to be_empty
       expect(printer_job.reload.cancel_requested_at).to eq asked
-      expect(printer_cancellation).to have_received(:save).once
+      expect(connector.received(:cancel)).to eq [printer_job]
     end
 
     it "pushes the copy's printer once, without asking for a dispatch pass" do
@@ -85,10 +82,7 @@ RSpec.describe PrintQueue::CopyCancellation do
     end
 
     it "is refused with the printer's message when the printer refuses or fails" do
-      allow(printer_cancellation).to receive(:save) do
-        printer_cancellation.errors.add(:base, 'Prusa MK4 is no longer printing')
-        false
-      end
+      connector.refusal = 'Prusa MK4 is no longer printing'
 
       expect_refused(described_class.new(printer_job:), 'Prusa MK4 is no longer printing')
       expect(printer_job.reload).to have_attributes(status: 'active', cancel_requested_at: nil)
@@ -102,7 +96,7 @@ RSpec.describe PrintQueue::CopyCancellation do
       it 'is refused' do
         expect_refused(described_class.new(printer_job:), 'Copy 1 of test.gcode has already ended')
         expect(printer_job.reload.status).to eq finished
-        expect(Printer::Cancellation).not_to have_received(:new)
+        expect(connector.commands).to be_empty
       end
     end
   end
