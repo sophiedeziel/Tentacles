@@ -11,6 +11,9 @@ module Types
     field :uri, Types::Url, null: true, description: "The URL of the printer's server"
     field :username, String, null: true, description: 'The username, for the backends that use one (PrusaLink)'
     field :favorite, Boolean, null: false, description: 'Favorites come first in the fleet list'
+    field :takes_jobs, Boolean, null: false,
+                                description: 'Whether it takes jobs from the global queue (setPrinterTakesJobs). A ' \
+                                             'printer that does not is skipped by the dispatcher.'
     field :specs, Types::PrinterSpecs, null: false,
                                        description: 'What the printer is and can do, as saved in Tentacles. Reads ' \
                                                     'columns only, never the printer: safe in list queries.'

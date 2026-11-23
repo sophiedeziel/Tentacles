@@ -32,8 +32,8 @@ RSpec.describe 'Query printers { loadedFilaments filamentSlots }', type: :reques
                                'updatedAt' => 'ISO8601DateTime!')
     end
 
-    it 'does not expose takesJobs yet' do
-      expect(printer_type.fields.keys).not_to include('takesJobs')
+    it 'exposes takesJobs, a non-null Boolean' do
+      expect(printer_type.get_field('takesJobs').type.to_type_signature).to eq('Boolean!')
     end
   end
 

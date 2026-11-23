@@ -81,6 +81,57 @@ RSpec.describe PrintQueue::Move do
     expect(finished.reload.position).to eq 2
   end
 
+  describe 'before another entry' do
+    def move_before(job, before)
+      described_class.new(job:, before:).tap(&:save)
+    end
+
+    it 'moves an entry up, right before it' do
+      expect(move_before(third, second).errors).to be_empty
+      expect(positions(first, third, second)).to eq [1, 2, 3]
+    end
+
+    it 'moves an entry down, right before it' do
+      move_before(first, third)
+
+      expect(positions(second, first, third)).to eq [1, 2, 3]
+    end
+
+    it 'places it among the entries with copies waiting, past an entry whose copies are all printing' do
+      printing = create(:print_job, position: 2, copies: 1)
+      create(:printer_job, :copy, print_job: printing, status: 'active')
+      second.update!(position: 3)
+      third.update!(position: 4)
+
+      move_before(first, third)
+
+      expect(positions(printing, second, first, third)).to eq [1, 2, 3, 4]
+    end
+
+    it 'pushes once and asks for a dispatch pass' do
+      move_before(third, first)
+
+      expect_pushed_once([])
+      expect_dispatch_requested
+    end
+
+    it 'is refused when the other entry is finished' do
+      finished = finished_entry(4)
+
+      expect_refused(described_class.new(job: first, before: finished), 'test.gcode is no longer in the queue')
+      expect(positions(first, second, third)).to eq [1, 2, 3]
+    end
+
+    it 'is refused before itself' do
+      expect_refused(described_class.new(job: first, before: first), "Before can't be the entry moved")
+    end
+
+    it 'is refused with a place too' do
+      expect_refused(described_class.new(job: first, to: 'top', before: third),
+                     'Give a place or an entry to go before, not both')
+    end
+  end
+
   it 'pushes once, with no printer for an unbound entry, and asks for a dispatch pass' do
     move(third, 'top')
 

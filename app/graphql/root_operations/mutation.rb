@@ -28,6 +28,18 @@ module RootOperations
     field :cancelPrinterAppKeyRequest, mutation: Mutations::Printers::CancelPrinterAppKeyRequest
     field :setLoadedFilament, mutation: Mutations::Printers::SetLoadedFilament
     field :clearLoadedFilament, mutation: Mutations::Printers::ClearLoadedFilament
+    field :setPrinterTakesJobs, mutation: Mutations::Printers::SetPrinterTakesJobs
+
+    field :addToQueue, mutation: Mutations::Queue::AddToQueue
+    field :movePrintJob, mutation: Mutations::Queue::MovePrintJob
+    field :holdPrintJob, mutation: Mutations::Queue::HoldPrintJob
+    field :releasePrintJob, mutation: Mutations::Queue::ReleasePrintJob
+    field :removePrintJob, mutation: Mutations::Queue::RemovePrintJob
+    field :setPrintJobCopies, mutation: Mutations::Queue::SetPrintJobCopies
+    field :unbindPrintJob, mutation: Mutations::Queue::UnbindPrintJob
+    field :confirmBedCleared, mutation: Mutations::Queue::ConfirmBedCleared
+    field :pauseDispatch, mutation: Mutations::Queue::PauseDispatch
+    field :resumeDispatch, mutation: Mutations::Queue::ResumeDispatch
 
     field :saveDashboard, mutation: Mutations::Dashboards::SaveDashboard
   end
