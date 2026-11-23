@@ -8,12 +8,13 @@ import { MemoryRouter } from 'react-router'
 import FilesList from './FilesList'
 import Files from 'graphql/Files.graphql'
 import UploadFile from 'graphql/UploadFile.graphql'
+import { GLOBAL_QUEUE_ENABLED } from '../../Queue/graphql/queue'
 
-const file = (id, filename, { isArchived = false } = {}) => ({
+const file = (id, filename, { isArchived = false, filetype = '.gcode' } = {}) => ({
   __typename: 'File',
   id,
   filename,
-  filetype: '.gcode',
+  filetype,
   filesize: 1200,
   notes: null,
   createdAt: '2026-11-15T10:00:00Z',
@@ -30,8 +31,14 @@ const library = (files) => ({
   result: { data: { files, labels: { __typename: 'LabelConnection', edges: [] } } }
 })
 
-const renderPage = (mocks) => render(
-  <MockedProvider mocks={mocks}>
+// globalQueue is null while the global queue's flag is off
+const flag = (on) => ({
+  request: { query: GLOBAL_QUEUE_ENABLED },
+  result: { data: { globalQueue: on ? { __typename: 'GlobalQueue', dispatchPaused: false } : null } }
+})
+
+const renderPage = (mocks, { queue = false } = {}) => render(
+  <MockedProvider mocks={[flag(queue), ...mocks]}>
     <MemoryRouter initialEntries={['/files']}><FilesList /></MemoryRouter>
   </MockedProvider>
 )
@@ -83,5 +90,38 @@ describe('FilesList', () => {
     expect(screen.getByText('No archived files')).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Archived' })).toHaveAttribute('aria-selected', 'true')
     expect(screen.queryByText('No files yet')).not.toBeInTheDocument()
+  })
+
+  describe('the row action', () => {
+    const files = [file('1', 'benchy.gcode'), file('2', 'benchy.stl', { filetype: '.stl' })]
+    const action = async (filename) => {
+      const table = await screen.findByRole('table')
+      return within(table).getByRole('link', { name: filename }).closest('tr')
+    }
+
+    it('adds a G-code file to the queue while it is on', async () => {
+      renderPage([library(files)], { queue: true })
+
+      const row = await action('benchy.gcode')
+      const link = await within(row).findByRole('link', { name: /Add to Queue/ })
+      expect(link).toHaveAttribute('href', '/queue/add/1')
+    })
+
+    it('opens any other file, since the queue prints G-code only', async () => {
+      renderPage([library(files)], { queue: true })
+
+      const row = await action('benchy.stl')
+      expect(within(row).getByRole('link', { name: 'Edit' })).toHaveAttribute('href', '/files/2')
+      expect(within(row).queryByRole('link', { name: /Add to Queue/ })).not.toBeInTheDocument()
+    })
+
+    it('has no Add to Queue while the queue is off, and no print page', async () => {
+      renderPage([library(files)])
+
+      const row = await action('benchy.gcode')
+      expect(within(row).getByRole('link', { name: 'Edit' })).toHaveAttribute('href', '/files/1')
+      expect(screen.queryByRole('link', { name: /Add to Queue/ })).not.toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: /Print/ })).not.toBeInTheDocument()
+    })
   })
 })

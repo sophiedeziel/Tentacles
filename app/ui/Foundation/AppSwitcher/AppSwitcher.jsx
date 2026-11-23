@@ -17,10 +17,10 @@ const QueuesList = lazy(() => import('../../Sections/Printers/QueuesList/QueuesL
 const Queue = lazy(() => import('../../Sections/Printers/Queue/Queue'))
 const FilesList = lazy(() => import('../../Sections/Files/FilesList/FilesList'))
 const FileEditor = lazy(() => import('../../Sections/Files/FileEditor/FileEditor'))
-const FilePrinter = lazy(() => import('../../Sections/Files/FilePrinter/FilePrinter'))
 const QueuePage = lazy(() => import('../../Sections/Queue/QueuePage'))
 const AddToQueuePage = lazy(() => import('../../Sections/Queue/AddToQueue/AddToQueuePage'))
 const EditJobPage = lazy(() => import('../../Sections/Queue/AddToQueue/EditJobPage'))
+const PrintRedirect = lazy(() => import('../../Sections/Queue/AddToQueue/PrintRedirect'))
 
 export default function AppSwithcer () {
   // The global print queue's pages exist only while its flag is on. Opened directly, they wait for the answer.
@@ -51,7 +51,8 @@ export default function AppSwithcer () {
             <Route index element={<FilesList />} />
             <Route path=":id" element={<Outlet />} >
               <Route index element={<FileEditor />} />
-              <Route path="print" element={<FilePrinter />} />
+              {/* The old print page's address: files, bookmarks and links may still open it */}
+              <Route path="print" element={<PrintRedirect />} />
             </Route>
           </Route>
           {/* <Route path="bye" component={() => {

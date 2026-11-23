@@ -14,6 +14,8 @@ import { InboxOutlined, UploadOutlined } from '@ant-design/icons'
 import EmptyState from 'components/EmptyState/EmptyState'
 import LabelApplicator from './components/LabelApplicator'
 import { PrintQueueOutlined } from '../../../components/icons'
+import useQueueEnabled from '../../Queue/useQueueEnabled'
+import { queueable } from '../../Queue/AddToQueue/AddToQueueButton'
 // import FileDetails from './components/FileDetails/FileDetails'
 
 const filesize = require('file-size')
@@ -29,6 +31,7 @@ export default function FilesList () {
     trash: (file) => { return (file.isDeleted) }
   }
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
+  const queue = useQueueEnabled()
   const [filesFilters, setFilesFilters] = useState('active')
 
   const [uploadFile] = useMutation(UploadFile, {
@@ -157,22 +160,28 @@ export default function FilesList () {
       key: 'action',
       sorter: true,
       render: (file) => {
-        const items = [
-          {
-            label: <Link to={'/files/' + file.id}>Edit</Link>,
-            key: 'edit'
-          },
-          {
-            label: 'Download',
-            key: 'download',
-            onClick: () => { saveFile(file.downloadUrl, file.filename) }
-          }
-        ]
+        const edit = { label: <Link to={'/files/' + file.id}>Edit</Link>, key: 'edit' }
+        const download = {
+          label: 'Download',
+          key: 'download',
+          onClick: () => { saveFile(file.downloadUrl, file.filename) }
+        }
+
+        // A G-code file goes to the queue while it is on; any other file (or with the queue off) opens its page
+        if (queue.enabled && queueable(file)) {
+          return (
+            <Space size="middle">
+              <Dropdown.Button menu={{ items: [edit, download] }} >
+                <Link to={'/queue/add/' + file.id}><PrintQueueOutlined aria-hidden /> Add to Queue</Link>
+              </Dropdown.Button>
+            </Space>
+          )
+        }
 
         return (
           <Space size="middle">
-            <Dropdown.Button menu={{ items }} >
-              <Link to={'/files/' + file.id + '/print'}><PrintQueueOutlined aria-hidden /> Print</Link>
+            <Dropdown.Button menu={{ items: [download] }} >
+              <Link to={'/files/' + file.id}>Edit</Link>
             </Dropdown.Button>
           </Space>
         )
