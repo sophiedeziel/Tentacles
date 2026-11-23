@@ -20,6 +20,27 @@ FactoryBot.define do
       tool_count { 1 }
       tool_changes { 0 }
     end
+
+    trait :failed do
+      status { 'failed' }
+      error { 'Could not read the file' }
+    end
+
+    # One Tool row per material, from T0: `create(:gcode_summary, :ready, :with_tools, materials: ['PLA', nil])`
+    trait :with_tools do
+      transient do
+        materials { ['PLA'] }
+      end
+
+      tool_count { materials.size }
+
+      after(:create) do |summary, evaluator|
+        evaluator.materials.each_with_index do |material, tool|
+          create(:gcode_summary_tool, gcode_summary: summary, tool:, material:, material_raw: material || 'PCTG')
+        end
+        summary.tools.reset
+      end
+    end
   end
 
   factory :gcode_summary_tool, class: 'Library::GcodeSummary::Tool' do

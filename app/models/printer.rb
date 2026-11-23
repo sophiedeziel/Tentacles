@@ -120,6 +120,12 @@ class Printer < ApplicationRecord
     [backend, uri, username, readable_secret]
   end
 
+  # Whether the last print is still on the bed, keeping the printer from taking a job of the global queue
+  # (PrintQueue::Readiness's :bed_not_cleared). Always false until the bed state is tracked: global queue phase 3,
+  # PR 5 ("bed state") reads it from the printer's last started printer_jobs row.
+  #: -> bool
+  def bed_needs_clearing? = false
+
   # Why the next job of the queue can't be started, or nil when it can: the printer must be OPERATIONAL, with
   # something in its queue and no active job. The single rule behind Printer.canStartNext and startNextPrint.
   #

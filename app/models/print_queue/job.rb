@@ -102,6 +102,10 @@ module PrintQueue
     #: -> bool
     def unfinished? = (waiting_count + printing_count).positive?
 
+    # What it needs from a printer, read from its file's G-code summary each time (see PrintQueue::Needs)
+    #: -> PrintQueue::Needs
+    def needs = PrintQueue::Needs.of(self)
+
     # The copy_number of the next copy dispatched: 1 for the first
     #: -> Integer
     def next_copy_number = (printer_jobs.maximum(:copy_number) || 0) + 1

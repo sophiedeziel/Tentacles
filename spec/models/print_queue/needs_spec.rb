@@ -1,0 +1,92 @@
+# frozen_string_literal: true
+
+require 'rails_helper'
+
+RSpec.describe PrintQueue::Needs do
+  let(:entry) { create(:print_job, colour: 'Black') }
+
+  def summary(*traits, **attributes)
+    create(:gcode_summary, *traits, item: entry.item, **attributes)
+  end
+
+  describe '.of' do
+    it 'reads a ready summary: tools, footprint, height, tool count, M600 list, and the colour of the entry' do
+      changes = [{ 'line' => 1234, 'z' => 5.4, 'layer' => 27 }]
+      summary(:ready, :with_tools, materials: ['PLA', nil], filament_changes: changes)
+
+      needs = described_class.of(entry)
+
+      expect(needs).to be_known
+      expect(needs).to be_runnable
+      expect(needs).to have_attributes(colour: 'Black', width: 123.09, depth: 130, height: 15, tool_count: 2,
+                                       filament_changes: changes)
+      expect(needs.tools.map { |tool| [tool.tool, tool.material] }).to eq [[0, 'PLA'], [1, nil]]
+    end
+
+    it 'is Any colour when the entry asks for none' do
+      entry.update!(colour: nil)
+      summary(:ready)
+
+      expect(described_class.of(entry).colour).to be_nil
+    end
+
+    it 'keeps the height when the box is Not known' do
+      summary(:ready, min_x: nil)
+
+      expect(described_class.of(entry)).to have_attributes(width: nil, depth: nil, height: 15)
+    end
+
+    it 'follows a recomputed summary (no snapshot)' do
+      gcode_summary = summary(:ready, :with_tools, materials: ['PLA'])
+      gcode_summary.tools.first.update!(material: 'PETG')
+
+      expect(described_class.of(entry.reload).tools.map(&:material)).to eq ['PETG']
+    end
+
+    it 'is not runnable while the summary is pending' do
+      summary(status: 'pending')
+
+      needs = described_class.of(entry)
+
+      expect(needs).not_to be_runnable
+      expect(needs).not_to be_known
+    end
+
+    it 'is not runnable for a G-code file without a summary yet' do
+      expect(described_class.of(entry)).not_to be_runnable
+    end
+
+    it 'is runnable with every value Not known when the summary failed' do
+      summary(:failed)
+
+      needs = described_class.of(entry)
+
+      expect(needs).to be_runnable
+      expect(needs).not_to be_known
+      expect(needs).to have_attributes(tools: [], width: nil, depth: nil, height: nil, tool_count: nil,
+                                       filament_changes: [], colour: 'Black')
+    end
+
+    it 'is runnable with every value Not known for a file that is not G-code' do
+      entry.item.file.attach(io: Rails.root.join('spec/fixture_files/gcode/binary.bgcode').open,
+                             filename: 'part.bgcode')
+
+      needs = described_class.of(entry)
+
+      expect(needs).to be_runnable
+      expect(needs).not_to be_known
+      expect(needs).to have_attributes(tools: [], width: nil, tool_count: nil)
+    end
+  end
+
+  it 'is what an entry needs' do
+    summary(:ready)
+
+    expect(entry.needs).to be_known
+  end
+
+  it 'is read-only' do
+    expect { described_class.new.save }.to raise_error(ApplicationModel::ReadOnlyRecord)
+    expect { described_class::Tool.new(tool: 0).save }.to raise_error(ApplicationModel::ReadOnlyRecord)
+  end
+end
