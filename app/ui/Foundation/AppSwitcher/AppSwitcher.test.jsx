@@ -84,4 +84,11 @@ describe('AppSwitcher', () => {
     await act(() => new Promise((resolve) => setTimeout(resolve, 50)))
     expect(container).toBeEmptyDOMElement()
   })
+
+  it('sends the old print page /files/:id/print to Add to Queue while the queue is on', async () => {
+    renderAt('/files/7/print', [flag(true)])
+
+    // Add to Queue loads lazily, then fails to load its data (no mocks)
+    expect(await screen.findByText('Could not load the file', {}, { timeout: 5000 })).toBeInTheDocument()
+  })
 })
