@@ -48,6 +48,8 @@ class Printer
         # New, so that the first tick always saves it (#changed? is true until it's saved)
         @status = Printer::Status.new(printer:) #: Printer::Status
         @specs_checked = false #: bool
+        # The state family of the last status saved, nil until one is (see #save_status)
+        @saved_family = nil #: Printer::StateFamily?
       end
 
       # Reloads the status from the printer, saves it if it changed and writes the heartbeat. Never raises.
@@ -57,7 +59,7 @@ class Printer
         # The heartbeat is written even when saving failed (e.g. the GraphQL trigger raised)
         error = capture_error do
           reload_status
-          status.save! if status.changed?
+          save_status if status.changed?
         end
         error = capture_error { Heartbeat.create! } || error
         error ? publish_failed(error) : connectivity.record_publish_success
@@ -70,6 +72,29 @@ class Printer
       # The last status reloaded, saved when it changed
       #: Printer::Status
       attr_reader :status
+
+      # Saves the status, then tells the global queue when the printer just turned Operational (PrintQueue::PrinterReady:
+      # it may be ready for a job, a dispatch pass is asked for) or went offline (PrintQueue::PrinterOffline). The
+      # worker remembers the family it saved last: no Redis read. The first status saved counts as a change, so a
+      # printer that is Operational when its monitor starts (a new printer, a restart) is dispatched to too.
+      #: -> void
+      def save_status
+        status.save!
+        previous_family = @saved_family
+        @saved_family = status.state_family
+        tell_queue(previous_family, @saved_family) if previous_family != @saved_family && PrintQueue.enabled?
+      end
+
+      # The printer event of a family change, if any: Offline, Connecting and Error are offline, once from a connected
+      # family (or at the first status saved)
+      #: (Printer::StateFamily? previous_family, Printer::StateFamily? family) -> void
+      def tell_queue(previous_family, family)
+        if family == Printer::StateFamily::Operational
+          PrintQueue::PrinterReady.new(printer:).save
+        elsif family && !family.connected? && (previous_family.nil? || previous_family.connected?)
+          PrintQueue::PrinterOffline.new(printer:).save
+        end
+      end
 
       # Reloads the status from the printer, with the camera of the webcam tracker. When the printer can't be read, the
       # status is OFFLINE instead (see #unreachable).

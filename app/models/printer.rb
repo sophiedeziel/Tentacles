@@ -12,6 +12,7 @@ class Printer < ApplicationRecord
   include EncryptedSecret
   include Specs
   include Filaments
+  include Bed
 
   validates :name, presence: true
   validates :backend, inclusion: { in: BACKENDS }

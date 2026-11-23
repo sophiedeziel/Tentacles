@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_22_150000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_22_170000) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -122,6 +122,38 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_150000) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "print_job_printers", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "print_job_id", null: false
+    t.bigint "printer_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["print_job_id", "printer_id"], name: "index_print_job_printers_on_print_job_id_and_printer_id", unique: true
+    t.index ["printer_id"], name: "index_print_job_printers_on_printer_id"
+  end
+
+  create_table "print_jobs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "file_record_id", null: false
+    t.integer "copies", default: 1, null: false
+    t.integer "position", null: false
+    t.boolean "held", default: false, null: false
+    t.boolean "same_printer", default: false, null: false
+    t.bigint "bound_printer_id"
+    t.boolean "all_capable", default: true, null: false
+    t.string "colour"
+    t.string "colour_key"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["bound_printer_id"], name: "index_print_jobs_on_bound_printer_id"
+    t.index ["file_record_id"], name: "index_print_jobs_on_file_record_id"
+    t.index ["position"], name: "index_print_jobs_on_position"
+  end
+
+  create_table "print_queue_settings", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.boolean "dispatch_paused", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "printer_jobs", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name"
     t.bigint "printer_id", null: false
@@ -131,6 +163,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_150000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.float "progress", default: 0.0, null: false
+    t.bigint "print_job_id"
+    t.integer "copy_number"
+    t.datetime "started_at"
+    t.datetime "finished_at"
+    t.json "filament"
+    t.datetime "bed_cleared_at"
+    t.string "bed_cleared_by"
+    t.datetime "cancel_requested_at"
+    t.index ["print_job_id", "status"], name: "index_printer_jobs_on_print_job_id_and_status"
     t.index ["printer_id", "status", "created_at"], name: "index_printer_jobs_on_printer_id_and_status_and_created_at"
   end
 
@@ -176,6 +217,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_150000) do
     t.datetime "specs_filled_at"
     t.integer "filament_slots", default: 1, null: false
     t.boolean "takes_jobs", default: true, null: false
+    t.boolean "clears_own_bed", default: false, null: false
   end
 
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
@@ -185,6 +227,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_150000) do
   add_foreign_key "file_labels", "labels"
   add_foreign_key "gcode_summaries", "file_records", on_delete: :cascade
   add_foreign_key "gcode_summary_tools", "gcode_summaries", on_delete: :cascade
+  add_foreign_key "print_job_printers", "print_jobs", on_delete: :cascade
+  add_foreign_key "print_job_printers", "printers", on_delete: :cascade
+  add_foreign_key "print_jobs", "file_records"
+  add_foreign_key "print_jobs", "printers", column: "bound_printer_id", on_delete: :nullify
+  add_foreign_key "printer_jobs", "print_jobs", on_delete: :nullify
   add_foreign_key "printer_jobs", "printers"
   add_foreign_key "printer_loaded_filaments", "printers", on_delete: :cascade
 end

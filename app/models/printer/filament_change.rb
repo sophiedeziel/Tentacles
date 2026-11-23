@@ -11,8 +11,8 @@ class Printer
   #
   # The errors are the loaded filament's, under the same attributes (`material`, `colour`, `slot`), so the caller can
   # tell which field they concern. Once saved, printerStatusChanged is pushed (best effort, see
-  # Printer#push_status_changed). This is the single entry point of a filament change: the queue's dispatch will be
-  # triggered from here.
+  # Printer#push_status_changed), then the global queue is asked for a dispatch pass while it's on: an entry may now
+  # fit the printer (PrintQueue::DispatchRequest, best effort). This is the single entry point of a filament change.
   class FilamentChange < ApplicationModel
     attribute :printer
     attribute :slot, :integer, default: 1
@@ -39,6 +39,7 @@ class Printer
       save_loaded_filament
       printer.loaded_filaments.reset # Read again by the push's subscribers
       printer.push_status_changed
+      PrintQueue::DispatchRequest.new.save if PrintQueue.enabled?
     end
 
     # Replaces the slot's row, or creates it. Its validations, with their error messages ("Colour can't be blank")

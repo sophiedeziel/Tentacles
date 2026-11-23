@@ -18,8 +18,14 @@ class Spooler
       log 'Not implemented yet'
     end
 
+    # Whether the job is a copy of a global queue entry run while the global queue is on: its print events are the
+    # queue's (PrintQueue::PrintStart, PrintProgress, PrintEnd). Otherwise the spool runs it as it always did.
+    def self.queue_copy?(job) = PrintQueue.enabled? && job.copy?
+
     def track_progress(progress)
-      @job.update(progress:)
+      return @job.update(progress:) unless Operation.queue_copy?(@job)
+
+      PrintQueue::PrintProgress.new(printer_job: @job, progress:).save
     end
 
     def log(message)
@@ -34,16 +40,17 @@ class Spooler
     # PrusaLink can still report the printer IDLE or BUSY for a moment after an upload with Print-After-Upload.
     MAX_START_POLLS = 120
 
-    def initialize(printer, job)
-      super
+    # adopted: the print is already under way, started before a restart (Spool#adopt_active_copy). It's monitored
+    # without uploading the file again, and over as soon as the printer no longer prints it.
+    def initialize(printer, job, adopted: false)
+      super(printer, job)
       @file = Library::Item.find(job.executable_id)
+      @adopted = adopted
     end
 
     # Raises the upload's errors (Printer::Backend::Error): the print can't start
     def execute
-      log '1. Start the print: upload the file to the printer'.cyan
-      update_subscribers
-      UploadFilesToPrintersJob.perform_now([@file.id], [@printer.id], print: true)
+      @adopted ? log('1. Adopt the print under way: monitor it, without uploading the file again'.cyan) : upload
 
       log '2. Monitor the print'.cyan
 
@@ -58,11 +65,17 @@ class Spooler
 
     private
 
+    def upload
+      log '1. Start the print: upload the file to the printer'.cyan
+      update_subscribers
+      UploadFilesToPrintersJob.perform_now([@file.id], [@printer.id], print: true)
+    end
+
     # Polls the printer until the print is over. A paused or cancelling print is still under way: its job stays active.
     # API errors (e.g. a network blip during a long pause) are retried; the print stops being monitored after
     # MAX_POLL_FAILURES consecutive failures, rather than killing the spool thread with the job left active.
     def wait_for_print_to_finish
-      @started = false
+      @started = @adopted
       @start_polls = 0
       failures = 0
       while failures < MAX_POLL_FAILURES
@@ -75,9 +88,9 @@ class Spooler
       log("Gave up monitoring the print after #{failures} failed polls".red) if failures >= MAX_POLL_FAILURES
     end
 
-    # Whether the print is over: it was under way (printing, paused or cancelling) and no longer is. Until it starts,
-    # OPERATIONAL means it hasn't started yet, for up to MAX_START_POLLS polls. Any other family (ERROR, OFFLINE, ...)
-    # ends it right away.
+    # Whether the print is over: it was under way (printing, paused or cancelling, or adopted) and no longer is. Until
+    # it starts, OPERATIONAL means it hasn't started yet, for up to MAX_START_POLLS polls. Any other family (ERROR,
+    # OFFLINE, ...) ends it right away.
     def print_over?(family)
       if family.in_progress?
         @started = true

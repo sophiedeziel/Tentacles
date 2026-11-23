@@ -7,6 +7,9 @@ module Library
     # schedules reading its G-code summary again (Library::GcodeSummaryScheduling: the summary is pending meanwhile).
     #
     #   Library::Item::ContentChange.new(item:, content: "G28\nG1 X10\n", filename: 'cube.gcode').save!
+    #
+    # Refused while the file is in the global print queue (Library::Item#queued?): its copies print the file as it was
+    # when they were added, and the rules read its G-code summary.
     class ContentChange < ApplicationModel
       attribute :item
       attribute :content, :string
@@ -15,6 +18,7 @@ module Library
 
       validates :item, presence: true
       validate :content_given
+      validate :not_queued, if: :item
 
       rescue_into_errors ActiveRecord::RecordNotSaved
 
@@ -45,6 +49,15 @@ module Library
       #: -> void
       def content_given
         errors.add(:content, :blank) if content.nil?
+      end
+
+      # Whatever the flag says: entries only exist while it's on, and their copies must print what was queued
+      #: -> void
+      def not_queued
+        return unless item.queued?
+
+        errors.add(:base, "#{item.filename} is in the print queue: it can't be changed until its copies are done or " \
+                          'removed')
       end
     end
   end

@@ -67,6 +67,14 @@ RSpec.describe Printer, :vcr, type: :model do
       expect { printer.destroy! }.not_to(change { Library::Item.count })
     end
 
+    it 'leaves the global queue entries: unbound, no longer listing it' do
+      entry = create(:print_job, same_printer: true, bound_printer: printer, all_capable: false, printers: [printer])
+
+      printer.destroy!
+
+      expect(entry.reload).to have_attributes(bound_printer_id: nil, printers: [])
+    end
+
     it 'deletes the jobs without pushing printQueueChanged per job (Printer::Removal sends one)' do
       allow(TentaclesSchema.subscriptions).to receive(:trigger)
 
@@ -78,6 +86,11 @@ RSpec.describe Printer, :vcr, type: :model do
 
   describe 'loaded filaments' do
     let(:printer) { create(:printer) }
+
+    it 'starts with one filament slot, none set, taking jobs, not clearing its own bed' do
+      expect(printer).to have_attributes(filament_slots: 1, takes_jobs: true, filament_set?: false,
+                                         clears_own_bed: false)
+    end
 
     it 'has a filament set once a slot has one' do
       create(:printer_loaded_filament, printer:)
@@ -98,6 +111,12 @@ RSpec.describe Printer, :vcr, type: :model do
 
       expect(printer).not_to be_valid
       expect(printer.errors[:filament_slots]).to eq ['must be greater than or equal to 1']
+    end
+  end
+
+  describe '#bed_needs_clearing?' do
+    it 'is false until the bed state is tracked (global queue phase 3, PR 5)' do
+      expect(build(:printer).bed_needs_clearing?).to be false
     end
   end
 

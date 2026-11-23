@@ -8,8 +8,9 @@ class Printer
   # No row for a slot means its filament is not set. Every printer has one slot until multi-filament (phase 9), but
   # the slots are validated against `printer.filament_slots` already.
   #
-  # Written through Printer::FilamentChange and Printer::FilamentRemoval, which push printerStatusChanged (and where
-  # the queue's dispatch will be triggered from): not directly.
+  # Written through Printer::FilamentChange and Printer::FilamentRemoval, which push printerStatusChanged: not
+  # directly. A change asks the global queue for a dispatch pass (an entry may now fit the printer); a removal doesn't,
+  # since it can't make an entry fit.
   class LoadedFilament < ApplicationRecord
     belongs_to :printer, inverse_of: :loaded_filaments
 

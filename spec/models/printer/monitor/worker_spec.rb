@@ -408,6 +408,93 @@ RSpec.describe Printer::Monitor::Worker do
     end
   end
 
+  describe 'printer events of the global queue (PrintQueue::PrinterReady, PrintQueue::PrinterOffline)' do
+    let(:dispatch_request) { instance_spy(PrintQueue::DispatchRequest, save: true) }
+
+    before do
+      allow(PrintQueue).to receive(:enabled?).and_return(true)
+      allow(PrintQueue).to receive(:push_changed)
+      allow(PrintQueue::DispatchRequest).to receive(:new).and_return(dispatch_request)
+      allow(PrintQueue::PrinterOffline).to receive(:new).and_call_original
+    end
+
+    # The printer reports this state from now on, with a new hotend temperature each time so that the status changes
+    def report(state)
+      allow(Octoprint::Job).to receive(:get) do
+        Octoprint::Job.deserialize({ state:, job: { file: {} }, progress: {} })
+      end
+      allow(Octoprint::Printer).to receive(:get) do
+        Octoprint::Printer.deserialize({ temperature: { tool0: { actual: rand(20.0..30.0), target: 0.0 } } })
+      end
+    end
+
+    it 'asks for a dispatch pass once when the printer turns Operational' do
+      worker.tick # Printing
+      expect(dispatch_request).not_to have_received(:save)
+
+      report('Operational')
+      2.times { worker.tick }
+
+      expect(dispatch_request).to have_received(:save).once
+    end
+
+    it 'asks for one when the printer is Operational at its first tick, and again after being offline' do
+      report('Operational')
+      worker.tick
+      go_offline
+      worker.tick
+      report('Operational')
+      worker.tick
+
+      expect(dispatch_request).to have_received(:save).twice
+    end
+
+    it 'asks for one at the next tick when the status could not be saved' do
+      report('Operational')
+      allow(subscriptions).to receive(:trigger).and_raise(StandardError, 'ActionCable is down')
+      worker.tick
+      expect(dispatch_request).not_to have_received(:save)
+
+      allow(subscriptions).to receive(:trigger)
+      worker.tick
+
+      expect(dispatch_request).to have_received(:save).once
+    end
+
+    it "pushes the printer's queue once when it goes offline, without asking for a dispatch pass" do
+      report('Operational')
+      worker.tick
+      go_offline
+      3.times { worker.tick }
+
+      expect(PrintQueue::PrinterOffline).to have_received(:new).once.with(printer:)
+      expect(PrintQueue).to have_received(:push_changed).once.with([printer])
+      expect(dispatch_request).to have_received(:save).once # When it turned Operational
+    end
+
+    it 'records nothing when a print starts or ends: the spool records the print events' do
+      worker.tick # Printing
+      report('Paused')
+      worker.tick
+
+      expect(PrintQueue::PrinterOffline).not_to have_received(:new)
+      expect(dispatch_request).not_to have_received(:save)
+    end
+
+    it 'records nothing while the global queue is off' do
+      allow(PrintQueue).to receive(:enabled?).and_return(false)
+      allow(PrintQueue::PrinterReady).to receive(:new)
+      report('Operational')
+      worker.tick
+      go_offline
+      worker.tick
+
+      expect(PrintQueue::PrinterReady).not_to have_received(:new)
+      expect(PrintQueue::PrinterOffline).not_to have_received(:new)
+      expect(PrintQueue::DispatchRequest).not_to have_received(:new)
+    end
+  end
+
   describe 'webcam settings' do
     it 'are not fetched again within 10 minutes' do
       worker.tick

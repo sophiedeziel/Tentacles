@@ -78,6 +78,36 @@ RSpec.describe Printer::FilamentChange do
     expect(pushed).to eq ['Galaxy Grey']
   end
 
+  describe 'the global queue' do
+    let(:dispatch_request) { instance_spy(PrintQueue::DispatchRequest, save: true) }
+
+    before { allow(PrintQueue::DispatchRequest).to receive(:new).and_return(dispatch_request) }
+
+    it 'asks for a dispatch pass once the filament is saved: an entry may now fit the printer' do
+      allow(PrintQueue).to receive(:enabled?).and_return(true)
+      allow(dispatch_request).to receive(:save) { expect(printer.loaded_filaments.count).to eq 1 }
+
+      build_change.save!
+
+      expect(dispatch_request).to have_received(:save).once
+    end
+
+    it 'asks for nothing while the global queue is off' do
+      allow(PrintQueue).to receive(:enabled?).and_return(false)
+
+      build_change.save!
+
+      expect(PrintQueue::DispatchRequest).not_to have_received(:new)
+    end
+
+    it 'asks for nothing when the filament is refused' do
+      allow(PrintQueue).to receive(:enabled?).and_return(true)
+
+      expect(build_change(colour: '').save).to be false
+      expect(PrintQueue::DispatchRequest).not_to have_received(:new)
+    end
+  end
+
   context 'when the push fails' do
     before do
       allow(subscriptions).to receive(:trigger).and_raise(Redis::CannotConnectError, 'Redis is down')

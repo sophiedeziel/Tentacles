@@ -88,6 +88,72 @@ RSpec.describe Library::GcodeSummaryRefresh do
     expect(item.reload.gcode_summary).to have_attributes(status: 'pending', slicer: nil)
   end
 
+  describe 'the global queue' do
+    let(:dispatch_request) { instance_spy(PrintQueue::DispatchRequest, save: true) }
+
+    before do
+      attach('prusaslicer_multi_tool.gcode')
+      allow(PrintQueue).to receive(:enabled?).and_return(true)
+      allow(PrintQueue::DispatchRequest).to receive(:new).and_return(dispatch_request)
+    end
+
+    it 'asks for a dispatch pass once the summary of a queued file is written: its entry may now be runnable' do
+      create(:print_job, item:)
+      allow(dispatch_request).to receive(:save) { expect(item.gcode_summary.reload.status).to eq 'ready' }
+
+      described_class.new(item:).save!
+
+      expect(dispatch_request).to have_received(:save).once
+    end
+
+    it 'asks for one when the summary of a queued file failed: its entry is runnable' do
+      create(:print_job, item:)
+      allow(Gcode::Summary).to receive(:read_file).and_raise(Gcode::Summary::Unreadable, 'Not a G-code text file')
+
+      described_class.new(item:).save!
+
+      expect(dispatch_request).to have_received(:save).once
+    end
+
+    it 'asks for nothing for a file that is not in the queue' do
+      done = create(:print_job, item:, copies: 1)
+      create(:printer_job, :copy, print_job: done, status: 'completed')
+
+      described_class.new(item:).save!
+
+      expect(PrintQueue::DispatchRequest).not_to have_received(:new)
+    end
+
+    it 'asks for nothing when the row was current already' do
+      create(:print_job, item:)
+      create(:gcode_summary, :ready, item:)
+
+      described_class.new(item:).save!
+
+      expect(PrintQueue::DispatchRequest).not_to have_received(:new)
+    end
+
+    it 'asks for nothing when the values read are thrown away' do
+      create(:print_job, item:)
+      allow(Gcode::Summary).to receive(:read_file).and_wrap_original do |original, file|
+        original.call(file).tap { Library::Item.find(item.id).file.attach(io: StringIO.new('G1 X1'), filename: 'n.gcode') }
+      end
+
+      described_class.new(item:).save!
+
+      expect(PrintQueue::DispatchRequest).not_to have_received(:new)
+    end
+
+    it 'asks for nothing while the global queue is off' do
+      allow(PrintQueue).to receive(:enabled?).and_return(false)
+      create(:print_job, item:)
+
+      described_class.new(item:).save!
+
+      expect(PrintQueue::DispatchRequest).not_to have_received(:new)
+    end
+  end
+
   it 'raises a storage error, for the job to retry' do
     allow(Gcode::Summary).to receive(:read_file).and_raise(ActiveStorage::FileNotFoundError)
 
