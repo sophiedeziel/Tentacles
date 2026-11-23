@@ -1,14 +1,22 @@
 # frozen_string_literal: true
 
 class Printer
+  # A job of a printer: a file to print on it, enqueued the old way (on the printer's own queue), or a copy of a global
+  # queue entry (`print_job`, with its `copy_number`, the `filament` loaded when it was dispatched and its bed state).
   class Job < ApplicationRecord
-    # Waiting in the queue, and under way. Every other status is finished (completed, error, and later failed).
+    STATUSES = %w[enqueued active completed error cancelled].freeze
+    # Waiting in the queue, and under way. Every other status is finished (completed, error, cancelled).
     UNFINISHED_STATUSES = %w[enqueued active].freeze
 
     belongs_to :printer, inverse_of: :jobs
     belongs_to :executable, polymorphic: true, inverse_of: :jobs
+    # The global queue entry this job is a copy of: nil for a job enqueued on the printer's own queue
+    belongs_to :print_job, class_name: 'PrintQueue::Job', optional: true, inverse_of: :printer_jobs
 
-    validates :status, inclusion: { in: %w[enqueued active completed error] }
+    # Who confirmed the bed was cleared after the print: a person (Bed Cleared), or the printer itself (clears_own_bed)
+    enum :bed_cleared_by, { person: 'person', automatic: 'automatic' }, prefix: true, validate: { allow_nil: true }
+
+    validates :status, inclusion: { in: STATUSES }
 
     scope :enqueued, -> { where(status: 'enqueued') }
     # The order the spooler starts them in: enqueue time, then id for jobs enqueued together

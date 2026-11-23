@@ -149,6 +149,44 @@ RSpec.describe Library::Item, type: :model do
       expect(Printer::Job.exists?(job.id)).to be false
       expect(Printer.exists?(job.printer_id)).to be true
     end
+
+    it 'is refused while the file has a queue entry, even a finished one (the foreign key does not cascade)' do
+      entry = create(:print_job, item: file)
+      create(:printer_job, :copy, print_job: entry, status: 'completed')
+
+      expect { file.destroy! }.to raise_error(ActiveRecord::InvalidForeignKey)
+      expect(Library::Item.exists?(file.id)).to be true
+      expect(entry.printer_jobs.count).to eq 1
+    end
+  end
+
+  describe '#queued?' do
+    it 'is false for a file with no queue entry' do
+      expect(file).not_to be_queued
+    end
+
+    it 'is true while an entry of it has copies waiting or printing' do
+      entry = create(:print_job, item: file, copies: 2)
+      expect(file).to be_queued
+
+      create(:printer_job, :copy, print_job: entry, status: 'completed')
+      create(:printer_job, :copy, print_job: entry, status: 'active')
+      expect(file).to be_queued
+    end
+
+    it 'is false once every copy of its entries is done or failed' do
+      entry = create(:print_job, item: file, copies: 2)
+      create(:printer_job, :copy, print_job: entry, status: 'completed')
+      create(:printer_job, :copy, print_job: entry, status: 'error')
+
+      expect(file).not_to be_queued
+    end
+
+    it 'ignores the entries of other files' do
+      create(:print_job)
+
+      expect(file).not_to be_queued
+    end
   end
 
   describe '#gcode?' do

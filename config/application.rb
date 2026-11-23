@@ -44,5 +44,8 @@ module Tentacles
     config.railties_order = [ActiveStorage::Engine, :main_app, :all]
 
     config.active_job.queue_adapter = :sidekiq
+
+    # The global print queue (#2934), off unless GLOBAL_PRINT_QUEUE is "true" or "1". Read through PrintQueue.enabled?
+    config.x.global_print_queue = %w[true 1].include?(ENV.fetch('GLOBAL_PRINT_QUEUE', '').strip.downcase)
   end
 end

@@ -509,6 +509,20 @@ class Library::Item
     sig { params(value: T::Enumerable[::Library::Label]).void }
     def labels=(value); end
 
+    sig { returns(T::Array[T.untyped]) }
+    def print_job_ids; end
+
+    sig { params(ids: T::Array[T.untyped]).returns(T::Array[T.untyped]) }
+    def print_job_ids=(ids); end
+
+    # This method is created by ActiveRecord on the `Library::Item` class because it declared `has_many :print_jobs`.
+    # 🔗 [Rails guide for `has_many` association](https://guides.rubyonrails.org/association_basics.html#the-has-many-association)
+    sig { returns(::PrintQueue::Job::PrivateCollectionProxy) }
+    def print_jobs; end
+
+    sig { params(value: T::Enumerable[::PrintQueue::Job]).void }
+    def print_jobs=(value); end
+
     sig { returns(T.nilable(::ActiveStorage::Attachment)) }
     def reload_file_attachment; end
 
