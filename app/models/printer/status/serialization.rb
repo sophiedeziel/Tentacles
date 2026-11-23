@@ -10,18 +10,17 @@ class Printer
     #   Printer::Status::Camera.new.from_json(json) # => Printer::Status::Camera
     module Serialization
       extend ActiveSupport::Concern
-      extend T::Sig
       include ActiveModel::Serializers::JSON
 
-      sig { params(_options: T.untyped).returns(T::Hash[String, T.untyped]) }
+      #: (?untyped _options) -> Hash[String, untyped]
       def serializable_hash(_options = nil)
-        T.bind(self, ApplicationModel)
+        #: self as ApplicationModel
         attribute_names.index_with { |name| self.class.attribute_types.fetch(name).serialize(public_send(name)) }
       end
 
-      sig { params(json: String, _include_root: T.untyped).returns(T.self_type) }
+      #: (String json, ?untyped _include_root) -> self
       def from_json(json, _include_root = nil)
-        model = T.cast(self, ApplicationModel)
+        model = self #: as ApplicationModel
         model.assign_attributes(ActiveSupport::JSON.decode(json).slice(*model.attribute_names))
         self
       end

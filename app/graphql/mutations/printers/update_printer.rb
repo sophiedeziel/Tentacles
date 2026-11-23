@@ -6,8 +6,6 @@ module Mutations
     # Saves the printer details page in one go: connection and specs. Only the fields sent are written: an omitted
     # field stays as it is, null clears it. The secret is only replaced by a new one (the page never shows it).
     class UpdatePrinter < Base::Mutation
-      extend T::Sig
-
       description 'Changes a printer: only the fields sent are written (omitted: unchanged, null: cleared). The ' \
                   'monitor reconnects with the new credentials on its own.'
 
@@ -24,7 +22,7 @@ module Mutations
       field :printer, Types::Printer, null: true, description: 'The printer as saved, null when it was not found'
       field :errors, [String], null: false, description: 'Why it was not saved, empty when it was'
 
-      sig { params(id: String, changes: T.untyped).returns(T::Hash[Symbol, T.untyped]) }
+      #: (id: String, **untyped changes) -> Hash[Symbol, untyped]
       def resolve(id:, **changes)
         printer = ::Printer.find_by(id:)
         return { printer: nil, errors: ['Printer not found'] } if printer.nil?
@@ -47,7 +45,7 @@ module Mutations
 
       private
 
-      sig { params(changes: T::Hash[Symbol, T.untyped]).returns(T::Hash[Symbol, T.untyped]) }
+      #: (Hash[Symbol, untyped] changes) -> Hash[Symbol, untyped]
       def attributes(changes)
         specs = changes.delete(:specs)
         changes.delete(:secret) if changes[:secret].blank?
@@ -58,7 +56,7 @@ module Mutations
 
       # The answers cached from the old address (and its disconnected flag) don't apply to the new one: the next read
       # calls the new address
-      sig { params(printer: ::Printer).void }
+      #: (::Printer printer) -> void
       def forget_api_answers(printer)
         ::Printer::ApiCache.delete_by(printer_id: printer.id)
         ::Printer::Disconnection.delete_by(printer_id: printer.id)

@@ -40,14 +40,14 @@ class Printer
 
         # "http://192.168.1.57/" for 192.168.1.57, "http://[fd00::57]/" for fd00::57. Built from a parsed IP address
         # only: never from text a client sent.
-        sig { params(ip: IPAddr).returns(String) }
+        #: (IPAddr ip) -> String
         def self.url(ip)
           "http://#{ip.ipv6? ? "[#{ip}]" : ip}/"
         end
 
         # Whether the IPv4 address `ip` is an OctoPrint server with the Application Keys plugin enabled: its probe
         # answers 204. false for any error (unreachable, timeout, ...).
-        sig { params(ip: String).returns(T::Boolean) }
+        #: (String ip) -> bool
         def self.available?(ip)
           response = Net::HTTP.get_response(URI("http://#{ip}/plugin/appkeys/probe"))
           response.is_a?(Net::HTTPSuccess) && response.code == '204'
@@ -57,9 +57,7 @@ class Printer
 
         private
 
-        sig do
-          params(block: T.proc.params(http: Faraday::Connection).returns(Faraday::Response)).returns(Faraday::Response)
-        end
+        #: { (Faraday::Connection http) -> Faraday::Response } -> Faraday::Response
         def http(&block)
           connection = Faraday.new(url:, headers: { 'Content-Type' => 'application/json' },
                                    request: { open_timeout: TIMEOUT, timeout: TIMEOUT })
@@ -68,7 +66,7 @@ class Printer
           raise Printer::Backend::Unreachable, "Could not reach OctoPrint at #{url}"
         end
 
-        sig { params(response: Faraday::Response).returns(T::Hash[String, T.untyped]) }
+        #: (Faraday::Response response) -> Hash[String, untyped]
         def parse(response)
           body = JSON.parse(response.body.to_s)
           body.is_a?(Hash) ? body : not_octoprint
@@ -76,13 +74,13 @@ class Printer
           not_octoprint
         end
 
-        sig { params(body: T::Hash[String, T.untyped], key: String).returns(String) }
+        #: (Hash[String, untyped] body, String key) -> String
         def string(body, key)
           value = body[key]
           value.is_a?(String) ? value : not_octoprint
         end
 
-        sig { returns(T.noreturn) }
+        #: -> bot
         def not_octoprint
           raise Printer::Backend::Error, "#{url} does not answer like OctoPrint"
         end

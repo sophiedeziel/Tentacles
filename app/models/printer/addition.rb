@@ -20,13 +20,13 @@ class Printer
     validate :printer_must_be_valid
 
     # The attributes left out get the printer's defaults (backend: 'octoprint')
-    sig { returns(::Printer) }
+    #: -> ::Printer
     def printer
-      @printer ||= T.let(::Printer.new(attributes.compact), T.nilable(::Printer))
+      @printer ||= ::Printer.new(attributes.compact) #: ::Printer?
     end
 
     # The merged errors are named like the printer's attributes (config/locales: "URL", "API key or password")
-    sig { params(attribute: T.any(String, Symbol), options: T::Hash[Symbol, T.untyped]).returns(String) }
+    #: ((String | Symbol) attribute, ?Hash[Symbol, untyped] options) -> String
     def self.human_attribute_name(attribute, options = {})
       ::Printer.human_attribute_name(attribute, options)
     end
@@ -34,26 +34,26 @@ class Printer
     private
 
     # Printer's validations, with its error messages ("URL can't be blank")
-    sig { void }
+    #: -> void
     def printer_must_be_valid
       errors.merge!(printer.errors) unless printer.valid?
     end
 
-    sig { void }
+    #: -> void
     def persist
       printer.save!
       start_spool
       fill_specs
     end
 
-    sig { void }
+    #: -> void
     def start_spool
       printer.notify_spooler(SpoolerCommand::AddPrinter)
     rescue Redis::BaseError, ConnectionPool::TimeoutError => e
       Rails.logger.error("[Printer::Addition] Could not publish add_printer for printer #{printer.id}: #{e.message}")
     end
 
-    sig { void }
+    #: -> void
     def fill_specs
       printer.fill_specs_from_server
     end

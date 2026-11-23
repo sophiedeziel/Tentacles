@@ -29,29 +29,30 @@ class Printer
       # Seconds between ticks, from PRINTER_MONITOR_INTERVAL by default (see .default_interval)
       attribute :interval, :float, default: -> { default_interval }
 
-      sig { returns(Connectivity) }
+      #: Connectivity
       attr_reader :connectivity
 
       # Seconds between ticks, from PRINTER_MONITOR_INTERVAL (defaults to 2)
-      sig { returns(Float) }
+      #: -> Float
       def self.default_interval
         interval = ENV.fetch('PRINTER_MONITOR_INTERVAL', DEFAULT_INTERVAL).to_f
         interval.positive? ? interval : DEFAULT_INTERVAL
       end
 
-      sig { params(attributes: T.untyped).void }
+      #: (**untyped attributes) -> void
       def initialize(**attributes)
         super
-        @reader = T.let(Reader.for(printer), Reader)
-        @webcam = T.let(WebcamTracker.new(printer:, reader: @reader), WebcamTracker)
-        @connectivity = T.let(Connectivity.new(printer:, interval:), Connectivity)
+        @reader = Reader.for(printer) #: Reader
+        @webcam = WebcamTracker.new(printer:, reader: @reader) #: WebcamTracker
+        @connectivity = Connectivity.new(printer:, interval:) #: Connectivity
         # New, so that the first tick always saves it (#changed? is true until it's saved)
-        @status = T.let(Printer::Status.new(printer:), Printer::Status)
-        @specs_checked = T.let(false, T::Boolean)
+        @status = Printer::Status.new(printer:) #: Printer::Status
+        @specs_checked = false #: bool
       end
 
       # Reloads the status from the printer, saves it if it changed and writes the heartbeat. Never raises.
-      sig { override.void }
+      # @override
+      #: -> void
       def tick
         # The heartbeat is written even when saving failed (e.g. the GraphQL trigger raised)
         error = capture_error do
@@ -67,12 +68,12 @@ class Printer
       private
 
       # The last status reloaded, saved when it changed
-      sig { returns(Printer::Status) }
+      #: Printer::Status
       attr_reader :status
 
       # Reloads the status from the printer, with the camera of the webcam tracker. When the printer can't be read, the
       # status is OFFLINE instead (see #unreachable).
-      sig { void }
+      #: -> void
       def reload_status
         status.reload(reader: @reader)
         @webcam.refresh
@@ -85,7 +86,7 @@ class Printer
       end
 
       # OFFLINE, with the error, without a job or temperatures, and seen when the printer last answered
-      sig { params(error: StandardError).void }
+      #: (StandardError error) -> void
       def unreachable(error)
         status.assign_attributes(
           state_family: Printer::StateFamily::Offline, state_text: Printer::Status::UNREACHABLE_STATE_TEXT,
@@ -97,7 +98,7 @@ class Printer
       # Enqueues FillPrinterSpecsJob when no fill has read the printer's server yet (`specs_filled_at` is nil), e.g. it
       # was unreachable when it was added. Once per worker: the job sets the column, and a changed address (which
       # clears it) restarts the worker. Never raises: the poll succeeded.
-      sig { void }
+      #: -> void
       def fill_specs_once
         return if @specs_checked
 
@@ -111,7 +112,7 @@ class Printer
         log_exception('Failed to enqueue FillPrinterSpecsJob', e)
       end
 
-      sig { params(error: StandardError).void }
+      #: (StandardError error) -> void
       def record_failure(error)
         connectivity.record_failure
         @webcam.expire # Fetch the webcam settings again once reconnected
@@ -119,7 +120,7 @@ class Printer
       end
 
       # Runs the block and returns the error it raised, if any
-      sig { params(block: T.proc.void).returns(T.nilable(StandardError)) }
+      #: { -> void } -> StandardError?
       def capture_error(&block)
         block.call
         nil
@@ -128,13 +129,13 @@ class Printer
       end
 
       # Only the first failure of a streak is logged, so a Redis outage doesn't flood the logs
-      sig { params(error: StandardError).void }
+      #: (StandardError error) -> void
       def publish_failed(error)
         streak = connectivity.record_publish_failure
         log_exception('Failed to publish the printer status', error) if streak == 1
       end
 
-      sig { params(error: StandardError).returns(String) }
+      #: (StandardError error) -> String
       def error_text(error)
         return error.message if error.is_a?(Printer::Backend::UnreadableCredentials)
         return "Missing #{product_name} credentials" if error.is_a?(Printer::Backend::MissingCredentials)
@@ -143,7 +144,7 @@ class Printer
       end
 
       # Only the first failure of a streak is logged, so unreachable printers don't flood the logs
-      sig { params(error: StandardError).void }
+      #: (StandardError error) -> void
       def log_failure(error)
         if error.is_a?(Printer::Backend::Error)
           log(:warn, "Unreachable: #{error_text(error)}")
@@ -153,7 +154,7 @@ class Printer
       end
 
       # "OctoPrint", "PrusaLink"
-      sig { returns(String) }
+      #: -> String
       def product_name
         printer.api.product_name
       end

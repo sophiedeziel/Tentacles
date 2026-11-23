@@ -7,8 +7,6 @@ require_relative 'spooler/spool'
 require_relative 'spooler/operation'
 # require 'rainbow/refinement'
 class Spooler
-  extend T::Sig
-
   WAIT_TIME = 0.5.seconds
 
   def initialize
@@ -64,14 +62,12 @@ class Spooler
   # The commands for a printer that still exists: remove_printer is handled by #handle_message, before the lookup.
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
-  sig do
-    params(
-      printer: Printer,
-      command: T.any(Printer::SpoolerCommand::AddPrinter, Printer::SpoolerCommand::StartPrint,
-                     Printer::SpoolerCommand::StopPrint, Printer::SpoolerCommand::Resume),
-      opts: T::Hash[Symbol, T.untyped]
-    ).void
-  end
+  #: (
+  #|   Printer printer,
+  #|   (Printer::SpoolerCommand::AddPrinter | Printer::SpoolerCommand::StartPrint |
+  #|    Printer::SpoolerCommand::StopPrint | Printer::SpoolerCommand::Resume) command,
+  #|   Hash[Symbol, untyped] opts
+  #| ) -> void
   def send_command(printer, command, opts)
     case command
     when Printer::SpoolerCommand::AddPrinter

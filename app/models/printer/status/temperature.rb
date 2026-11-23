@@ -19,7 +19,7 @@ class Printer
       validates :unit, presence: true
 
       # Rounded to 1°, for change detection
-      sig { returns([T.nilable(Integer), T.nilable(Integer)]) }
+      #: -> [Integer?, Integer?]
       def rounded
         [actual&.round, target&.round]
       end

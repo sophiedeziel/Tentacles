@@ -11,16 +11,14 @@ class ApplicationModel
   #   status.updated_at = 1_794_744_000              # epoch seconds work too
   #   type.serialize(status.updated_at)              # => "2026-11-15T12:00:00.123Z"
   class TimeType < ActiveModel::Type::DateTime
-    extend T::Sig
-
-    sig { params(value: T.nilable(T.any(Time, ActiveSupport::TimeWithZone))).returns(T.nilable(String)) }
+    #: ((Time | ActiveSupport::TimeWithZone)? value) -> String?
     def serialize(value)
       value&.utc&.iso8601(3)
     end
 
     private
 
-    sig { params(value: T.untyped).returns(T.nilable(ActiveSupport::TimeWithZone)) }
+    #: (untyped value) -> ActiveSupport::TimeWithZone?
     def cast_value(value)
       value.is_a?(Numeric) ? Time.zone.at(value) : super&.in_time_zone
     end

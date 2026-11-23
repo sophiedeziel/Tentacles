@@ -7,9 +7,7 @@ module Sources
   #
   #   dataloader.with(Sources::LoadedFilamentsSource).load(printer.id) # => [Printer::LoadedFilament], by slot
   class LoadedFilamentsSource < GraphQL::Dataloader::Source
-    extend T::Sig
-
-    sig { params(printer_ids: T::Array[Integer]).returns(T::Array[T::Array[::Printer::LoadedFilament]]) }
+    #: (Array[Integer] printer_ids) -> Array[Array[::Printer::LoadedFilament]]
     def fetch(printer_ids)
       filaments = ::Printer::LoadedFilament.where(printer_id: printer_ids).order(:slot).group_by(&:printer_id)
       printer_ids.map { |printer_id| filaments.fetch(printer_id, []) }

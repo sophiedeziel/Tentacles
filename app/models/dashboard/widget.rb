@@ -12,8 +12,6 @@ module Dashboard
   #   widget = Dashboard::PrinterWidget.new(section:, printer:, width_units: 2, height_units: 1, position: 0)
   #   widget.camera # => true (the default)
   class Widget < ApplicationRecord
-    extend T::Sig
-
     # The widget types, as stored in `type`
     TYPES = %w[Dashboard::PrinterWidget Dashboard::PrintQueueWidget].freeze
 
@@ -34,13 +32,13 @@ module Dashboard
 
     BOOLEAN = ActiveModel::Type::Boolean.new
 
-    sig { params(spans: [Integer, Integer]).void }
+    #: (*[Integer, Integer] spans) -> void
     def self.widget_spans(*spans)
       self.allowed_spans = spans
     end
 
     # Declares a type's options: typed readers and writers over the json column
-    sig { params(defaults: T::Boolean).void }
+    #: (**bool defaults) -> void
     def self.widget_options(**defaults)
       self.option_defaults = defaults
       defaults.each do |key, default|

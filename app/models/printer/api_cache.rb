@@ -25,15 +25,13 @@ class Printer
     validates :printer_id, :api_method, :expires_in, presence: true
 
     class << self
-      extend T::Sig
-
-      sig { params(printer_id: Integer, api_method: String).returns(String) }
+      #: (Integer printer_id, String api_method) -> String
       def key(printer_id, api_method)
         "printer_api_#{printer_id}_#{api_method}"
       end
 
       # nil when there's no cached answer: never stored, expired, or blank (see #blank?)
-      sig { params(printer_id: Integer, api_method: String).returns(T.nilable(Printer::ApiCache)) }
+      #: (printer_id: Integer, api_method: String) -> Printer::ApiCache?
       def find_by(printer_id:, api_method:)
         json = REDIS_POOL.with { |conn| conn.get(key(printer_id, api_method)) }
         data = json.present? ? JSON.parse(json, symbolize_names: true) : nil
@@ -45,10 +43,11 @@ class Printer
       #
       # `expires_in: false` reads the cache without storing the block's value: like ActiveRecord's, the method returns
       # the new entry unsaved when it's invalid (without expires_in).
-      sig do
-        params(printer_id: Integer, api_method: String, expires_in: T.any(ActiveSupport::Duration, FalseClass),
-               block: T.proc.returns(T.untyped)).returns(Printer::ApiCache)
-      end
+      #: (
+      #|   printer_id: Integer,
+      #|   api_method: String,
+      #|   expires_in: (ActiveSupport::Duration | FalseClass)
+      #| ) { -> untyped } -> Printer::ApiCache
       def find_or_create_by(printer_id:, api_method:, expires_in:, &block)
         cached = find_by(printer_id:, api_method:)
         Rails.logger.info("Using cached value for #{key(printer_id, api_method)}") if cached
@@ -57,7 +56,7 @@ class Printer
 
       # Deletes the printer's cached answers without reading them (like ActiveRecord's delete_by), e.g. once it's
       # removed or its address changed
-      sig { params(printer_id: Integer).void }
+      #: (printer_id: Integer) -> void
       def delete_by(printer_id:)
         REDIS_POOL.with do |conn|
           keys = conn.scan_each(match: key(printer_id, '*')).to_a
@@ -66,18 +65,18 @@ class Printer
       end
     end
 
-    sig { returns(String) }
+    #: -> String
     def key
       self.class.key(T.must(printer_id), T.must(api_method))
     end
 
     # Expired, or without a value (nil, "", [], {}): it never counts as a cached answer (see .find_by)
-    sig { returns(T::Boolean) }
+    #: -> bool
     def blank?
       value.blank? || expires_at.to_i <= Time.current.to_i
     end
 
-    sig { void }
+    #: -> void
     def destroy
       Rails.logger.info("Clearing cache for #{key}")
       REDIS_POOL.with { |conn| conn.del(key) }
@@ -85,7 +84,7 @@ class Printer
 
     private
 
-    sig { void }
+    #: -> void
     def persist
       Rails.logger.info("Storing #{key} in cache")
       self.expires_at = Time.current + expires_in

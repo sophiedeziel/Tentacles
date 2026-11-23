@@ -10,41 +10,39 @@ class ApplicationModel
   #   status.state_family = 'PRINTNG'          # raises KeyError once read (casts are lazy), like T::Struct did
   #   type.serialize(Printer::StateFamily::Paused) # => "PAUSED"
   class EnumType < ActiveModel::Type::Value
-    extend T::Sig
-
-    sig { returns(T.class_of(T::Enum)) }
+    #: singleton(T::Enum)
     attr_reader :enum_class
 
-    sig { params(enum_class: T.class_of(T::Enum)).void }
+    #: (singleton(T::Enum) enum_class) -> void
     def initialize(enum_class)
       super()
       @enum_class = enum_class
     end
 
-    sig { returns(Symbol) }
+    #: -> Symbol
     def type
       :enum
     end
 
-    sig { params(value: T.nilable(T::Enum)).returns(T.untyped) }
+    #: (T::Enum? value) -> untyped
     def serialize(value)
       value&.serialize
     end
 
-    sig { params(other: T.untyped).returns(T::Boolean) }
+    #: (untyped other) -> bool
     def ==(other)
       super && other.enum_class == enum_class
     end
 
     # The attribute's type in the RBIs that `bin/tapioca dsl` generates
-    sig { returns(T::Types::Base) }
+    #: -> T::Types::Base
     def __tapioca_type
       T::Utils.coerce(T.nilable(enum_class))
     end
 
     private
 
-    sig { params(value: T.untyped).returns(T::Enum) }
+    #: (untyped value) -> T::Enum
     def cast_value(value)
       value.is_a?(enum_class) ? value : enum_class.deserialize(value)
     end

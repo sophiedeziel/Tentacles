@@ -6,8 +6,6 @@ module Mutations
     # The OctoPrint approval, server side: the browser never calls OctoPrint and never sees the key. Only the
     # addresses the network scan found are called: the server never calls an address a client made up.
     class RequestPrinterAppKey < Base::Mutation
-      extend T::Sig
-
       description 'Asks an OctoPrint server found by the network scan for an API key for Tentacles. The user ' \
                   'approves it in OctoPrint, at `approvalUrl`; the server then adds the printer with the key. ' \
                   'Follow the request with printerAppKeyChanged.'
@@ -22,7 +20,7 @@ module Mutations
                                                                      'could not be asked'
       field :errors, [String], null: false, description: 'Why OctoPrint could not be asked, empty when it was'
 
-      sig { params(address: String).returns(T::Hash[Symbol, T.untyped]) }
+      #: (address: String) -> Hash[Symbol, untyped]
       def resolve(address:)
         address = address.strip
         scanned = scanned_ip(address)
@@ -34,7 +32,7 @@ module Mutations
       end
 
       # An IPv4 or IPv6 address; nil for anything else (a host name, a URL, a range like 192.168.1.0/24, a zone)
-      sig { params(text: String).returns(T.nilable(IPAddr)) }
+      #: (String text) -> IPAddr?
       def self.parse_ip(text)
         return if text.match?(%r{[/%]})
 
@@ -46,7 +44,7 @@ module Mutations
       private
 
       # The address of the last scan that is `address`, parsed from the scan's own text, not the client's
-      sig { params(address: String).returns(T.nilable(IPAddr)) }
+      #: (String address) -> IPAddr?
       def scanned_ip(address)
         ip = self.class.parse_ip(address)
         found = ip && ::NetworkScan.last&.ips&.find { |scanned| self.class.parse_ip(scanned.to_s) == ip }
@@ -54,7 +52,7 @@ module Mutations
       end
 
       # Asks OctoPrint at `ip` for a key, keeps the request and starts polling it
-      sig { params(ip: IPAddr).returns(::Printer::AppKeyRequest) }
+      #: (IPAddr ip) -> ::Printer::AppKeyRequest
       def request_key(ip)
         url = ::Printer::Backend::Octoprint::AppKey.url(ip)
         app_key = ::Printer::Backend::Octoprint::AppKey::Request.create!(url:)
@@ -68,7 +66,7 @@ module Mutations
       end
 
       # Why `address` is not called
-      sig { params(address: String).returns(String) }
+      #: (String address) -> String
       def refusal(address)
         return 'Enter the address of the OctoPrint server' if address.empty?
 

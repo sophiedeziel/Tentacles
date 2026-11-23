@@ -138,6 +138,23 @@ inheriting it (`Printer::Backend::Octoprint::AppKey`).
 New files are `# typed: strict` when possible, `# typed: true` otherwise. After adding or changing attributes, run
 `bin/tapioca dsl <Constant>` for the constants you changed. Don't run it for everything: it rewrites unrelated RBIs.
 
+Signatures are inline RBS comments, not `sig` blocks, and are checked statically only (no runtime checks):
+
+```ruby
+# The adapter of the printer's backend
+#: (Printer printer) -> Printer::Backend
+def for(printer)
+
+@live_job ||= LiveJob.find_by(printer:) #: LiveJob?   # instead of T.let
+#: self as Printer                                     # instead of T.bind
+```
+
+- Abstract methods get `# @abstract` above their signature and a forwarding `super` as their body (Sorbet requires it):
+  `def send_command = super`. Modules with only abstract methods are `# @interface`.
+- An abstract model gets `# @abstract` above its class, so Sorbet refuses `.new` on it, and `self.abstract_class = true`
+  (like ActiveRecord) so it raises at runtime too (`Printer::Command`, `Printer::Backend`).
+- No `extend T::Sig` / `T::Helpers`. `T::Enum`, `T::Struct`, `T.must` and the generated RBIs in `sorbet/rbi` stay.
+
 ## Specs
 
 `spec/models` mirrors `app/models`. Test a command through `save` / `save!` and its `errors`, not through `#persist`.

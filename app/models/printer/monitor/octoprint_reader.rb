@@ -19,16 +19,17 @@ class Printer
 
       attribute :printer
 
-      sig { params(attributes: T.untyped).void }
+      #: (**untyped attributes) -> void
       def initialize(**attributes)
         super
         # Whether the temperatures failed on the last read: the reader's own state (see #temperatures_failed)
-        @temperatures_failing = T.let(false, T::Boolean)
+        @temperatures_failing = false #: bool
       end
 
       # The job and temperatures, as Printer::Status attributes.
       # Raises Printer::Backend::Error (e.g. Unreachable) when OctoPrint can't be reached.
-      sig { override.returns(T::Hash[Symbol, T.untyped]) }
+      # @override
+      #: -> Hash[Symbol, untyped]
       def status_attributes
         Printer::Backend::Octoprint.translate_errors do
           job = api { Octoprint::Job.get }
@@ -40,7 +41,8 @@ class Printer
       end
 
       # Raises Printer::Backend::Error when the settings can't be read
-      sig { override.returns(Printer::Status::Camera) }
+      # @override
+      #: -> Printer::Status::Camera
       def camera
         webcam = Printer::Backend::Octoprint.translate_errors { api { Octoprint::Settings.webcam } }
         Printer::Status::Camera.new(enabled: webcam.enabled,
@@ -49,7 +51,7 @@ class Printer
 
       private
 
-      sig { params(job: Octoprint::Job).returns(T::Hash[Symbol, T.untyped]) }
+      #: (Octoprint::Job job) -> Hash[Symbol, untyped]
       def job_attributes(job)
         progress = job.progress
         {
@@ -62,7 +64,7 @@ class Printer
       end
 
       # Hotend (tool 0) and bed temperatures. Only available when OctoPrint is connected to the printer.
-      sig { params(state_family: Printer::StateFamily).returns(Temperatures) }
+      #: (Printer::StateFamily state_family) -> Temperatures
       def temperatures(state_family)
         return [nil, nil] unless state_family.connected?
 
@@ -77,7 +79,7 @@ class Printer
         [nil, nil]
       end
 
-      sig { returns(Temperatures) }
+      #: -> Temperatures
       def read_temperatures
         temperature = api { Octoprint::Printer.get(exclude: %i[sd state]) }.temperature
         @temperatures_failing = false
@@ -85,15 +87,15 @@ class Printer
       end
 
       # Only the first failure of a streak is logged, so a broken printer doesn't flood the logs
-      sig { params(error: StandardError).void }
+      #: (StandardError error) -> void
       def temperatures_failed(error)
         log_exception('Failed to read the temperatures', error) unless @temperatures_failing
         @temperatures_failing = true
       end
 
-      sig do
-        params(data: T.nilable(Octoprint::Printer::TemperatureData)).returns(T.nilable(Printer::Status::Temperature))
-      end
+      #: (
+      #|   Octoprint::Printer::TemperatureData? data
+      #| ) -> Printer::Status::Temperature?
       def to_temperature(data)
         return nil if data.nil?
 
@@ -101,20 +103,20 @@ class Printer
                                          unit: TemperatureUnit::Celsius)
       end
 
-      sig { params(value: T.untyped).returns(T.nilable(String)) }
+      #: (untyped value) -> String?
       def text(value)
         value.to_s.presence&.truncate(MAX_TEXT_LENGTH)
       end
 
       # rubocop:disable Naming/BlockForwarding, Style/ArgumentsForwarding -- Sorbet sigs need a named block
-      sig { type_parameters(:T).params(block: T.proc.returns(T.type_parameter(:T))).returns(T.type_parameter(:T)) }
+      #: [T] { -> T } -> T
       def api(&block)
         client.use(&block)
       end
       # rubocop:enable Naming/BlockForwarding, Style/ArgumentsForwarding
 
       # Raises Octoprint::Exceptions::MissingCredentialsError when the URI or the API key is blank
-      sig { returns(Octoprint::Client) }
+      #: -> Octoprint::Client
       def client
         T.cast(printer.api, Printer::Backend::Octoprint).client
       end

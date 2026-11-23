@@ -19,16 +19,17 @@ class Printer
 
       attribute :printer
 
-      sig { params(attributes: T.untyped).void }
+      #: (**untyped attributes) -> void
       def initialize(**attributes)
         super
         # The id of the last job seen and its file name: the reader's own state (see #file_name)
-        @job_file = T.let(nil, T.nilable([T.nilable(Integer), T.nilable(String)]))
+        @job_file = nil #: [Integer?, String?]?
       end
 
       # The job and temperatures, as Printer::Status attributes.
       # Raises Printer::Backend::Error (e.g. Unreachable) when PrusaLink can't be reached.
-      sig { override.returns(T::Hash[Symbol, T.untyped]) }
+      # @override
+      #: -> Hash[Symbol, untyped]
       def status_attributes
         Printer::Backend::Prusalink.translate_errors do
           status = api { Prusalink::Status.get }
@@ -39,14 +40,15 @@ class Printer
       end
 
       # PrusaLink's camera isn't supported yet
-      sig { override.returns(Printer::Status::Camera) }
+      # @override
+      #: -> Printer::Status::Camera
       def camera
         Printer::Status::Camera.new(enabled: false)
       end
 
       private
 
-      sig { params(status: Prusalink::Status).returns(T::Hash[Symbol, T.untyped]) }
+      #: (Prusalink::Status status) -> Hash[Symbol, untyped]
       def state_attributes(status)
         {
           state_family: Printer::Backend::Prusalink.state_family(status),
@@ -55,7 +57,7 @@ class Printer
         }
       end
 
-      sig { params(job: T.nilable(Prusalink::Status::Job)).returns(T::Hash[Symbol, T.untyped]) }
+      #: (Prusalink::Status::Job? job) -> Hash[Symbol, untyped]
       def job_attributes(job)
         {
           file_name: text(file_name(job)),
@@ -64,7 +66,7 @@ class Printer
         }
       end
 
-      sig { params(printer: T.nilable(Prusalink::Status::Printer)).returns(T::Hash[Symbol, T.untyped]) }
+      #: (Prusalink::Status::Printer? printer) -> Hash[Symbol, untyped]
       def temperatures(printer)
         return { hotend: nil, bed: nil } if printer.nil?
 
@@ -75,7 +77,7 @@ class Printer
       end
 
       # The file of the job, read once per job: the Status only has the job's id
-      sig { params(job: T.nilable(Prusalink::Status::Job)).returns(T.nilable(String)) }
+      #: (Prusalink::Status::Job? job) -> String?
       def file_name(job)
         if job.nil?
           @job_file = nil
@@ -88,7 +90,7 @@ class Printer
         read_file_name(job.id)
       end
 
-      sig { params(job_id: T.nilable(Integer)).returns(T.nilable(String)) }
+      #: (Integer? job_id) -> String?
       def read_file_name(job_id)
         job = api { Prusalink::Job.get }
         return nil if job.nil? # The job ended in the meantime: try again on the next tick
@@ -104,29 +106,30 @@ class Printer
         nil
       end
 
-      sig do
-        params(actual: T.nilable(Numeric), target: T.nilable(Numeric)).returns(T.nilable(Printer::Status::Temperature))
-      end
+      #: (
+      #|   Numeric? actual,
+      #|   Numeric? target
+      #| ) -> Printer::Status::Temperature?
       def to_temperature(actual, target)
         return nil if actual.nil? && target.nil?
 
         Printer::Status::Temperature.new(actual: actual&.to_f, target: target&.to_f)
       end
 
-      sig { params(value: T.untyped).returns(T.nilable(String)) }
+      #: (untyped value) -> String?
       def text(value)
         value.to_s.presence&.truncate(MAX_TEXT_LENGTH)
       end
 
       # rubocop:disable Naming/BlockForwarding, Style/ArgumentsForwarding -- Sorbet sigs need a named block
-      sig { type_parameters(:T).params(block: T.proc.returns(T.type_parameter(:T))).returns(T.type_parameter(:T)) }
+      #: [T] { -> T } -> T
       def api(&block)
         client.use(&block)
       end
       # rubocop:enable Naming/BlockForwarding, Style/ArgumentsForwarding
 
       # Raises Prusalink::Exceptions::MissingCredentialsError when the URI or the password is blank
-      sig { returns(Prusalink::Client) }
+      #: -> Prusalink::Client
       def client
         T.cast(printer.api, Printer::Backend::Prusalink).client
       end

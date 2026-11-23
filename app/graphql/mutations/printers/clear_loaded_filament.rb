@@ -5,8 +5,6 @@ module Mutations
   module Printers
     # Remove Filament, on the Loaded Filament card of the printer's page
     class ClearLoadedFilament < Base::Mutation
-      extend T::Sig
-
       description "Removes the filament loaded in a slot of a printer: the slot's filament is not set again. A " \
                   'slot with no filament is left as it is. Pushes printerStatusChanged when a filament was removed.'
 
@@ -17,7 +15,7 @@ module Mutations
       field :printer, Types::Printer, null: true, description: 'The printer, null when it was not found'
       field :errors, [Types::UserError], null: false, description: 'Why it was not removed, empty when it was'
 
-      sig { params(printer_id: String, slot: Integer).returns(T::Hash[Symbol, T.untyped]) }
+      #: (printer_id: String, ?slot: Integer) -> Hash[Symbol, untyped]
       def resolve(printer_id:, slot: 1)
         printer = ::Printer.find_by(id: printer_id)
         return { printer: nil, errors: [Types::UserError.base('Printer not found')] } if printer.nil?

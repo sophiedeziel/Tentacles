@@ -13,34 +13,33 @@ class Printer
     #
     # The thread and the stop signal are instance variables, not attributes: they're the runtime state of the process,
     # and only #stop (a push to a Thread::Queue, which is thread-safe) touches them from another thread.
+    # @abstract
     module Runnable
       extend ActiveSupport::Concern
-      extend T::Sig
-      extend T::Helpers
       include Logging
 
-      abstract!
-
-      sig { abstract.void }
-      def tick; end
+      # @abstract
+      #: -> void
+      def tick = super
 
       # Seconds to wait before the next tick
-      sig { abstract.returns(Float) }
-      def delay; end
+      # @abstract
+      #: -> Float
+      def delay = super
 
-      sig { returns(T.self_type) }
+      #: -> self
       def start
         stop_signal
         @thread ||= Thread.new { run }
         self
       end
 
-      sig { void }
+      #: -> void
       def stop
         stop_signal << :stop
       end
 
-      sig { params(timeout: T.nilable(Numeric)).returns(T.nilable(Thread)) }
+      #: (?Numeric? timeout) -> Thread?
       def join(timeout = nil)
         thread = @thread
         return nil if thread.nil?
@@ -50,12 +49,12 @@ class Printer
 
       private
 
-      sig { returns(Thread::Queue) }
+      #: -> Thread::Queue
       def stop_signal
         @stop_signal ||= Thread::Queue.new
       end
 
-      sig { void }
+      #: -> void
       def run
         Kernel.loop do
           tick_with_executor
@@ -64,7 +63,7 @@ class Printer
       end
 
       # Wraps the tick like a request (database connections go back to the pool, ...)
-      sig { void }
+      #: -> void
       def tick_with_executor
         Rails.application.executor.wrap { tick }
       rescue StandardError => e

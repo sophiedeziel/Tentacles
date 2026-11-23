@@ -34,7 +34,6 @@
 #   error's message.
 # - Reads use ActiveRecord's names too: `.find`, `.find_by`, `.where`, `.last`, `.exists?`, `#reload`.
 class ApplicationModel
-  extend T::Sig
   include ActiveModel::Model
   include ActiveModel::Attributes
 
@@ -44,27 +43,45 @@ class ApplicationModel
   class_attribute :expected_errors, instance_writer: false, default: [].freeze
 
   class << self
-    extend T::Sig
+    # Like ActiveRecord's: an abstract model (`self.abstract_class = true`, next to its `# @abstract` RBS comment)
+    # is only built through its subclasses. The flag isn't inherited.
+    #: bool?
+    attr_writer :abstract_class
+
+    #: -> bool
+    def abstract_class?
+      @abstract_class == true
+    end
 
     # Errors #save turns into `errors[:base]` (and a false return) instead of raising. Subclasses add to their
     # parent's list.
-    sig { params(error_classes: T.class_of(StandardError)).void }
+    #: (*singleton(StandardError) error_classes) -> void
     def rescue_into_errors(*error_classes)
       self.expected_errors = (expected_errors + error_classes).freeze
     end
 
-    sig { params(attributes: T.untyped).returns(T.attached_class) }
+    #: (**untyped attributes) -> instance
     def create(**attributes)
       new(**attributes).tap(&:save)
     end
 
-    sig { params(attributes: T.untyped).returns(T.attached_class) }
+    #: (**untyped attributes) -> instance
     def create!(**attributes)
       new(**attributes).tap(&:save!)
     end
   end
 
-  sig { returns(T::Boolean) }
+  #: (*untyped, **untyped) -> void
+  def initialize(*, **)
+    if self.class.abstract_class?
+      raise NotImplementedError,
+            "#{self.class.name} is an abstract class and cannot be instantiated"
+    end
+
+    super
+  end
+
+  #: -> bool
   def save
     save!
   rescue ActiveModel::ValidationError => e
@@ -77,7 +94,7 @@ class ApplicationModel
     false
   end
 
-  sig { returns(T::Boolean) }
+  #: -> bool
   def save! # rubocop:disable Naming/PredicateMethod -- returns true like ActiveRecord#save!
     raise ReadOnlyRecord, "#{self.class.name} is read-only" if readonly?
 
@@ -86,19 +103,19 @@ class ApplicationModel
     true
   end
 
-  sig { params(attributes: T::Hash[T.any(String, Symbol), T.untyped]).returns(T::Boolean) }
+  #: (Hash[(String | Symbol), untyped] attributes) -> bool
   def update(attributes)
     assign_attributes(attributes)
     save
   end
 
-  sig { params(attributes: T::Hash[T.any(String, Symbol), T.untyped]).returns(T::Boolean) }
+  #: (Hash[(String | Symbol), untyped] attributes) -> bool
   def update!(attributes)
     assign_attributes(attributes)
     save!
   end
 
-  sig { returns(T::Boolean) }
+  #: -> bool
   def readonly?
     false
   end
@@ -107,13 +124,13 @@ class ApplicationModel
 
   # What saving means for this model: the database write, the HTTP call, the Redis write..., then its follow-up
   # steps, in order
-  sig { void }
+  #: -> void
   def persist
     raise NotImplementedError, "#{self.class.name} has nothing to save"
   end
 
   # The message #save adds to `errors[:base]` for one of the errors declared with `rescue_into_errors`
-  sig { params(error: Exception).returns(String) }
+  #: (Exception error) -> String
   def error_message_for(error)
     error.message
   end

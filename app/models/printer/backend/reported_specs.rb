@@ -33,7 +33,8 @@ class Printer
       # nil (not []) when not reported, like the other attributes
       attribute :materials, ArrayType.new(:string)
 
-      sig { override.returns(T::Boolean) }
+      # @override
+      #: -> bool
       def readonly?
         true
       end

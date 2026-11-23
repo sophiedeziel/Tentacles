@@ -9,9 +9,7 @@ class ApplicationModel
   #   attribute :hotend, ModelType.new(Temperature)
   #   validates :hotend, nested: true # "Hotend is invalid" when the Temperature is; nil is valid
   class NestedValidator < ActiveModel::EachValidator
-    extend T::Sig
-
-    sig { params(record: ApplicationModel, attribute: Symbol, value: T.nilable(ApplicationModel)).void }
+    #: (ApplicationModel record, Symbol attribute, ApplicationModel? value) -> void
     def validate_each(record, attribute, value)
       record.errors.add(attribute, :invalid) if value && !value.valid?
     end

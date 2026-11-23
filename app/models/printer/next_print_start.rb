@@ -32,7 +32,7 @@ class Printer
       end
     end
 
-    sig { void }
+    #: -> void
     def still_the_confirmed_job
       expected = expected_job_id
       message = next_job_change(expected) if expected
@@ -40,7 +40,7 @@ class Printer
     end
 
     # The next job changed since the user confirmed (enqueued, removed or reordered): don't start another file
-    sig { params(expected_job_id: String).returns(T.nilable(String)) }
+    #: (String expected_job_id) -> String?
     def next_job_change(expected_job_id)
       next_job = printer.next_job
       return "#{printer.name} has nothing in its queue" if next_job.nil?

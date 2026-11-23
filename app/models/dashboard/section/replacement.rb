@@ -12,16 +12,14 @@ module Dashboard
     # Positions come from the order. An id that no longer exists (deleted by another save) creates a new row, so the
     # last save still wins. Every problem is reported at once, prefixed with where it is ("Widget 2 in section 1: ...").
     class Replacement
-      extend T::Sig
-
-      sig { params(sections: T::Array[T::Hash[Symbol, T.untyped]]).void }
+      #: (Array[Hash[Symbol, untyped]] sections) -> void
       def initialize(sections)
         @sections = sections
-        @errors = T.let([], T::Array[String])
+        @errors = [] #: Array[String]
       end
 
       # Raises InvalidLayout before loading anything when the layout is over a limit
-      sig { params(sections: T::Array[T::Hash[Symbol, T.untyped]]).void }
+      #: (Array[Hash[Symbol, untyped]] sections) -> void
       def self.check_limits!(sections)
         widget_count = sections.sum { |section| Array(section[:widgets]).size }
         errors = []
@@ -31,7 +29,7 @@ module Dashboard
         raise InvalidLayout, errors if errors.any?
       end
 
-      sig { void }
+      #: -> void
       def call
         self.class.check_limits!(@sections)
         Dashboard::Section.with_layout_lock do

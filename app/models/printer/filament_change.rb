@@ -23,18 +23,18 @@ class Printer
     validate :loaded_filament_must_be_valid
 
     # The slot's filament with the new values: built by the validation, saved by #save. nil until validated.
-    sig { returns(T.nilable(LoadedFilament)) }
+    #: LoadedFilament?
     attr_reader :loaded_filament
 
     # The merged errors are named like the loaded filament's attributes
-    sig { params(attribute: T.any(String, Symbol), options: T::Hash[Symbol, T.untyped]).returns(String) }
+    #: ((String | Symbol) attribute, ?Hash[Symbol, untyped] options) -> String
     def self.human_attribute_name(attribute, options = {})
       LoadedFilament.human_attribute_name(attribute, options)
     end
 
     private
 
-    sig { void }
+    #: -> void
     def persist
       save_loaded_filament
       printer.loaded_filaments.reset # Read again by the push's subscribers
@@ -42,19 +42,19 @@ class Printer
     end
 
     # Replaces the slot's row, or creates it. Its validations, with their error messages ("Colour can't be blank")
-    sig { void }
+    #: -> void
     def loaded_filament_must_be_valid
       return unless printer
 
       # By printer_id: built with `printer:`, an unsaved row would join printer.loaded_filaments (has_many_inversing)
       filament = LoadedFilament.find_or_initialize_by(printer_id: printer.id, slot:)
       filament.assign_attributes(material:, colour:)
-      @loaded_filament = T.let(filament, T.nilable(LoadedFilament))
+      @loaded_filament = filament #: LoadedFilament?
       errors.merge!(filament.errors) unless filament.valid?
     end
 
     # Two people saving at once: the unique (printer_id, slot) index decides, and the row that won is updated
-    sig { void }
+    #: -> void
     def save_loaded_filament
       T.must(loaded_filament).save!
     rescue ActiveRecord::RecordNotUnique

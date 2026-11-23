@@ -9,8 +9,6 @@ module Resolvers
   # Failures are GraphQL errors with a code in `extensions.code`: UNAUTHORIZED (rejected credentials), UNREACHABLE
   # (no answer), PRINTER_ERROR (anything else). Their messages never contain the secret.
   class IdentifyPrinter < GraphQL::Schema::Resolver
-    extend T::Sig
-
     # Characters kept from the error's own message
     DETAIL_LENGTH = 120
 
@@ -28,10 +26,13 @@ module Resolvers
                                            "that printer's saved one."
     argument :printer_id, ID, required: false, description: 'The saved printer being edited, for its saved secret'
 
-    sig do
-      params(backend: String, uri: String, username: T.nilable(String), secret: T.nilable(String),
-             printer_id: T.nilable(String)).returns(T::Hash[Symbol, T.nilable(String)])
-    end
+    #: (
+    #|   backend: String,
+    #|   uri: String,
+    #|   ?username: String?,
+    #|   ?secret: String?,
+    #|   ?printer_id: String?
+    #| ) -> Hash[Symbol, String?]
     def resolve(backend:, uri:, username: nil, secret: nil, printer_id: nil)
       key = secret.presence || saved_secret(printer_id)
       printer = ::Printer.new(backend:, uri: uri.presence, username: username.presence, secret: key)
@@ -44,7 +45,7 @@ module Resolvers
     private
 
     # The secret saved for that printer: nil without a printer, or when it can't be decrypted (it must be entered again)
-    sig { params(printer_id: T.nilable(String)).returns(T.nilable(String)) }
+    #: (String? printer_id) -> String?
     def saved_secret(printer_id)
       return if printer_id.nil?
 
@@ -54,10 +55,12 @@ module Resolvers
       printer.readable_secret
     end
 
-    sig do
-      params(api: Printer::Backend, uri: String, secret: String, error: StandardError)
-        .returns(GraphQL::ExecutionError)
-    end
+    #: (
+    #|   Printer::Backend api,
+    #|   String uri,
+    #|   String secret,
+    #|   StandardError error
+    #| ) -> GraphQL::ExecutionError
     def execution_error(api, uri, secret, error)
       warning = "[identifyPrinter] Could not identify the #{api.product_name} at #{uri.inspect}: #{error.class}"
       Rails.logger.warn(redact(warning, secret))
@@ -65,7 +68,7 @@ module Resolvers
       GraphQL::ExecutionError.new(redact(message, secret), extensions: { code: code(error) })
     end
 
-    sig { params(error: StandardError).returns(String) }
+    #: (StandardError error) -> String
     def code(error)
       case error
       when Printer::Backend::Unauthorized then 'UNAUTHORIZED'
@@ -76,13 +79,13 @@ module Resolvers
 
     # The first line of the error's message, short: the gems put the server's whole answer (an HTML page, ...) in it.
     # Redacted before it's cut, so that no part of the secret survives.
-    sig { params(error: StandardError, secret: String).returns(String) }
+    #: (StandardError error, String secret) -> String
     def detail(error, secret)
       redact(error.message, secret).lines.first.to_s.squish.truncate(DETAIL_LENGTH)
     end
 
     # `detail`: see #detail
-    sig { params(api: Printer::Backend, uri: String, error: StandardError, detail: String).returns(String) }
+    #: (Printer::Backend api, String uri, StandardError error, String detail) -> String
     def message(api, uri, error, detail)
       product = api.product_name
       case error
@@ -97,7 +100,7 @@ module Resolvers
     end
 
     # Never echo the secret back, whatever ends up in a message
-    sig { params(message: String, secret: String).returns(String) }
+    #: (String message, String secret) -> String
     def redact(message, secret)
       secret.present? ? message.gsub(secret, '[FILTERED]') : message
     end

@@ -29,7 +29,7 @@ class Printer
 
     # Once the printer is destroyed, the cleanup and the pushes are best effort: a failure is logged and the next
     # steps still run.
-    sig { void }
+    #: -> void
     def persist
       destroy_printer
       forget_redis_keys
@@ -39,7 +39,7 @@ class Printer
     end
 
     # Nothing changed when it raises
-    sig { void }
+    #: -> void
     def destroy_printer
       printer.destroy!
     rescue *CONFLICTS
@@ -47,7 +47,7 @@ class Printer
     end
 
     # The monitor's snapshot, the cached API answers and the disconnected flag
-    sig { void }
+    #: -> void
     def forget_redis_keys
       after_removal('forget its Redis keys') do
         Status.delete_by(printer_id: printer.id)
@@ -56,14 +56,14 @@ class Printer
       end
     end
 
-    sig { void }
+    #: -> void
     def stop_spool
       after_removal('stop its spool') { printer.notify_spooler(SpoolerCommand::RemovePrinter) }
     end
 
     # The jobs were deleted with the printer (dependent: :delete_all), so their queue push is sent here, once. The
     # printer can't be loaded back by the subscription, so its attributes are sent (see Subscriptions::PrintQueueChanged).
-    sig { void }
+    #: -> void
     def push_print_queue_changed
       after_removal('push printQueueChanged') do
         attributes = printer.slice(:id, :name, :backend, :created_at, :updated_at, :last_seen_at)
@@ -71,12 +71,12 @@ class Printer
       end
     end
 
-    sig { void }
+    #: -> void
     def push_dashboard_changed
       after_removal('push dashboardChanged') { TentaclesSchema.subscriptions.trigger(:dashboard_changed, {}, {}) }
     end
 
-    sig { params(step: String, block: T.proc.void).void }
+    #: (String step) { -> void } -> void
     def after_removal(step, &block)
       block.call
     rescue StandardError => e

@@ -8,7 +8,7 @@ class Printer
   #   cancellation.save          # => false when refused or when the printer fails
   #   cancellation.errors[:base] # => ['Prusa MK4 is now printing gear.gcode']
   class Cancellation < Command
-    CANCELLABLE = T.let([StateFamily::Printing, StateFamily::Paused].freeze, T::Array[StateFamily])
+    CANCELLABLE = [StateFamily::Printing, StateFamily::Paused].freeze #: Array[StateFamily]
 
     private
 

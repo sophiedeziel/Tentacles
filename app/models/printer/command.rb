@@ -25,10 +25,9 @@ class Printer
   # - `refusal(family)`: the error message when the command isn't allowed in that state family, else nil
   # - `send_command`: the command, sent through `printer.api` (with `live_job.job_id` for the job commands)
   # - `refresh_after_command?`, optionally: false to skip the monitor tick
+  # @abstract
   class Command < ApplicationModel
-    extend T::Helpers
-
-    abstract!
+    self.abstract_class = true
 
     attribute :printer
     # The file the user confirmed for, or nil not to check it
@@ -44,28 +43,30 @@ class Printer
     rescue_into_errors Printer::Backend::Error, JSON::ParserError, KeyError, URI::InvalidURIError
 
     # The printer's state and job, read from the printer the first time it's needed (raises the adapter's errors)
-    sig { returns(LiveJob) }
+    #: -> LiveJob
     def live_job
-      @live_job ||= T.let(LiveJob.find_by(printer:), T.nilable(LiveJob))
+      @live_job ||= LiveJob.find_by(printer:) # rubocop:disable Rails/FindByOrAssignmentMemoization -- never nil
     end
 
     private
 
     # The error message when the command isn't allowed in that state family, or nil when it is
-    sig { abstract.params(family: Printer::StateFamily).returns(T.nilable(String)) }
-    def refusal(family); end
+    # @abstract
+    #: (Printer::StateFamily family) -> String?
+    def refusal(family) = super
 
     # Sends the command to the printer (raises the adapter's errors)
-    sig { abstract.void }
-    def send_command; end
+    # @abstract
+    #: -> void
+    def send_command = super
 
     # Whether the monitor tick follows the command
-    sig { returns(T::Boolean) }
+    #: -> bool
     def refresh_after_command?
       true
     end
 
-    sig { void }
+    #: -> void
     def persist
       send_command
       refresh_status if refresh_after_command?
@@ -73,30 +74,30 @@ class Printer
 
     # Whether the command connects the server to the printer. Refused, without reading the state, for the backends
     # that connect on their own (see Printer::Backend#connects_on_its_own?).
-    sig { returns(T::Boolean) }
+    #: -> bool
     def connection_command?
       false
     end
 
-    sig { returns(T::Boolean) }
+    #: -> bool
     def refused?
       errors.any?
     end
 
-    sig { void }
+    #: -> void
     def connects_through_tentacles
       api = printer.api
       errors.add(:base, "#{api.product_name} printers connect on their own") if api.connects_on_its_own?
     end
 
-    sig { void }
+    #: -> void
     def printer_allows_it
       message = refusal(T.must(live_job.state_family))
       errors.add(:base, message) if message
     end
 
     # The live job's file name is the one the monitor reports (Printer::Status#file_name)
-    sig { void }
+    #: -> void
     def still_the_confirmed_job
       expected = expected_file_name
       return if expected.nil?
@@ -114,7 +115,7 @@ class Printer
     # One monitor tick for the printer, inline: reloads its status from the printer and saves it (which pushes
     # printerStatusChanged) if it changed. The camera of the last snapshot is kept: the webcam settings aren't read
     # again. Never raises: the monitor reports the printer on its next tick anyway.
-    sig { void }
+    #: -> void
     def refresh_status
       status = Printer::Status.find_or_initialize_by(printer:).reload
       status.save! if status.changed?
@@ -123,7 +124,7 @@ class Printer
                         "#{e.class}: #{e.message}")
     end
 
-    sig { params(error: Exception).returns(String) }
+    #: (Exception error) -> String
     def error_message_for(error)
       product = printer.api.product_name
       case error
@@ -135,7 +136,7 @@ class Printer
       end
     end
 
-    sig { params(error: Backend::Error, product: String).returns(String) }
+    #: (Backend::Error error, String product) -> String
     def backend_error_message(error, product)
       name = printer.name
       case error
@@ -149,7 +150,7 @@ class Printer
     end
 
     # Never echo the API key or password back, whatever ends up in an error message
-    sig { params(message: String).returns(String) }
+    #: (String message) -> String
     def redact(message)
       key = printer.readable_secret
       key.present? ? message.gsub(key, '[FILTERED]') : message

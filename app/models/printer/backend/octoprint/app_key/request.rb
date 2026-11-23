@@ -11,23 +11,23 @@ class Printer
         #   request.app_token       # follow it with AppKey::Poll
         #   request.auth_dialog_url # where the user approves it (OctoPrint 1.8+; nil before)
         class Request < AppKey
-          sig { returns(T.nilable(String)) }
+          #: String?
           attr_reader :app_token, :auth_dialog_url
 
           private
 
-          sig { void }
+          #: -> void
           def persist
             response = http { |connection| connection.post('plugin/appkeys/request', { app: APP_NAME }.to_json) }
             raise_unless_created(response)
 
             body = parse(response)
             # A blank token can't be polled: OctoPrint answers it with a token
-            @app_token = T.let(string(body, 'app_token').presence || not_octoprint, T.nilable(String))
-            @auth_dialog_url = T.let(body['auth_dialog'].presence, T.nilable(String))
+            @app_token = string(body, 'app_token').presence || not_octoprint #: String?
+            @auth_dialog_url = body['auth_dialog'].presence #: String?
           end
 
-          sig { params(response: Faraday::Response).void }
+          #: (Faraday::Response response) -> void
           def raise_unless_created(response)
             case response.status
             when 201 then nil

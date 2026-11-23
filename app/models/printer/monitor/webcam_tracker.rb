@@ -15,7 +15,7 @@ class Printer
     class WebcamTracker < ApplicationModel
       include Logging
 
-      REFRESH_EVERY = T.let(10.minutes, ActiveSupport::Duration)
+      REFRESH_EVERY = 10.minutes #: ActiveSupport::Duration
 
       attribute :printer
       # The printer's Reader (see Reader#camera)
@@ -26,7 +26,7 @@ class Printer
       attribute :fetched_at, TimeType.new
 
       # Fetches the webcam settings when they are due. Never raises a printer API error or a bad response error.
-      sig { void }
+      #: -> void
       def refresh
         return unless due?
 
@@ -39,14 +39,14 @@ class Printer
       end
 
       # Fetch the settings on the next refresh (e.g. once OctoPrint answers again)
-      sig { void }
+      #: -> void
       def expire
         self.fetched_at = nil
       end
 
       private
 
-      sig { returns(T::Boolean) }
+      #: -> bool
       def due?
         last_fetch = fetched_at
         last_fetch.nil? || Time.current - last_fetch >= REFRESH_EVERY

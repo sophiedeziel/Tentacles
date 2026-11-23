@@ -8,9 +8,7 @@ module Sources
   #
   #   dataloader.with(Sources::NextJobSource).load(printer.id) # => Printer::Job or nil
   class NextJobSource < GraphQL::Dataloader::Source
-    extend T::Sig
-
-    sig { params(printer_ids: T::Array[Integer]).returns(T::Array[T.nilable(::Printer::Job)]) }
+    #: (Array[Integer] printer_ids) -> Array[::Printer::Job?]
     def fetch(printer_ids)
       jobs = dataloader.with(PrinterJobsSource).load_all(printer_ids).map(&:next_job)
       ActiveRecord::Associations::Preloader.new(records: jobs.compact,

@@ -11,25 +11,24 @@ class Printer
     #   Printer::Status.new(printer:).reload(reader:)
     #
     # A reader can keep state between reads (see PrusalinkReader): the Worker keeps its reader for the printer's life.
+    # @interface
     module Reader
       extend ActiveSupport::Concern
-      extend T::Sig
-      extend T::Helpers
-
-      interface!
 
       # The job and temperatures, as Printer::Status attributes: every attribute that Printer::Status#reload replaces
       # (state_family, state_text, error_text, file_name, progress, print_time_left, hotend, bed).
       # Raises Printer::Backend::Error (e.g. Unreachable) when the printer can't be read.
-      sig { abstract.returns(T::Hash[Symbol, T.untyped]) }
-      def status_attributes; end
+      # @abstract
+      #: -> Hash[Symbol, untyped]
+      def status_attributes = super
 
       # Raises Printer::Backend::Error when the webcam settings can't be read
-      sig { abstract.returns(Printer::Status::Camera) }
-      def camera; end
+      # @abstract
+      #: -> Printer::Status::Camera
+      def camera = super
 
-      sig { params(printer: Printer).returns(Reader) }
       # The reader that the printer's adapter names (see Printer::Backend::ADAPTERS)
+      #: (Printer printer) -> Reader
       def self.for(printer)
         Printer::Backend.adapter_class(printer.backend).reader_class.new(printer:)
       end
