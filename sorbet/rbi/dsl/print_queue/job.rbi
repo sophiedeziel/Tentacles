@@ -1123,6 +1123,51 @@ class PrintQueue::Job
     sig { void }
     def id_will_change!; end
 
+    sig { returns(T.nilable(::String)) }
+    def material; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def material=(value); end
+
+    sig { returns(T::Boolean) }
+    def material?; end
+
+    sig { returns(T.nilable(::String)) }
+    def material_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def material_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def material_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def material_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def material_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def material_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def material_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def material_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def material_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def material_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def material_was; end
+
+    sig { void }
+    def material_will_change!; end
+
     sig { returns(::Integer) }
     def position; end
 
@@ -1197,6 +1242,9 @@ class PrintQueue::Job
 
     sig { void }
     def restore_id_value!; end
+
+    sig { void }
+    def restore_material!; end
 
     sig { void }
     def restore_position!; end
@@ -1312,6 +1360,12 @@ class PrintQueue::Job
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def saved_change_to_id_value?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_material; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_material?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
     sig { returns(T.nilable([::Integer, ::Integer])) }
     def saved_change_to_position; end
 
@@ -1404,6 +1458,9 @@ class PrintQueue::Job
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def will_save_change_to_id_value?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_material?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def will_save_change_to_position?(from: T.unsafe(nil), to: T.unsafe(nil)); end

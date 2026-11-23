@@ -44,6 +44,49 @@ RSpec.describe PrintQueue::Needs do
       expect(described_class.of(entry.reload).tools.map(&:material)).to eq ['PETG']
     end
 
+    context 'when the entry asks for a material' do
+      before { entry.update!(material: 'PETG') }
+
+      it "replaces the material of a file of one tool, keeping the summary's other values" do
+        summary(:ready, :with_tools, materials: ['PLA'])
+
+        needs = described_class.of(entry)
+
+        expect(needs.tools.map { |tool| [tool.tool, tool.material] }).to eq [[0, 'PETG']]
+        expect(needs).to have_attributes(known: true, tool_count: 1, width: 123.09)
+      end
+
+      it 'asks it of tool 0 when the summary knows no tool' do
+        summary(:ready)
+
+        expect(described_class.of(entry).tools.map { |tool| [tool.tool, tool.material] }).to eq [[0, 'PETG']]
+      end
+
+      it "keeps the summary's materials for a file of several tools (one per tool is phase 9)" do
+        summary(:ready, :with_tools, materials: %w[PLA PLA])
+
+        expect(described_class.of(entry).tools.map(&:material)).to eq %w[PLA PLA]
+      end
+
+      it 'is known even when the summary failed, every other value Not known' do
+        summary(:failed)
+
+        needs = described_class.of(entry)
+
+        expect(needs.tools.map(&:material)).to eq ['PETG']
+        expect(needs).to have_attributes(known: false, runnable: true, width: nil, tool_count: nil)
+      end
+
+      it 'is asked while the summary is pending' do
+        summary(status: 'pending')
+
+        needs = described_class.of(entry)
+
+        expect(needs).not_to be_runnable
+        expect(needs.tools.map(&:material)).to eq ['PETG']
+      end
+    end
+
     it 'is not runnable while the summary is pending' do
       summary(status: 'pending')
 

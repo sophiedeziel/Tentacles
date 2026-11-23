@@ -39,6 +39,14 @@ RSpec.describe PrintQueue::NextJob do
     expect(picked).to eq first
   end
 
+  it "follows the material the entry asks for over its G-code's" do
+    entry(position: 1, material: 'PETG')
+    pla = entry(position: 2)
+
+    expect(next_job.job).to eq pla
+    expect(next_job.fit(PrintQueue::Job.first).reasons.map(&:message)).to eq ['Needs PETG. PLA is loaded here']
+  end
+
   it 'is nil when the queue is empty' do
     expect(next_job.job).to be_nil
   end
