@@ -9,6 +9,7 @@ class Printer
   #   printer.bed_needs_clearing?             # => true
   #   printer.bed_to_clear                    # => the Printer::Job still on the bed
   #   Printer.ids_with_bed_to_clear([1, 2])   # => #<Set: {2}>, in one query (PrintQueue::Dispatch)
+  #   Printer.beds_to_clear([1, 2])           # => { 2 => the Printer::Job on its bed }, in one query (GraphQL)
   #
   # The print on the bed is the printer's last started job (by started_at, then id), when it has finished and its bed
   # wasn't cleared since. Only the global queue's copies have a started_at (PrintQueue::PrintStart): a printer that
@@ -24,12 +25,29 @@ class Printer
       def ids_with_bed_to_clear(printer_ids)
         return Set.new if printer_ids.empty?
 
+        on_bed(printer_ids).pluck(:printer_id).to_set
+      end
+
+      # The print still on the bed of each of these printers that has one, by printer id, in one query (the same as
+      # .ids_with_bed_to_clear)
+      #: (Array[Integer] printer_ids) -> Hash[Integer, Printer::Job]
+      def beds_to_clear(printer_ids)
+        return {} if printer_ids.empty?
+
+        Printer::Job.where(id: on_bed(printer_ids).select(:id)).index_by(&:printer_id)
+      end
+
+      private
+
+      # The last started job of each printer, when it finished and its bed wasn't cleared: ranked with a window function
+      #: (Array[Integer] printer_ids) -> Printer::Job::PrivateRelation
+      def on_bed(printer_ids)
         last_started = Printer::Job.where(printer_id: printer_ids).where.not(started_at: nil).select(
-          :printer_id, :finished_at, :bed_cleared_at,
+          :id, :printer_id, :finished_at, :bed_cleared_at,
           'ROW_NUMBER() OVER (PARTITION BY printer_id ORDER BY started_at DESC, id DESC) AS recency'
         )
         Printer::Job.from(last_started, :printer_jobs).where(recency: 1, bed_cleared_at: nil)
-                    .where.not(finished_at: nil).pluck(:printer_id).to_set
+                    .where.not(finished_at: nil)
       end
     end
 

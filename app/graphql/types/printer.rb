@@ -11,6 +11,9 @@ module Types
     field :uri, Types::Url, null: true, description: "The URL of the printer's server"
     field :username, String, null: true, description: 'The username, for the backends that use one (PrusaLink)'
     field :favorite, Boolean, null: false, description: 'Favorites come first in the fleet list'
+    field :takes_jobs, Boolean, null: false,
+                                description: 'Whether it takes jobs from the global queue (setPrinterTakesJobs). A ' \
+                                             'printer that does not is skipped by the dispatcher.'
     field :specs, Types::PrinterSpecs, null: false,
                                        description: 'What the printer is and can do, as saved in Tentacles. Reads ' \
                                                     'columns only, never the printer: safe in list queries.'
@@ -97,6 +100,22 @@ module Types
     # Computed once for the whole fleet, whatever the number of printers of a query
     def takes_next
       dataloader.with(Sources::ForecastSource).load(:current).takes_next(object) if ::PrintQueue.enabled?
+    end
+
+    # The global queue as this printer sees it (its page). Each reads nothing while the queue is off.
+    field :bed_needs_clearing, Boolean, null: false, resolver_method: :bed_needs_clearing?,
+                                        description: 'Whether its last print is still on the bed: it takes no job ' \
+                                                     'from the global queue until confirmBedCleared. False while the ' \
+                                                     'queue is off.'
+    field :print_on_bed, Types::Print, null: true,
+                                       description: 'The print still on its bed, null when the bed is clear (or the ' \
+                                                    'global queue is off)'
+
+    # Batched: one query for the printers of a query
+    def bed_needs_clearing? = !print_on_bed.nil?
+
+    def print_on_bed
+      dataloader.with(Sources::BedToClearSource).load(object.id) if ::PrintQueue.enabled?
     end
   end
 end

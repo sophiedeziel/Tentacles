@@ -9,6 +9,12 @@ class PrintQueue::BedClearance
   include GeneratedAttributeMethods
 
   module GeneratedAttributeMethods
+    sig { returns(T.nilable(::Integer)) }
+    def expected_print_id; end
+
+    sig { params(value: T.nilable(::Integer)).returns(T.nilable(::Integer)) }
+    def expected_print_id=(value); end
+
     sig { returns(T.untyped) }
     def printer; end
 
