@@ -22,6 +22,11 @@ class Printer
     # The order the spooler starts them in: enqueue time, then id for jobs enqueued together
     scope :in_queue_order, -> { order(created_at: :asc, id: :asc) }
     scope :finished, -> { where.not(status: UNFINISHED_STATUSES) }
+    scope :unfinished, -> { where(status: UNFINISHED_STATUSES) }
+    # The copies of global queue entries (see #copy?)
+    scope :copies, -> { where.not(print_job_id: nil) }
+    # The last ended first, by finished_at: set on every copy that ends (old-style jobs have none)
+    scope :last_finished_first, -> { order(finished_at: :desc, id: :desc) }
     # The last finished first: a finished job isn't written to again, so updated_at is when it finished
     scope :newest_first, -> { order(updated_at: :desc, id: :desc) }
 

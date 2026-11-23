@@ -31,6 +31,8 @@ module PrintQueue
     attribute :width, :decimal
     attribute :depth, :decimal
     attribute :height, :decimal
+    # The Library::GcodeSummary::Footprint its width and depth come from (nil when no box is known), for display
+    attribute :footprint
     attribute :tool_count, :integer
     # Array[Hash[String, untyped]], the summary's M600 list
     attribute :filament_changes, default: -> { [] }
@@ -53,7 +55,7 @@ module PrintQueue
     #: (Library::GcodeSummary summary, colour: String?) -> PrintQueue::Needs
     def self.read(summary, colour:)
       footprint = summary.footprint
-      new(colour:, known: true, width: footprint&.width, depth: footprint&.depth, height: summary.max_z,
+      new(colour:, known: true, footprint:, width: footprint&.width, depth: footprint&.depth, height: summary.max_z,
           tool_count: summary.tool_count, filament_changes: summary.filament_changes,
           tools: summary.tools.map { |tool| Tool.new(tool: tool.tool, material: tool.material) })
     end

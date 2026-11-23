@@ -87,5 +87,16 @@ module Types
 
     field :filament_slots, Integer, null: false, description: 'How many filaments it can have loaded at once (1 ' \
                                                               'for now)'
+
+    field :takes_next, Types::PrintJob, null: true,
+                                        description: 'The print job it takes next from the global queue, as if ' \
+                                                     'dispatch were running (the first one What Happens Next lines ' \
+                                                     'up for it). Null when it takes none (offline, not taking ' \
+                                                     'jobs, nothing it can print as loaded) or the global queue is ' \
+                                                     'off.'
+    # Computed once for the whole fleet, whatever the number of printers of a query
+    def takes_next
+      dataloader.with(Sources::ForecastSource).load(:current).takes_next(object) if ::PrintQueue.enabled?
+    end
   end
 end

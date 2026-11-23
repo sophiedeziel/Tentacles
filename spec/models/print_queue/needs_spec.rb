@@ -21,6 +21,7 @@ RSpec.describe PrintQueue::Needs do
       expect(needs).to have_attributes(colour: 'Black', width: 123.09, depth: 130, height: 15, tool_count: 2,
                                        filament_changes: changes)
       expect(needs.tools.map { |tool| [tool.tool, tool.material] }).to eq [[0, 'PLA'], [1, nil]]
+      expect(needs.footprint).to have_attributes(min_x: 2, max_x: 125.09, min_y: 10, max_y: 140, source: 'moves')
     end
 
     it 'is Any colour when the entry asks for none' do
@@ -33,7 +34,7 @@ RSpec.describe PrintQueue::Needs do
     it 'keeps the height when the box is Not known' do
       summary(:ready, min_x: nil)
 
-      expect(described_class.of(entry)).to have_attributes(width: nil, depth: nil, height: 15)
+      expect(described_class.of(entry)).to have_attributes(width: nil, depth: nil, height: 15, footprint: nil)
     end
 
     it 'follows a recomputed summary (no snapshot)' do

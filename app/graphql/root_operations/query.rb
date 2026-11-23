@@ -93,6 +93,9 @@ module RootOperations
       jobs_of(printer_id).finished.newest_first.limit(first).includes(executable: { file_attachment: :blob })
     end
 
+    field :global_queue, Types::GlobalQueue, null: true, description: 'The global print queue, null while it is off'
+    def global_queue = ({} if ::PrintQueue.enabled?)
+
     field :monitor_healthy, Boolean, null: false,
                                      resolver_method: :monitor_healthy?,
                                      description: 'Whether the printer monitor reported in the last 15 seconds'

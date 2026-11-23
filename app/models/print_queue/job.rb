@@ -106,6 +106,15 @@ module PrintQueue
     #: -> PrintQueue::Needs
     def needs = PrintQueue::Needs.of(self)
 
+    # Whether the printer may take a copy of it, before its fit: allowed on it (all_capable, or listed in job_printers,
+    # read from the loaded rows when preloaded) and not a same-printer batch bound to another printer (bound to this
+    # one, or not bound yet, is fine). bound_printer_id is ignored when same_printer is off.
+    #: (Printer printer) -> bool
+    def open_to?(printer)
+      allowed = all_capable? || job_printers.any? { |job_printer| job_printer.printer_id == printer.id }
+      allowed && (!same_printer? || bound_printer_id.nil? || bound_printer_id == printer.id)
+    end
+
     # The copy_number of the next copy dispatched: 1 for the first
     #: -> Integer
     def next_copy_number = (printer_jobs.maximum(:copy_number) || 0) + 1
