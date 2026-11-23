@@ -1,6 +1,0 @@
-mutation SendFiles($input: SendFilesToPrintersInput!) {
-  sendFilesToPrinters(input: $input) {
-    clientMutationId
-    jobEnqueued
-  }
-}

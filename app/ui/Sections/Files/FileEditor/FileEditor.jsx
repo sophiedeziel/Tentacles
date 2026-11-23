@@ -14,6 +14,7 @@ import { GcodeFileOutlined } from '../../../components/icons'
 
 import GCodeAnalysis from './components/GCodeAnalysis.jsx'
 import GcodeSummary from './components/GcodeSummary/GcodeSummary.jsx'
+import AddToQueueButton from '../../Queue/AddToQueue/AddToQueueButton'
 import gcodeDefinition from 'common/gcodeDefinition.js'
 import TomorrowTheme from 'common/TomorrowTheme.json'
 import * as monaco from 'monaco-editor/editor/editor.api.js'
@@ -333,6 +334,7 @@ export default function FileEditor () {
     ghost={false}
     onBack={() => window.history.back()}
     title="GCode editor"
+    extra={<AddToQueueButton file={file} />}
     >
 
     </PageHeader>
