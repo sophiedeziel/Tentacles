@@ -48,6 +48,8 @@ class Printer
         # New, so that the first tick always saves it (#changed? is true until it's saved)
         @status = Printer::Status.new(printer:) #: Printer::Status
         @specs_checked = false #: bool
+        # The state family of the last status saved, nil until one is (see #save_status)
+        @saved_family = nil #: Printer::StateFamily?
       end
 
       # Reloads the status from the printer, saves it if it changed and writes the heartbeat. Never raises.
@@ -57,7 +59,7 @@ class Printer
         # The heartbeat is written even when saving failed (e.g. the GraphQL trigger raised)
         error = capture_error do
           reload_status
-          status.save! if status.changed?
+          save_status if status.changed?
         end
         error = capture_error { Heartbeat.create! } || error
         error ? publish_failed(error) : connectivity.record_publish_success
@@ -70,6 +72,21 @@ class Printer
       # The last status reloaded, saved when it changed
       #: Printer::Status
       attr_reader :status
+
+      # Saves the status, then asks the global queue for a dispatch pass when the printer just turned Operational: it
+      # may be ready for a job (PrintQueue::Readiness). The worker remembers the family it saved last: no Redis read.
+      # The first status saved counts as a change, so a printer that is Operational when its monitor starts (a new
+      # printer, a restart) is dispatched to too.
+      #: -> void
+      def save_status
+        status.save!
+        family = status.state_family
+        previous_family = @saved_family
+        @saved_family = family
+        return unless family == Printer::StateFamily::Operational && previous_family != family
+
+        PrintQueue::DispatchRequest.new.save if PrintQueue.enabled?
+      end
 
       # Reloads the status from the printer, with the camera of the webcam tracker. When the printer can't be read, the
       # status is OFFLINE instead (see #unreachable).

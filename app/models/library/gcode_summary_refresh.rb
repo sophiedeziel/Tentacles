@@ -14,6 +14,8 @@ module Library
   # - A storage error raises (the job retries it), and so does anything unexpected.
   # - When the file's content changed while it was read, the values read are thrown away: the change scheduled
   #   another read.
+  # - Once a summary is written (read or failed) for a file in the global queue, a dispatch pass is asked for: its
+  #   entry was waiting for its summary, and may now fit a printer (PrintQueue::DispatchRequest, best effort).
   class GcodeSummaryRefresh < ApplicationModel
     attribute :item
 
@@ -33,14 +35,27 @@ module Library
 
       blob_id = item.file.blob_id
       summary = read
-      row.with_lock do
-        # Changed since it was read: the change rescheduled a read, and the row is pending again
-        next unless content_unchanged?(blob_id)
-
-        write(row, summary)
-      end
+      request_dispatch if write_unless_changed(row, summary, blob_id)
     rescue ActiveRecord::RecordNotFound
       # The file was deleted while it was read, and its summary with it
+    end
+
+    # Writes what was read, unless the file's content changed since: the change rescheduled a read, and the row is
+    # pending again. Whether it wrote it
+    #: (Library::GcodeSummary row, (Gcode::Summary | String) summary, untyped blob_id) -> bool
+    def write_unless_changed(row, summary, blob_id)
+      row.with_lock do
+        next false unless content_unchanged?(blob_id)
+
+        write(row, summary)
+        true
+      end
+    end
+
+    # Once committed: the entries of the file may now be runnable (PrintQueue::Needs)
+    #: -> void
+    def request_dispatch
+      PrintQueue::DispatchRequest.new.save if PrintQueue.enabled? && item.queued?
     end
 
     # The values read, or the failure
