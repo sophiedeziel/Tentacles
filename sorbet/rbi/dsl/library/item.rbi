@@ -579,6 +579,9 @@ class Library::Item
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateAssociationRelation) }
     def from(*args, &blk); end
 
+    sig { params(args: T.untyped, blk: T.untyped).returns(PrivateAssociationRelation) }
+    def gcode(*args, &blk); end
+
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateAssociationRelationGroupChain) }
     def group(*args, &blk); end
 
@@ -1131,6 +1134,9 @@ class Library::Item
 
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateRelation) }
     def from(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(PrivateRelation) }
+    def gcode(*args, &blk); end
 
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateRelationGroupChain) }
     def group(*args, &blk); end

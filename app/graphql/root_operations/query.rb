@@ -22,12 +22,7 @@ module RootOperations
       ::Printer.find_by(id:)
     end
 
-    field :files, [Types::File], null: false do
-      description 'files'
-    end
-    def files
-      ::Library::Item.includes(:labels).with_attached_file
-    end
+    field :files, resolver: Resolvers::Files
 
     field :file, Types::File, null: true do
       argument :id, ID, required: true
