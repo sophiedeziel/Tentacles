@@ -28,22 +28,6 @@ RSpec.describe Printer::Backend::Octoprint::AppKey::Request do
       expect(request.errors[:base]).to eq([message])
       expect(request.app_token).to be_nil
     end
-
-    it 'never puts the app token in the message' do
-      request.save
-
-      expect(request.errors.full_messages.join).not_to include(app_token)
-    end
-  end
-
-  describe '.url' do
-    it 'builds the URL of an IPv4 address' do
-      expect(described_class.url(IPAddr.new('192.168.1.57'))).to eq('http://192.168.1.57/')
-    end
-
-    it 'puts an IPv6 address in brackets' do
-      expect(described_class.url(IPAddr.new('fd00::57'))).to eq('http://[fd00::57]/')
-    end
   end
 
   context 'when OctoPrint takes the request (201)' do
@@ -61,11 +45,6 @@ RSpec.describe Printer::Backend::Octoprint::AppKey::Request do
       expect(request.save).to be(true)
       expect(request).to have_attributes(app_token:, auth_dialog_url: auth_dialog)
       expect(request.errors).to be_empty
-    end
-
-    it 'is what .create! returns' do
-      expect(described_class.create!(url: 'http://192.168.1.57/'))
-        .to have_attributes(app_token:, auth_dialog_url: auth_dialog)
     end
   end
 

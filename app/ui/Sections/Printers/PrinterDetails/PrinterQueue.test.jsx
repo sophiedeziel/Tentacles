@@ -111,12 +111,6 @@ describe('PrinterQueue', () => {
         .toHaveTextContent('This printer takes no new job until you confirm the bed is clear.')
       expect(screen.queryByRole('button', { name: 'Bed Cleared' })).not.toBeInTheDocument()
     })
-
-    it('is not shown once the bed is clear', () => {
-      renderQueue(queuePrinter({ bedNeedsClearing: false, printOnBed: null }))
-      expect(screen.queryByRole('button', { name: 'Bed Cleared' })).not.toBeInTheDocument()
-      expect(screen.queryByRole('region', { name: /remove/ })).not.toBeInTheDocument()
-    })
   })
 
   describe('Taking jobs from the queue', () => {

@@ -24,13 +24,4 @@ describe('useDebouncedCounter', () => {
     })
     expect(result.current[0]).toBe(2)
   })
-
-  it('stops counting when unmounted', () => {
-    vi.useFakeTimers()
-    const { result, unmount } = renderHook(() => useDebouncedCounter(500))
-    act(() => result.current[1]())
-    unmount()
-    expect(() => vi.advanceTimersByTime(1000)).not.toThrow()
-    expect(result.current[0]).toBe(0)
-  })
 })

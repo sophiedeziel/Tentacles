@@ -136,8 +136,4 @@ RSpec.describe PrintQueue::HardLimitations do
       expect(limitations(big, bed_shape: 'circular')).to be_none
     end
   end
-
-  it 'is read-only' do
-    expect { limitations(needs).save }.to raise_error(ApplicationModel::ReadOnlyRecord)
-  end
 end

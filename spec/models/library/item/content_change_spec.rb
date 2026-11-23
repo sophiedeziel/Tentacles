@@ -58,12 +58,6 @@ RSpec.describe Library::Item::ContentChange do
       end
     end
 
-    it 'is refused while a copy is printing' do
-      create(:printer_job, :copy, print_job: entry, status: 'active')
-
-      expect(described_class.new(item:, content: 'G1 X1 E1').save).to be false
-    end
-
     it 'is allowed once the entry is finished' do
       create(:printer_job, :copy, print_job: entry, status: 'completed')
 

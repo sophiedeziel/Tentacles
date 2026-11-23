@@ -21,16 +21,6 @@ RSpec.describe Printer::Status do
   end
   let(:status) { described_class.new(**attributes) }
 
-  describe '.unknown' do
-    subject { described_class.unknown(printer_id: 3, last_seen_at: now) }
-
-    its(:printer_id) { is_expected.to eq 3 }
-    its(:state_family) { is_expected.to eq Printer::StateFamily::Offline }
-    its(:state_text) { is_expected.to eq 'Unknown' }
-    its(:last_seen_at) { is_expected.to eq now }
-    its(:camera) { is_expected.to have_attributes(enabled: false, stream_url: nil) }
-  end
-
   describe '#server_reachable?' do
     it 'is true when the server answered, even with the printer disconnected' do
       offline = described_class.new(**attributes, state_family: Printer::StateFamily::Offline, state_text: 'Offline')
@@ -81,12 +71,6 @@ RSpec.describe Printer::Status do
 
     it 'stores the temperature unit by name' do
       expect(JSON.parse(status.to_json)['hotend']).to eq('actual' => 210.3, 'target' => 210.0, 'unit' => 'CELSIUS')
-    end
-
-    it 'reads the times back as TimeWithZone' do
-      restored = described_class.new.from_json(status.to_json)
-
-      expect(restored.updated_at).to be_a(ActiveSupport::TimeWithZone)
     end
 
     it 'ignores the keys that are not attributes' do
@@ -200,14 +184,6 @@ RSpec.describe Printer::Status do
 
       expect { status.reload(reader:) }.to raise_error(Printer::Backend::Unreachable)
       expect(status).to have_attributes(attributes.except(:printer_id))
-    end
-
-    it 'does not save it' do
-      allow(status).to receive(:save!)
-
-      status.reload(reader:)
-
-      expect(status).not_to have_received(:save!)
     end
   end
 

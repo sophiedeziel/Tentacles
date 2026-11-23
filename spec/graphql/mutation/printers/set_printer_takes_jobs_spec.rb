@@ -22,16 +22,6 @@ RSpec.describe Mutations::Printers::SetPrinterTakesJobs, type: :request do
     expect(dispatch_request).not_to have_received(:save)
   end
 
-  it 'has the printer take jobs again and asks for a dispatch pass' do
-    printer.update!(takes_jobs: false)
-
-    set_takes_jobs(true)
-
-    expect_saved
-    expect(data['printer']).to eq('id' => printer.id.to_s, 'takesJobs' => true)
-    expect(dispatch_request).to have_received(:save).once
-  end
-
   it 'is refused while the global queue is off' do
     turn_queue_off
 

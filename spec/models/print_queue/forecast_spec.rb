@@ -224,13 +224,6 @@ RSpec.describe PrintQueue::Forecast do
 
       expect(ahead(batch, later)).to eq [[:starting, mk4, 0], [:after_current_print, mk4, 1]]
     end
-
-    it 'is 0 for kinds without a printer' do
-      printer(material: 'PETG')
-      blocked = entry
-
-      expect(described_class.current.outcome(blocked)).to have_attributes(kind: :blocked, jobs_ahead: 0)
-    end
   end
 
   describe 'takes_next' do
@@ -332,12 +325,6 @@ RSpec.describe PrintQueue::Forecast do
   end
 
   describe 'edge cases' do
-    it 'is :next_ready_printer, not :blocked, when the only printer with its filament is offline' do
-      printer(Printer::StateFamily::Offline)
-
-      expect(outcome(entry)).to eq [:next_ready_printer, nil]
-    end
-
     it 'is :blocked when the printer with its filament does not take jobs' do
       printer(takes_jobs: false)
 

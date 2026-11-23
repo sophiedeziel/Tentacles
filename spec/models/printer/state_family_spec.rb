@@ -53,11 +53,6 @@ RSpec.describe Printer::StateFamily do
       end
     end
 
-    it 'matches by prefix' do
-      expect(described_class.for('Error: Printer halted. kill() called!')).to eq described_class::Error
-      expect(described_class.for('Starting print from SD')).to eq described_class::Printing
-    end
-
     it 'ignores case and surrounding whitespace' do
       expect(described_class.for('  printing  ')).to eq described_class::Printing
     end

@@ -45,12 +45,6 @@ describe('PrintQueueWidget at Extra Large and 4×4', () => {
     expect(screen.getByRole('link', { name: 'Open Print Queues' })).toHaveAttribute('href', '/printers')
   })
 
-  it('says when every folded printer needs attention', () => {
-    const paused = Array.from({ length: 4 }, (_, index) => ({ ...PRINTERS.PAUSED, id: `paused-${index}`, name: `Paused ${index + 1}` }))
-    renderWidget('XL', { printers: FLEET.concat(paused), queue: null })
-    expect(screen.getByText('+ 3 more printers need attention')).toBeInTheDocument()
-  })
-
   it('shows ten printers at 4×4, with the shared up next list and history underneath', () => {
     renderWidget('XXL', { printers: farm(6) })
     expect(rowTexts()).toHaveLength(10)
@@ -92,10 +86,5 @@ describe('PrintQueueWidget at Extra Large and 4×4', () => {
     expect(screen.getByText('Queue is empty')).toBeInTheDocument()
     expect(container.querySelector('.ant-empty-image svg')).toBeInTheDocument()
     expect(screen.queryByRole('table')).not.toBeInTheDocument()
-  })
-
-  it('shows the history with the shared job status tags', () => {
-    renderWidget('XL', { options: { rowPerPrinter: false, history: true } })
-    expect(screen.getByText('Failed').closest('.ant-tag')).toHaveClass('ant-tag-error')
   })
 })

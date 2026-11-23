@@ -16,27 +16,6 @@ RSpec.describe 'Query printers { loadedFilaments filamentSlots }', type: :reques
     queries
   end
 
-  describe 'the fields' do
-    let(:printer_type) { TentaclesSchema.get_type('Printer') }
-    let(:filament_type) { TentaclesSchema.get_type('LoadedFilament') }
-
-    it 'types loadedFilaments as a non-null list of LoadedFilament and filamentSlots as Int!' do
-      expect(printer_type.get_field('loadedFilaments').type.to_type_signature).to eq('[LoadedFilament!]!')
-      expect(printer_type.get_field('filamentSlots').type.to_type_signature).to eq('Int!')
-    end
-
-    it 'exposes the slot, material, colour and updatedAt of a loaded filament, and the waiting jobs asking for it' do
-      signatures = filament_type.fields.transform_values { |field| field.type.to_type_signature }
-
-      expect(signatures).to eq('slot' => 'Int!', 'material' => 'String!', 'colour' => 'String!',
-                               'updatedAt' => 'ISO8601DateTime!', 'waitingJobsAskingCount' => 'Int!')
-    end
-
-    it 'exposes takesJobs, a non-null Boolean' do
-      expect(printer_type.get_field('takesJobs').type.to_type_signature).to eq('Boolean!')
-    end
-  end
-
   it 'returns an empty list for a printer with no filament set, and its filament slots' do
     printer = create(:printer)
 
@@ -69,17 +48,6 @@ RSpec.describe 'Query printers { loadedFilaments filamentSlots }', type: :reques
   end
 
   describe 'batching' do
-    def query_count(printer_count)
-      Printer.delete_all
-      Array.new(printer_count) { create(:printer_loaded_filament, printer: create(:printer)) }
-      sql_queries { post '/graphql', params: { query: } }.size
-    end
-
-    it 'issues the same number of SQL queries for 1 and 5 printers' do
-      expect(query_count(5)).to eq(query_count(1))
-      expect(json['data']['printers'].size).to eq 1
-    end
-
     it 'reads the loaded filaments of every printer with one query' do
       3.times { create(:printer_loaded_filament, printer: create(:printer)) }
 

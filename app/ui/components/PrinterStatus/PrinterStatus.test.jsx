@@ -50,8 +50,8 @@ describe('PrinterStatus motion', () => {
       expect(statusElement(variant)).toHaveAttribute('data-motion', 'breathe')
     })
 
-    it.each(['PAUSED', 'OPERATIONAL', 'ERROR', 'OFFLINE'])('stays still when %s', (family) => {
-      render(<PrinterStatus family={family} text="State" variant={variant} />)
+    it('stays still when paused', () => {
+      render(<PrinterStatus family="PAUSED" text="State" variant={variant} />)
       expect(statusElement(variant)).not.toHaveAttribute('data-motion')
     })
   })

@@ -273,12 +273,6 @@ describe('PrinterDetails', () => {
       await userEvent.type(field('Printer name'), ' left')
       expect(closeTab()).toBe(false)
     })
-
-    it('lets the page go without asking once nothing is unsaved', async () => {
-      renderPage()
-      await userEvent.click(await screen.findByRole('button', { name: 'Open Queue' }))
-      expect(await screen.findByText('Queue')).toBeInTheDocument()
-    })
   })
 
   describe('About This Printer', () => {
@@ -344,14 +338,6 @@ describe('PrinterDetails', () => {
       await save()
       expect(await screen.findByText('Changes saved')).toBeInTheDocument()
       expect(volume('Diameter')).toHaveValue('180')
-    })
-
-    it('clears the build volume once all of its dimensions are cleared', async () => {
-      renderAbout(MK4_SPECS, [savedSpecs({ buildVolume: null }, { ...MK4_SPECS, buildVolume: null })])
-      await screen.findByRole('heading', { name: 'About This Printer' })
-      for (const label of ['Width (X)', 'Depth (Y)', 'Height (Z)']) await userEvent.clear(volume(label))
-      await save()
-      expect(await screen.findByText('Changes saved')).toBeInTheDocument()
     })
 
     it('takes a firmware that is not in the list, as typed', async () => {
@@ -452,6 +438,14 @@ describe('PrinterDetails with the global queue on', () => {
 
     expect(await screen.findByText('No waiting job asks for PLA White. Any Colour jobs still match.')).toBeInTheDocument()
     expect(screen.getByText('Set this when you swap spools. The queue matches jobs against it.')).toBeInTheDocument()
+  })
+
+  it('shows no bed banner once the bed is clear', async () => {
+    renderOn([printerQueue({ ...printerQueue().printer, bedNeedsClearing: false, printOnBed: null })])
+
+    expect(await screen.findByRole('region', { name: 'Up Next for This Printer' })).toBeInTheDocument()
+    // Every title of the banner ("Print finished: remove the part", "Remove the last print", ...)
+    expect(screen.queryByRole('region', { name: /remove the (part|last print)/i })).not.toBeInTheDocument()
   })
 
   it('saves Takes Jobs apart from the page\'s form, which it never submits', async () => {

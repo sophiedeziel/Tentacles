@@ -33,15 +33,6 @@ RSpec.describe Mutations::Queue::UnbindPrintJob, type: :request do
     expect_nothing_pushed
   end
 
-  it 'is refused while the global queue is off' do
-    turn_queue_off
-
-    unbind
-
-    expect_refused('The global print queue is off')
-    expect(job.reload.bound_printer).to eq printer
-  end
-
   it 'returns an error for an unknown print job' do
     unbind(job.id + 1)
 

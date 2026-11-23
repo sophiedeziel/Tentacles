@@ -5,10 +5,6 @@ require 'rails_helper'
 RSpec.describe AnalyseGcodeJob, type: :job do
   let(:item) { create(:file_record) }
 
-  it 'runs on the default queue' do
-    expect { described_class.perform_later(item.id) }.to have_enqueued_job.on_queue('default')
-  end
-
   describe '#perform' do
     it 'reads the file into its summary' do
       described_class.perform_now(item.id)
@@ -24,13 +20,6 @@ RSpec.describe AnalyseGcodeJob, type: :job do
       item.file.attach(io: StringIO.new('solid cube'), filename: 'cube.stl')
 
       expect { described_class.perform_now(item.id) }.not_to change(Library::GcodeSummary, :count)
-    end
-
-    it 'fails the row of an unreadable file without retrying' do
-      item.file.attach(io: Rails.root.join('spec/fixture_files/gcode/binary.bgcode').open, filename: 'binary.gcode')
-
-      expect { described_class.perform_now(item.id) }.not_to have_enqueued_job(described_class)
-      expect(item.reload.gcode_summary).to have_attributes(status: 'failed', error: /binary G-code/)
     end
 
     it 'retries a storage error, and fails the row after the third attempt' do

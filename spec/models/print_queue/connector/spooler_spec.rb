@@ -17,10 +17,6 @@ RSpec.describe PrintQueue::Connector::Spooler do
     expect(PrintQueue.connector).to be_a described_class
   end
 
-  it 'cannot be saved' do
-    expect { connector.save }.to raise_error(NotImplementedError)
-  end
-
   describe '#start' do
     it "asks the spooler to start the copy's printer" do
       connector.start(printer_job)

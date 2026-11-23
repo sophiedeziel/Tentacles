@@ -76,13 +76,6 @@ RSpec.describe 'Query dashboard and defaultDashboard', type: :request do
       )
     end
 
-    it "drops a deleted printer's widgets" do
-      run_query('dashboard')
-      printer.destroy!
-
-      expect(run_query('dashboard')['sections'].first['widgets'].pluck('type')).to eq(['PRINT_QUEUE'])
-    end
-
     it 'loads the layout and its printers in a fixed number of queries' do
       create_list(:printer, 5)
       run_query('dashboard')

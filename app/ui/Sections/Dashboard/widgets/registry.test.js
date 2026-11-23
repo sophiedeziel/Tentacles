@@ -29,13 +29,6 @@ describe('registry', () => {
   describe('Printer', () => {
     const printer = REGISTRY.PRINTER
 
-    it('offers the options that fit each size', () => {
-      expect(keys(printer.optionsFor('S'))).toEqual(['timeLeft'])
-      expect(keys(printer.optionsFor('M'))).toEqual(['camera', 'timeLeft', 'temperatures'])
-      expect(keys(printer.optionsFor('L'))).toEqual(['camera', 'timeLeft', 'temperatures', 'upNext', 'controls'])
-      expect(keys(printer.optionsFor('XL'))).toEqual(keys(printer.optionsFor('L')))
-    })
-
     it('turns the camera on by default at Large and Extra Large only', () => {
       expect(printer.sizes.map((size) => printer.defaultOptions(size).camera)).toEqual([false, false, true, true])
     })

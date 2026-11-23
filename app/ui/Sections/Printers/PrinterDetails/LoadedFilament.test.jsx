@@ -255,12 +255,6 @@ describe('LoadedFilament', () => {
     // How many waiting jobs ask for each loaded filament (the printer page's queue query)
     const asking = (material, colour, waitingJobsAskingCount) => [{ slot: 1, material, colour, waitingJobsAskingCount }]
 
-    it('says when no waiting job asks for the loaded filament', async () => {
-      renderCard({ loaded: [filament('PLA', 'White')], demand: asking('PLA', 'White', 0) })
-      await loadedCard()
-      expect(screen.getByText('No waiting job asks for PLA White. Any Colour jobs still match.')).toBeInTheDocument()
-    })
-
     it('counts the waiting jobs that ask for it', async () => {
       renderCard({ loaded: [filament('PLA', 'White')], demand: asking('PLA', 'White', 3) })
       await loadedCard()

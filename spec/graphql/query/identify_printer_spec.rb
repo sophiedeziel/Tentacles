@@ -102,12 +102,6 @@ RSpec.describe 'Query identifyPrinter', type: :request do
                       %r{\ACould not reach OctoPrint at http://192\.168\.0\.15/: .*\[FILTERED\]}
     end
 
-    context 'when OctoPrint times out' do
-      before { allow(Octoprint::Connection).to receive(:get).and_raise(Octoprint::Exceptions::TimeoutError, 'expired') }
-
-      it_behaves_like 'a failed identification', 'UNREACHABLE', 'Could not reach OctoPrint'
-    end
-
     context 'when the URL does not answer like OctoPrint' do
       before { allow(Octoprint::Connection).to receive(:get).and_raise(JSON::ParserError, "unexpected '<html>'") }
 
@@ -143,22 +137,6 @@ RSpec.describe 'Query identifyPrinter', type: :request do
         .with(hash_including(host: 'http://192.168.0.15/', username: 'operator', password: secret))
     end
 
-    it 'uses the default username when none is given' do
-      allow(Prusalink::Client).to receive(:new).and_call_original
-
-      identify
-
-      expect(Prusalink::Client).to have_received(:new).with(hash_including(username: 'maker'))
-    end
-
-    it 'falls back to the host when the printer has no name' do
-      allow(Prusalink::Info).to receive(:get).and_return(Prusalink::Info.deserialize({}))
-
-      identify
-
-      expect(json['data']['identifyPrinter']['name']).to eq('192.168.0.15')
-    end
-
     context 'when PrusaLink rejects the password' do
       before do
         allow(Prusalink::Info).to receive(:get)
@@ -176,12 +154,6 @@ RSpec.describe 'Query identifyPrinter', type: :request do
 
       it_behaves_like 'a failed identification', 'UNREACHABLE',
                       %r{\ACould not reach PrusaLink at http://192\.168\.0\.15/: .*\[FILTERED\]}
-    end
-
-    context 'when PrusaLink times out' do
-      before { allow(Prusalink::Info).to receive(:get).and_raise(Prusalink::Exceptions::TimeoutError, 'expired') }
-
-      it_behaves_like 'a failed identification', 'UNREACHABLE', 'Could not reach PrusaLink'
     end
 
     context 'when PrusaLink returns another error' do

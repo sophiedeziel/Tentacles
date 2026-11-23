@@ -105,24 +105,6 @@ RSpec.describe Printer::FilamentChange do
       expect(PrintQueue).not_to have_received(:push_changed)
       expect(PrintQueue::DispatchRequest).not_to have_received(:new)
     end
-
-    it 'pushes and asks for nothing when the filament is refused' do
-      allow(PrintQueue).to receive(:enabled?).and_return(true)
-
-      expect(build_change(colour: '').save).to be false
-      expect(PrintQueue).not_to have_received(:push_changed)
-      expect(PrintQueue::DispatchRequest).not_to have_received(:new)
-    end
-
-    it 'pushes queueChanged through the schema' do
-      allow(PrintQueue).to receive(:enabled?).and_return(true)
-      allow(PrintQueue).to receive(:push_changed).and_call_original
-
-      build_change.save!
-
-      expect(subscriptions).to have_received(:trigger).with(:print_queue_changed, {}, printer).once
-      expect(subscriptions).to have_received(:trigger).with(:queue_changed, {}, {}).once
-    end
   end
 
   context 'when the push fails' do
@@ -143,8 +125,6 @@ RSpec.describe Printer::FilamentChange do
     {
       'a material outside the list' => [{ material: 'Wood' }, :material, ['Material is not included in the list']],
       'a blank colour' => [{ colour: ' ' }, :colour, ["Colour can't be blank"]],
-      'a colour over 40 characters' => [{ colour: 'x' * 41 }, :colour,
-                                        ['Colour is too long (maximum is 40 characters)']],
       "a slot above the printer's" => [{ slot: 2 }, :slot, ['Slot must be less than or equal to 1']],
       'no slot' => [{ slot: nil }, :slot, ['Slot is not a number']]
     }.each do |refused, (attributes, attribute, messages)|

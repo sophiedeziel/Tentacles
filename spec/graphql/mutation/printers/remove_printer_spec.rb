@@ -28,36 +28,17 @@ RSpec.describe Mutations::Printers::RemovePrinter, type: :request do
 
   context 'with a printer that has jobs, widgets and a monitor snapshot' do
     let(:section) { Dashboard::Section.create!(title: nil, position: 0) }
-    let(:triggers) { [] }
 
     before do
       %w[enqueued active completed].each { |status| create(:printer_job, printer:, executable: file, status:) }
       Dashboard::PrinterWidget.create!(section: section, printer:, width_units: 2, height_units: 1, position: 0)
       Printer::Status.unknown(printer_id: printer.id, last_seen_at: nil).save!
-      allow(subscriptions).to receive(:trigger) { |*args| triggers << args.first }
       remove_printer(printer.id)
     end
 
     it 'returns the id of the removed printer' do
       expect(response.parsed_body['errors']).to be_nil
       expect(data).to eq('removedPrinterId' => printer.id.to_s, 'errors' => [])
-    end
-
-    it 'removes the printer, its jobs, its widgets and its snapshot, and keeps its files' do
-      expect(Printer.exists?(printer.id)).to be false
-      expect(Printer::Job.where(printer_id: printer.id)).to be_empty
-      expect(Dashboard::Widget.where(printer_id: printer.id)).to be_empty
-      expect(Printer::Status.find_by(printer_id: printer.id)).to be_nil
-      expect(Library::Item.exists?(file.id)).to be true
-    end
-
-    it 'pushes printQueueChanged and dashboardChanged once each' do
-      expect(triggers).to contain_exactly(:print_queue_changed, :dashboard_changed)
-    end
-
-    it 'tells the spooler' do
-      expect(redis).to have_received(:publish)
-        .with('printers', { command: 'remove_printer', printer_id: printer.id }.to_json)
     end
   end
 

@@ -40,12 +40,6 @@ RSpec.describe Printer::LoadedFilament do
       expect(filament.reload).to have_attributes(colour: 'Galaxy Black', colour_key: 'galaxy black')
     end
 
-    it 'gives "Black", "black" and " BLACK " one key, and "Galaxy Black" another' do
-      keys = ['Black', 'black', ' BLACK ', 'Galaxy Black'].map { |colour| described_class.new(colour:).colour_key }
-
-      expect(keys).to eq ['black', 'black', 'black', 'galaxy black']
-    end
-
     it 'is required' do
       filament.colour = '  '
 

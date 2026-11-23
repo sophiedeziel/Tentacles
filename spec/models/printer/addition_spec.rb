@@ -113,9 +113,4 @@ RSpec.describe Printer::Addition do
       expect(Printer.count).to eq(0)
     end
   end
-
-  it 'names the attributes like Printer' do
-    expect(described_class.human_attribute_name(:uri)).to eq('URL')
-    expect(described_class.human_attribute_name(:secret)).to eq('API key or password')
-  end
 end

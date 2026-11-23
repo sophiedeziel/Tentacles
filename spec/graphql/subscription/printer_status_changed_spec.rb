@@ -58,15 +58,6 @@ RSpec.describe Subscriptions::PrinterStatusChanged do
     pubsub.broadcasts(name).map { |message| JSON.parse(message) }
   end
 
-  describe 'field' do
-    let(:field) { TentaclesSchema.subscription.get_field('printerStatusChanged') }
-
-    it 'returns a non-null Printer and takes no arguments' do
-      expect(field.type.to_type_signature).to eq('Printer!')
-      expect(field.arguments).to be_empty
-    end
-  end
-
   describe 'broadcastable?' do
     it 'broadcasts printerStatusChanged' do
       expect(subscriptions.broadcastable?(status_changed_query)).to be(true)

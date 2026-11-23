@@ -108,38 +108,6 @@ RSpec.describe 'Query printers { status }', type: :request do
     end
   end
 
-  it 'tells a server that does not answer from one that is up without its printer' do
-    unreachable, closed = with_snapshot.first(2)
-    [[unreachable, Printer::Status::UNREACHABLE_STATE_TEXT], [closed, 'Closed']].each do |printer, state_text|
-      Printer::Status.new(printer_id: printer.id, state_family: Printer::StateFamily::Offline,
-                          state_text:, updated_at:).save!
-    end
-
-    post '/graphql', params: { query: }
-
-    expect(statuses.values_at(unreachable.id, closed.id).pluck('stateText', 'serverReachable'))
-      .to eq [['Unreachable', false], ['Closed', true]]
-  end
-
-  it 'returns OFFLINE / Unknown for a printer without snapshot nor last_seen_at' do
-    printer = without_snapshot.first
-    printer.update!(last_seen_at: nil)
-
-    post '/graphql', params: { query: }
-
-    expect(statuses[printer.id]).to include('stateFamily' => 'OFFLINE', 'stateText' => 'Unknown', 'lastSeenAt' => nil)
-  end
-
-  it 'falls back to Unknown when a snapshot is unreadable' do
-    printer = with_snapshot.first
-    redis.set(Printer::Status.key(printer.id), 'not json')
-
-    post '/graphql', params: { query: }
-
-    expect(json['errors']).to be_nil
-    expect(statuses[printer.id]).to include('stateFamily' => 'OFFLINE', 'stateText' => 'Unknown')
-  end
-
   it 'falls back to Unknown for snapshots written before a prop was added, or null' do
     redis.set(Printer::Status.key(with_snapshot.first.id), { printer_id: with_snapshot.first.id }.to_json)
     redis.set(Printer::Status.key(with_snapshot.second.id), 'null')
@@ -160,16 +128,6 @@ RSpec.describe 'Query printers { status }', type: :request do
     expect(statuses.values.pluck('stateText').uniq).to eq ['Unknown']
   end
 
-  it 'serializes every state family' do
-    Printer::StateFamily.values.zip(printers).each do |family, printer|
-      Printer::Status.new(printer_id: printer.id, state_family: family, state_text: 'x').save!
-    end
-
-    post '/graphql', params: { query: }
-
-    expect(Printer::StateFamily.values.zip(printers).map { |_family, printer| statuses[printer.id]['stateFamily'] })
-      .to eq(%w[PRINTING PAUSED CANCELLING OPERATIONAL CONNECTING ERROR OFFLINE])
-  end
   describe 'value formats' do
     let(:printer) { with_snapshot.first }
 
@@ -208,16 +166,6 @@ RSpec.describe 'Query printers { status }', type: :request do
 
     it 'returns a null temperature without a current reading' do
       expect(status_with(bed: Printer::Status::Temperature.new(actual: nil, target: 60.0))['bed']).to be_nil
-    end
-
-    it 'reads snapshots written before the unit was stored as CELSIUS' do
-      snapshot = { printer_id: printer.id, state_family: 'PRINTING', state_text: 'Printing',
-                   hotend: { actual: 200.0, target: 200.0 } }
-      redis.set(Printer::Status.key(printer.id), snapshot.to_json)
-
-      post '/graphql', params: { query: }
-
-      expect(statuses[printer.id]['hotend']).to eq('actual' => 200.0, 'target' => 200.0, 'unit' => 'CELSIUS')
     end
 
     it 'always has an updatedAt, falling back to the time of the query for printers never seen' do

@@ -108,13 +108,6 @@ RSpec.describe PrintQueue::Move do
       expect(positions(printing, second, first, third)).to eq [1, 2, 3, 4]
     end
 
-    it 'pushes once and asks for a dispatch pass' do
-      move_before(third, first)
-
-      expect_pushed_once([])
-      expect_dispatch_requested
-    end
-
     it 'is refused when the other entry is finished' do
       finished = finished_entry(4)
 

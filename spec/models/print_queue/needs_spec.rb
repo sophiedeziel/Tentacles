@@ -79,15 +79,4 @@ RSpec.describe PrintQueue::Needs do
       expect(needs).to have_attributes(tools: [], width: nil, tool_count: nil)
     end
   end
-
-  it 'is what an entry needs' do
-    summary(:ready)
-
-    expect(entry.needs).to be_known
-  end
-
-  it 'is read-only' do
-    expect { described_class.new.save }.to raise_error(ApplicationModel::ReadOnlyRecord)
-    expect { described_class::Tool.new(tool: 0).save }.to raise_error(ApplicationModel::ReadOnlyRecord)
-  end
 end

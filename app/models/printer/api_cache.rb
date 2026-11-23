@@ -76,12 +76,6 @@ class Printer
       value.blank? || expires_at.to_i <= Time.current.to_i
     end
 
-    #: -> void
-    def destroy
-      Rails.logger.info("Clearing cache for #{key}")
-      REDIS_POOL.with { |conn| conn.del(key) }
-    end
-
     private
 
     #: -> void

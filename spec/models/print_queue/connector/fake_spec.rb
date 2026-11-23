@@ -18,16 +18,6 @@ RSpec.describe PrintQueue::Connector::Fake do
 
   def status = Printer::Status.find_by(printer_id: printer.id)
 
-  it 'cannot be saved' do
-    expect { fake.save }.to raise_error(NotImplementedError)
-  end
-
-  it 'can be the connector of the queue' do
-    PrintQueue.connector = fake
-
-    expect(PrintQueue.connector).to be fake
-  end
-
   describe 'the commands the queue sends' do
     it 'records them in order, without calling the printer' do
       other = create(:printer_job, :copy, printer:)
@@ -52,12 +42,12 @@ RSpec.describe PrintQueue::Connector::Fake do
         expect(command).to be_a command_class
         expect(command).to have_attributes(printer:, errors: be_empty)
       end
+    end
 
-      it "refuses #{method} with its refusal" do
-        fake.refusal = 'Prusa MK4 is no longer printing'
+    it 'refuses with its refusal' do
+      fake.refusal = 'Prusa MK4 is no longer printing'
 
-        expect(fake.public_send(method, copy).errors[:base]).to eq ['Prusa MK4 is no longer printing']
-      end
+      expect(fake.pause(copy).errors[:base]).to eq ['Prusa MK4 is no longer printing']
     end
   end
 

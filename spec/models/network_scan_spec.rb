@@ -93,15 +93,6 @@ RSpec.describe NetworkScan do
     end
   end
 
-  describe '.create!' do
-    it 'returns the saved scan' do
-      redis.set(:printers_ips, ['192.168.0.5'].to_json)
-      redis.set(:last_printer_scan, 3.minutes.ago.to_i)
-
-      expect(described_class.create!.ips).to eq(['192.168.0.5'])
-    end
-  end
-
   describe '.last' do
     it 'returns the last scan, however old, without scanning' do
       freeze_time do

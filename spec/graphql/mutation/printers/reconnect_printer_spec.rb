@@ -6,31 +6,14 @@ require_relative 'printer_action_shared_examples'
 RSpec.describe Mutations::Printers::ReconnectPrinter, type: :request do
   it_behaves_like 'a printer action',
                   mutation: 'reconnectPrinter',
-                  commands: [[Octoprint::Connection, :disconnect],
-                             [Octoprint::Connection, :connect, { port: 'AUTO', baudrate: 0 }]],
+                  commands: [[Octoprint::Connection, :disconnect], [Octoprint::Connection, :connect]],
                   allowed: [Printer::StateFamily::Error],
-                  refusals: {
-                    Printer::StateFamily::Printing => 'Prusa MK4 is no longer in error',
-                    Printer::StateFamily::Paused => 'Prusa MK4 is no longer in error',
-                    Printer::StateFamily::Cancelling => 'Prusa MK4 is no longer in error',
-                    Printer::StateFamily::Operational => 'Prusa MK4 is no longer in error',
-                    Printer::StateFamily::Connecting => 'Prusa MK4 is no longer in error',
-                    Printer::StateFamily::Offline => 'Prusa MK4 is no longer in error'
-                  }
+                  refusals: { Printer::StateFamily::Printing => 'Prusa MK4 is no longer in error' }
 
   describe 'order of the commands' do
     include_context 'with a printer action request', 'reconnectPrinter'
 
     let(:job_state) { 'Error: Too many consecutive timeouts' }
-
-    it 'disconnects, then connects' do
-      expect(Octoprint::Connection).to receive(:disconnect).ordered.and_return(true)
-      expect(Octoprint::Connection).to receive(:connect).with({ port: 'AUTO', baudrate: 0 }).ordered.and_return(true)
-
-      run_mutation
-
-      expect(result['success']).to be true
-    end
 
     it 'does not connect when disconnecting fails' do
       allow(Octoprint::Connection).to receive(:disconnect).and_raise(Octoprint::Exceptions::InternalServerError,

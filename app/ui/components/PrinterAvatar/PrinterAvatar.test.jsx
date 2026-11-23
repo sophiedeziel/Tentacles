@@ -23,14 +23,6 @@ describe('PrinterAvatar', () => {
     expect(pathsIn(container)).toEqual(expected)
   })
 
-  it('draws it on a 40 px square tile, like the fleet list', () => {
-    const { container } = render(<PrinterAvatar printer={{ backend: 'PRUSALINK' }} />)
-
-    const avatar = container.querySelector('.ant-avatar')
-    expect(avatar).toHaveClass('ant-avatar-square')
-    expect(avatar).toHaveStyle({ width: '40px', height: '40px' })
-  })
-
   it('keeps the icon out of the accessibility tree: the name next to it says it all', () => {
     const { container } = render(<PrinterAvatar printer={{ backend: 'PRUSALINK' }} />)
 

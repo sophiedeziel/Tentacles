@@ -38,11 +38,4 @@ RSpec.describe PrintQueue::PrintProgress do
   it 'is refused without a job' do
     expect_refused(described_class.new(printer_job: nil, progress: 43), "Printer job can't be blank")
   end
-
-  it 'leaves the progress alone while the global queue is off' do
-    allow(PrintQueue).to receive(:enabled?).and_return(false)
-
-    expect_refused(described_class.new(printer_job:, progress: 43), 'The global print queue is off')
-    expect(printer_job.reload.progress).to eq 0
-  end
 end

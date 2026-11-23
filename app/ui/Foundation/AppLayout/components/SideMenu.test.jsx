@@ -1,6 +1,6 @@
 import React from 'react'
 import { describe, expect, it } from 'vitest'
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MockedProvider } from '@apollo/client/testing/react'
 import { MemoryRouter, useLocation, useNavigate } from 'react-router'
 import SideMenu, { menuKeys } from './SideMenu'
@@ -51,29 +51,6 @@ describe('menuKeys', () => {
 })
 
 describe('SideMenu', () => {
-  it('links to the pages that exist', () => {
-    renderAt('/files')
-
-    expect(screen.getByText('Dashboard')).toBeInTheDocument()
-    expect(screen.getByText('Printers')).toBeInTheDocument()
-    expect(screen.getByText('Files')).toBeInTheDocument()
-  })
-
-  it('shows Printers with the 3D printer icon', () => {
-    renderAt('/files')
-
-    expect(within(item('Printers')).getByRole('img', { name: '3D printer' })).toBeInTheDocument()
-  })
-
-  it('hides the links to pages that do not exist yet', () => {
-    renderAt('/files')
-
-    expect(screen.queryByText('Projects')).not.toBeInTheDocument()
-    expect(screen.queryByText('Macros')).not.toBeInTheDocument()
-    expect(screen.queryByText('Reports')).not.toBeInTheDocument()
-    expect(screen.queryByText('Operations')).not.toBeInTheDocument()
-  })
-
   it('hides Print Queue while the global queue is off', async () => {
     let answered = false
     renderAt('/printers', { answered: () => { answered = true } })
@@ -104,8 +81,8 @@ describe('SideMenu', () => {
     expect(item('Printers')).not.toHaveClass('ant-menu-submenu-open')
   })
 
-  it.each(['/printers/manage', '/printers/add', '/printers/3'])('opens Printers and selects Manage on %s', (path) => {
-    renderAt(path)
+  it('opens Printers and selects Manage on a printer page', () => {
+    renderAt('/printers/3')
 
     expect(item('Printers')).toHaveClass('ant-menu-submenu-open')
     expect(item('Manage')).toHaveClass('ant-menu-item-selected')

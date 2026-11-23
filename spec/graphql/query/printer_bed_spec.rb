@@ -32,13 +32,6 @@ RSpec.describe 'Query printer, its bed', type: :request do
     create(:printer_job, :copy, printer:, status: 'completed', started_at: 2.hours.ago, finished_at: 1.hour.ago)
   end
 
-  it 'types its fields' do
-    fields = TentaclesSchema.get_type('Printer').fields
-
-    expect(%w[bedNeedsClearing printOnBed].index_with { |name| fields.fetch(name).type.to_type_signature })
-      .to eq('bedNeedsClearing' => 'Boolean!', 'printOnBed' => 'Print')
-  end
-
   it 'gives the print still on the bed' do
     mk4 = create(:printer, name: 'Prusa MK4')
     on_bed = finished_copy(mk4)

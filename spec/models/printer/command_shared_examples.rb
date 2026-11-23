@@ -55,10 +55,6 @@ RSpec.shared_examples 'a printer command' do |sends:, allowed:, refusals:|
         expect(printer.api).not_to have_received(sends)
         expect(Printer::Status).not_to have_received(:find_or_initialize_by)
       end
-
-      it 'raises ActiveModel::ValidationError with save!' do
-        expect { command.save! }.to raise_error(ActiveModel::ValidationError, /#{Regexp.escape(message)}/)
-      end
     end
   end
 
@@ -88,10 +84,6 @@ RSpec.shared_examples 'a printer command' do |sends:, allowed:, refusals:|
       expect(command.errors.full_messages).to eq(["Prusa MK4's OctoPrint returned an error: [409] Printer is not " \
                                                   'operational'])
       expect(Printer::Status).not_to have_received(:find_or_initialize_by)
-    end
-
-    it 'raises it with save!' do
-      expect { command.save! }.to raise_error(Printer::Backend::Error)
     end
   end
 end

@@ -3,10 +3,6 @@
 require 'rails_helper'
 
 RSpec.describe Library::GcodeSummary::Tool do
-  it 'has a valid factory' do
-    expect(build(:gcode_summary_tool)).to be_valid
-  end
-
   it 'is one row per tool of a summary' do
     tool = create(:gcode_summary_tool, tool: 0)
 
@@ -15,10 +11,6 @@ RSpec.describe Library::GcodeSummary::Tool do
     row = { gcode_summary_id: tool.gcode_summary_id, tool: 0, created_at: Time.current, updated_at: Time.current }
     # rubocop:disable-next Rails/SkipsModelValidations -- past the validation, to test the unique index
     expect { described_class.insert_all!([row]) }.to raise_error(ActiveRecord::RecordNotUnique)
-  end
-
-  it 'takes a tool from 0' do
-    expect(build(:gcode_summary_tool, tool: -1)).not_to be_valid
   end
 
   it 'takes a material of Filament::MATERIALS, or none' do

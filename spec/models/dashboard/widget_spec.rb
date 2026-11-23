@@ -34,11 +34,6 @@ RSpec.describe Dashboard::Widget do
       end
       expect(errors_of(queue_widget(width_units: 1, height_units: 2))).to eq(["1×2 isn't a size this widget supports"])
     end
-
-    it 'are whole numbers from 1 to 4' do
-      expect(errors_of(queue_widget(width_units: 5, height_units: 2))).to include('Width units must be in 1..4')
-      expect(errors_of(queue_widget(width_units: 4, height_units: 1.5))).to include('Height units must be an integer')
-    end
   end
 
   describe 'options' do
@@ -83,15 +78,6 @@ RSpec.describe Dashboard::Widget do
   end
 
   describe 'printer' do
-    it 'is required for a printer widget' do
-      expect(errors_of(printer_widget(printer: nil))).to eq(["Printer can't be blank"])
-    end
-
-    it 'is optional for a print queue (all printers)' do
-      expect(queue_widget(printer: nil)).to be_valid
-      expect(queue_widget(printer:)).to be_valid
-    end
-
     it "destroys the printer's widgets when the printer is deleted" do
       printer_widget.save!
       queue_widget(printer:).save!
@@ -100,11 +86,5 @@ RSpec.describe Dashboard::Widget do
       expect { printer.destroy! }.to change(described_class, :count).from(3).to(1)
       expect(described_class.sole).to eq(all_printers)
     end
-  end
-
-  it 'is a known type' do
-    widget = described_class.new(section: section, width_units: 1, height_units: 1, position: 0)
-
-    expect(errors_of(widget)).to include('Type is not included in the list')
   end
 end

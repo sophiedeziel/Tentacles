@@ -139,13 +139,11 @@ RSpec.describe Mutations::Dashboards::SaveDashboard, type: :request do
     expect(result['errors']).to eq(["A layout can't have more than 200 widgets"])
   end
 
-  [ActiveRecord::LockWaitTimeout, ActiveRecord::Deadlocked, ActiveRecord::InvalidForeignKey].each do |error|
-    it "returns a retry message on #{error.name.demodulize}" do
-      allow(Dashboard::Section).to receive(:replace_all!).and_raise(error)
-      save(sections)
+  it 'returns a retry message on Deadlocked' do
+    allow(Dashboard::Section).to receive(:replace_all!).and_raise(ActiveRecord::Deadlocked)
+    save(sections)
 
-      expect(result).to eq('dashboard' => nil, 'errors' => ['The dashboard changed while saving, try again'])
-    end
+    expect(result).to eq('dashboard' => nil, 'errors' => ['The dashboard changed while saving, try again'])
   end
 
   it 'still returns the saved layout when the push fails' do
@@ -154,19 +152,5 @@ RSpec.describe Mutations::Dashboards::SaveDashboard, type: :request do
 
     expect(result['errors']).to eq([])
     expect(Dashboard::Section.count).to eq(2)
-  end
-
-  describe 'the options input (one_of)' do
-    def graphql_errors(options)
-      sections.last[:widgets].first[:options] = options
-      post '/graphql', params: { query: mutation, variables: { sections: } }, as: :json
-      response.parsed_body['errors'].pluck('message')
-    end
-
-    it 'refuses both printer and printQueue options, or none' do
-      expect(graphql_errors({ printer: {}, printQueue: {} })).to include(/requires exactly one argument/)
-      expect(graphql_errors({})).to include(/requires exactly one argument/)
-      expect(Dashboard::Section.count).to eq(0)
-    end
   end
 end

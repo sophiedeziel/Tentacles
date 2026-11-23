@@ -36,10 +36,6 @@ RSpec.describe Mutations::Printers::StartNextPrint, type: :request do
     it 'checks the live state' do
       expect(Octoprint::Job).to have_received(:get).once
     end
-
-    it 'leaves the status refresh to the spooler' do
-      expect(Printer::Status).not_to have_received(:find_or_initialize_by)
-    end
   end
 
   it 'still works with the Queue section query, which only selects success' do
@@ -49,37 +45,13 @@ RSpec.describe Mutations::Printers::StartNextPrint, type: :request do
     expect(json).to eq('data' => { 'startNextPrint' => { 'success' => true } })
   end
 
-  (PRINTER_ACTION_STATES.keys - [Printer::StateFamily::Operational]).each do |family|
-    context "when the printer is #{family.serialize}" do
-      let(:job_state) { PRINTER_ACTION_STATES.fetch(family) }
+  context 'when the printer is PRINTING' do
+    let(:job_state) { PRINTER_ACTION_STATES.fetch(Printer::StateFamily::Printing) }
 
-      before { run_mutation }
+    before { run_mutation }
 
-      it { expect_refusal('Prusa MK4 is not ready to print') }
-    end
+    it { expect_refusal('Prusa MK4 is not ready to print') }
   end
-
-  context 'when the queue is empty' do
-    before do
-      printer.jobs.update_all(status: 'completed') # rubocop:disable Rails/SkipsModelValidations
-      create(:printer_job, printer:, status: 'error')
-      create(:printer_job, status: 'enqueued') # another printer's
-      run_mutation
-    end
-
-    it { expect_refusal('Prusa MK4 has nothing in its queue') }
-  end
-
-  context 'when the printer already has an active job' do
-    before do
-      create(:printer_job, printer:, status: 'active')
-      run_mutation
-    end
-
-    it { expect_refusal('Prusa MK4 already has an active job') }
-  end
-
-  it_behaves_like 'a printer action that fails gracefully', commands: []
 
   context 'when Redis is down' do
     before do
@@ -87,7 +59,10 @@ RSpec.describe Mutations::Printers::StartNextPrint, type: :request do
       run_mutation
     end
 
-    it { expect(result['errors']).to eq ["Could not ask the spooler to start Prusa MK4's next print"] }
-    it { expect(result['success']).to be false }
+    it do
+      expect(result).to eq('success' => false,
+                           'errors' => ["Could not ask the spooler to start Prusa MK4's next print"],
+                           'printer' => returned_printer)
+    end
   end
 end

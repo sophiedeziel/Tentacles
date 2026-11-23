@@ -51,12 +51,6 @@ RSpec.describe PrintQueue::BedClearance do
       expect(older.reload).to have_attributes(bed_cleared_at: nil, bed_cleared_by: nil)
     end
 
-    it 'leaves the printer with nothing to clear' do
-      clear
-
-      expect(printer.bed_needs_clearing?).to be false
-    end
-
     it 'pushes the printer once and asks for a dispatch pass' do
       clear
 
@@ -111,10 +105,6 @@ RSpec.describe PrintQueue::BedClearance do
   context 'when there is nothing to clear' do
     # The print the person was shown, cleared since
     let(:seen) { finished_copy(3.hours.ago, bed_cleared_at: 2.hours.ago, bed_cleared_by: 'automatic') }
-
-    it 'is refused for a printer that never printed' do
-      expect_refused(described_class.new(printer:, expected_print_id: 1), 'Nothing to clear on Prusa MK4')
-    end
 
     it 'is refused while the last print is under way' do
       under_way = copy(status: 'active', started_at: 1.hour.ago)

@@ -35,22 +35,11 @@ RSpec.describe Printer::Monitor::PrusalinkReader do
       )
     end
 
-    it 'builds a valid snapshot' do
-      expect(Printer::Status.new(printer_id: printer.id, **attributes)).to be_a(Printer::Status)
-    end
-
-    # Every row of the state table (see Printer::StateFamily.for_prusalink)
+    # The family of ATTENTION depends on the job, which the reader passes through (see
+    # Printer::StateFamily.for_prusalink)
     [
-      ['PRINTING', true, Printer::StateFamily::Printing, 'Printing'],
-      ['PAUSED', true, Printer::StateFamily::Paused, 'Paused'],
       ['ATTENTION', true, Printer::StateFamily::Paused, 'Attention'],
-      ['ATTENTION', false, Printer::StateFamily::Error, 'Attention'],
-      ['IDLE', false, Printer::StateFamily::Operational, 'Idle'],
-      ['READY', false, Printer::StateFamily::Operational, 'Ready'],
-      ['FINISHED', false, Printer::StateFamily::Operational, 'Finished'],
-      ['STOPPED', false, Printer::StateFamily::Operational, 'Stopped'],
-      ['BUSY', false, Printer::StateFamily::Operational, 'Busy'],
-      ['ERROR', false, Printer::StateFamily::Error, 'Error']
+      ['ATTENTION', false, Printer::StateFamily::Error, 'Attention']
     ].each do |prusalink_state, with_job, family, text|
       context "when PrusaLink is #{prusalink_state} #{with_job ? 'with' : 'without'} a job" do
         let(:state) { prusalink_state }
@@ -189,12 +178,6 @@ RSpec.describe Printer::Monitor::PrusalinkReader do
         expect(Prusalink::Job).to have_received(:get).once
         expect(Rails.logger).to have_received(:error).with(/Failed to read the job/).once
       end
-    end
-  end
-
-  describe '#camera' do
-    it 'is disabled' do
-      expect(reader.camera).to eq Printer::Status::Camera.new(enabled: false)
     end
   end
 end

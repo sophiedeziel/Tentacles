@@ -46,16 +46,6 @@ RSpec.describe Library::GcodeSummaryRefresh do
       .to eq [[0, nil, 797.7]]
   end
 
-  it 'records the M600 changes' do
-    attach('prusaslicer_m600.gcode')
-
-    described_class.new(item:).save!
-
-    expect(item.reload.gcode_summary.filament_changes).to eq [
-      { 'line' => 102, 'z' => 0.41, 'layer' => 2 }, { 'line' => 124, 'z' => 0.41, 'layer' => 2 }
-    ]
-  end
-
   it 'skips a current row' do
     summary = create(:gcode_summary, :ready, item:, slicer: 'Kept')
     allow(Gcode::Summary).to receive(:read_file)

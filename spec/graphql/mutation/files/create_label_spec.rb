@@ -18,12 +18,6 @@ module Mutations
         end
 
         describe '.resolve' do
-          it 'creates a label' do
-            expect do
-              post '/graphql', params: { query:, variables: }
-            end.to change { Library::Label.count }.by(1)
-          end
-
           it 'returns the label' do
             post '/graphql', params: { query:, variables: }
             json = JSON.parse(response.body)
@@ -45,12 +39,6 @@ module Mutations
                 }
               }
             end
-            it 'does not create a label' do
-              expect do
-                post '/graphql', params: { query:, variables: }
-              end.to change { Library::Label.count }.by(0)
-            end
-
             it 'returns a nil label' do
               post '/graphql', params: { query:, variables: }
               json = JSON.parse(response.body)

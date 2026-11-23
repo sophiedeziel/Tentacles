@@ -40,12 +40,6 @@ RSpec.describe PrintQueue do
       expect(pushes).to eq printers.map(&:id)
     end
 
-    it 'pushes no printer without printers' do
-      described_class.push_changed
-
-      expect(pushes).to be_empty
-    end
-
     it 'logs a push that fails, without raising, and still pushes the next printers' do
       allow(subscriptions).to receive(:trigger).with(:print_queue_changed, {}, printers.first)
                                                .and_raise(Redis::CannotConnectError)

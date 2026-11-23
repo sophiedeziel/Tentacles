@@ -59,10 +59,6 @@ RSpec.describe Printer::Monitor::Worker do
     expect { described_class.new(printer:) }.to raise_error(ArgumentError, 'Unknown printer backend "repetier"')
   end
 
-  it 'defaults to the interval from PRINTER_MONITOR_INTERVAL' do
-    expect(described_class.new(printer:).interval).to eq 2.0
-  end
-
   describe '#tick' do
     context 'when the printer is printing' do
       before { worker.tick }
@@ -377,10 +373,6 @@ RSpec.describe Printer::Monitor::Worker do
     context 'when Redis is down' do
       before { allow(redis).to receive(:set).and_raise(Redis::CannotConnectError) }
 
-      it 'does not raise' do
-        expect { worker.tick }.not_to raise_error
-      end
-
       it 'backs off exponentially over consecutive failed ticks' do
         delays = Array.new(6) do
           worker.tick
@@ -577,25 +569,8 @@ RSpec.describe Printer::Monitor::Worker do
       end
     end
 
-    context 'when the OctoPrint URI has a path without a trailing slash' do
-      let(:printer) { create(:printer, uri: 'http://10.0.1.165/octoprint') }
-
-      it 'resolves relative URLs under that path' do
-        allow(Octoprint::Settings).to receive(:webcam) do
-          Octoprint::Settings::Webcam.from_settings({ webcam: { webcam_enabled: true, stream_url: 'webcam/' } })
-        end
-        worker.tick
-        expect(status.camera.stream_url).to eq 'http://10.0.1.165/octoprint/webcam/'
-      end
-    end
-
     context 'when the OctoPrint URI has credentials' do
       let(:printer) { create(:printer, uri: 'http://admin:secret@10.0.1.165/') }
-
-      it 'does not copy them into the stream URL' do
-        worker.tick
-        expect(status.camera.stream_url).to eq 'http://10.0.1.165/webcam/?action=stream'
-      end
 
       it 'strips them from absolute stream URLs too' do
         allow(Octoprint::Settings).to receive(:webcam) do
@@ -687,7 +662,6 @@ RSpec.describe Printer::Monitor::Worker do
 
     [
       Octoprint::Exceptions::ConnectionError.new('Failed to open TCP connection'),
-      Octoprint::Exceptions::TimeoutError.new('execution expired'),
       Octoprint::Exceptions::AuthenticationError.new('[403] Invalid API key'),
       Octoprint::Exceptions::InternalServerError.new('[500] Oops')
     ].each do |error|

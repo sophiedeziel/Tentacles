@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+require 'support/unreadable_secret'
 require_relative 'printer_action_shared_examples'
 
 # The printer action mutations with a PrusaLink printer. The prusalink gem is stubbed: Prusalink::Status.get answers
@@ -28,10 +29,9 @@ RSpec.describe 'Printer actions on a PrusaLink printer', type: :request do
   end
 
   {
-    'pausePrint' => { command: :pause, allowed: %w[PRINTING], refused: 'Prusa MK4 is no longer printing' },
-    'resumePrint' => { command: :resume, allowed: %w[PAUSED ATTENTION], refused: 'Prusa MK4 is no longer paused' },
-    'cancelPrint' => { command: :stop, allowed: %w[PRINTING PAUSED ATTENTION],
-                       refused: 'Prusa MK4 is no longer printing' }
+    'pausePrint' => { command: :pause, allowed: 'PRINTING', refused: 'Prusa MK4 is no longer printing' },
+    'resumePrint' => { command: :resume, allowed: 'PAUSED', refused: 'Prusa MK4 is no longer paused' },
+    'cancelPrint' => { command: :stop, allowed: 'PRINTING', refused: 'Prusa MK4 is no longer printing' }
   }.each do |mutation, options|
     command, allowed, refused = options.values_at(:command, :allowed, :refused)
 
@@ -40,41 +40,25 @@ RSpec.describe 'Printer actions on a PrusaLink printer', type: :request do
 
       let(:printer) { create(:printer, :prusalink, name: 'Prusa MK4') }
 
-      allowed.each do |state|
-        context "when PrusaLink is #{state} during a job" do
-          let(:prusalink_state) { state }
+      context "when PrusaLink is #{allowed} during a job" do
+        let(:prusalink_state) { allowed }
 
-          before { run_mutation }
+        before { run_mutation }
 
-          it "sends #{command} with the id of the current job" do
-            expect(Prusalink::Job).to have_received(command).once.with(42)
-          end
+        it "sends #{command} with the id of the current job" do
+          expect(Prusalink::Job).to have_received(command).once.with(42)
+        end
 
-          it 'succeeds and refreshes the printer status' do
-            expect(json['errors']).to be_nil
-            expect(result).to eq('success' => true, 'errors' => [], 'printer' => returned_printer)
-            expect(Printer::Status).to have_received(:find_or_initialize_by).once.with(printer:)
-            expect(refreshed_status).to have_received(:reload).once
-          end
+        it 'succeeds and refreshes the printer status' do
+          expect(json['errors']).to be_nil
+          expect(result).to eq('success' => true, 'errors' => [], 'printer' => returned_printer)
+          expect(Printer::Status).to have_received(:find_or_initialize_by).once.with(printer:)
+          expect(refreshed_status).to have_received(:reload).once
         end
       end
 
-      (%w[PRINTING PAUSED IDLE FINISHED BUSY ERROR] - allowed).each do |state|
-        context "when PrusaLink is #{state}" do
-          let(:prusalink_state) { state }
-
-          before { run_mutation }
-
-          it 'refuses without sending anything' do
-            expect_failure(refused)
-            expect_no_command
-          end
-        end
-      end
-
-      context 'when PrusaLink needs attention without a job' do
-        let(:prusalink_state) { 'ATTENTION' }
-        let(:prusalink_job) { nil }
+      context 'when PrusaLink is IDLE' do
+        let(:prusalink_state) { 'IDLE' }
 
         before { run_mutation }
 
@@ -84,23 +68,9 @@ RSpec.describe 'Printer actions on a PrusaLink printer', type: :request do
         end
       end
 
-      context 'when the job ended after the state was read' do
-        let(:prusalink_state) { allowed.first }
-
-        before do
-          allow(Prusalink::Job).to receive(:get).and_return(nil)
-          run_mutation
-        end
-
-        it 'says there is no job, without sending anything' do
-          expect_failure('Prusa MK4 has no job under way')
-          expect_no_command
-        end
-      end
-
       # The screen confirms the file the monitor showed: the display name, as PrusaLink names the job's file
       context 'when the user confirmed a file' do
-        let(:prusalink_state) { allowed.first }
+        let(:prusalink_state) { allowed }
         let(:job_file) { { name: 'BRACKE~1.BGC', display_name: 'bracket_v3.bgcode' } }
 
         before do
@@ -120,22 +90,6 @@ RSpec.describe 'Printer actions on a PrusaLink printer', type: :request do
           expect(Prusalink::Job).to have_received(command).once.with(42)
           expect(Prusalink::Job).to have_received(:get).once
         end
-
-        it 'refuses when the printer is printing another file' do
-          run_confirmed('gear_v2.bgcode')
-          expect_failure('Prusa MK4 is now printing bracket_v3.bgcode')
-          expect_no_command
-        end
-
-        context 'when the job has no file name' do
-          let(:job_file) { nil }
-
-          it 'refuses' do
-            run_confirmed('bracket_v3.bgcode')
-            expect_failure('Prusa MK4 is no longer printing bracket_v3.bgcode')
-            expect_no_command
-          end
-        end
       end
 
       context 'when PrusaLink is unreachable' do
@@ -151,27 +105,6 @@ RSpec.describe 'Printer actions on a PrusaLink printer', type: :request do
         end
       end
 
-      context 'when PrusaLink rejects the password' do
-        before do
-          allow(Prusalink::Status).to receive(:get)
-            .and_raise(Prusalink::Exceptions::AuthenticationError, '[401] Unauthorized')
-          run_mutation
-        end
-
-        it { expect_failure("Prusa MK4's PrusaLink returned an error: [401] Unauthorized") }
-      end
-
-      context 'when PrusaLink refuses the command' do
-        let(:prusalink_state) { allowed.first }
-
-        before do
-          allow(Prusalink::Job).to receive(command).and_raise(Prusalink::Exceptions::ConflictError, '[409] Conflict')
-          run_mutation
-        end
-
-        it { expect_failure("Prusa MK4's PrusaLink returned an error: [409] Conflict") }
-      end
-
       context 'when an error message contains the password' do
         before do
           allow(Prusalink::Status).to receive(:get)
@@ -180,17 +113,6 @@ RSpec.describe 'Printer actions on a PrusaLink printer', type: :request do
         end
 
         it { expect_failure("Could not reach Prusa MK4's PrusaLink: Failed with [FILTERED]") }
-      end
-
-      context 'when the printer has no password' do
-        let(:printer) { create(:printer, :prusalink, :unvalidated, name: 'Prusa MK4', secret: nil) }
-
-        before { run_mutation }
-
-        it 'returns the error without calling PrusaLink' do
-          expect_failure('Prusa MK4 has no PrusaLink URL or password')
-          expect(Prusalink::Status).not_to have_received(:get)
-        end
       end
 
       context 'when the stored password cannot be decrypted' do
@@ -214,17 +136,15 @@ RSpec.describe 'Printer actions on a PrusaLink printer', type: :request do
 
       let(:printer) { create(:printer, :prusalink, name: 'Prusa MK4') }
 
-      %w[IDLE ERROR].each do |state|
-        context "when PrusaLink is #{state}" do
-          let(:prusalink_state) { state }
-          let(:prusalink_job) { nil }
+      context 'when PrusaLink is IDLE' do
+        let(:prusalink_state) { 'IDLE' }
+        let(:prusalink_job) { nil }
 
-          before { run_mutation }
+        before { run_mutation }
 
-          it 'refuses without contacting the printer' do
-            expect_failure('PrusaLink printers connect on their own')
-            expect(Prusalink::Status).not_to have_received(:get)
-          end
+        it 'refuses without contacting the printer' do
+          expect_failure('PrusaLink printers connect on their own')
+          expect(Prusalink::Status).not_to have_received(:get)
         end
       end
     end

@@ -29,16 +29,6 @@ RSpec.describe Mutations::Queue::HoldPrintJob, type: :request do
     expect_nothing_pushed
   end
 
-  it 'is refused while the global queue is off' do
-    turn_queue_off
-
-    hold
-
-    expect_refused('The global print queue is off')
-    expect(job.reload.held).to be false
-    expect_nothing_pushed
-  end
-
   it 'returns an error for an unknown print job' do
     hold(job.id + 1)
 

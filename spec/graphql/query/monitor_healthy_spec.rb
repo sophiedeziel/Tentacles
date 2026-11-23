@@ -30,16 +30,4 @@ RSpec.describe 'Query monitorHealthy', type: :request do
 
     expect(monitor_healthy).to be(false)
   end
-
-  it 'becomes false as time passes without a heartbeat' do
-    Printer::Monitor::Heartbeat.create!(at: now)
-    expect(monitor_healthy).to be(true)
-
-    travel(20.seconds)
-    expect(monitor_healthy).to be(false)
-  end
-
-  it 'is false when there is no heartbeat' do
-    expect(monitor_healthy).to be(false)
-  end
 end

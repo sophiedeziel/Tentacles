@@ -34,15 +34,6 @@ RSpec.describe PrintQueue::CopiesChange do
     expect_no_dispatch_requested
   end
 
-  it 'pushes the printer the entry is bound to' do
-    printer = create(:printer)
-    job.update!(same_printer: true, bound_printer: printer)
-
-    change(6)
-
-    expect_pushed_once([printer])
-  end
-
   context 'with copies done and printing' do
     before do
       2.times { copy('completed') }

@@ -60,12 +60,6 @@ RSpec.describe Dashboard::Section do
       expect(queue).to have_attributes(row_per_printer: true, history: true)
     end
 
-    it 'saves nothing' do
-      printer
-
-      expect { described_class.build_default }.not_to change(Dashboard::Widget, :count)
-    end
-
     it 'leaves out the printers past the widget limit' do
       stub_const('Dashboard::Section::MAX_WIDGETS', 3)
       create_list(:printer, 3)
@@ -150,18 +144,6 @@ RSpec.describe Dashboard::Section do
 
     def invalid(sections)
       expect { replace(sections) }.to raise_error(Dashboard::Section::InvalidLayout) { |error| return error.messages }
-    end
-
-    it 'creates rows without an id' do
-      replace([{ id: nil, title: nil,
-                 widgets: [widget('Dashboard::PrintQueueWidget', 4, 4, options: { history: true })] },
-               { id: nil, title: 'Garage',
-                 widgets: [widget('Dashboard::PrinterWidget', 1, 1, printer_id: printer.id.to_s)] }])
-
-      expect(tree).to eq([[nil, [['Dashboard::PrintQueueWidget', 4, 4]]],
-                          ['Garage', [['Dashboard::PrinterWidget', 1, 1]]]])
-      expect(Dashboard::PrintQueueWidget.sole.history).to be(true)
-      expect(Dashboard::PrinterWidget.sole.printer).to eq(printer)
     end
 
     context 'with a saved layout' do

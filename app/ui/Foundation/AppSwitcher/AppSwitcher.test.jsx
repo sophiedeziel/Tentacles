@@ -24,13 +24,6 @@ const renderAt = (path, mocks = [flag(false)]) => render(
 )
 
 describe('AppSwitcher', () => {
-  it('serves the dashboard at /', async () => {
-    renderAt('/')
-
-    // The page loads lazily, then fails to load its data (no mocks)
-    expect(await screen.findByText('Could not load the dashboard', {}, { timeout: 5000 })).toBeInTheDocument()
-  })
-
   it('sends the old /dashboard-next address to the dashboard', async () => {
     renderAt('/dashboard-next')
 

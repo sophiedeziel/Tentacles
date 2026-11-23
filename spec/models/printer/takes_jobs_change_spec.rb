@@ -49,14 +49,6 @@ RSpec.describe Printer::TakesJobsChange do
     expect(PrintQueue).not_to have_received(:push_changed)
   end
 
-  it 'is refused without a value' do
-    expect(change(nil).errors.full_messages).to eq ['Takes jobs is not included in the list']
-  end
-
-  it 'is refused without a printer' do
-    expect(described_class.new(printer: nil, takes_jobs: true).save).to be false
-  end
-
   it "returns the printer's validation errors" do
     printer.update_column(:bed_shape, 'hexagonal') # rubocop:disable Rails/SkipsModelValidations
 

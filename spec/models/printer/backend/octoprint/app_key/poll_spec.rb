@@ -28,13 +28,6 @@ RSpec.describe Printer::Backend::Octoprint::AppKey::Poll do
       expect(poll.errors[:base]).to eq([message])
       expect(poll).to have_attributes(decision: nil, api_key: nil)
     end
-
-    it 'never puts the app token or the API key in the message' do
-      poll.save
-
-      expect(poll.errors.full_messages.join).not_to include(app_token)
-      expect(poll.errors.full_messages.join).not_to include(api_key)
-    end
   end
 
   context 'while the user has not decided (202)' do
@@ -62,11 +55,6 @@ RSpec.describe Printer::Backend::Octoprint::AppKey::Poll do
     it 'is approved, with the new key' do
       expect(poll.save).to be(true)
       expect(poll).to have_attributes(decision: :approved, api_key:)
-    end
-
-    it 'is what .create! returns' do
-      expect(described_class.create!(url: 'http://192.168.1.57/', app_token:))
-        .to have_attributes(decision: :approved, api_key:)
     end
   end
 

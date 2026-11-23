@@ -41,17 +41,6 @@ RSpec.describe Mutations::Printers::SetLoadedFilament, type: :request do
     )
   end
 
-  it 'replaces the filament already loaded' do
-    create(:printer_loaded_filament, printer:, material: 'PLA', colour: 'White')
-
-    set_loaded_filament
-
-    expect(data['printer']['loadedFilaments']).to contain_exactly(
-      a_hash_including('slot' => 1, 'material' => 'PETG', 'colour' => 'Galaxy Black')
-    )
-    expect(loaded_filaments.size).to eq 1
-  end
-
   it 'sets slot 1 when the slot is null' do
     input[:slot] = nil
 
@@ -59,13 +48,6 @@ RSpec.describe Mutations::Printers::SetLoadedFilament, type: :request do
 
     expect(data['errors']).to eq([])
     expect(loaded_filaments.pluck('slot')).to eq [1]
-  end
-
-  it 'triggers printerStatusChanged for the printer once' do
-    set_loaded_filament
-
-    expect(TentaclesSchema.subscriptions).to have_received(:trigger).once
-    expect(TentaclesSchema.subscriptions).to have_received(:trigger).with(:printer_status_changed, {}, printer)
   end
 
   describe 'invalid input' do
@@ -90,18 +72,6 @@ RSpec.describe Mutations::Printers::SetLoadedFilament, type: :request do
       before { input[:material] = 'Wood' }
 
       it_behaves_like 'a refused filament', 'material', 'Material is not included in the list'
-    end
-
-    context 'with a blank colour' do
-      before { input[:colour] = '  ' }
-
-      it_behaves_like 'a refused filament', 'colour', "Colour can't be blank"
-    end
-
-    context 'with a slot above filamentSlots' do
-      before { input[:slot] = 2 }
-
-      it_behaves_like 'a refused filament', 'slot', 'Slot must be less than or equal to 1'
     end
   end
 

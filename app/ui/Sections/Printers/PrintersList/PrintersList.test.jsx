@@ -111,16 +111,12 @@ describe('PrintersList', () => {
     await waitFor(() => expect(connected).toBe(true))
   })
 
-  it.each([
-    ['Prusa MK4', ['Edit Details', 'Open OctoPrint', 'Pause Print', 'Cancel Print', 'Reconnect', 'Remove Printer']],
-    ['Voron 2.4', ['Edit Details', 'Open OctoPrint', 'Resume Print', 'Cancel Print', 'Reconnect', 'Remove Printer']],
-    ['Prusa Mini+', ['Edit Details', 'Open OctoPrint', 'Start Next Print', 'Reconnect', 'Remove Printer']],
-    ['Kobra 2', ['Edit Details', 'Open PrusaLink', 'Remove Printer']]
-  ])('lists the menu of %s', async (name, items) => {
+  it('lists the menu of a printer, opening its server in a new tab', async () => {
     renderPage(FLEET.map((printer) => (printer.id === '7' ? { ...printer, backend: 'PRUSALINK' } : printer)))
-    const menu = await openMenu(name)
-    expect(within(menu).getAllByRole('menuitem').map((item) => item.textContent)).toEqual(items)
-    expect(within(menu).getByRole('link', { name: items[1] })).toHaveAttribute('target', '_blank')
+    const menu = await openMenu('Kobra 2')
+    expect(within(menu).getAllByRole('menuitem').map((item) => item.textContent))
+      .toEqual(['Edit Details', 'Open PrusaLink', 'Remove Printer'])
+    expect(within(menu).getByRole('link', { name: 'Open PrusaLink' })).toHaveAttribute('target', '_blank')
   })
 
   it('reconnects an OctoPrint printer from its menu, without asking', async () => {

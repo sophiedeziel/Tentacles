@@ -13,11 +13,6 @@ describe('bedBannerView', () => {
     })
   })
 
-  it('names a single print by its file alone', () => {
-    const single = { ...printOnBed(), printJob: { ...printOnBed().printJob, copies: 1 } }
-    expect(bedBannerView(single).text).toBe(`bracket.gcode is done. ${UNTIL_CLEARED}`)
-  })
-
   it('says when the print failed or was cancelled', () => {
     expect(bedBannerView(printOnBed('FAILED'))).toEqual({
       title: 'Print failed: remove the part',

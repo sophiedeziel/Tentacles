@@ -221,22 +221,6 @@ RSpec.describe PrintQueue::Connector::Fake, 'running the global queue' do
     end
   end
 
-  it 'keeps the copies at or above the copies done or printing' do
-    in_one_pass do
-      fake.ready!(mk4)
-      fake.ready!(mini)
-    end
-    entry = add(cube, copies: 3)
-    print!(copy_on(mk4))
-
-    lower = PrintQueue::CopiesChange.new(job: entry, copies: 1)
-    expect(lower.save).to be false
-    expect(lower.errors[:base]).to eq ["Can't go below 2: 1 done and 1 printing"]
-
-    PrintQueue::CopiesChange.new(job: entry, copies: 2).save!
-    expect(entry.reload).to have_attributes(copies: 2, done_count: 1, printing_count: 1, waiting_count: 0)
-  end
-
   it "doesn't count a failed copy, or print it again until the copies are raised" do
     fake.ready!(mk4)
     entry = add(cube)

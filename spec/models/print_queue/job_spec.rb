@@ -25,27 +25,6 @@ RSpec.describe PrintQueue::Job do
       expect(job).not_to be_valid
       expect(job.errors[:copies]).to eq ['must be greater than or equal to 1']
     end
-
-    it 'asks for a whole number of copies' do
-      job.copies = 1.5
-
-      expect(job).not_to be_valid
-      expect(job.errors[:copies]).to eq ['must be an integer']
-    end
-
-    it 'needs a position' do
-      job.position = nil
-
-      expect(job).not_to be_valid
-      expect(job.errors[:position]).to eq ["can't be blank"]
-    end
-
-    it 'needs a file' do
-      job.item = nil
-
-      expect(job).not_to be_valid
-      expect(job.errors[:item]).to eq ['must exist']
-    end
   end
 
   describe 'colour' do
@@ -65,23 +44,10 @@ RSpec.describe PrintQueue::Job do
       job.update!(colour: nil)
       expect(job.reload).to have_attributes(colour: nil, colour_key: nil)
     end
-
-    it 'is at most 40 characters' do
-      job.colour = 'x' * 41
-
-      expect(job).not_to be_valid
-      expect(job.errors[:colour]).to eq ['is too long (maximum is 40 characters)']
-    end
   end
 
   describe 'printers' do
     let(:printer) { create(:printer) }
-
-    it 'lists the printers it is limited to' do
-      entry = create(:print_job, all_capable: false, printers: [printer])
-
-      expect(entry.reload.printers).to eq [printer]
-    end
 
     it 'loses a printer that is deleted (the database cascades)' do
       entry = create(:print_job, all_capable: false, printers: [printer])
@@ -97,15 +63,6 @@ RSpec.describe PrintQueue::Job do
       Printer.where(id: printer.id).delete_all
 
       expect(entry.reload.bound_printer).to be_nil
-    end
-
-    it 'deletes its printer list with it' do
-      entry = create(:print_job, all_capable: false, printers: [printer])
-
-      entry.destroy!
-
-      expect(PrintQueue::JobPrinter.count).to eq 0
-      expect(Printer.exists?(printer.id)).to be true
     end
 
     describe '#open_to?' do

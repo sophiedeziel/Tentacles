@@ -7,7 +7,7 @@ RSpec.describe Spooler do
   let(:spooler) { Spooler.new }
 
   describe '#run' do
-    it 'starts the sweep, then listens to the commands' do
+    it 'starts the sweep before listening to the commands, which blocks for good' do
       allow(spooler).to receive(:start_sweep)
       allow(spooler).to receive(:subcribe_to_commands)
 

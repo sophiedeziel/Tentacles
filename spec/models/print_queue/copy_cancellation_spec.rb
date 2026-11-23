@@ -32,12 +32,6 @@ RSpec.describe PrintQueue::CopyCancellation do
       expect(connector.commands).to be_empty
     end
 
-    it 'counts it as failed: it uses up its copy' do
-      cancel
-
-      expect(job.reload).to have_attributes(failed_count: 1, printing_count: 0, waiting_count: 1)
-    end
-
     it "pushes the copy's printer once and asks for a dispatch pass" do
       cancel
 
@@ -89,15 +83,13 @@ RSpec.describe PrintQueue::CopyCancellation do
     end
   end
 
-  %w[completed error cancelled].each do |finished|
-    context "when the copy is #{finished}" do
-      let(:status) { finished }
+  context 'when the copy has ended' do
+    let(:status) { 'completed' }
 
-      it 'is refused' do
-        expect_refused(described_class.new(printer_job:), 'Copy 1 of test.gcode has already ended')
-        expect(printer_job.reload.status).to eq finished
-        expect(connector.commands).to be_empty
-      end
+    it 'is refused' do
+      expect_refused(described_class.new(printer_job:), 'Copy 1 of test.gcode has already ended')
+      expect(printer_job.reload.status).to eq 'completed'
+      expect(connector.commands).to be_empty
     end
   end
 

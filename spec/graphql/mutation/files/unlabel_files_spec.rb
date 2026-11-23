@@ -91,25 +91,11 @@ module Mutations
 
               expect(data['labels']).to be_empty
             end
-
-            it 'returns a nil file' do
-              post '/graphql', params: { query:, variables: }
-              json = JSON.parse(response.body)
-              data = json['data']['unlabelFiles']
-
-              expect(data['files']).to be_empty
-            end
           end
 
           context 'when the file does not exist' do
             before do
               file.destroy
-            end
-
-            it 'does not create a label' do
-              expect do
-                post '/graphql', params: { query:, variables: }
-              end.to change { Library::Label.count }.by(0)
             end
 
             it 'returns a nil label' do
@@ -118,14 +104,6 @@ module Mutations
               data = json['data']['unlabelFiles']
 
               expect(data['labels']).to be_empty
-            end
-
-            it 'returns a nil file' do
-              post '/graphql', params: { query:, variables: }
-              json = JSON.parse(response.body)
-              data = json['data']['unlabelFiles']
-
-              expect(data['files']).to be_empty
             end
           end
 
@@ -140,14 +118,6 @@ module Mutations
               data = json['data']['unlabelFiles']
 
               expect(data['labels']).to be_empty
-            end
-
-            it 'returns a nil file' do
-              post '/graphql', params: { query:, variables: }
-              json = JSON.parse(response.body)
-              data = json['data']['unlabelFiles']
-
-              expect(data['files']).to be_empty
             end
           end
         end

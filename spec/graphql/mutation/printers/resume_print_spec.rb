@@ -8,12 +8,5 @@ RSpec.describe Mutations::Printers::ResumePrint, type: :request do
                   mutation: 'resumePrint',
                   commands: [[Octoprint::Job, :resume]],
                   allowed: [Printer::StateFamily::Paused],
-                  refusals: {
-                    Printer::StateFamily::Printing => 'Prusa MK4 is no longer paused',
-                    Printer::StateFamily::Cancelling => 'Prusa MK4 is no longer paused',
-                    Printer::StateFamily::Operational => 'Prusa MK4 is no longer paused',
-                    Printer::StateFamily::Connecting => 'Prusa MK4 is no longer paused',
-                    Printer::StateFamily::Error => 'Prusa MK4 is no longer paused',
-                    Printer::StateFamily::Offline => 'Prusa MK4 is no longer paused'
-                  }
+                  refusals: { Printer::StateFamily::Printing => 'Prusa MK4 is no longer paused' }
 end

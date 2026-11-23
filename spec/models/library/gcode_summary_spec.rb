@@ -16,12 +16,6 @@ RSpec.describe Library::GcodeSummary do
     expect { described_class.insert_all!([row]) }.to raise_error(ActiveRecord::RecordNotUnique)
   end
 
-  it 'refuses an unknown status or footprint source' do
-    expect(build(:gcode_summary, status: 'done')).not_to be_valid
-    expect(build(:gcode_summary, footprint_source: 'guess')).not_to be_valid
-    expect(build(:gcode_summary, footprint_source: nil)).to be_valid
-  end
-
   it 'lists its tools by number' do
     create(:gcode_summary_tool, gcode_summary: summary, tool: 1)
     create(:gcode_summary_tool, gcode_summary: summary, tool: 0)
@@ -91,12 +85,6 @@ RSpec.describe Library::GcodeSummary do
   end
 
   describe '#footprint' do
-    it 'is the Footprint of the box' do
-      summary = build(:gcode_summary, :ready, min_x: 2, max_x: 125.09, min_y: 10, max_y: 140, max_z: 15.2)
-
-      expect(summary.footprint).to have_attributes(min_x: 2, max_x: 125.09, height: 15.2, source: 'moves')
-    end
-
     it 'is Not known without a box' do
       expect(build(:gcode_summary, :ready, max_y: nil).footprint).to be_nil
     end

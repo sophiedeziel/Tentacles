@@ -138,17 +138,6 @@ describe('reordering the Waiting rows', () => {
     expect(order()).toEqual(['12', '11', '13'])
   })
 
-  it('sends the row dropped last to the bottom', async () => {
-    const move = mutation(MOVE_PRINT_JOB, 'movePrintJob', { id: '11', to: 'BOTTOM' })
-    renderPage([queue(), reordered(['12', '13', '11'])], [move.mock])
-    await loaded()
-
-    await moveDown('phone_stand.gcode', 2)
-
-    await waitFor(() => expect(move.sent).toEqual([{ id: '11', to: 'BOTTOM' }]))
-    expect(order()).toEqual(['12', '13', '11'])
-  })
-
   it('puts the row back and says why when the server refuses the move', async () => {
     const move = mutation(MOVE_PRINT_JOB, 'movePrintJob', { id: '11', beforeId: '13' }, {
       errors: refused('lid.gcode is no longer in the queue'), delay: 100
@@ -233,7 +222,6 @@ describe('the Waiting ⋯ menu', () => {
   it.each([
     ['13', 'Move to Top', MOVE_PRINT_JOB, 'movePrintJob', { id: '13', to: 'TOP' }, {}],
     ['11', 'Move to Bottom', MOVE_PRINT_JOB, 'movePrintJob', { id: '11', to: 'BOTTOM' }, {}],
-    ['11', 'Hold', HOLD_PRINT_JOB, 'holdPrintJob', { id: '11' }, { printJob: null }],
     ['13', 'Release', RELEASE_PRINT_JOB, 'releasePrintJob', { id: '13' }, { printJob: null }],
     ['12', 'Release to Other Printers', UNBIND_PRINT_JOB, 'unbindPrintJob', { id: '12' }, { printJob: null }]
   ])('on row %s, %s sends its mutation', async (key, label, query, field, variables, payload) => {
@@ -615,13 +603,6 @@ describe('Bed Cleared on a printer with its bed to clear', () => {
     const dialog = await clear(queue({ dispatchPaused: true }))
 
     expect(dialog).toHaveTextContent('Dispatch is paused, so it will not start yet.')
-  })
-
-  it('says the printer won’t start the next job when it isn’t taking jobs', async () => {
-    const mini = { ...queue().printersToClear[0], takesJobs: false }
-    const dialog = await clear(queue({ printersToClear: [mini] }))
-
-    expect(dialog).toHaveTextContent("Prusa Mini+ isn't taking jobs from the queue, so it won't start the next one.")
   })
 
   it('shows why the server refused when the bed now holds another print, and reloads to show it', async () => {

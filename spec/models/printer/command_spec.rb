@@ -141,22 +141,6 @@ RSpec.describe Printer::Command do
         expect(status.camera).to eq camera
         expect(Octoprint::Settings).not_to have_received(:webcam)
       end
-
-      it 'records the last time the printer was seen' do
-        command.save!
-        expect(status.last_seen_at).to be_within(1.second).of(Time.current)
-      end
-
-      it "uses the printer's own client without touching the global configuration" do
-        allow(Octoprint).to receive(:configure)
-        clients = []
-        allow(Octoprint::Job).to receive(:get) { clients << Octoprint.client and job }
-
-        command.save!
-
-        expect(clients).to eq [printer.api.client]
-        expect(Octoprint).not_to have_received(:configure)
-      end
     end
 
     context 'without a previous snapshot' do

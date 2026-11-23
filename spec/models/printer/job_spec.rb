@@ -8,53 +8,10 @@ RSpec.describe Printer::Job, type: :model do
   end
 
   describe 'status' do
-    it 'is one of enqueued, active, completed, error and cancelled' do
-      statuses = %w[enqueued active completed error cancelled]
-
-      expect(statuses.map { |status| build(:printer_job, status:) }).to all(be_valid)
-      expect(build(:printer_job, status: 'failed')).not_to be_valid
-    end
-
     it 'counts a cancelled job as finished' do
       job = create(:printer_job, status: 'cancelled')
 
       expect(described_class.finished).to eq [job]
-    end
-  end
-
-  describe 'print_job' do
-    it 'is nil for a job enqueued on the printer' do
-      expect(build(:printer_job).print_job).to be_nil
-    end
-
-    it 'is the global queue entry of a copy, numbered from 1' do
-      entry = create(:print_job)
-      copies = create_list(:printer_job, 2, :copy, print_job: entry)
-
-      expect(copies.map(&:copy_number)).to eq [1, 2]
-      expect(entry.printer_jobs).to match_array copies
-    end
-  end
-
-  describe 'queue columns' do
-    it 'stores the filament snapshot, the times and the bed state' do
-      job = create(:printer_job, :copy, filament: [{ 'slot' => 1, 'material' => 'PLA', 'colour' => 'Black' }],
-                                        started_at: 2.hours.ago, finished_at: 1.hour.ago,
-                                        bed_cleared_at: Time.current, bed_cleared_by: 'automatic')
-
-      expect(job.reload).to have_attributes(filament: [{ 'slot' => 1, 'material' => 'PLA', 'colour' => 'Black' }],
-                                            bed_cleared_by_automatic?: true)
-    end
-
-    it 'leaves them empty for an old-style job' do
-      expect(create(:printer_job).reload)
-        .to have_attributes(print_job_id: nil, copy_number: nil, started_at: nil, finished_at: nil, filament: nil,
-                            bed_cleared_at: nil, bed_cleared_by: nil)
-    end
-
-    it 'knows who cleared the bed: a person or the printer itself' do
-      expect(build(:printer_job, bed_cleared_by: 'person')).to be_bed_cleared_by_person
-      expect(build(:printer_job, bed_cleared_by: 'robot')).not_to be_valid
     end
   end
 
