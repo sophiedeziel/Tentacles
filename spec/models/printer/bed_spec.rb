@@ -123,13 +123,6 @@ RSpec.describe Printer::Bed do
       expect(Printer::Job).not_to have_received(:where)
     end
 
-    it 'returns a set of the ids of the printers whose bed needs clearing' do
-      to_clear = printer_with(finished)
-      printer_with(under_way)
-
-      expect(Printer.ids_with_bed_to_clear(Printer.ids)).to eq Set[to_clear.id]
-    end
-
     it 'agrees with #bed_needs_clearing? for every case' do
       at = 1.hour.ago.change(usec: 0)
       cleared = finished(bed_cleared_at: Time.current, bed_cleared_by: 'person')

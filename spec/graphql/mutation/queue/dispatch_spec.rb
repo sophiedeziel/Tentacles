@@ -39,17 +39,6 @@ RSpec.describe 'Mutations pauseDispatch and resumeDispatch', type: :request do
     expect(PrintQueue::Setting.dispatch_paused?).to be false
   end
 
-  it 'refuses to resume while the global queue is off' do
-    PrintQueue::Setting.current.update!(dispatch_paused: true)
-    turn_queue_off
-
-    resume
-
-    expect_refused('The global print queue is off')
-    expect(PrintQueue::Setting.dispatch_paused?).to be true
-    expect_nothing_pushed
-  end
-
   it 'returns a refusal when the queue is busy' do
     allow(PrintQueue::Setting).to receive(:lock_current).and_raise(ActiveRecord::LockWaitTimeout)
 

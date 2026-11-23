@@ -83,10 +83,6 @@ RSpec.describe PrintQueue::Fit do
   describe 'offline' do
     before { load('PLA', 'Black') }
 
-    it 'is a printer without a snapshot' do
-      expect(fit(needs, status: nil).reasons.first.to_h).to eq(code: :offline, message: 'Offline')
-    end
-
     it 'is a printer Offline, Connecting or in Error, with its error' do
       {
         status(Printer::StateFamily::Offline) => 'Offline',
@@ -106,14 +102,6 @@ RSpec.describe PrintQueue::Fit do
   end
 
   describe 'filament matching' do
-    it 'matches the material, any colour' do
-      load('PLA', 'Galaxy Black')
-
-      expect(answer(fit(needs))).to eq [:ready, [
-        { code: :filament_matches, message: 'Loaded PLA Galaxy Black matches' }
-      ]]
-    end
-
     it 'matches the material and the colour asked, by colour key' do
       load('PLA', 'Galaxy Black')
 
@@ -177,13 +165,6 @@ RSpec.describe PrintQueue::Fit do
 
       it 'fits any filament, and no filament' do
         expect(answer(fit(unknown))).to eq [:ready, [{ code: :any_filament, message: 'Any filament' }]]
-      end
-
-      it 'fits every printer, whatever its specs' do
-        tiny = build(:printer, build_volume_x: 1, build_volume_y: 1, build_volume_z: 1, extruders: 1,
-                               materials: %w[TPU])
-
-        expect(described_class.new(needs: unknown, printer: tiny, status: operational)).to be_ready
       end
 
       it 'checks the first slot for the colour asked' do

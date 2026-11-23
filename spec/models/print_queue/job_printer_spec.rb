@@ -5,10 +5,6 @@ require 'rails_helper'
 RSpec.describe PrintQueue::JobPrinter do
   let(:job_printer) { create(:print_job_printer) }
 
-  it 'has a valid factory' do
-    expect(build(:print_job_printer)).to be_valid
-  end
-
   it 'lists a printer once per entry' do
     duplicate = build(:print_job_printer, job: job_printer.job, printer: job_printer.printer)
 

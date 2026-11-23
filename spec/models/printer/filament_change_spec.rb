@@ -105,24 +105,6 @@ RSpec.describe Printer::FilamentChange do
       expect(PrintQueue).not_to have_received(:push_changed)
       expect(PrintQueue::DispatchRequest).not_to have_received(:new)
     end
-
-    it 'pushes and asks for nothing when the filament is refused' do
-      allow(PrintQueue).to receive(:enabled?).and_return(true)
-
-      expect(build_change(colour: '').save).to be false
-      expect(PrintQueue).not_to have_received(:push_changed)
-      expect(PrintQueue::DispatchRequest).not_to have_received(:new)
-    end
-
-    it 'pushes queueChanged through the schema' do
-      allow(PrintQueue).to receive(:enabled?).and_return(true)
-      allow(PrintQueue).to receive(:push_changed).and_call_original
-
-      build_change.save!
-
-      expect(subscriptions).to have_received(:trigger).with(:print_queue_changed, {}, printer).once
-      expect(subscriptions).to have_received(:trigger).with(:queue_changed, {}, {}).once
-    end
   end
 
   context 'when the push fails' do

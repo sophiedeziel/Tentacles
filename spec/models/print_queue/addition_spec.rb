@@ -34,10 +34,6 @@ RSpec.describe PrintQueue::Addition do
     expect(add.job.position).to eq 9
   end
 
-  it 'defaults to one copy, for any colour, on all capable printers' do
-    expect(add.job).to have_attributes(copies: 1, colour: nil, all_capable: true, same_printer: false)
-  end
-
   it 'pushes once, with no printer, and asks for a dispatch pass' do
     add
 

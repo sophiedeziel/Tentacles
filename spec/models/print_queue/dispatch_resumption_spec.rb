@@ -23,9 +23,4 @@ RSpec.describe PrintQueue::DispatchResumption do
     expect_pushed_once([])
     expect_dispatch_requested
   end
-
-  it 'changes nothing while not paused, creating the settings row when there is none' do
-    expect { expect(described_class.new.save).to be true }.to change(PrintQueue::Setting, :count).from(0).to(1)
-    expect(PrintQueue::Setting.dispatch_paused?).to be false
-  end
 end

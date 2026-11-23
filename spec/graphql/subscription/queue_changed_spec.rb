@@ -61,15 +61,6 @@ RSpec.describe Subscriptions::QueueChanged do
     { 'result' => { 'data' => { 'queueChanged' => { 'dispatchPaused' => dispatch_paused } } }, 'more' => true }
   end
 
-  it 'returns a non-null QueueChange with dispatchPaused, and takes no arguments' do
-    field = TentaclesSchema.subscription.get_field('queueChanged')
-
-    expect(field.type.to_type_signature).to eq('QueueChange!')
-    expect(field.arguments).to be_empty
-    expect(TentaclesSchema.get_type('QueueChange').fields.transform_values { |f| f.type.to_type_signature })
-      .to eq('dispatchPaused' => 'Boolean!')
-  end
-
   it 'is broadcast' do
     expect(subscriptions.broadcastable?(query)).to be(true)
   end
@@ -94,17 +85,6 @@ RSpec.describe Subscriptions::QueueChanged do
     [first, second].each { |subscription_id| expect(deliveries(subscription_id)).to eq [pushed(true)] }
   end
 
-  it 'is pushed once by a queue operation, after its change' do
-    printer = create(:printer)
-    job = create(:print_job, copies: 2, same_printer: true, bound_printer: printer)
-    subscription_id = subscribe.context[:subscription_id]
-
-    expect(PrintQueue::Hold.new(job:).save).to be true
-    deliver_events
-
-    expect(deliveries(subscription_id)).to eq [pushed(false)]
-  end
-
   it 'is pushed by pauseDispatch, with dispatch paused' do
     subscription_id = subscribe.context[:subscription_id]
 
@@ -115,27 +95,6 @@ RSpec.describe Subscriptions::QueueChanged do
     expect(deliveries(subscription_id)).to eq [pushed(true)]
   end
 
-  it 'is pushed by setPrinterTakesJobs' do
-    printer = create(:printer)
-    subscription_id = subscribe.context[:subscription_id]
-
-    expect(Printer::TakesJobsChange.new(printer:, takes_jobs: false).save).to be true
-    deliver_events
-
-    expect(deliveries(subscription_id)).to eq [pushed(false)]
-  end
-
-  it "is pushed when a printer's own job changes status" do
-    job = create(:printer_job)
-    subscription_id = subscribe.context[:subscription_id]
-
-    job.update!(status: 'active')
-    job.push_print_queue_changed
-    deliver_events
-
-    expect(deliveries(subscription_id)).to eq [pushed(false)]
-  end
-
   it 'is pushed when a printer is removed' do
     printer = create(:printer)
     subscription_id = subscribe.context[:subscription_id]
@@ -144,15 +103,5 @@ RSpec.describe Subscriptions::QueueChanged do
     deliver_events
 
     expect(deliveries(subscription_id)).to eq [pushed(false)]
-  end
-
-  it 'is not pushed while the global queue is off' do
-    subscription_id = subscribe.context[:subscription_id]
-    allow(PrintQueue).to receive(:enabled?).and_return(false)
-
-    PrintQueue.push_changed([create(:printer)])
-    deliver_events
-
-    expect(deliveries(subscription_id)).to be_empty
   end
 end

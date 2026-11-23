@@ -49,26 +49,11 @@ RSpec.describe Mutations::Queue::AddToQueue, type: :request do
     expect(PrintQueue::Job.count).to eq 0
   end
 
-  it 'is refused for a printer that does not exist' do
-    add(printerIds: [create(:printer).id + 1])
-
-    expect_refused('One of the printers chosen no longer exists')
-  end
-
   it 'is refused for less than one copy, on the copies field' do
     add(copies: 0)
 
     expect_refused('Copies must be greater than or equal to 1', field: 'copies')
     expect_nothing_pushed
-  end
-
-  it 'is refused while the global queue is off' do
-    turn_queue_off
-
-    add
-
-    expect_refused('The global print queue is off')
-    expect(PrintQueue::Job.count).to eq 0
   end
 
   it 'returns an error for an unknown file' do

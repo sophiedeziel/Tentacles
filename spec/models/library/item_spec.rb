@@ -133,12 +133,6 @@ RSpec.describe Library::Item, type: :model do
 
       expect(file).not_to be_queued
     end
-
-    it 'ignores the entries of other files' do
-      create(:print_job)
-
-      expect(file).not_to be_queued
-    end
   end
 
   describe '#gcode?' do

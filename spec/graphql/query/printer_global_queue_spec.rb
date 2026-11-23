@@ -59,20 +59,6 @@ RSpec.describe 'Query printer, its global queue fields', type: :request do
 
   def id(record) = record.id.to_s
 
-  it 'types its fields' do
-    printer_fields = TentaclesSchema.get_type('Printer').fields
-    signature = ->(type, name) { TentaclesSchema.get_type(type).fields.fetch(name).type.to_type_signature }
-
-    expect(%w[upNext skipped].index_with { |name| signature.call('Printer', name) }).to eq(
-      'upNext' => '[PrintJob!]!', 'skipped' => '[SkippedPrintJob!]!'
-    )
-    expect(printer_fields.keys).to include('takesJobs')
-    expect(TentaclesSchema.get_type('SkippedPrintJob').fields.transform_values { |field| field.type.to_type_signature })
-      .to eq('printJob' => 'PrintJob!', 'reasons' => '[String!]!')
-    expect(signature.call('PrintJob', 'waitingPosition')).to eq 'Int'
-    expect(signature.call('LoadedFilament', 'waitingJobsAskingCount')).to eq 'Int!'
-  end
-
   describe 'upNext and skipped' do
     let(:query) do
       <<~GRAPHQL

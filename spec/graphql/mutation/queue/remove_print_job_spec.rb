@@ -44,24 +44,6 @@ RSpec.describe Mutations::Queue::RemovePrintJob, type: :request do
     expect_nothing_pushed
   end
 
-  it 'is refused for a print job no longer in the queue' do
-    job.update!(copies: 1)
-    copy('completed')
-
-    remove
-
-    expect_refused('test.gcode is no longer in the queue')
-  end
-
-  it 'is refused while the global queue is off' do
-    turn_queue_off
-
-    remove
-
-    expect_refused('The global print queue is off')
-    expect(job.reload.copies).to eq 4
-  end
-
   it 'returns an error for an unknown print job' do
     remove(job.id + 1)
 

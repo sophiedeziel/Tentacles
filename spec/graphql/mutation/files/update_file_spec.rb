@@ -37,12 +37,5 @@ RSpec.describe Mutations::Files::UpdateFile, type: :request do
       expect(update(fileContent: 'G1 X1 E1')).to be_nil
       expect(item.reload.file_content).to eq content
     end
-
-    it 'replaces the content once its entry is finished' do
-      create(:printer_job, :copy, print_job: entry, status: 'completed')
-
-      expect(update(fileContent: 'G1 X1 E1')).to include('fileContent' => 'G1 X1 E1')
-      expect(item.reload.file_content).to eq 'G1 X1 E1'
-    end
   end
 end

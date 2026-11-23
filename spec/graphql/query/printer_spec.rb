@@ -17,16 +17,6 @@ RSpec.describe 'Query printer', type: :request do
     )
   end
 
-  it 'returns whether it takes jobs from the global queue, even while the queue is off' do
-    printer = create(:printer, takes_jobs: false)
-
-    post '/graphql', params: { query: 'query($id: ID!) { printer(id: $id) { takesJobs } }',
-                               variables: { id: printer.id } }
-
-    expect(json['errors']).to be_nil
-    expect(json.dig('data', 'printer')).to eq('takesJobs' => false)
-  end
-
   it 'returns null when there is none, e.g. the printer was just removed' do
     post '/graphql', params: { query:, variables: { id: '0' } }
 

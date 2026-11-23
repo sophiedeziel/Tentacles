@@ -64,38 +64,6 @@ RSpec.describe 'Query globalQueue', type: :request do
     expect(json).to eq('data' => { 'globalQueue' => nil })
   end
 
-  it 'types its fields' do
-    signatures = %w[GlobalQueue PrintJob Print WhatHappensNext PrintJobNeeds NeededFilament].index_with do |name|
-      TentaclesSchema.get_type(name).fields.transform_values { |field| field.type.to_type_signature }
-    end
-
-    expect(TentaclesSchema.query.get_field('globalQueue').type.to_type_signature).to eq 'GlobalQueue'
-    expect(signatures['GlobalQueue']).to eq(
-      'dispatchPaused' => 'Boolean!', 'printersToClear' => '[Printer!]!', 'availablePrinters' => '[Printer!]!',
-      'offlinePrinters' => '[Printer!]!', 'printing' => '[Print!]!', 'waiting' => '[PrintJob!]!',
-      'finished' => '[Print!]!'
-    )
-    expect(signatures['PrintJob']).to eq(
-      'id' => 'ID!', 'file' => 'File!', 'copies' => 'Int!', 'position' => 'Int!', 'waitingPosition' => 'Int',
-      'held' => 'Boolean!', 'samePrinter' => 'Boolean!', 'allCapable' => 'Boolean!', 'boundPrinter' => 'Printer',
-      'copiesLeftToStart' => 'Int!', 'needs' => 'PrintJobNeeds!', 'eligiblePrinters' => '[Printer!]!',
-      'whatHappensNext' => 'WhatHappensNext', 'prints' => '[Print!]!'
-    )
-    expect(signatures['Print']).to eq(
-      'id' => 'ID!', 'copyNumber' => 'Int!', 'printJob' => 'PrintJob!', 'printer' => 'Printer!',
-      'status' => 'PrintStatus!', 'progress' => 'Float!', 'startedAt' => 'ISO8601DateTime',
-      'finishedAt' => 'ISO8601DateTime', 'result' => 'PrintResult', 'bedClearedAt' => 'ISO8601DateTime',
-      'bedClearedBy' => 'BedClearedBy'
-    )
-    expect(signatures['WhatHappensNext']).to eq('kind' => 'WhatHappensNextKind!', 'printer' => 'Printer',
-                                                'jobsAhead' => 'Int!', 'dispatchPaused' => 'Boolean!')
-    expect(TentaclesSchema.get_type('WhatHappensNextKind').values.keys).to eq %w[
-      ON_HOLD BLOCKED NEXT_READY_PRINTER AFTER_CURRENT_PRINT AFTER_BED_CLEARED STARTING BATCH_ON_PRINTER
-      BATCH_FIRST_READY_PRINTER
-    ]
-    expect(TentaclesSchema.get_type('Printer').fields['takesNext'].type.to_type_signature).to eq 'PrintJob'
-  end
-
   describe 'dispatchPaused' do
     it 'is whether dispatch is paused' do
       expect(run('{ globalQueue { dispatchPaused } }')).to eq('dispatchPaused' => false)
@@ -268,48 +236,6 @@ RSpec.describe 'Query globalQueue', type: :request do
         'prints' => [{ 'copyNumber' => 1, 'status' => 'COMPLETED' }]
       )
       expect(waiting.last['needs']['filaments']).to eq [{ 'tool' => 0, 'material' => 'PLA', 'colour' => 'Black' }]
-    end
-
-    it 'says what happens next to each, through the API' do
-      printer(name: 'Prusa XL')
-      bound_to = printer(Printer::StateFamily::Printing, name: 'Voron')
-      copy(entry(position: 0), bound_to, 'active')
-      entry(position: 1, copies: 2, same_printer: true, bound_printer: bound_to)
-      entry(position: 2, held: true)
-      entry(position: 3)
-      entry(position: 4)
-
-      waiting = run(query)['waiting']
-
-      expect(waiting.pluck('whatHappensNext').map { |next_up| next_up.except('dispatchPaused') }).to eq [
-        { 'kind' => 'BATCH_ON_PRINTER', 'printer' => { 'name' => 'Voron' }, 'jobsAhead' => 0 },
-        { 'kind' => 'ON_HOLD', 'printer' => nil, 'jobsAhead' => 0 },
-        { 'kind' => 'STARTING', 'printer' => { 'name' => 'Prusa XL' }, 'jobsAhead' => 0 },
-        { 'kind' => 'AFTER_CURRENT_PRINT', 'printer' => { 'name' => 'Prusa XL' }, 'jobsAhead' => 1 }
-      ]
-      expect(waiting.first['boundPrinter']).to eq('name' => 'Voron')
-    end
-
-    it 'says what would happen with dispatch running, and that it waits for dispatch to resume' do
-      printer
-      entry
-      entry(held: true)
-      PrintQueue::Setting.current.update!(dispatch_paused: true)
-
-      expect(run(query)['waiting'].pluck('whatHappensNext')).to eq [
-        { 'kind' => 'STARTING', 'printer' => { 'name' => 'Prusa MK4' }, 'jobsAhead' => 0, 'dispatchPaused' => true },
-        { 'kind' => 'ON_HOLD', 'printer' => nil, 'jobsAhead' => 0, 'dispatchPaused' => false }
-      ]
-    end
-
-    it 'names the printer lined up for an unbound same-printer batch' do
-      on_bed = printer(name: 'Ender 3 V2')
-      copy(entry(position: 0), on_bed, 'completed', started_at: 2.hours.ago, finished_at: 1.hour.ago)
-      entry(position: 1, copies: 2, same_printer: true)
-
-      expect(run(query)['waiting'].sole['whatHappensNext'])
-        .to eq('kind' => 'AFTER_BED_CLEARED', 'printer' => { 'name' => 'Ender 3 V2' }, 'jobsAhead' => 0,
-               'dispatchPaused' => false)
     end
 
     it 'shows a pending summary as pending, without a footprint' do

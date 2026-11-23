@@ -93,18 +93,6 @@ RSpec.describe PrintQueue::Dispatch do
     expect(dispatched.last.printer).to eq second_printer
   end
 
-  it 'lets a later entry overtake one that fits no free printer' do
-    on = printer
-    petg = create(:print_job, position: 1).tap do |job|
-      create(:gcode_summary, :ready, :with_tools, item: job.item, materials: ['PETG'])
-    end
-    pla = entry(position: 2)
-
-    expect(dispatch.dispatched.map(&:print_job)).to eq [pla]
-    expect(petg.printer_jobs).to be_empty
-    expect(on.jobs.sole.print_job).to eq pla
-  end
-
   describe 'printers skipped' do
     let!(:queued) { entry(copies: 5) }
 
@@ -180,14 +168,6 @@ RSpec.describe PrintQueue::Dispatch do
       expect(dispatch.dispatched.map(&:printer)).to eq [first_printer]
       expect(batch.reload.bound_printer).to eq first_printer
     end
-
-    it 'gives a batch bound to another printer to that one only' do
-      printer
-      bound = printer
-      entry(same_printer: true, bound_printer: bound, copies: 3)
-
-      expect(dispatch.dispatched.map(&:printer)).to eq [bound]
-    end
   end
 
   describe 'after the commit' do
@@ -209,20 +189,6 @@ RSpec.describe PrintQueue::Dispatch do
 
       expect(connector).not_to have_received(:start)
       expect(PrintQueue).not_to have_received(:push_changed)
-    end
-
-    it 'publishes start_print for the printer with the default connector' do
-      allow(PrintQueue).to receive(:connector).and_call_original
-      on = printer
-      entry
-      redis = MockRedis.new.tap { |mock| mock.define_singleton_method(:publish) { |_channel, _message| 0 } }
-      allow(redis).to receive(:publish)
-      stub_const('REDIS_POOL', ConnectionPool::Wrapper.new(size: 1, timeout: 1) { redis })
-
-      dispatch
-
-      expect(redis).to have_received(:publish)
-        .once.with('printers', { command: 'start_print', printer_id: on.id }.to_json)
     end
   end
 

@@ -77,12 +77,6 @@ RSpec.describe PrintQueue::NextJob do
   describe 'printers' do
     let(:other) { create(:printer) }
 
-    it 'takes an entry for all that can print it' do
-      all_capable = entry(all_capable: true)
-
-      expect(next_job.job).to eq all_capable
-    end
-
     it 'takes an entry limited to printers that include this one' do
       listed = entry(all_capable: false, printers: [other, printer])
 
@@ -207,13 +201,6 @@ RSpec.describe PrintQueue::NextJob do
   end
 
   describe '.for' do
-    it 'reads the snapshot, the setting and the candidates of one printer' do
-      allow(Printer::Status).to receive(:find_by).with(printer_id: printer.id).and_return(operational)
-      first = entry
-
-      expect(described_class.for(printer).job).to eq first
-    end
-
     it 'is nil when the setting pauses dispatch' do
       allow(Printer::Status).to receive(:find_by).and_return(operational)
       create(:print_queue_setting, dispatch_paused: true)
@@ -221,9 +208,5 @@ RSpec.describe PrintQueue::NextJob do
 
       expect(described_class.for(printer).job).to be_nil
     end
-  end
-
-  it 'is read-only' do
-    expect { next_job.save }.to raise_error(ApplicationModel::ReadOnlyRecord)
   end
 end

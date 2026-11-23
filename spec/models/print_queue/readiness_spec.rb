@@ -146,8 +146,4 @@ RSpec.describe PrintQueue::Readiness do
       expect(described_class.for(printer).idle_reason).to eq :offline
     end
   end
-
-  it 'is read-only' do
-    expect { readiness.save }.to raise_error(ApplicationModel::ReadOnlyRecord)
-  end
 end

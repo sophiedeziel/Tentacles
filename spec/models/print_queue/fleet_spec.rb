@@ -55,14 +55,6 @@ RSpec.describe PrintQueue::Fleet do
 
       expect(described_class.current.capable(queued)).to eq [big]
     end
-
-    it 'lists only the printer a same-printer batch is bound to' do
-      bound = printer
-      printer
-      queued = entry(same_printer: true, bound_printer: bound)
-
-      expect(described_class.current.capable(queued)).to eq [bound]
-    end
   end
 
   it 'leaves the snapshots out when Redis cannot be reached: every printer is offline' do

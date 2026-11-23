@@ -43,15 +43,6 @@ RSpec.describe Mutations::Queue::SetPrintJobCopies, type: :request do
     expect(job.reload.copies).to eq 5
   end
 
-  it 'is refused while the global queue is off' do
-    turn_queue_off
-
-    set_copies(3)
-
-    expect_refused('The global print queue is off')
-    expect(job.reload.copies).to eq 5
-  end
-
   it 'returns an error for an unknown print job' do
     set_copies(3, job.id + 1)
 

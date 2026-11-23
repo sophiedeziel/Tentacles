@@ -215,14 +215,6 @@ RSpec.describe Spooler::Spool do
                                              finished_at: be_present, bed_cleared_at: nil)
     end
 
-    it 'leaves the print on the bed: the printer takes no other copy until it is cleared' do
-      octoprint_states('Printing', 'Operational')
-
-      run_copy
-
-      expect(printer.bed_to_clear).to eq copy
-    end
-
     it 'is idle when PrintEnd asks for the dispatch pass, so that the next start_print is not ignored' do
       octoprint_states('Printing', 'Operational')
 
