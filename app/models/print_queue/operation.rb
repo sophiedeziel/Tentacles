@@ -82,6 +82,14 @@ module PrintQueue
     #: -> Integer
     def next_position = (PrintQueue::Job.maximum(:position) || 0) + 1
 
+    # Numbers the entries still in the queue 1..n in this order (finished entries keep their position)
+    #: (Array[PrintQueue::Job] entries) -> void
+    def renumber(entries)
+      entries.each.with_index(1) do |entry, position|
+        entry.update!(position:) unless entry.position == position
+      end
+    end
+
     #: -> bool
     def refused? = errors.any?
 

@@ -36,6 +36,7 @@ module RootOperations
     field :releasePrintJob, mutation: Mutations::Queue::ReleasePrintJob
     field :removePrintJob, mutation: Mutations::Queue::RemovePrintJob
     field :setPrintJobCopies, mutation: Mutations::Queue::SetPrintJobCopies
+    field :updatePrintJob, mutation: Mutations::Queue::UpdatePrintJob
     field :unbindPrintJob, mutation: Mutations::Queue::UnbindPrintJob
     field :confirmBedCleared, mutation: Mutations::Queue::ConfirmBedCleared
     field :pauseDispatch, mutation: Mutations::Queue::PauseDispatch

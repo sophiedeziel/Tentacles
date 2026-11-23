@@ -18,8 +18,8 @@ module PrintQueue
   #   counts = PrintQueue::Job.copy_counts(jobs.map(&:id)) # => { 12 => { done: 2, printing: 1, failed: 1 }, ... }
   #   jobs.each { |job| job.copy_counts = counts.fetch(job.id) }
   #
-  # `colour` is the colour the entry asks for (nil: Any colour); the material comes from the file's G-code summary.
-  # Phase 4's GraphQL calls this a PrintJob.
+  # `material` is the material the entry asks for (a key of Filament::MATERIALS; nil: the one its file's G-code says)
+  # and `colour` the colour (nil: Any colour). See PrintQueue::Needs. Phase 4's GraphQL calls this a PrintJob.
   class Job < ApplicationRecord
     self.table_name = 'print_jobs'
 
@@ -42,10 +42,12 @@ module PrintQueue
                             dependent: nil
 
     normalizes :colour, with: ->(value) { value.squish.presence }
+    normalizes :material, with: ->(value) { value.presence && Filament.material_key(value).presence }
 
     validates :copies, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
     validates :position, presence: true
     validates :colour, length: { maximum: 40 }
+    validates :material, inclusion: { in: Filament::MATERIALS }, allow_nil: true
 
     scope :in_queue_order, -> { order(position: :asc, id: :asc) }
     # The entries still in the queue: a copy printing, or more copies asked than have finished (see #unfinished?)

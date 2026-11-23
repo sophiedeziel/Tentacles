@@ -74,6 +74,31 @@ RSpec.describe PrintQueue::Job do
     end
   end
 
+  describe 'material' do
+    it "is the G-code's (nil) by default" do
+      expect(job.material).to be_nil
+    end
+
+    it 'is stored as a material key' do
+      job.update!(material: ' petg ')
+
+      expect(job.reload.material).to eq 'PETG'
+    end
+
+    it 'is nil when blank' do
+      job.update!(material: ' ')
+
+      expect(job.reload.material).to be_nil
+    end
+
+    it 'is one of the materials a filament can be' do
+      job.material = 'PCTG'
+
+      expect(job).not_to be_valid
+      expect(job.errors[:material]).to eq ['is not included in the list']
+    end
+  end
+
   describe 'printers' do
     let(:printer) { create(:printer) }
 

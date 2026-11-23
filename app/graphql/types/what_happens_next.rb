@@ -19,5 +19,10 @@ module Types
                                      description: 'Whether it waits for dispatch to resume first: dispatch is paused ' \
                                                   'and it is not ON_HOLD, nor a copy already handed to its printer ' \
                                                   '(STARTING with no copy left to start, which starts anyway)'
+    field :starts_at, GraphQL::Types::ISO8601DateTime, null: true,
+                                                       description: 'When it starts. Always null for now: the time ' \
+                                                                    'comes with the queue simulation'
+
+    def starts_at = nil
   end
 end

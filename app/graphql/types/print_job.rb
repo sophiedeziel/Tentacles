@@ -9,6 +9,10 @@ module Types
     field :id, ID, null: false
     field :file, Types::File, null: false
     field :copies, Integer, null: false, description: 'How many copies are asked for'
+    field :material, String, null: true,
+                             description: 'The material asked for, one of filamentMaterials. Null for the one its ' \
+                                          'G-code says (see needs)'
+    field :colour, String, null: true, description: 'The colour asked for. Null for Any colour'
     field :position, Integer, null: false, description: 'Its place in the queue: lower goes first'
     field :waiting_position, Integer, null: true,
                                       description: 'Its place among the print jobs with copies left to start ' \

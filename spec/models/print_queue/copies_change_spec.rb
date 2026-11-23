@@ -43,6 +43,32 @@ RSpec.describe PrintQueue::CopiesChange do
     expect_pushed_once([printer])
   end
 
+  describe 'same printer' do
+    it 'keeps every copy on the same printer (Print More Copies)' do
+      expect(described_class.new(job:, copies: 7, same_printer: true).save).to be true
+      expect(job.reload).to have_attributes(copies: 7, same_printer: true)
+    end
+
+    it 'lets a bound batch go to any printer, pushing the printer it was bound to, and asks for a dispatch pass' do
+      printer = create(:printer)
+      job.update!(same_printer: true, bound_printer: printer)
+
+      expect(described_class.new(job:, copies: 5, same_printer: false).save).to be true
+      expect(job.reload).to have_attributes(same_printer: false, bound_printer: nil)
+      expect_pushed_once([printer])
+      expect_dispatch_requested
+    end
+
+    it 'is left as it is when not given' do
+      printer = create(:printer)
+      job.update!(same_printer: true, bound_printer: printer)
+
+      change(6)
+
+      expect(job.reload).to have_attributes(same_printer: true, bound_printer: printer)
+    end
+  end
+
   context 'with copies done and printing' do
     before do
       2.times { copy('completed') }

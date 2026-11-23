@@ -44,10 +44,7 @@ module PrintQueue
     #: -> void
     def change
       others = PrintQueue::Job.unfinished.in_queue_order.where.not(id: job.id).to_a
-      entries = others.insert(index_among(others), job)
-      entries.each.with_index(1) do |entry, position|
-        entry.update!(position:) unless entry.position == position
-      end
+      renumber(others.insert(index_among(others), job))
     end
 
     #: -> bool

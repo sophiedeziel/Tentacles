@@ -36,6 +36,23 @@ RSpec.describe Mutations::Queue::SetPrintJobCopies, type: :request do
     expect_nothing_pushed
   end
 
+  it 'keeps every copy on the same printer (Print More Copies)' do
+    mutate('setPrintJobCopies', { id: job.id, copies: 6, samePrinter: true }, 'printJob { copies samePrinter }')
+
+    expect_saved
+    expect(data['printJob']).to eq('copies' => 6, 'samePrinter' => true)
+  end
+
+  it 'lets a bound batch go to any printer' do
+    job.update!(same_printer: true, bound_printer: create(:printer))
+
+    mutate('setPrintJobCopies', { id: job.id, copies: 6, samePrinter: false },
+           'printJob { samePrinter boundPrinter { id } }')
+
+    expect_saved
+    expect(data['printJob']).to eq('samePrinter' => false, 'boundPrinter' => nil)
+  end
+
   it 'is refused below 1, on the copies field' do
     set_copies(0)
 
