@@ -1,33 +1,24 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Table } from 'antd'
+import { Table, Tooltip, Typography } from 'antd'
 
 import JobStatus from '../../components/JobStatus/JobStatus'
 import PrinterStatus from '../../components/PrinterStatus/PrinterStatus'
 import PrintProgress from '../../components/PrintProgress/PrintProgress'
-import { doneAt, formatAgo } from '../../utils/time'
-import { FileName, Muted, PrinterCell, QueueSection } from './parts'
-import { copyText } from './queueView'
+import { doneAt, formatDayClock } from '../../utils/time'
+import { FilamentLine, Muted, QueueLink, QueueSection, TwoLines } from './parts'
+import { copyText, printLabel, printingSummary } from './queueView'
 import * as classes from './QueuePage.module.less'
 
 // The state families a print is under way in: the printer's status says how far it got
 const UNDER_WAY = ['PRINTING', 'PAUSED', 'CANCELLING']
 
-// A print's file, and which copy of its batch it is
-function PrintFile ({ print }) {
-  const copy = copyText(print)
-  return (
-    <div className={classes.cell}>
-      <FileName file={print.printJob.file} />
-      {copy && <Muted small>{copy}</Muted>}
-    </div>
-  )
-}
+const statusOf = (printer) => printer.status || { stateFamily: 'OFFLINE', stateText: 'Offline' }
 
 // Live from the printer's status (printerStatusChanged): the progress bar and time left while under way. A copy
 // handed to a printer that hasn't started it yet reads as Starting.
 function PrintingProgress ({ print, now }) {
-  const status = print.printer.status || { stateFamily: 'OFFLINE' }
+  const status = statusOf(print.printer)
   const family = status.stateFamily
   if (!UNDER_WAY.includes(family)) return <Muted>{print.status === 'ENQUEUED' ? 'Starting' : 'Waiting for the printer'}</Muted>
 
@@ -36,56 +27,84 @@ function PrintingProgress ({ print, now }) {
     timeLeft={finish ? finish.diff(now) : null} />
 }
 
-// The copies under way, in the order they were handed out
-export function Printing ({ prints, now }) {
+// The printer (a link to its page) and the filament it has loaded
+function PrintingPrinter ({ printer }) {
+  const filaments = printer.loadedFilaments || []
+  return (
+    <div className={classes.cell}>
+      <QueueLink to={`/printers/${printer.id}`}>{printer.name}</QueueLink>
+      {filaments.map((filament) => <FilamentLine key={filament.slot} filament={filament} small />)}
+    </div>
+  )
+}
+
+// The copies under way, in the order they were handed out. `renderMenu(print)`: a row's "⋯" menu.
+export function Printing ({ prints, now, renderMenu }) {
   const rows = prints.map((print) => ({ key: print.id, print }))
   const columns = [
-    { key: 'file', title: 'File', render: (_, { print }) => <PrintFile print={print} /> },
     {
-      key: 'printer',
-      title: 'Printer',
-      width: 280,
+      key: 'file',
+      title: 'File',
+      render: (_, { print }) => <TwoLines strong title={print.printJob.file.filename} detail={copyText(print) || '1 print'} />
+    },
+    { key: 'printer', title: 'Printer', width: '24%', render: (_, { print }) => <PrintingPrinter printer={print.printer} /> },
+    {
+      key: 'state',
+      title: 'State',
+      width: 150,
       render: (_, { print }) => {
-        const status = print.printer.status || { stateFamily: 'OFFLINE', stateText: 'Offline' }
-        return <PrinterCell printer={print.printer}
-          subtitle={<PrinterStatus family={status.stateFamily} text={status.stateText} variant="badge" />} />
+        const status = statusOf(print.printer)
+        return <PrinterStatus family={status.stateFamily} text={status.stateText} />
       }
     },
-    { key: 'progress', title: 'Progress', width: 260, render: (_, { print }) => <PrintingProgress print={print} now={now} /> }
+    { key: 'progress', title: 'Progress', width: '30%', render: (_, { print }) => <PrintingProgress print={print} now={now} /> },
+    { key: 'actions', width: 56, align: 'right', render: (_, { print }) => renderMenu?.(print) }
   ]
 
   return (
-    <QueueSection title="Printing" count={prints.length}>
+    <QueueSection title="Printing" summary={printingSummary(prints)}>
       <Table columns={columns} dataSource={rows} pagination={false} size="middle" tableLayout="fixed"
-        locale={{ emptyText: 'Nothing is printing' }} />
+        scroll={{ x: 860 }} locale={{ emptyText: 'Nothing is printing' }} />
     </QueueSection>
   )
 }
 
-// The latest copies that ended, the last one first, with how they ended. The full history comes with its own page.
-export function Finished ({ prints, now }) {
+// All History opens the print history, which comes with its own page later
+function AllHistory () {
+  return (
+    <Tooltip title="Coming soon">
+      <span><Typography.Link disabled>All History</Typography.Link></span>
+    </Tooltip>
+  )
+}
+
+// The latest copies that ended, the last one first, with how they ended. `renderAction(print)`: Requeue, from the
+// page's actions.
+export function Finished ({ prints, now, renderAction }) {
   const rows = prints.map((print) => ({ key: print.id, print }))
   const columns = [
-    { key: 'file', title: 'File', render: (_, { print }) => <PrintFile print={print} /> },
-    { key: 'printer', title: 'Printer', width: 280, render: (_, { print }) => <PrinterCell printer={print.printer} /> },
     {
-      key: 'result',
-      title: 'Result',
-      width: 140,
-      render: (_, { print }) => print.result && <JobStatus status={print.result.toLowerCase()} />
+      key: 'file',
+      render: (_, { print }) => <span className={classes.ellipsis} title={printLabel(print)}>{printLabel(print)}</span>
     },
     {
+      key: 'result',
+      width: 150,
+      render: (_, { print }) => print.result && <JobStatus status={print.result.toLowerCase()} />
+    },
+    { key: 'printer', width: '22%', render: (_, { print }) => print.printer.name },
+    {
       key: 'finishedAt',
-      title: 'Finished',
-      width: 120,
-      render: (_, { print }) => print.finishedAt && <Muted>{formatAgo(print.finishedAt, now)}</Muted>
-    }
+      width: '20%',
+      render: (_, { print }) => print.finishedAt && <Muted>{formatDayClock(print.finishedAt, now)}</Muted>
+    },
+    { key: 'action', width: 120, align: 'right', render: (_, { print }) => renderAction?.(print) }
   ]
 
   return (
-    <QueueSection title="Finished">
+    <QueueSection title="Finished" extra={<AllHistory />}>
       <Table columns={columns} dataSource={rows} pagination={false} size="middle" tableLayout="fixed"
-        locale={{ emptyText: 'No print has finished yet' }} />
+        showHeader={false} scroll={{ x: 760 }} locale={{ emptyText: 'No print has finished yet' }} />
     </QueueSection>
   )
 }
@@ -98,7 +117,15 @@ const printShape = PropTypes.shape({
   printJob: PropTypes.object.isRequired
 })
 
-PrintFile.propTypes = { print: printShape.isRequired }
 PrintingProgress.propTypes = { print: printShape.isRequired, now: PropTypes.number.isRequired }
-Printing.propTypes = { prints: PropTypes.arrayOf(printShape).isRequired, now: PropTypes.number.isRequired }
-Finished.propTypes = { prints: PropTypes.arrayOf(printShape).isRequired, now: PropTypes.number.isRequired }
+PrintingPrinter.propTypes = { printer: PropTypes.object.isRequired }
+Printing.propTypes = {
+  prints: PropTypes.arrayOf(printShape).isRequired,
+  now: PropTypes.number.isRequired,
+  renderMenu: PropTypes.func
+}
+Finished.propTypes = {
+  prints: PropTypes.arrayOf(printShape).isRequired,
+  now: PropTypes.number.isRequired,
+  renderAction: PropTypes.func
+}

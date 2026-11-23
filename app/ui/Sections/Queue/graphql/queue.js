@@ -38,6 +38,7 @@ export const PRINT_JOB_FIELDS = gql`
     position
     held
     samePrinter
+    allCapable
     copiesLeftToStart
     file { id filename isDeleted }
     boundPrinter { id name }
@@ -50,7 +51,18 @@ export const PRINT_JOB_FIELDS = gql`
     }
     eligiblePrinters { id name }
     whatHappensNext { kind printer { id name } jobsAhead dispatchPaused }
-    prints { id copyNumber status progress result printer { id name } }
+    prints { id copyNumber status progress result finishedAt printer { id name } }
+  }
+`
+
+// An Available Printers row: the dashboard's printer fields (live status), whether it takes jobs, its loaded filament and
+// the job the queue lines up for it (takesNext, as if dispatch ran): the copy it takes is the first not handed out
+export const QUEUE_PRINTER_FIELDS = gql`
+  fragment QueuePrinterFields on Printer {
+    ...DashboardPrinterFields
+    takesJobs
+    loadedFilaments { slot material colour }
+    takesNext { id copies copiesLeftToStart file { id filename } }
   }
 `
 
@@ -59,18 +71,20 @@ export const GLOBAL_QUEUE_PAGE = gql`
   query GlobalQueuePage($finished: Int!) {
     globalQueue {
       dispatchPaused
-      printersToClear { ...DashboardPrinterFields }
-      availablePrinters {
-        ...DashboardPrinterFields
-        loadedFilaments { slot material colour }
+      printersToClear { ...QueuePrinterFields }
+      availablePrinters { ...QueuePrinterFields }
+      offlinePrinters { ...DashboardPrinterFields }
+      printing {
+        ...QueuePrintFields
+        printer { id loadedFilaments { slot material colour } }
       }
-      printing { ...QueuePrintFields }
       waiting { ...QueuePrintJobFields }
       finished(first: $finished) { ...QueuePrintFields }
     }
   }
   ${PRINT_FIELDS}
   ${PRINT_JOB_FIELDS}
+  ${QUEUE_PRINTER_FIELDS}
 `
 
 // Fleet level: something in the queue changed. The payload is small on purpose: the page refetches globalQueue.

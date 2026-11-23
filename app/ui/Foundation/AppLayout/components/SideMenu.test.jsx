@@ -44,7 +44,7 @@ describe('menuKeys', () => {
     ['/printers/manage', ['/printers/manage'], ['printers']],
     ['/printers/add', ['/printers/manage'], ['printers']],
     ['/printers/3', ['/printers/manage'], ['printers']],
-    ['/queue', ['/queue'], ['printers']]
+    ['/queue', ['/queue'], []]
   ])('on %s selects %j and opens %j', (path, selectedKeys, openKeys) => {
     expect(menuKeys(path)).toEqual({ selectedKeys, openKeys })
   })
@@ -74,27 +74,27 @@ describe('SideMenu', () => {
     expect(screen.queryByText('Operations')).not.toBeInTheDocument()
   })
 
-  it('hides Global Queue while the global queue is off', async () => {
+  it('hides Print Queue while the global queue is off', async () => {
     let answered = false
     renderAt('/printers', { answered: () => { answered = true } })
 
     await waitFor(() => expect(answered).toBe(true))
     await act(() => new Promise((resolve) => setTimeout(resolve, 0)))
     expect(screen.getByText('Print Queues')).toBeInTheDocument()
-    expect(screen.queryByText('Global Queue')).not.toBeInTheDocument()
+    expect(screen.queryByText('Print Queue')).not.toBeInTheDocument()
   })
 
-  it('links to the global queue beside the print queues while it is on', async () => {
+  it('links to the global queue right after the dashboard while it is on', async () => {
     renderAt('/printers', { queue: true })
 
-    expect(await screen.findByText('Global Queue')).toBeInTheDocument()
-    const entries = [...item('Printers').querySelectorAll('.ant-menu-item')].map((entry) => entry.textContent)
-    expect(entries).toEqual(['Print Queues', 'Global Queue', 'Manage'])
+    expect(await screen.findByText('Print Queue')).toBeInTheDocument()
+    const entries = [...document.querySelectorAll('.ant-menu-root > li')].map((entry) => entry.textContent)
+    expect(entries).toEqual(['Dashboard', 'Print Queue', 'PrintersPrint QueuesManage', 'Files'])
 
-    fireEvent.click(screen.getByText('Global Queue'))
+    fireEvent.click(screen.getByText('Print Queue'))
     expect(screen.getByTestId('path')).toHaveTextContent('/queue')
-    expect(item('Global Queue')).toHaveClass('ant-menu-item-selected')
-    expect(item('Printers')).toHaveClass('ant-menu-submenu-open')
+    expect(item('Print Queue')).toHaveClass('ant-menu-item-selected')
+    expect(item('Printers')).not.toHaveClass('ant-menu-submenu-open')
   })
 
   it('selects Dashboard on the dashboard', () => {

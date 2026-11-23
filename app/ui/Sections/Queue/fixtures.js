@@ -21,15 +21,28 @@ export const fleetPrinter = (printer, extra = {}) => ({
 const ref = ({ id, name }) => ({ __typename: 'Printer', id, name })
 const file = (id, filename) => ({ __typename: 'File', id, filename, isDeleted: false })
 const filament = (tool, material, colour) => ({ __typename: 'NeededFilament', tool, material, colour })
+export const loaded = (material, colour, slot = 1) => ({ __typename: 'LoadedFilament', slot, material, colour })
 
-export const MK4 = fleetPrinter(PRINTERS.PRINTING)
-export const MINI = fleetPrinter(PRINTERS.OPERATIONAL)
-export const VORON_ZERO = fleetPrinter({ ...PRINTERS.OPERATIONAL, id: '9', name: 'Voron 0.2', nextJob: null }, {
-  loadedFilaments: [{ __typename: 'LoadedFilament', slot: 1, material: 'PLA', colour: 'Black' }]
+// The job a printer takes next (QueuePrinterFields' takesNext)
+export const takesNext = ({ id, copies = 1, copiesLeftToStart = 1, file: { id: fileId, filename } }) => ({
+  __typename: 'PrintJob', id, copies, copiesLeftToStart, file: { __typename: 'File', id: fileId, filename }
+})
+
+// An Available Printers row (QueuePrinterFields)
+const queuePrinter = (printer, extra = {}) => fleetPrinter(printer, {
+  takesJobs: true, loadedFilaments: [loaded('PLA', 'Black')], takesNext: null, ...extra
 })
 
 const CLIPS = file('21', 'cable_clip.gcode')
 const BRACKET = file('22', 'bracket.gcode')
+const PHONE_STAND = file('20', 'phone_stand.gcode')
+
+export const MK4 = fleetPrinter(PRINTERS.PRINTING, { loadedFilaments: [loaded('PETG', 'Grey')] })
+export const MINI = queuePrinter(PRINTERS.OPERATIONAL, {
+  takesNext: takesNext({ id: '11', file: PHONE_STAND })
+})
+export const VORON_ZERO = queuePrinter({ ...PRINTERS.OPERATIONAL, id: '9', name: 'Voron 0.2', nextJob: null })
+export const KOBRA = fleetPrinter(PRINTERS.OFFLINE)
 
 // A copy handed to a printer (QueuePrintFields)
 export const print = ({ id, printer, jobId, copies = 1, jobFile, copyNumber = 1, status = 'ACTIVE', progress = 0, result = null, finishedAt = null }) => ({
@@ -45,7 +58,13 @@ export const print = ({ id, printer, jobId, copies = 1, jobFile, copyNumber = 1,
   printJob: { __typename: 'PrintJob', id: jobId, copies, file: jobFile }
 })
 
-// A waiting print job (QueuePrintJobFields): one copy of phone_stand.gcode in PLA Black, for the next ready printer
+const what = (kind, printer = null, more = {}) => ({
+  __typename: 'WhatHappensNext', kind, printer: printer && ref(printer), jobsAhead: 0, dispatchPaused: false, ...more
+})
+export { what as whatHappensNext }
+
+// A waiting print job (QueuePrintJobFields): one copy of phone_stand.gcode in PLA Black, lined up for the Mini once
+// its bed is cleared
 export const waitingJob = (overrides = {}) => ({
   __typename: 'PrintJob',
   id: '11',
@@ -53,8 +72,9 @@ export const waitingJob = (overrides = {}) => ({
   position: 1,
   held: false,
   samePrinter: false,
+  allCapable: true,
   copiesLeftToStart: 1,
-  file: file('20', 'phone_stand.gcode'),
+  file: PHONE_STAND,
   boundPrinter: null,
   needs: {
     __typename: 'PrintJobNeeds',
@@ -65,9 +85,14 @@ export const waitingJob = (overrides = {}) => ({
     footprint: { __typename: 'GcodeFootprint', width: 120, depth: 80 }
   },
   eligiblePrinters: [ref(MINI), ref(VORON_ZERO)],
-  whatHappensNext: { __typename: 'WhatHappensNext', kind: 'NEXT_READY_PRINTER', printer: null, jobsAhead: 0, dispatchPaused: false },
+  whatHappensNext: what('AFTER_BED_CLEARED', MINI),
   prints: [],
   ...overrides
+})
+
+const copy = (id, copyNumber, printer, more = {}) => ({
+  __typename: 'Print', id, copyNumber, status: 'COMPLETED', progress: 100, result: 'COMPLETED',
+  finishedAt: '2026-11-14T12:30:00Z', printer: ref(printer), ...more
 })
 
 // A same-printer batch of 3 bound to the MK4: copy 1 done, copy 2 printing, one left to start
@@ -76,6 +101,7 @@ export const BATCH = waitingJob({
   copies: 3,
   position: 2,
   samePrinter: true,
+  allCapable: false,
   copiesLeftToStart: 1,
   file: CLIPS,
   boundPrinter: ref(MK4),
@@ -88,10 +114,10 @@ export const BATCH = waitingJob({
     footprint: null
   },
   eligiblePrinters: [ref(MK4)],
-  whatHappensNext: { __typename: 'WhatHappensNext', kind: 'BATCH_ON_PRINTER', printer: ref(MK4), jobsAhead: 0, dispatchPaused: false },
+  whatHappensNext: what('BATCH_ON_PRINTER', MK4),
   prints: [
-    { __typename: 'Print', id: '31', copyNumber: 1, status: 'COMPLETED', progress: 100, result: 'COMPLETED', printer: ref(MK4) },
-    { __typename: 'Print', id: '32', copyNumber: 2, status: 'ACTIVE', progress: 40, result: null, printer: ref(MK4) }
+    copy('31', 1, MK4),
+    copy('32', 2, MK4, { status: 'ACTIVE', progress: 40, result: null, finishedAt: null })
   ]
 })
 
@@ -100,16 +126,17 @@ export const HELD = waitingJob({
   position: 3,
   held: true,
   file: file('23', 'lid.gcode'),
-  whatHappensNext: { __typename: 'WhatHappensNext', kind: 'ON_HOLD', printer: null, jobsAhead: 0, dispatchPaused: false }
+  whatHappensNext: what('ON_HOLD')
 })
 
-// Every section filled: the Mini waits for its bed (bracket.gcode failed on it), the Voron 0.2 is free, the MK4
-// prints copy 2 of the batch
+// Every section filled: the Mini waits for its bed (bracket.gcode failed on it), the Voron 0.2 is free, the Kobra is
+// offline, the MK4 prints copy 2 of the batch
 export const queue = (overrides = {}) => ({
   __typename: 'GlobalQueue',
   dispatchPaused: false,
   printersToClear: [MINI],
   availablePrinters: [VORON_ZERO],
+  offlinePrinters: [KOBRA],
   printing: [print({ id: '32', printer: MK4, jobId: '12', copies: 3, jobFile: CLIPS, copyNumber: 2, progress: 40 })],
   waiting: [waitingJob(), BATCH, HELD],
   finished: [

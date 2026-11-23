@@ -51,3 +51,12 @@ export function formatAgo (time, now) {
   if (elapsed < DAY) return `${Math.floor(elapsed / HOUR)} h ago`
   return `${Math.floor(elapsed / DAY)} d ago`
 }
+
+// "Today, 17:58", "Yesterday, 20:02", "Nov 13, 14:10": when something happened, on the day it did, at `now`
+export function formatDayClock (time, now) {
+  const day = dayjs(time)
+  const today = dayjs(now).startOf('day')
+  if (!day.isBefore(today)) return `Today, ${formatClock(day)}`
+  if (!day.isBefore(today.subtract(1, 'day'))) return `Yesterday, ${formatClock(day)}`
+  return `${day.format('MMM D')}, ${formatClock(day)}`
+}
