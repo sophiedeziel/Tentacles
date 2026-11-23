@@ -12,7 +12,7 @@ module Resolvers
 
     type Types::QueueEstimate, null: true
 
-    argument :file_id, ID, required: true
+    argument :file_id, ID, required: true, description: "Ignored with printJobId: the print job's own file"
     argument :copies, Integer, required: false, default_value: 1, replace_null_with_default: true
     argument :material, String, required: false, description: 'The material asked for. Null for the one its G-code says'
     argument :colour, String, required: false, description: 'The colour asked for. Null for Any colour'
@@ -31,13 +31,19 @@ module Resolvers
     def resolve(file_id:, print_job_id: nil, printer_ids: nil, **)
       return unless ::PrintQueue.enabled?
 
-      item = ::Library::Item.find_by(id: file_id)
       job = ::PrintQueue::Job.find_by(id: print_job_id) if print_job_id
-      return if item.nil? || (print_job_id && job.nil?)
+      item = item_of(job, file_id) unless print_job_id && job.nil?
+      return if item.nil?
 
       ::PrintQueue::Estimate.new(item:, job:, all_capable: printer_ids.nil?, printer_ids: printer_ids || [],
                                  fleet: dataloader.with(Sources::FleetSource).load(:current),
                                  entries: dataloader.with(Sources::CandidatesSource).load(:current), **)
     end
+
+    private
+
+    # The print job's own file: a fileId of another file would estimate the wrong summary
+    #: (::PrintQueue::Job? job, String file_id) -> ::Library::Item?
+    def item_of(job, file_id) = job ? job.item : ::Library::Item.find_by(id: file_id)
   end
 end

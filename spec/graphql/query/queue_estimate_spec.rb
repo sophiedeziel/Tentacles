@@ -99,6 +99,13 @@ RSpec.describe 'Query queueEstimate', type: :request do
     )
   end
 
+  it "reads the print job's own file with printJobId, whatever fileId says" do
+    edited = entry(copies: 2)
+    edited.item.gcode_summary.update!(print_seconds: 600)
+
+    expect(estimate(printJobId: edited.id, fileId: file.id, copies: 2)).to include('printSeconds' => 2 * 600)
+  end
+
   it 'leaves the totals out when they are not known' do
     file.gcode_summary.update!(status: 'failed', print_seconds: nil)
 
