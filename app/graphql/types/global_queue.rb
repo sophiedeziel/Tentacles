@@ -39,6 +39,12 @@ module Types
                             validates: { numericality: { within: 0..MAX_FINISHED } }
     end
 
+    field :print_job, Types::PrintJob, null: true do
+      description 'A print job of the queue, finished or not (the Edit page reads it). Null when there is none with ' \
+                  'that id.'
+      argument :id, ID, required: true
+    end
+
     def dispatch_paused? = ::PrintQueue::Setting.current.dispatch_paused?
     def printers_to_clear = dataloader.with(Sources::FleetSource).load(:current).bed_to_clear
     def available_printers = dataloader.with(Sources::FleetSource).load(:current).available
@@ -52,6 +58,8 @@ module Types
     def waiting
       dataloader.with(Sources::CandidatesSource).load(:current).select { |entry| entry.waiting_count.positive? }
     end
+
+    def print_job(id:) = ::PrintQueue::Job.find_by(id:)
 
     def finished(first:)
       ::Printer::Job.copies.finished.last_finished_first.limit(first).includes(*PRINT_PRELOADS)
