@@ -7,6 +7,8 @@ import {
   Outlet
 } from 'react-router'
 
+import useQueueEnabled from '../../Sections/Queue/useQueueEnabled'
+
 const DashboardPage = lazy(() => import('../../Sections/Dashboard/DashboardPage/DashboardPage'))
 const PrintersList = lazy(() => import('../../Sections/Printers/PrintersList/PrintersList'))
 const PrinterAdd = lazy(() => import('../../Sections/Printers/PrinterAdd/PrinterAdd'))
@@ -16,8 +18,12 @@ const Queue = lazy(() => import('../../Sections/Printers/Queue/Queue'))
 const FilesList = lazy(() => import('../../Sections/Files/FilesList/FilesList'))
 const FileEditor = lazy(() => import('../../Sections/Files/FileEditor/FileEditor'))
 const FilePrinter = lazy(() => import('../../Sections/Files/FilePrinter/FilePrinter'))
+const QueuePage = lazy(() => import('../../Sections/Queue/QueuePage'))
 
 export default function AppSwithcer () {
+  // The global print queue's page exists only while its flag is on. Opened directly, it waits for the answer.
+  const queue = useQueueEnabled()
+
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <Routes>
@@ -31,6 +37,9 @@ export default function AppSwithcer () {
             <Route path="add" element={<PrinterAdd />} />
             <Route path=":id" element={<PrinterDetails />} />
           </Route>
+          {(queue.enabled || queue.loading) && (
+            <Route path="queue" element={queue.enabled ? <QueuePage /> : <div>Loading...</div>} />
+          )}
           <Route path="files" element={<Outlet />} >
             <Route index element={<FilesList />} />
             <Route path=":id" element={<Outlet />} >

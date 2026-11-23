@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { doneAt, formatAgo, formatClock, formatPrintTime, formatTimeLeft } from './time'
+import { doneAt, formatAgo, formatClock, formatDayClock, formatPrintTime, formatTimeLeft } from './time'
 
 describe('time', () => {
   it('adds the time left to the snapshot time', () => {
@@ -40,5 +40,12 @@ describe('time', () => {
     expect(formatAgo('2026-11-14T18:55:00Z', now)).toBe('5 min ago')
     expect(formatAgo('2026-11-14T17:00:00Z', now)).toBe('2 h ago')
     expect(formatAgo('2026-11-11T19:00:00Z', now)).toBe('3 d ago')
+  })
+
+  it('formats when something happened by its day and clock time', () => {
+    const now = new Date(2026, 10, 14, 19, 0)
+    expect(formatDayClock(new Date(2026, 10, 14, 17, 58), now)).toBe('Today, 17:58')
+    expect(formatDayClock(new Date(2026, 10, 13, 20, 2), now)).toBe('Yesterday, 20:02')
+    expect(formatDayClock(new Date(2026, 10, 12, 14, 10), now)).toBe('Nov 12, 14:10')
   })
 })

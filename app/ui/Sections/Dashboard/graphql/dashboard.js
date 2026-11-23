@@ -121,6 +121,8 @@ export const TYPE_POLICIES = {
   // A list without ids, always sent whole: replaced, even by a shorter one (a removed filament)
   Printer: { fields: { loadedFilaments: { merge: false } } },
   Dashboard: { merge: false },
+  // No id, one per fleet: the menu's flag check (dispatchPaused alone) and the queue page's sections merge into it
+  GlobalQueue: { merge: true },
   PrinterWidgetOptions: { merge: false },
   PrintQueueWidgetOptions: { merge: false }
 }

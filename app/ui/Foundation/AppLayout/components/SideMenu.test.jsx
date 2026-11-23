@@ -1,8 +1,10 @@
 import React from 'react'
 import { describe, expect, it } from 'vitest'
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { MockedProvider } from '@apollo/client/testing/react'
 import { MemoryRouter, useLocation, useNavigate } from 'react-router'
 import SideMenu, { menuKeys } from './SideMenu'
+import { GLOBAL_QUEUE_ENABLED } from '../../../Sections/Queue/graphql/queue'
 
 function CurrentPath () {
   return <span data-testid="path">{useLocation().pathname}</span>
@@ -13,12 +15,22 @@ function GoToAddPrinter () {
   return <button onClick={() => navigate('/printers/add')}>Go</button>
 }
 
-const renderAt = (path) => render(
-  <MemoryRouter initialEntries={[path]}>
-    <SideMenu />
-    <CurrentPath />
-  </MemoryRouter>
+// globalQueue is null while the global queue's flag is off. `answered` is called when the menu gets the answer.
+const flag = (on, answered = () => {}) => ({
+  request: { query: GLOBAL_QUEUE_ENABLED },
+  result: () => {
+    answered()
+    return { data: { globalQueue: on ? { __typename: 'GlobalQueue', dispatchPaused: false } : null } }
+  }
+})
+
+const renderMenu = (path, children, { queue = false, answered } = {}) => render(
+  <MockedProvider mocks={[flag(queue, answered)]}>
+    <MemoryRouter initialEntries={[path]}>{children}</MemoryRouter>
+  </MockedProvider>
 )
+
+const renderAt = (path, options) => renderMenu(path, <><SideMenu /><CurrentPath /></>, options)
 
 const item = (text) => screen.getByText(text).closest('li')
 
@@ -31,7 +43,8 @@ describe('menuKeys', () => {
     ['/printers/3/queue', ['/printers'], ['printers']],
     ['/printers/manage', ['/printers/manage'], ['printers']],
     ['/printers/add', ['/printers/manage'], ['printers']],
-    ['/printers/3', ['/printers/manage'], ['printers']]
+    ['/printers/3', ['/printers/manage'], ['printers']],
+    ['/queue', ['/queue'], []]
   ])('on %s selects %j and opens %j', (path, selectedKeys, openKeys) => {
     expect(menuKeys(path)).toEqual({ selectedKeys, openKeys })
   })
@@ -59,6 +72,29 @@ describe('SideMenu', () => {
     expect(screen.queryByText('Macros')).not.toBeInTheDocument()
     expect(screen.queryByText('Reports')).not.toBeInTheDocument()
     expect(screen.queryByText('Operations')).not.toBeInTheDocument()
+  })
+
+  it('hides Print Queue while the global queue is off', async () => {
+    let answered = false
+    renderAt('/printers', { answered: () => { answered = true } })
+
+    await waitFor(() => expect(answered).toBe(true))
+    await act(() => new Promise((resolve) => setTimeout(resolve, 0)))
+    expect(screen.getByText('Print Queues')).toBeInTheDocument()
+    expect(screen.queryByText('Print Queue')).not.toBeInTheDocument()
+  })
+
+  it('links to the global queue right after the dashboard while it is on', async () => {
+    renderAt('/printers', { queue: true })
+
+    expect(await screen.findByText('Print Queue')).toBeInTheDocument()
+    const entries = [...document.querySelectorAll('.ant-menu-root > li')].map((entry) => entry.textContent)
+    expect(entries).toEqual(['Dashboard', 'Print Queue', 'PrintersPrint QueuesManage', 'Files'])
+
+    fireEvent.click(screen.getByText('Print Queue'))
+    expect(screen.getByTestId('path')).toHaveTextContent('/queue')
+    expect(item('Print Queue')).toHaveClass('ant-menu-item-selected')
+    expect(item('Printers')).not.toHaveClass('ant-menu-submenu-open')
   })
 
   it('selects Dashboard on the dashboard', () => {
@@ -103,12 +139,7 @@ describe('SideMenu', () => {
   })
 
   it('opens Printers when a link elsewhere leads to a printer page', () => {
-    render(
-      <MemoryRouter initialEntries={['/files']}>
-        <SideMenu />
-        <GoToAddPrinter />
-      </MemoryRouter>
-    )
+    renderMenu('/files', <><SideMenu /><GoToAddPrinter /></>)
 
     expect(item('Printers')).not.toHaveClass('ant-menu-submenu-open')
     fireEvent.click(screen.getByText('Go'))
@@ -116,12 +147,7 @@ describe('SideMenu', () => {
   })
 
   it('leaves Printers closed while the sider is collapsed, where it would pop up', () => {
-    render(
-      <MemoryRouter initialEntries={['/files']}>
-        <SideMenu collapsed />
-        <GoToAddPrinter />
-      </MemoryRouter>
-    )
+    renderMenu('/files', <><SideMenu collapsed /><GoToAddPrinter /></>)
 
     fireEvent.click(screen.getByText('Go'))
     expect(item('Printers')).not.toHaveClass('ant-menu-submenu-open')
