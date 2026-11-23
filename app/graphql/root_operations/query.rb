@@ -100,6 +100,20 @@ module RootOperations
       ::Printer::Monitor::Heartbeat.healthy?
     end
 
+    field :filament_materials, [String], null: false,
+                                         description: 'The materials a loaded filament can be, e.g. "PLA", "PETG"'
+    def filament_materials
+      ::Filament::MATERIALS
+    end
+
+    field :filament_colours, [String], null: false,
+                                       description: 'Colours to suggest for a loaded filament: a short default ' \
+                                                    'list, then every colour in use (alphabetical), each colour ' \
+                                                    'once whatever its spelling'
+    def filament_colours
+      ::Filament.colour_suggestions
+    end
+
     private
 
     def jobs_of(printer_id)

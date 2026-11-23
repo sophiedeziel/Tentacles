@@ -15,6 +15,25 @@ RSpec.describe Filament do
     expect(keys).to eq keys.uniq
   end
 
+  describe '.colour_suggestions' do
+    def load_filament(colour, updated_at: Time.current)
+      create(:printer_loaded_filament, printer: create(:printer), colour:, updated_at:)
+    end
+
+    it 'is the default colours when no filament is loaded' do
+      expect(described_class.colour_suggestions).to eq described_class::DEFAULT_COLOURS
+    end
+
+    it 'adds the colours in use after the defaults, alphabetical by key, once per key' do
+      load_filament('silk gold')
+      load_filament('Army Green', updated_at: 1.day.ago)
+      load_filament('army  GREEN', updated_at: 2.days.ago)
+      load_filament('BLACK')
+
+      expect(described_class.colour_suggestions).to eq(described_class::DEFAULT_COLOURS + ['Army Green', 'silk gold'])
+    end
+  end
+
   describe '.material_key' do
     it 'strips and upcases' do
       expect(described_class.material_key(" petg\n")).to eq 'PETG'

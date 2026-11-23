@@ -75,5 +75,17 @@ module Types
     def next_job
       dataloader.with(Sources::NextJobSource).load(object.id)
     end
+
+    field :loaded_filaments, [Types::LoadedFilament], null: false,
+                                                      description: 'The filament loaded in each slot, by slot. A ' \
+                                                                   'slot that is not listed has no filament set: ' \
+                                                                   'empty when none is.'
+    # Batched: one SQL query for all the printers of a query
+    def loaded_filaments
+      dataloader.with(Sources::LoadedFilamentsSource).load(object.id)
+    end
+
+    field :filament_slots, Integer, null: false, description: 'How many filaments it can have loaded at once (1 ' \
+                                                              'for now)'
   end
 end

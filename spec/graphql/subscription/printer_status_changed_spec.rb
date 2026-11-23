@@ -72,6 +72,13 @@ RSpec.describe Subscriptions::PrinterStatusChanged do
       expect(subscriptions.broadcastable?(status_changed_query)).to be(true)
     end
 
+    it 'broadcasts the loaded filaments' do
+      query = 'subscription { printerStatusChanged { id filamentSlots loadedFilaments { slot material colour ' \
+              'updatedAt } } }'
+
+      expect(subscriptions.broadcastable?(query)).to be(true)
+    end
+
     it 'does not broadcast printerSubscription' do
       expect(subscriptions.broadcastable?(printer_subscription_query, variables: { 'id' => '1' })).to be(false)
     end
@@ -122,6 +129,37 @@ RSpec.describe Subscriptions::PrinterStatusChanged do
           [{ 'result' => { 'data' => { 'printerStatusChanged' => expected } }, 'more' => true }]
         )
       end
+    end
+  end
+
+  describe 'loaded filaments' do
+    let(:printer) { create(:printer) }
+    let(:query) { 'subscription { printerStatusChanged { id loadedFilaments { slot material colour } } }' }
+
+    def pushed(subscription_id)
+      deliveries(subscription_id).map { |delivery| delivery.dig('result', 'data', 'printerStatusChanged') }
+    end
+
+    it 'pushes the new filament to every subscriber when one is set' do
+      first = subscribe(query).context[:subscription_id]
+      second = subscribe(query).context[:subscription_id]
+
+      Printer::FilamentChange.new(printer:, material: 'PETG', colour: 'Grey').save!
+      deliver_events
+
+      filament = { 'slot' => 1, 'material' => 'PETG', 'colour' => 'Grey' }
+      expected = { 'id' => printer.id.to_s, 'loadedFilaments' => [filament] }
+      expect([pushed(first), pushed(second)]).to eq([[expected], [expected]])
+    end
+
+    it 'pushes an empty list when the filament is cleared' do
+      create(:printer_loaded_filament, printer:)
+      subscription_id = subscribe(query).context[:subscription_id]
+
+      Printer::FilamentRemoval.new(printer:).save!
+      deliver_events
+
+      expect(pushed(subscription_id)).to eq([{ 'id' => printer.id.to_s, 'loadedFilaments' => [] }])
     end
   end
 
