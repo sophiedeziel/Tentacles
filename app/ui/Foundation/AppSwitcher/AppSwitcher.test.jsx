@@ -52,4 +52,20 @@ describe('AppSwitcher', () => {
     await act(() => new Promise((resolve) => setTimeout(resolve, 50)))
     expect(container).toBeEmptyDOMElement()
   })
+
+  it('serves Add to Queue at /queue/add/:fileId while it is on', async () => {
+    renderAt('/queue/add/7', [flag(true)])
+
+    // The page loads lazily, then fails to load its data (no mocks)
+    expect(await screen.findByText('Could not load the file', {}, { timeout: 5000 })).toBeInTheDocument()
+  })
+
+  it('has no /queue/add/:fileId while the global queue is off', async () => {
+    let answered = false
+    const { container } = renderAt('/queue/add/7', [flag(false, () => { answered = true })])
+
+    await waitFor(() => expect(answered).toBe(true))
+    await act(() => new Promise((resolve) => setTimeout(resolve, 50)))
+    expect(container).toBeEmptyDOMElement()
+  })
 })
