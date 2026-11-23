@@ -5,13 +5,17 @@ import { FileOutlined, PieChartOutlined } from '@ant-design/icons'
 import { useLocation, useNavigate } from 'react-router'
 
 import { Printer3DOutlined } from '../../../components/icons'
+import useQueueEnabled from '../../../Sections/Queue/useQueueEnabled'
 
 const PRINTERS_SUBMENU = 'printers'
 
 // The menu item to select and the submenu to open on a page.
 // Printers: /printers/:id/queue is a print queue; the printer pages (manage, add, /printers/:id) belong to Manage.
+// The global queue (/queue) sits in Printers beside the per-printer queues until the cutover.
 export function menuKeys (pathname) {
   const [section, page, subpage] = pathname.split('/').filter(Boolean)
+
+  if (section === 'queue') return { selectedKeys: ['/queue'], openKeys: [PRINTERS_SUBMENU] }
 
   if (section === 'printers') {
     let selected = []
@@ -27,6 +31,7 @@ export function menuKeys (pathname) {
 function SideMenu ({ collapsed = false }) {
   const { pathname } = useLocation()
   const navigate = useNavigate()
+  const { enabled: queueEnabled } = useQueueEnabled()
   const { selectedKeys, openKeys: pageOpenKeys } = menuKeys(pathname)
   const pageSubmenu = pageOpenKeys[0]
 
@@ -52,7 +57,8 @@ function SideMenu ({ collapsed = false }) {
     if (menuKeys(key).openKeys.length === 0) setOpenKeys([])
   }
 
-  // Only links to pages that exist: Projects, Operations, Macros and Reports come back with their pages
+  // Only links to pages that exist: Projects, Operations, Macros and Reports come back with their pages. Global Queue
+  // only while its flag is on.
   const items = [
     {
       label: 'Dashboard',
@@ -68,6 +74,7 @@ function SideMenu ({ collapsed = false }) {
           label: 'Print Queues',
           key: '/printers'
         },
+        ...(queueEnabled ? [{ label: 'Global Queue', key: '/queue' }] : []),
         {
           label: 'Manage',
           key: '/printers/manage'
