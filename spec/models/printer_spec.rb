@@ -129,6 +129,12 @@ RSpec.describe Printer, :vcr, type: :model do
     end
   end
 
+  describe '#bed_needs_clearing?' do
+    it 'is false until the bed state is tracked (global queue phase 3, PR 5)' do
+      expect(build(:printer).bed_needs_clearing?).to be false
+    end
+  end
+
   describe '#push_status_changed' do
     let(:printer) { create(:printer) }
 

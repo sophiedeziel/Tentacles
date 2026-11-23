@@ -9,6 +9,13 @@
 #   PrintQueue::Job.unfinished.in_queue_order    # the entries still in the queue
 #   PrintQueue::Setting.dispatch_paused?         # the fleet-level pause
 #
+# The rules, read-only and computed from their inputs: PrintQueue::Needs (what an entry needs, from its file's G-code
+# summary), PrintQueue::HardLimitations and PrintQueue::Fit (how an entry fits a printer, and why),
+# PrintQueue::NextJob (the entry a printer prints next) and PrintQueue::Readiness (why a printer is idle):
+#
+#   PrintQueue::NextJob.for(printer).job             # => a PrintQueue::Job, or nil
+#   PrintQueue::Readiness.for(printer).idle_reason   # => nil, or :offline, :busy, :nothing_eligible, ...
+#
 # The tables are print_jobs, print_job_printers and print_queue_settings (each model sets its table_name).
 module PrintQueue
   # Whether the global queue is on (config.x.global_print_queue, from GLOBAL_PRINT_QUEUE). Specs stub this.
