@@ -76,7 +76,8 @@ RSpec.describe 'Query globalQueue', type: :request do
       'finished' => '[Print!]!'
     )
     expect(signatures['PrintJob']).to eq(
-      'id' => 'ID!', 'file' => 'File!', 'copies' => 'Int!', 'position' => 'Int!', 'waitingPosition' => 'Int',
+      'id' => 'ID!', 'file' => 'File!', 'copies' => 'Int!', 'material' => 'String', 'colour' => 'String',
+      'position' => 'Int!', 'waitingPosition' => 'Int',
       'held' => 'Boolean!', 'samePrinter' => 'Boolean!', 'allCapable' => 'Boolean!', 'boundPrinter' => 'Printer',
       'copiesLeftToStart' => 'Int!', 'needs' => 'PrintJobNeeds!', 'eligiblePrinters' => '[Printer!]!',
       'whatHappensNext' => 'WhatHappensNext', 'prints' => '[Print!]!'
@@ -88,7 +89,8 @@ RSpec.describe 'Query globalQueue', type: :request do
       'bedClearedBy' => 'BedClearedBy'
     )
     expect(signatures['WhatHappensNext']).to eq('kind' => 'WhatHappensNextKind!', 'printer' => 'Printer',
-                                                'jobsAhead' => 'Int!', 'dispatchPaused' => 'Boolean!')
+                                                'jobsAhead' => 'Int!', 'dispatchPaused' => 'Boolean!',
+                                                'startsAt' => 'ISO8601DateTime')
     expect(TentaclesSchema.get_type('WhatHappensNextKind').values.keys).to eq %w[
       ON_HOLD BLOCKED NEXT_READY_PRINTER AFTER_CURRENT_PRINT AFTER_BED_CLEARED STARTING BATCH_ON_PRINTER
       BATCH_FIRST_READY_PRINTER
