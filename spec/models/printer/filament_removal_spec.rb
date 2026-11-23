@@ -39,6 +39,40 @@ RSpec.describe Printer::FilamentRemoval do
     end
   end
 
+  describe 'the global queue' do
+    before do
+      create(:printer_loaded_filament, printer:)
+      allow(PrintQueue).to receive(:push_changed)
+      allow(PrintQueue::DispatchRequest).to receive(:new)
+    end
+
+    it 'pushes the printer queue change once the filament is removed, and asks for no dispatch pass' do
+      allow(PrintQueue).to receive(:enabled?).and_return(true)
+      allow(PrintQueue).to receive(:push_changed) { expect(printer.loaded_filaments.count).to eq 0 }
+
+      described_class.new(printer:).save!
+
+      expect(PrintQueue).to have_received(:push_changed).once.with([printer])
+      expect(PrintQueue::DispatchRequest).not_to have_received(:new)
+    end
+
+    it 'pushes nothing while the global queue is off' do
+      allow(PrintQueue).to receive(:enabled?).and_return(false)
+
+      described_class.new(printer:).save!
+
+      expect(PrintQueue).not_to have_received(:push_changed)
+    end
+
+    it 'pushes nothing when the slot had no filament' do
+      allow(PrintQueue).to receive(:enabled?).and_return(true)
+
+      described_class.new(printer:, slot: 2).save!
+
+      expect(PrintQueue).not_to have_received(:push_changed)
+    end
+  end
+
   it 'leaves the other slots and printers alone' do
     printer.update!(filament_slots: 2)
     create(:printer_loaded_filament, printer:, slot: 1)

@@ -3,7 +3,9 @@
 
 module PrintQueue
   # A printer event: the printer turned Operational (its monitor, Printer::Monitor::Worker), so it may be ready for a
-  # copy. Asks for a dispatch pass (PrintQueue::DispatchRequest). See PrintQueue::Event.
+  # copy. queueChanged is pushed (PrintQueue.push_changed without printers: its own queue didn't change, but the
+  # queue page lists the available printers), then a dispatch pass is asked for (PrintQueue::DispatchRequest). See
+  # PrintQueue::Event.
   #
   #   PrintQueue::PrinterReady.new(printer:).save
   #
@@ -19,6 +21,7 @@ module PrintQueue
 
     #: -> void
     def persist
+      PrintQueue.push_changed
       PrintQueue::DispatchRequest.new.save
     end
   end

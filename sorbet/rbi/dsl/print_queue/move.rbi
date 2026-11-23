@@ -10,6 +10,12 @@ class PrintQueue::Move
 
   module GeneratedAttributeMethods
     sig { returns(T.untyped) }
+    def before; end
+
+    sig { params(value: T.untyped).returns(T.untyped) }
+    def before=(value); end
+
+    sig { returns(T.untyped) }
     def job; end
 
     sig { params(value: T.untyped).returns(T.untyped) }

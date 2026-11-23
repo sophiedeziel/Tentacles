@@ -5,9 +5,9 @@ module PrintQueue
   # Why the queue's rules answered what they did: a `code` the code branches on, and a `message` shown to people.
   # Every PrintQueue::Fit carries at least one (`:ready` included), and so does every idle PrintQueue::Readiness.
   #
-  #   reason = PrintQueue::Reason.new(code: :wrong_material, message: 'Loaded PETG Black, needs PLA')
+  #   reason = PrintQueue::Reason.new(code: :wrong_material, message: 'Needs PLA. PETG is loaded here')
   #   reason.code    # => :wrong_material
-  #   reason.message # => "Loaded PETG Black, needs PLA"
+  #   reason.message # => "Needs PLA. PETG is loaded here"
   class Reason < ApplicationModel
     # A Symbol
     attribute :code

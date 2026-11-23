@@ -8,7 +8,7 @@ module PrintQueue
   #
   #   fit = PrintQueue::Fit.new(needs: entry.needs, printer:, status:)
   #   fit.result  # => :after_filament_change
-  #   fit.reasons # => [PrintQueue::Reason(code: :wrong_material, message: "Loaded PETG Black, needs PLA")]
+  #   fit.reasons # => [PrintQueue::Reason(code: :wrong_material, message: "Needs PLA. PETG is loaded here")]
   #
   # The first that applies wins:
   #
@@ -67,6 +67,17 @@ module PrintQueue
     #: -> bool
     def cannot? = result == :cannot
 
+    # Whether the filament it needs is loaded: :ready, or :after_reconnect only because the printer is offline
+    #: -> bool
+    def filament_loaded? = ready? || (result == :after_reconnect && reasons.all? { |reason| reason.code == :offline })
+
+    # The filament checks that ask for a change (:no_filament, :wrong_material, :wrong_colour), empty when none does.
+    # Their messages are what the printer's page shows under Skipped by This Printer.
+    #: -> Array[PrintQueue::Reason]
+    def filament_changes
+      filament_checks.reject { |check| MATCHES.include?(check.code) }
+    end
+
     # @override
     #: -> bool
     def readonly? = true
@@ -90,12 +101,6 @@ module PrintQueue
       [:ready, filament_checks]
     end
 
-    # The filament checks that ask for a change
-    #: -> Array[PrintQueue::Reason]
-    def filament_changes
-      filament_checks.reject { |check| MATCHES.include?(check.code) }
-    end
-
     # One reason per checked tool
     #: -> Array[PrintQueue::Reason]
     def filament_checks
@@ -115,22 +120,27 @@ module PrintQueue
       return filament_reason(tool, :any_filament, 'Any filament') if material.nil? && colour.nil?
 
       loaded = loaded_filament(tool)
-      return filament_reason(tool, :no_filament, "No filament loaded, needs #{asked(material, colour)}") if loaded.nil?
+      if loaded.nil?
+        return filament_reason(tool, :no_filament, "Needs #{asked(material, colour)}. No filament is loaded here")
+      end
 
       loaded_check(tool, loaded, material, colour)
     end
 
-    # What's loaded in the tool's slot against what's asked
+    # What's loaded in the tool's slot against what's asked. A change says what's asked, then what's loaded: its
+    # material alone when the material is what differs ("Needs PETG. PLA is loaded here"), with its colour otherwise
+    # ("Needs PLA White. PLA Black is loaded here").
     #: (PrintQueue::Needs::Tool tool, Printer::LoadedFilament loaded, String? material, String? colour)
     #|   -> PrintQueue::Reason
     def loaded_check(tool, loaded, material, colour)
-      described = "#{loaded.material} #{loaded.colour}"
       if matches?(loaded, material, colour)
-        return filament_reason(tool, :filament_matches, "Loaded #{described} matches")
+        return filament_reason(tool, :filament_matches, "Loaded #{loaded.material} #{loaded.colour} matches")
       end
 
-      code = material && loaded.material != material ? :wrong_material : :wrong_colour
-      filament_reason(tool, code, "Loaded #{described}, needs #{asked(material, colour)}")
+      wrong_material = !material.nil? && loaded.material != material
+      here = wrong_material ? loaded.material : "#{loaded.material} #{loaded.colour}"
+      filament_reason(tool, wrong_material ? :wrong_material : :wrong_colour,
+                      "Needs #{asked(material, colour)}. #{here} is loaded here")
     end
 
     # With a known material: Printer::LoadedFilament#matches? (and the colour, unless Any colour). With none: the colour

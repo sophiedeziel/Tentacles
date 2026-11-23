@@ -5,6 +5,8 @@ import JobStatus from './JobStatus'
 
 describe('JobStatus', () => {
   it.each([
+    ['enqueued', 'Enqueued', 'ant-tag-default', 'clock-circle'],
+    ['active', 'Printing', 'ant-tag-purple', '3D printer'],
     ['completed', 'Completed', 'ant-tag-success', 'check-circle'],
     ['error', 'Failed', 'ant-tag-error', 'close-circle'],
     ['failed', 'Failed', 'ant-tag-error', 'close-circle'],

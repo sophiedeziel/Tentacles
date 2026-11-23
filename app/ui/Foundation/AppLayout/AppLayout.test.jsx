@@ -1,13 +1,17 @@
 import React from 'react'
 import { describe, expect, it } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
+import { MockedProvider } from '@apollo/client/testing/react'
 import { MemoryRouter } from 'react-router'
 import AppLayout from './AppLayout'
+import { GLOBAL_QUEUE_ENABLED } from '../../Sections/Queue/graphql/queue'
 
 const renderLayout = () => render(
-  <MemoryRouter initialEntries={['/']}>
-    <AppLayout>Page</AppLayout>
-  </MemoryRouter>
+  <MockedProvider mocks={[{ request: { query: GLOBAL_QUEUE_ENABLED }, result: { data: { globalQueue: null } } }]}>
+    <MemoryRouter initialEntries={['/']}>
+      <AppLayout>Page</AppLayout>
+    </MemoryRouter>
+  </MockedProvider>
 )
 
 describe('AppLayout', () => {

@@ -14,6 +14,9 @@ import { LOADED_FILAMENT, LOADED_FILAMENT_CHANGED } from './graphql/loadedFilame
 import { REMOVE_PRINTER, SET_PRINTER_FAVORITE } from '../PrintersList/graphql/fleet'
 import { POSSIBLE_TYPES, PRINT_QUEUE_CHANGED, PRINTER_STATUS_CHANGED, TYPE_POLICIES } from '../../Dashboard/graphql/dashboard'
 import { PRINTERS } from '../../Dashboard/widgets/Printer/fixtures'
+import { GLOBAL_QUEUE_ENABLED, QUEUE_CHANGED } from '../../Queue/graphql/queue'
+import { PRINTER_QUEUE, SET_PRINTER_TAKES_JOBS } from './graphql/printerQueue'
+import { PLA_WHITE, printerQueue } from './printerQueueFixtures'
 
 const { status } = PRINTERS.PRINTING
 const NO_SPECS = {
@@ -40,10 +43,10 @@ const PRINTER = {
   }
 }
 const later = { delay: 60000 }
-// The Loaded Filament card's query (it selects the printer's materials too)
-const filamentMock = ({ specs: { materials } }) => ({
+// The Loaded Filament card's query (it selects the printer's materials too), with the printer's filaments
+const filamentMock = ({ specs: { materials }, loadedFilaments }) => ({
   request: { query: LOADED_FILAMENT, variables: { printerId: '1' } },
-  result: { data: { printer: { __typename: 'Printer', id: '1', specs: { __typename: 'PrinterSpecs', materials }, loadedFilaments: [] }, filamentMaterials: ['PLA', 'PETG'], filamentColours: ['Black'] } }
+  result: { data: { printer: { __typename: 'Printer', id: '1', specs: { __typename: 'PrinterSpecs', materials }, loadedFilaments }, filamentMaterials: ['PLA', 'PETG'], filamentColours: ['Black'] } }
 })
 const identify = (secret, result, options = {}) => ({
   request: {
@@ -67,7 +70,9 @@ const PAGE_MOCKS = [
   { request: { query: PRINTER_STATUS_CHANGED }, result: { data: { printerStatusChanged: PRINTER } }, ...later },
   filamentMock(PRINTER),
   { request: { query: LOADED_FILAMENT_CHANGED }, result: { data: { printerStatusChanged: { __typename: 'Printer', id: '1', loadedFilaments: [] } } }, ...later },
-  { request: { query: PRINT_QUEUE_CHANGED }, result: { data: { printQueueChanged: null } }, ...later }
+  { request: { query: PRINT_QUEUE_CHANGED }, result: { data: { printQueueChanged: null } }, ...later },
+  // The global queue is off
+  { request: { query: GLOBAL_QUEUE_ENABLED }, result: { data: { globalQueue: null } } }
 ]
 const BASE_MOCKS = [...PAGE_MOCKS, ...reportedMocks()]
 
@@ -102,6 +107,18 @@ describe('PrinterDetails', () => {
     expect(screen.getByText(/The saved password is never shown/)).toBeInTheDocument()
     expect(await screen.findByText('PrusaLink 2.1.2 (firmware 6.2.0)')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Save Changes/ })).toBeDisabled()
+  })
+
+  it('shows nothing of the global queue while it is off', async () => {
+    renderPage()
+    expect(await screen.findByRole('heading', { name: 'Loaded Filament' })).toBeInTheDocument()
+    await screen.findByLabelText('Material')
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(screen.queryByRole('switch', { name: 'Taking jobs from the queue' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Up Next for This Printer' })).not.toBeInTheDocument()
+    expect(screen.queryByText(/remove the part/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/waiting job/)).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Printers/ })).toHaveAttribute('href', '/printers/manage')
   })
 
   it('says when there is no such printer', async () => {
@@ -378,5 +395,88 @@ describe('PrinterDetails', () => {
       expect(screen.getByRole('button', { name: /Save Changes/ })).toBeEnabled()
     })
 
+  })
+})
+
+describe('PrinterDetails with the global queue on', () => {
+  const printer = { ...PRINTER, loadedFilaments: [{ ...PLA_WHITE, updatedAt: '2026-11-20T12:00:00Z' }] }
+  const queueAnswer = (answer) => ({ request: { query: PRINTER_QUEUE, variables: { id: '1' } }, result: { data: answer } })
+  // The page of a printer with PLA White loaded (in every query that selects it), the queue on. `queueAnswers`: what
+  // the printer's queue query answers, in turn. `enabledDelay`: how late the check whether the queue is on answers.
+  const renderOn = (queueAnswers = [printerQueue()], mocks = [], { enabledDelay = 0 } = {}) => renderPage(mocks, [
+    { ...PAGE_MOCKS[0], result: { data: { printer } } },
+    ...PAGE_MOCKS.slice(1, -1).map((mock) => (mock.request.query === LOADED_FILAMENT ? filamentMock(printer) : mock)),
+    {
+      request: { query: GLOBAL_QUEUE_ENABLED },
+      result: { data: { globalQueue: { __typename: 'GlobalQueue', dispatchPaused: false } } },
+      delay: enabledDelay
+    },
+    { request: { query: QUEUE_CHANGED }, result: { data: { queueChanged: { __typename: 'QueueChange', dispatchPaused: false } } }, ...later },
+    ...queueAnswers.map(queueAnswer),
+    ...reportedMocks()
+  ])
+
+  it('follows the PrinterQueue frame: back to the queue, the switch, the bed banner, then the lists beside the cards', async () => {
+    renderOn()
+
+    const upNext = await screen.findByRole('region', { name: 'Up Next for This Printer' })
+    expect(screen.getByRole('link', { name: /Print Queue/ })).toHaveAttribute('href', '/queue')
+    expect(screen.getByRole('switch', { name: 'Taking jobs from the queue' })).toBeChecked()
+    const banner = screen.getByRole('region', { name: 'Print finished: remove the part' })
+    expect(banner).toHaveTextContent('bracket.gcode · copy 2 of 10 is done.')
+    const skipped = screen.getByRole('region', { name: 'Skipped by This Printer' })
+
+    // The header, the banner, Up Next and Skipped, then Connection under them; Loaded Filament and About This
+    // Printer in the other column
+    const follows = (a, b) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING)
+    const header = screen.getByRole('heading', { name: 'Prusa MK4' })
+    const connection = screen.getByRole('heading', { name: 'Connection' })
+    const filament = screen.getByRole('heading', { name: 'Loaded Filament' })
+    const about = screen.getByRole('heading', { name: 'About This Printer' })
+    expect(follows(header, banner) && follows(banner, upNext) && follows(upNext, skipped)).toBe(true)
+    expect(follows(skipped, connection) && follows(connection, filament) && follows(filament, about)).toBe(true)
+
+    expect(await screen.findByText('No waiting job asks for PLA White. Any Colour jobs still match.')).toBeInTheDocument()
+    expect(screen.getByText('Set this when you swap spools. The queue matches jobs against it.')).toBeInTheDocument()
+  })
+
+  it('saves Takes Jobs apart from the page\'s form, which it never submits', async () => {
+    const sent = []
+    renderOn([printerQueue(), printerQueue({ ...printerQueue().printer, takesJobs: false })], [{
+      request: { query: SET_PRINTER_TAKES_JOBS, variables: { printerId: '1', takesJobs: false } },
+      result: () => {
+        sent.push({ printerId: '1', takesJobs: false })
+        return {
+          data: {
+            setPrinterTakesJobs: {
+              __typename: 'SetPrinterTakesJobsPayload', success: true, errors: [], printer: { __typename: 'Printer', id: '1', takesJobs: false }
+            }
+          }
+        }
+      }
+    }])
+    await userEvent.type(await screen.findByLabelText('Printer name'), ' left')
+    await userEvent.click(await screen.findByRole('switch', { name: 'Taking jobs from the queue' }))
+
+    await waitFor(() => expect(sent).toEqual([{ printerId: '1', takesJobs: false }]))
+    await waitFor(() => expect(screen.getByRole('switch', { name: 'Not taking jobs' })).not.toBeChecked())
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(screen.queryByText('Changes saved')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Could not save/)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Save Changes/ })).toBeEnabled()
+  })
+
+  it('shows the form once it knows the queue is on, so its fields never move under the person typing', async () => {
+    // The printer answers first: shown in the layout for the queue off, the form would then move to the queue's,
+    // remounting the field being typed in
+    renderOn(undefined, [], { enabledDelay: 100 })
+    const name = await screen.findByLabelText('Printer name')
+    expect(screen.getByRole('link', { name: /Print Queue/ })).toBeInTheDocument()
+
+    await userEvent.type(name, ' left')
+    expect(await screen.findByRole('region', { name: 'Up Next for This Printer' })).toBeInTheDocument()
+    expect(name.isConnected).toBe(true)
+    expect(field('Printer name')).toHaveValue('Prusa MK4 left')
+    expect(screen.getByRole('button', { name: /Save Changes/ })).toBeEnabled()
   })
 })

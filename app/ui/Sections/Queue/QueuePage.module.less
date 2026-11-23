@@ -1,0 +1,215 @@
+// The /queue page: the header over the dispatch banner and the four sections, in a 1180 px column like the fleet
+// list. Colours come from the antd theme (Typography types, Tag presets, theme.useToken in the components): nothing
+// here sets one.
+
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+// Rows of items, and columns of lines
+.header, .tools, .dispatch, .sectionTitle, .fileLine, .copiesSummary, .footerLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.heading, .cell {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.heading {
+  gap: 2px;
+}
+
+.header {
+  gap: 12px;
+  justify-content: space-between;
+  padding-bottom: 4px;
+}
+
+.tools {
+  gap: 16px;
+}
+
+.banner {
+  padding: 16px 24px;
+  align-items: center;
+
+  :global(.ant-alert-title) {
+    font-weight: 600;
+  }
+}
+
+.sectionTitle {
+  gap: 12px;
+  align-items: baseline;
+
+  h2 {
+    margin: 0;
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+  }
+}
+
+.count {
+  font-weight: 400;
+}
+
+// The tables' first and last cells line up with the card's title and tools; their headers are small, like the frames'
+.card :global {
+  .ant-card-head {
+    padding-inline: 24px;
+  }
+
+  .ant-table-wrapper .ant-table .ant-table-thead > tr > th {
+    font-size: 12px;
+    line-height: 20px;
+
+    &::before {
+      display: none;
+    }
+  }
+
+  .ant-table-wrapper .ant-table .ant-table-thead > tr > th,
+  .ant-table-wrapper .ant-table .ant-table-tbody > tr > td {
+    &:first-child {
+      padding-inline-start: 24px;
+    }
+
+    &:last-child {
+      padding-inline-end: 24px;
+    }
+  }
+}
+
+// An offline printer's line, under Available Printers' table
+.footerLine {
+  justify-content: space-between;
+  padding: 12px 24px;
+  border-top: 1px solid var(--ant-color-border-secondary);
+}
+
+.strong {
+  font-weight: 600;
+}
+
+// A printer named in its row: bold, in the text's colour
+.strongLink {
+  font-weight: 600;
+  color: inherit;
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.small {
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.position {
+  font-variant-numeric: tabular-nums;
+}
+
+// The file's name, then its tags: they wrap under it when the column is narrow, like the frames'
+.fileLine {
+  row-gap: 4px;
+  min-width: 0;
+}
+
+.tag {
+  margin-inline-end: 0;
+  flex: none;
+}
+
+// A filament's colour as a dot, before its name
+.filament {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid;
+  flex: none;
+}
+
+// What Happens Next: its mark, then its words (and Release or Load Filament)
+.next {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.nextIcon {
+  flex: none;
+  line-height: 22px;
+}
+
+.nextText {
+  min-width: 0;
+}
+
+.release {
+  margin-inline-start: 8px;
+}
+
+.inlineLink {
+  padding-inline: 0;
+  height: auto;
+}
+
+// The chevron showing a batch's copies
+.expand {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// A batch's copies, under its row
+.copies {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 0 4px 56px;
+}
+
+.copiesSummary {
+  justify-content: space-between;
+}
+
+// The copies' table sits beside the summary (not alone in the expanded row, where antd would indent it)
+.copies .copiesTable.copiesTable :global {
+  .ant-table {
+    background: transparent;
+  }
+
+  .ant-table .ant-table-tbody > tr > td {
+    &, &:first-child, &:last-child {
+      padding: 6px 16px 6px 0;
+    }
+  }
+}

@@ -106,6 +106,16 @@ export const POSSIBLE_TYPES = {
   BuildVolume: ['RectangularBuildVolume', 'CircularBuildVolume']
 }
 
+const FILAMENT_KEYS = ['slot', 'material', 'colour']
+
+// See TYPE_POLICIES.Printer.fields.loadedFilaments
+function mergeLoadedFilaments (existing = [], incoming, { readField, mergeObjects }) {
+  return incoming.map((filament) => {
+    const same = existing.find((old) => FILAMENT_KEYS.every((key) => readField(key, old) === readField(key, filament)))
+    return same ? mergeObjects(same, filament) : filament
+  })
+}
+
 // A status, a layout, widget options and specs have no id of their own. A status keeps the newest snapshot, so a
 // reload that answers late can't overwrite a newer push; specs merge (pages select different fields of them); the
 // others are replaced.
@@ -118,9 +128,22 @@ export const TYPE_POLICIES = {
     )
   },
   PrinterSpecs: { merge: true },
-  // A list without ids, always sent whole: replaced, even by a shorter one (a removed filament)
-  Printer: { fields: { loadedFilaments: { merge: false } } },
+  Printer: {
+    fields: {
+      // A list without ids, always sent whole: replaced, even by a shorter one (a removed filament), in the incoming
+      // order. A filament sent again unchanged (same slot, material and colour) keeps the fields the incoming
+      // selection lacks: the Loaded Filament card and its printerStatusChanged push don't select
+      // waitingJobsAskingCount, the printer page's queue query does, and would otherwise lose it on every push. A
+      // changed filament starts over: the count was for the old one (the queue query refetches what it misses).
+      loadedFilaments: { merge: mergeLoadedFilaments },
+      // Lists the printer page refetches whole: replaced, even by a shorter one
+      upNext: { merge: false },
+      skipped: { merge: false }
+    }
+  },
   Dashboard: { merge: false },
+  // No id, one per fleet: the menu's flag check (dispatchPaused alone) and the queue page's sections merge into it
+  GlobalQueue: { merge: true },
   PrinterWidgetOptions: { merge: false },
   PrintQueueWidgetOptions: { merge: false }
 }

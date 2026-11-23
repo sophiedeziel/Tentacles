@@ -1,5 +1,7 @@
 // The printer details page, as in the mockup: the header over the cards, Connection, Loaded Filament and Remove on
-// the left, About This Printer on the right
+// the left, About This Printer on the right. While the global queue is on, the PrinterQueue frame's: the bed banner
+// under the header, then the queue's lists (with Connection and Remove) in the wide column, Loaded Filament and About
+// This Printer in the narrow one.
 
 @muted: rgba(0, 0, 0, 0.65);
 @purple: #722ed1;
@@ -12,7 +14,7 @@
   gap: 12px;
 }
 
-.header, .title, .buttons, .columns, .serverRow, .versionRow, .removeCard {
+.header, .title, .buttons, .columns, .serverRow, .versionRow, .removeCard, .bedBanner, .queueLine {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -25,7 +27,7 @@
   padding-bottom: 4px;
 }
 
-.heading, .side, .removeText {
+.heading, .side, .removeText, .bedText, .queueMain, .queueSide, .queueCell {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -208,4 +210,97 @@
   align-items: center;
   justify-content: space-between;
   margin-top: 16px;
+}
+
+// The printer's part of the global queue (PrinterQueue.jsx). The takes-jobs switch in the header, its words beside
+// it; the bed banner (its colours from the theme, inline); the two columns.
+.takesJobs {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 32px;
+  margin-inline-end: 8px;
+  cursor: pointer;
+}
+
+.bedBanner {
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 24px;
+  border: 1px solid;
+  border-radius: 8px;
+}
+
+.bedText {
+  flex: 1 1 320px;
+  gap: 2px;
+}
+
+.queueMain {
+  flex: 1.6 1 480px;
+  gap: 12px;
+}
+
+.queueSide {
+  flex: 1 1 320px;
+  gap: 12px;
+}
+
+.queueCell {
+  gap: 0;
+}
+
+.queueLine {
+  flex-wrap: nowrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.tag {
+  margin-inline-end: 0;
+}
+
+// "#12" on one line
+.position {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+// About This Printer in the narrow column: its rows of three fields take two columns, its switches one, and the
+// build volume's fields share the row
+.narrow {
+  .grid3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .switches {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .switchBox {
+    margin-bottom: 12px;
+  }
+
+  .volume {
+    flex-wrap: nowrap;
+  }
+
+  .dimension {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+  }
+}
+
+// Loaded Filament's hint, under its fields
+.filamentHint {
+  display: block;
+  margin: -12px 0 8px;
 }

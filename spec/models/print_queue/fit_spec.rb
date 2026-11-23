@@ -41,7 +41,7 @@ RSpec.describe PrintQueue::Fit do
     it 'is ready after a reconnect when offline, with the filament to change after the reason' do
       expect(answer(fit(needs, status: nil))).to eq [:after_reconnect, [
         { code: :offline, message: 'Offline' },
-        { code: :wrong_material, message: 'Loaded PETG Black, needs PLA' }
+        { code: :wrong_material, message: 'Needs PLA. PETG is loaded here' }
       ]]
     end
 
@@ -53,7 +53,7 @@ RSpec.describe PrintQueue::Fit do
 
     it 'is ready after a filament change when online with the wrong filament' do
       expect(answer(fit(needs))).to eq [:after_filament_change, [
-        { code: :wrong_material, message: 'Loaded PETG Black, needs PLA' }
+        { code: :wrong_material, message: 'Needs PLA. PETG is loaded here' }
       ]]
     end
 
@@ -62,6 +62,21 @@ RSpec.describe PrintQueue::Fit do
 
       expect(answer(result)).to eq [:ready, [{ code: :filament_matches, message: 'Loaded PETG Black matches' }]]
       expect(result).to be_ready
+    end
+  end
+
+  describe '#filament_loaded?' do
+    before { load('PLA', 'Black') }
+
+    it 'is true when ready, or offline with nothing else in the way' do
+      expect(fit(needs)).to be_filament_loaded
+      expect(fit(needs, status: nil)).to be_filament_loaded
+    end
+
+    it 'is false when a filament change is needed, online or not, or when it cannot print' do
+      expect(fit(needs(materials: ['PETG']))).not_to be_filament_loaded
+      expect(fit(needs(materials: ['PETG']), status: nil)).not_to be_filament_loaded
+      expect(fit(needs(width: 300, depth: 100))).not_to be_filament_loaded
     end
   end
 
@@ -111,7 +126,7 @@ RSpec.describe PrintQueue::Fit do
       load('PLA', 'Black')
 
       expect(answer(fit(needs(colour: 'Red')))).to eq [:after_filament_change, [
-        { code: :wrong_colour, message: 'Loaded PLA Black, needs PLA Red' }
+        { code: :wrong_colour, message: 'Needs PLA Red. PLA Black is loaded here' }
       ]]
     end
 
@@ -119,13 +134,13 @@ RSpec.describe PrintQueue::Fit do
       load('PETG', 'Red')
 
       expect(answer(fit(needs(colour: 'Red')))).to eq [:after_filament_change, [
-        { code: :wrong_material, message: 'Loaded PETG Red, needs PLA Red' }
+        { code: :wrong_material, message: 'Needs PLA Red. PETG is loaded here' }
       ]]
     end
 
     it 'asks for a filament when nothing is loaded' do
       expect(answer(fit(needs))).to eq [:after_filament_change, [
-        { code: :no_filament, message: 'No filament loaded, needs PLA' }
+        { code: :no_filament, message: 'Needs PLA. No filament is loaded here' }
       ]]
     end
 
@@ -146,13 +161,13 @@ RSpec.describe PrintQueue::Fit do
         load('PETG', 'Black')
 
         expect(answer(fit(needs(materials: [nil], colour: 'Red')))).to eq [:after_filament_change, [
-          { code: :wrong_colour, message: 'Loaded PETG Black, needs Red' }
+          { code: :wrong_colour, message: 'Needs Red. PETG Black is loaded here' }
         ]]
       end
 
       it 'asks for a filament of that colour when nothing is loaded' do
         expect(answer(fit(needs(materials: [nil], colour: 'Red')))).to eq [:after_filament_change, [
-          { code: :no_filament, message: 'No filament loaded, needs Red' }
+          { code: :no_filament, message: 'Needs Red. No filament is loaded here' }
         ]]
       end
     end
@@ -175,7 +190,7 @@ RSpec.describe PrintQueue::Fit do
         load('PLA', 'Black')
 
         expect(answer(fit(PrintQueue::Needs.new(colour: 'Red')))).to eq [:after_filament_change, [
-          { code: :wrong_colour, message: 'Loaded PLA Black, needs Red' }
+          { code: :wrong_colour, message: 'Needs Red. PLA Black is loaded here' }
         ]]
       end
     end
@@ -195,7 +210,7 @@ RSpec.describe PrintQueue::Fit do
         load('PLA', 'White', slot: 2)
 
         expect(answer(fit(needs(materials: %w[PLA PETG])))).to eq [:after_filament_change, [
-          { code: :wrong_material, message: 'Slot 2: Loaded PLA White, needs PETG' }
+          { code: :wrong_material, message: 'Slot 2: Needs PETG. PLA is loaded here' }
         ]]
         expect(fit(needs(materials: %w[PLA PLA])).reasons.map(&:message)).to eq [
           'Slot 1: Loaded PLA Black matches', 'Slot 2: Loaded PLA White matches'

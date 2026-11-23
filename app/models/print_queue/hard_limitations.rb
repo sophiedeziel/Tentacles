@@ -81,16 +81,18 @@ module PrintQueue
       reason(:too_few_tools, "Needs #{needed} tools, has #{available}")
     end
 
-    # The known materials the printer's list leaves out, when it lists some
+    # The known materials the printer's list leaves out, when it lists some. A printer saved before the column had its
+    # [] default reads nil: no list.
     #: -> PrintQueue::Reason?
     def materials
-      printed = printer.materials.map { |material| Filament.material_key(material) }
+      listed = Array(printer.materials)
+      printed = listed.map { |material| Filament.material_key(material) }
       return if printed.empty?
 
       missing = needs.tools.filter_map(&:material).uniq - printed
       return if missing.empty?
 
-      reason(:material_not_printed, "Doesn't print #{missing.join(', ')} (prints #{printer.materials.join(', ')})")
+      reason(:material_not_printed, "Doesn't print #{missing.join(', ')} (prints #{listed.join(', ')})")
     end
 
     # Whether a needed value is larger than what the printer has, both known

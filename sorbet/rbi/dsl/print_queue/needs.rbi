@@ -27,6 +27,12 @@ class PrintQueue::Needs
     sig { params(value: T.untyped).returns(T.untyped) }
     def filament_changes=(value); end
 
+    sig { returns(T.untyped) }
+    def footprint; end
+
+    sig { params(value: T.untyped).returns(T.untyped) }
+    def footprint=(value); end
+
     sig { returns(T.nilable(::BigDecimal)) }
     def height; end
 

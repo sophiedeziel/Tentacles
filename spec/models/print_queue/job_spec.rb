@@ -107,6 +107,25 @@ RSpec.describe PrintQueue::Job do
       expect(PrintQueue::JobPrinter.count).to eq 0
       expect(Printer.exists?(printer.id)).to be true
     end
+
+    describe '#open_to?' do
+      let(:other) { create(:printer) }
+
+      it 'is open to every printer when all capable, and to the listed ones otherwise' do
+        expect(create(:print_job).open_to?(other)).to be true
+
+        limited = create(:print_job, all_capable: false, printers: [printer])
+        expect([limited.open_to?(printer), limited.open_to?(other)]).to eq [true, false]
+      end
+
+      it 'is open to the printer a same-printer batch is bound to only, and to any while it is not bound' do
+        bound = create(:print_job, same_printer: true, bound_printer: printer)
+
+        expect([bound.open_to?(printer), bound.open_to?(other)]).to eq [true, false]
+        expect(create(:print_job, same_printer: true).open_to?(other)).to be true
+        expect(create(:print_job, bound_printer: printer).open_to?(other)).to be true
+      end
+    end
   end
 
   describe 'copies' do

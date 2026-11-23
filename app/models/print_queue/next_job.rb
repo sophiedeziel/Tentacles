@@ -52,12 +52,10 @@ module PrintQueue
     end
 
     # Whether the entry may go to this printer, before its fit: copies waiting, not held, its summary read (not
-    # pending), allowed on this printer (all_capable, or listed), and not bound to another printer (a same-printer
-    # batch bound to this printer, or not bound yet, is fine)
+    # pending), and open to this printer (PrintQueue::Job#open_to?: allowed on it, not bound to another one)
     #: (PrintQueue::Job entry) -> bool
     def eligible?(entry)
-      entry.waiting_count.positive? && !entry.held? && needs(entry).runnable? &&
-        allowed?(entry) && unbound_or_here?(entry)
+      entry.waiting_count.positive? && !entry.held? && needs(entry).runnable? && entry.open_to?(printer)
     end
 
     # How the entry fits this printer
@@ -80,17 +78,6 @@ module PrintQueue
     def needs(entry)
       @needs ||= {} #: Hash[Integer, PrintQueue::Needs]?
       @needs[entry.id] ||= entry.needs
-    end
-
-    # From the preloaded job_printers: no query
-    #: (PrintQueue::Job entry) -> bool
-    def allowed?(entry)
-      entry.all_capable? || entry.job_printers.any? { |job_printer| job_printer.printer_id == printer.id }
-    end
-
-    #: (PrintQueue::Job entry) -> bool
-    def unbound_or_here?(entry)
-      !entry.same_printer? || entry.bound_printer_id.nil? || entry.bound_printer_id == printer.id
     end
   end
 end

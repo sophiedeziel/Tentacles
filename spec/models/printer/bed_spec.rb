@@ -98,6 +98,23 @@ RSpec.describe Printer::Bed do
     end
   end
 
+  describe '.beds_to_clear' do
+    it 'returns nothing without a query for no printers' do
+      allow(Printer::Job).to receive(:where).and_call_original
+
+      expect(Printer.beds_to_clear([])).to eq({})
+      expect(Printer::Job).not_to have_received(:where)
+    end
+
+    it 'gives the print on the bed of each printer that has one, by printer id, agreeing with #bed_to_clear' do
+      to_clear = printer_with(finished(2.hours.ago), finished)
+      cleared = printer_with(finished(bed_cleared_at: Time.current, bed_cleared_by: 'person'))
+      printing = printer_with(finished, under_way(1.minute.ago))
+
+      expect(Printer.beds_to_clear([to_clear, cleared, printing].map(&:id))).to eq(to_clear.id => to_clear.bed_to_clear)
+    end
+  end
+
   describe '.ids_with_bed_to_clear' do
     it 'returns an empty set without a query for no printers' do
       allow(Printer::Job).to receive(:where).and_call_original
