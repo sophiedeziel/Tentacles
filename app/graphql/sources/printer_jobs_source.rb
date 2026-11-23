@@ -9,13 +9,27 @@ module Sources
   class PrinterJobsSource < GraphQL::Dataloader::Source
     STATUSES = %w[enqueued active].freeze
 
-    class Queue < T::Struct
+    # A printer's queue, read-only
+    class Queue
       # How many jobs wait in the printer's queue
-      const :enqueued_count, Integer
+      #: Integer
+      attr_reader :enqueued_count
+
       # The first job of the queue (Printer#next_job), nil when the queue is empty
-      const :next_job, T.nilable(::Printer::Job)
+      #: ::Printer::Job?
+      attr_reader :next_job
+
       # Whether the printer has a job under way
-      const :active, T::Boolean
+      #: bool
+      attr_reader :active
+
+      #: (enqueued_count: Integer, next_job: ::Printer::Job?, active: bool) -> void
+      def initialize(enqueued_count:, next_job:, active:)
+        @enqueued_count = enqueued_count
+        @next_job = next_job
+        @active = active
+        freeze
+      end
 
       # Whether the printer's queue has at least one job
       #: -> bool
