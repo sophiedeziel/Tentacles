@@ -165,17 +165,19 @@ RSpec.describe PrintQueue::Connector::Fake, 'running the global queue' do
           allow(print).to receive(:log)
         end
       end
-      # The spool ends the copy: once PrintEnd (and the dispatch pass it asks for) is done, the story goes on
+      # The spool ends the copy: once PrintEnd (and the dispatch pass it asks for) is done, the story goes on. Set here,
+      # not in a lazy let: the spool's thread is the first to push to it
+      @copy_ended = Thread::Queue.new
       allow(PrintQueue::PrintEnd).to receive(:new).and_wrap_original do |original, **attributes|
         original.call(**attributes).tap do |print_end|
           allow(print_end).to receive(:save!).and_wrap_original do |save|
-            save.call.tap { @copy_ended = true }
+            save.call.tap { @copy_ended.push(true) }
           end
         end
       end
     end
 
-    after { @spool.instance_variable_get(:@thread).kill.join if @spool }
+    after { @spool&.discard }
 
     # The printer reports Printing, then Operational, which its monitor sees too (PrinterReady). At each poll, a
     # dispatch pass runs (the sweep): what it dispatched is recorded.
@@ -193,7 +195,7 @@ RSpec.describe PrintQueue::Connector::Fake, 'running the global queue' do
     # ended
     def restart_spooler(printer)
       @spool = Spooler::Spool.new(Printer.find(printer.id))
-      Timeout.timeout(5) { Thread.pass until @copy_ended }
+      @copy_ended.pop(timeout: 5) || raise('The spool did not end the copy within 5 s')
     end
 
     it 'adopts the copy under way without sending it again; once it ends and the bed is cleared, the next copy goes' do

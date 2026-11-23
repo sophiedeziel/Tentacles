@@ -45,9 +45,10 @@ RSpec.describe PrintQueue::Connector::Spooler do
     pause: Printer::Pause, resume: Printer::Resumption, cancel: Printer::Cancellation
   }.each do |method, command_class|
     describe "##{method}" do
-      it "saves a #{command_class.name} for the copy's printer and returns it" do
+      it "saves a #{command_class.name} for the copy's printer, guarded by the copy's file name, and returns it" do
         command = instance_double(command_class, save: false)
-        allow(command_class).to receive(:new).with(printer: printer_job.printer).and_return(command)
+        allow(command_class).to receive(:new)
+          .with(printer: printer_job.printer, expected_file_name: printer_job.name).and_return(command)
 
         expect(connector.public_send(method, printer_job)).to eq command
         expect(command).to have_received(:save)

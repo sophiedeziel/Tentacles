@@ -31,6 +31,10 @@ module PrintQueue
     # yourself (PrintQueue::Dispatch.new.save!). PrintQueue.connector= only swaps the connector of the process it runs
     # in: a spooler running elsewhere starts its copies on the real printers.
     #
+    # Play it on a throwaway printer (one added for the purpose, with no real printer behind it). The out side writes
+    # Printer::Status snapshots to the shared Redis and pushes them to the live subscriptions: on a real printer whose
+    # monitor is running, the dashboard would flicker between the fake state and the real one.
+    #
     # In app/models rather than spec/support so the console can load it too.
     class Fake < Connector
       # The message pause, resume and cancel are refused with, nil to accept them

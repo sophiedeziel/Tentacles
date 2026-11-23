@@ -8,15 +8,19 @@ RSpec.describe Spooler::Spool do
   let(:spool) { described_class.new(printer) }
 
   # Spool.new starts its operations thread right away: it only spins while the spool isn't active
-  after { spool.instance_variable_get(:@thread).kill.join }
+  after { spool.discard }
 
   # Starts the spool and waits for its thread to be in its loop, past the adoption of a copy under way (the global
   # queue on): the examples then run the spool's steps themselves. The thread finds no job meanwhile.
   def start_spool
-    in_loop = false
-    allow(printer).to receive(:next_job) { in_loop = true and nil }
+    in_loop = Thread::Queue.new
+    # The loop asks for a job over and over: one signal is enough
+    allow(printer).to receive(:next_job) do
+      in_loop.push(true) if in_loop.empty?
+      nil
+    end
     spool.resume
-    Timeout.timeout(5) { Thread.pass until in_loop }
+    in_loop.pop(timeout: 5) || raise('The spool did not reach its loop within 5 s')
   end
 
   describe '#working?' do
