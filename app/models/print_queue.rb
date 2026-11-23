@@ -16,6 +16,14 @@
 #   PrintQueue::NextJob.for(printer).job             # => a PrintQueue::Job, or nil
 #   PrintQueue::Readiness.for(printer).idle_reason   # => nil, or :offline, :busy, :nothing_eligible, ...
 #
+# The operations change the queue (see PrintQueue::Operation): PrintQueue::Addition, Move, Hold, Release,
+# CopiesChange, WaitingCopiesRemoval, PrinterBinding, PrinterBindingRelease, DispatchPause, DispatchResumption and
+# CopyCancellation. Each pushes PrintQueue.push_changed once, then asks for a dispatch pass (PrintQueue::DispatchRequest)
+# when it can make a printer eligible:
+#
+#   addition = PrintQueue::Addition.new(item:, copies: 3)
+#   addition.save # => false, with errors[:base], when refused
+#
 # The tables are print_jobs, print_job_printers and print_queue_settings (each model sets its table_name).
 module PrintQueue
   # Whether the global queue is on (config.x.global_print_queue, from GLOBAL_PRINT_QUEUE). Specs stub this.

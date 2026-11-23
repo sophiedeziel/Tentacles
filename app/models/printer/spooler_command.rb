@@ -19,6 +19,9 @@ class Printer
       StopPrint = new('stop_print')
       # Resumes the printer's spool. Nothing in the app sends it.
       Resume = new('resume')
+      # The global queue changed: the spooler runs a dispatch pass (PrintQueue::DispatchRequest). For the whole queue:
+      # `{ "command": "dispatch" }`, without a printer_id
+      Dispatch = new('dispatch')
     end
   end
 end

@@ -43,6 +43,8 @@ class Spooler
     command = Printer::SpoolerCommand.deserialize(message.delete(:command))
     # The printer is already deleted: it can't be read
     return remove_printer(message[:printer_id]) if command == Printer::SpoolerCommand::RemovePrinter
+    # For the whole queue, not a printer. The dispatch pass comes with the dispatcher (global queue phase 3, PR 4)
+    return log('dispatch: not handled yet') if command == Printer::SpoolerCommand::Dispatch
 
     printer = Printer.find(message[:printer_id])
     send_command(printer, command, message)
@@ -59,7 +61,8 @@ class Spooler
     log "Removed printer #{printer_id}"
   end
 
-  # The commands for a printer that still exists: remove_printer is handled by #handle_message, before the lookup.
+  # The commands for a printer that still exists: remove_printer and dispatch are handled by #handle_message, before
+  # the lookup.
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
   #: (

@@ -26,6 +26,35 @@ RSpec.describe PrintQueue::Setting do
     end
   end
 
+  describe '.lock_current' do
+    it 'reads the row, locked' do
+      setting = create(:print_queue_setting, dispatch_paused: true)
+
+      described_class.transaction do
+        expect(described_class.lock_current).to eq setting
+      end
+    end
+
+    it 'locks it FOR UPDATE' do
+      create(:print_queue_setting)
+      queries = []
+      callback = ->(*, payload) { queries << payload[:sql] }
+
+      ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+        described_class.transaction { described_class.lock_current }
+      end
+
+      expect(queries).to include(/print_queue_settings.*FOR UPDATE/)
+    end
+
+    it 'creates the row with the defaults when there is none' do
+      described_class.transaction do
+        expect { described_class.lock_current }.to change(described_class, :count).from(0).to(1)
+      end
+      expect(described_class.current).to have_attributes(id: described_class::ID, dispatch_paused: false)
+    end
+  end
+
   describe '.dispatch_paused?' do
     it 'is false until the dispatch is paused' do
       expect(described_class.dispatch_paused?).to be false
