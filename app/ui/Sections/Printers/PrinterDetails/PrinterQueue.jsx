@@ -71,8 +71,9 @@ const positionColumn = (jobOf) => ({
   render: (_, row) => <Muted>{jobOf(row).waitingPosition}</Muted>
 })
 
-// The waiting jobs this printer can take, in queue order (held ones too, with Release)
-function UpNext ({ jobs, onRelease }) {
+// The waiting jobs this printer can take, in queue order (held ones too, with Release). What Happens Next is said
+// from this printer's page ("Starts once the bed is cleared") for the jobs lined up for it.
+function UpNext ({ jobs, printerId, onRelease }) {
   const columns = [
     positionColumn((job) => job),
     { key: 'file', title: 'File', render: (_, job) => <JobFile job={job} /> },
@@ -81,7 +82,7 @@ function UpNext ({ jobs, onRelease }) {
       key: 'next',
       title: 'What Happens Next',
       width: 280,
-      render: (_, job) => <WhatHappensNextCell job={job} onRelease={onRelease} />
+      render: (_, job) => <WhatHappensNextCell job={job} printerId={printerId} onRelease={onRelease} />
     }
   ]
 
@@ -132,7 +133,7 @@ export default function PrinterQueue ({ printer, dispatchPaused, reload }) {
     <div className={classes.queue}>
       {printer.bedNeedsClearing && <BedBanner printer={printer} onBedCleared={askBedCleared} />}
       <TakesJobs printer={printer} reload={reload} />
-      <UpNext jobs={printer.upNext} onRelease={actions.release} />
+      <UpNext jobs={printer.upNext} printerId={printer.id} onRelease={actions.release} />
       {printer.skipped.length > 0 && <Skipped rows={printer.skipped} />}
       {bedCleared.modal}
     </div>
@@ -165,7 +166,11 @@ const printerShape = PropTypes.shape({
 BedBanner.propTypes = { printer: printerShape.isRequired, onBedCleared: PropTypes.func.isRequired }
 TakesJobs.propTypes = { printer: printerShape.isRequired, reload: PropTypes.func.isRequired }
 JobFile.propTypes = { job: jobShape.isRequired }
-UpNext.propTypes = { jobs: PropTypes.arrayOf(jobShape).isRequired, onRelease: PropTypes.func.isRequired }
+UpNext.propTypes = {
+  jobs: PropTypes.arrayOf(jobShape).isRequired,
+  printerId: PropTypes.string.isRequired,
+  onRelease: PropTypes.func.isRequired
+}
 Skipped.propTypes = { rows: PropTypes.arrayOf(skippedShape).isRequired }
 PrinterQueue.propTypes = {
   printer: printerShape.isRequired,

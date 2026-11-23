@@ -62,11 +62,11 @@ describe('PrinterQueue', () => {
 
       await userEvent.click(within(banner).getByRole('button', { name: 'Bed Cleared' }))
       const dialog = await screen.findByRole('dialog')
-      expect(dialog).toHaveTextContent('Bed cleared on Prusa MK4?')
-      expect(dialog).toHaveTextContent('Check that bracket.gcode and any leftover filament are off the bed.')
-      expect(dialog).toHaveTextContent('Prusa MK4 can then take the next job in the queue.')
+      expect(dialog).toHaveTextContent('Is the bed of Prusa MK4 clear?')
+      expect(dialog).toHaveTextContent('It starts printing as soon as it can pick a job from the queue.')
+      expect(dialog).toHaveTextContent('Check that the part and any leftover filament are off the bed first.')
 
-      await userEvent.click(within(dialog).getByRole('button', { name: 'Bed Cleared' }))
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Bed Is Clear' }))
       await waitFor(() => expect(confirm.sent).toEqual([{ printerId: '1' }]))
       await waitFor(() => expect(reload).toHaveBeenCalled())
     })
@@ -77,8 +77,7 @@ describe('PrinterQueue', () => {
       expect(screen.getByRole('alert')).toHaveTextContent('The last print is still on the bed')
       await userEvent.click(screen.getByRole('button', { name: 'Bed Cleared' }))
       const dialog = await screen.findByRole('dialog')
-      expect(dialog).toHaveTextContent('Check that the last print and any leftover filament are off the bed.')
-      expect(dialog).toHaveTextContent("Prusa MK4 isn't taking jobs, so it won't start the next one.")
+      expect(dialog).toHaveTextContent("Prusa MK4 isn't taking jobs from the queue, so it won't start the next one.")
     })
 
     it('is not shown once the bed is clear', () => {
@@ -127,16 +126,17 @@ describe('PrinterQueue', () => {
 
       const single = row('Up Next for This Printer', '11')
       expect(within(single).getByRole('link', { name: 'phone_stand.gcode' })).toHaveAttribute('href', '/files/20')
-      expect(within(single).getByText('PLA Black')).toBeInTheDocument()
+      expect(within(single).getByText('PLA · Black')).toBeInTheDocument()
       expect(within(single).getByText('120 × 80 mm')).toBeInTheDocument()
-      expect(within(single).getByText('Goes to the next ready printer')).toBeInTheDocument()
+      expect(within(single).getByText('Prusa Mini+ takes it once its bed is cleared')).toBeInTheDocument()
       expect(within(single).queryByText('Same printer')).not.toBeInTheDocument()
 
       const batch = row('Up Next for This Printer', '12')
       expect(within(batch).getByText('× 3 · 1 left to start')).toBeInTheDocument()
       expect(within(batch).getByText('Same printer')).toBeInTheDocument()
-      expect(within(batch).getByText('T0 PETG Any colour')).toBeInTheDocument()
-      expect(within(batch).getByText('Prusa MK4 prints the next copy when the current one finishes')).toBeInTheDocument()
+      expect(within(batch).getByText('T0 PETG · Any colour')).toBeInTheDocument()
+      // Its own printer: said from this page
+      expect(within(batch).getByText('Prints copy 3 when copy 2 finishes')).toBeInTheDocument()
     })
 
     it('says a held job is on hold until released, and releases it', async () => {
