@@ -40,10 +40,11 @@ describe('bedClearedText', () => {
   })
 })
 
-// A page with one printer to clear, as the printer page uses it
-function Page ({ onDone, dispatchPaused = false }) {
+// A page with one printer to clear, as the printer page uses it. `printOnBed`: the print its bed holds, as the page
+// shows it now
+function Page ({ onDone, dispatchPaused = false, printOnBed = { id: '31' } }) {
   const bedCleared = useBedCleared({ dispatchPaused, onDone })
-  const printer = { id: '1', name: 'Prusa MK4', takesJobs: true, takesNext: { ...BRACKET, copiesLeftToStart: 10 } }
+  const printer = { id: '1', name: 'Prusa MK4', takesJobs: true, takesNext: { ...BRACKET, copiesLeftToStart: 10 }, printOnBed }
   return (
     <>
       <Button onClick={() => bedCleared.ask(printer)}>Bed Cleared</Button>
@@ -52,28 +53,32 @@ function Page ({ onDone, dispatchPaused = false }) {
   )
 }
 
-Page.propTypes = { onDone: PropTypes.func, dispatchPaused: PropTypes.bool }
+Page.propTypes = { onDone: PropTypes.func, dispatchPaused: PropTypes.bool, printOnBed: PropTypes.object }
 
+// The page, answering confirmBedCleared for print 31 with `result`: what was sent, and `rerender(props)` to show the
+// page again with other props
 const renderPage = (result, props = {}) => {
   const sent = []
-  render(
+  const variables = { printerId: '1', expectedPrintId: '31' }
+  const page = (pageProps) => (
     <MockedProvider mocks={[{
-      request: { query: CONFIRM_BED_CLEARED, variables: { printerId: '1' } },
+      request: { query: CONFIRM_BED_CLEARED, variables },
       result: () => {
-        sent.push({ printerId: '1' })
+        sent.push(variables)
         return { data: { confirmBedCleared: { __typename: 'ConfirmBedClearedPayload', ...result } } }
       }
     }]}>
-      <App><Page {...props} /></App>
+      <App><Page {...pageProps} /></App>
     </MockedProvider>
   )
-  return sent
+  const { rerender } = render(page(props))
+  return { sent, rerender: (newProps) => rerender(page(newProps)) }
 }
 
 describe('useBedCleared', () => {
   it('opens the modal for a printer, confirms, then runs onDone', async () => {
     let done = 0
-    const sent = renderPage({ success: true, errors: [] }, { onDone: () => { done += 1 } })
+    const { sent } = renderPage({ success: true, errors: [] }, { onDone: () => { done += 1 } })
 
     await userEvent.click(screen.getByRole('button', { name: 'Bed Cleared' }))
     const dialog = await screen.findByRole('dialog')
@@ -82,7 +87,7 @@ describe('useBedCleared', () => {
     expect(dialog).toHaveTextContent('Check that the part and any leftover filament are off the bed first.')
 
     await userEvent.click(within(dialog).getByRole('button', { name: 'Bed Is Clear' }))
-    await waitFor(() => expect(sent).toEqual([{ printerId: '1' }]))
+    await waitFor(() => expect(sent).toEqual([{ printerId: '1', expectedPrintId: '31' }]))
     await waitFor(() => expect(done).toBe(1))
   })
 
@@ -95,7 +100,7 @@ describe('useBedCleared', () => {
   })
 
   it('sends nothing when the person has not cleared it yet', async () => {
-    const sent = renderPage({ success: true, errors: [] })
+    const { sent } = renderPage({ success: true, errors: [] })
 
     await userEvent.click(screen.getByRole('button', { name: 'Bed Cleared' }))
     await userEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Not Yet' }))
@@ -103,11 +108,24 @@ describe('useBedCleared', () => {
     expect(sent).toEqual([])
   })
 
-  it('shows why the server refused', async () => {
-    renderPage({ success: false, errors: [{ __typename: 'UserError', field: null, message: 'Nothing to clear on Prusa MK4' }] })
+  it('clears the print it was opened for, even when the page shows a newer one since', async () => {
+    const { sent, rerender } = renderPage({ success: true, errors: [] })
+
+    await userEvent.click(screen.getByRole('button', { name: 'Bed Cleared' }))
+    const dialog = await screen.findByRole('dialog')
+    rerender({ printOnBed: { id: '32' } })
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Bed Is Clear' }))
+    await waitFor(() => expect(sent).toEqual([{ printerId: '1', expectedPrintId: '31' }]))
+  })
+
+  it('shows why the server refused (the bed now holds another print), then reloads', async () => {
+    let done = 0
+    const refusal = "Prusa MK4's bed now holds another print: bracket_v3.gcode, copy 3 of 10. Check it before clearing the bed."
+    renderPage({ success: false, errors: [{ __typename: 'UserError', field: null, message: refusal }] }, { onDone: () => { done += 1 } })
 
     await userEvent.click(screen.getByRole('button', { name: 'Bed Cleared' }))
     await userEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Bed Is Clear' }))
-    expect(await screen.findByText('Nothing to clear on Prusa MK4')).toBeInTheDocument()
+    expect(await screen.findByText(refusal)).toBeInTheDocument()
+    await waitFor(() => expect(done).toBe(1))
   })
 })

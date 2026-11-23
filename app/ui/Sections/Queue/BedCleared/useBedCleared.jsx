@@ -10,9 +10,11 @@ import BedClearedModal from './BedClearedModal'
 //   <Button onClick={() => bedCleared.ask(printer)}>Bed Cleared</Button>
 //   {bedCleared.modal}
 //
-// `ask(printer)` opens the modal for `printer` ({ id, name, takesJobs, takesNext }: takesNext, the job it takes next,
-// is named as "Next for it"); what it says is frozen when it opens. Bed Cleared sends confirmBedCleared(printerId); a
-// refusal shows as a message. `onDone` runs after, either way (the page reloads).
+// `ask(printer)` opens the modal for `printer` ({ id, name, takesJobs, takesNext, printOnBed }: takesNext, the job it
+// takes next, is named as "Next for it"; printOnBed is the print on its bed the page shows). What it says and the print
+// it clears are frozen when it opens: Bed Cleared sends confirmBedCleared(printerId, expectedPrintId: that print's id),
+// so a modal left open never clears a newer print. A refusal (the bed now holds another print) shows the server's
+// message. `onDone` runs after, either way (the page reloads).
 export default function useBedCleared ({ dispatchPaused = false, onDone } = {}) {
   const run = useQueueMutation(onDone)
   const [asked, setAsked] = useState(null)
@@ -29,7 +31,9 @@ export default function useBedCleared ({ dispatchPaused = false, onDone } = {}) 
     if (busy.current) return
     busy.current = true
     setConfirming(true)
-    await run(CONFIRM_BED_CLEARED, { printerId: asked.printer.id }, 'confirmBedCleared', { failure: 'Bed Cleared failed' })
+    const { printer } = asked
+    await run(CONFIRM_BED_CLEARED, { printerId: printer.id, expectedPrintId: printer.printOnBed.id }, 'confirmBedCleared',
+      { failure: 'Bed Cleared failed' })
     busy.current = false
     setConfirming(false)
     setOpen(false)

@@ -140,7 +140,7 @@ function QueueContent () {
           <>
             <AvailablePrinters toClear={queue.printersToClear} available={queue.availablePrinters}
               offline={queue.offlinePrinters} paused={paused}
-              renderAction={(printer, { toClear }) => toClear && (
+              renderAction={(printer, { toClear }) => toClear && printer.printOnBed && (
                 <Button type="primary" size="small" onClick={() => bedCleared.ask(printer)}>Bed Cleared</Button>
               )}
               renderOfflineAction={(printer) => canReconnect(printer) && (

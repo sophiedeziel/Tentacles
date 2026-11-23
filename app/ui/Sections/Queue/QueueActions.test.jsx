@@ -14,7 +14,7 @@ import {
 } from './graphql/actions'
 import { ACTIONS } from '../Dashboard/graphql/actions'
 import { POSSIBLE_TYPES, PRINT_QUEUE_CHANGED, PRINTER_STATUS_CHANGED, TYPE_POLICIES } from '../Dashboard/graphql/dashboard'
-import { BATCH, HELD, KOBRA, MK4, print, queue, waitingJob } from './fixtures'
+import { BATCH, HELD, KOBRA, MINI, MK4, print, printOnBed, queue, waitingJob } from './fixtures'
 
 const later = { delay: 60000 }
 const always = { maxUsageCount: Number.POSITIVE_INFINITY }
@@ -596,7 +596,7 @@ describe('Bed Cleared on a printer with its bed to clear', () => {
   }
 
   it('asks whether the bed is clear, says what the printer takes next, then confirms', async () => {
-    const confirm = mutation(CONFIRM_BED_CLEARED, 'confirmBedCleared', { printerId: '4' })
+    const confirm = mutation(CONFIRM_BED_CLEARED, 'confirmBedCleared', { printerId: '4', expectedPrintId: '33' })
     const dialog = await clear([queue(), queue({ printersToClear: [] })], [confirm.mock])
 
     expect(dialog).toHaveTextContent('Is the bed of Prusa Mini+ clear?')
@@ -607,7 +607,7 @@ describe('Bed Cleared on a printer with its bed to clear', () => {
     expect(confirm.sent).toEqual([])
 
     await userEvent.click(within(dialog).getByRole('button', { name: 'Bed Is Clear' }))
-    await waitFor(() => expect(confirm.sent).toEqual([{ printerId: '4' }]))
+    await waitFor(() => expect(confirm.sent).toEqual([{ printerId: '4', expectedPrintId: '33' }]))
     await waitFor(() => expect(row('Available Printers', '4')).toBeUndefined())
   })
 
@@ -624,13 +624,25 @@ describe('Bed Cleared on a printer with its bed to clear', () => {
     expect(dialog).toHaveTextContent("Prusa Mini+ isn't taking jobs from the queue, so it won't start the next one.")
   })
 
-  it('shows why the server refused', async () => {
-    const confirm = mutation(CONFIRM_BED_CLEARED, 'confirmBedCleared', { printerId: '4' }, {
-      errors: refused('Nothing to clear on Prusa Mini+')
+  it('shows why the server refused when the bed now holds another print, and reloads to show it', async () => {
+    const refusal = "Prusa Mini+'s bed now holds another print: hinge.gcode. Check it before clearing the bed."
+    const confirm = mutation(CONFIRM_BED_CLEARED, 'confirmBedCleared', { printerId: '4', expectedPrintId: '33' }, {
+      errors: refused(refusal)
     })
-    const dialog = await clear(queue(), [confirm.mock])
+    const hinge = { __typename: 'File', id: '25', filename: 'hinge.gcode', isDeleted: false }
+    const newer = { ...MINI, printOnBed: printOnBed({ id: '34', jobId: '15', jobFile: hinge }) }
+    const dialog = await clear([queue(), queue({ printersToClear: [newer] })], [confirm.mock])
 
     await userEvent.click(within(dialog).getByRole('button', { name: 'Bed Is Clear' }))
-    expect(await screen.findByText('Nothing to clear on Prusa Mini+')).toBeInTheDocument()
+    expect(await screen.findByText(refusal)).toBeInTheDocument()
+    expect(await within(row('Available Printers', '4')).findByText('hinge.gcode is finished and still on the bed'))
+      .toBeInTheDocument()
+  })
+
+  it('offers no Bed Cleared without the print on the bed to name', async () => {
+    renderPage(queue({ printersToClear: [{ ...MINI, printOnBed: null }] }))
+    await loaded()
+
+    expect(within(row('Available Printers', '4')).queryByRole('button', { name: 'Bed Cleared' })).not.toBeInTheDocument()
   })
 })

@@ -69,10 +69,11 @@ export const ADD_TO_QUEUE = gql`
   }
 `
 
-// Bed Cleared: stamps the printer's last print, so the printer can take its next one
+// Bed Cleared: stamps the print on the printer's bed, so the printer can take its next one. expectedPrintId: the print
+// the person was shown (printOnBed); refused when the bed now holds another one
 export const CONFIRM_BED_CLEARED = gql`
-  mutation QueueConfirmBedCleared($printerId: ID!) {
-    confirmBedCleared(input: { printerId: $printerId }) {
+  mutation QueueConfirmBedCleared($printerId: ID!, $expectedPrintId: ID!) {
+    confirmBedCleared(input: { printerId: $printerId, expectedPrintId: $expectedPrintId }) {
       success
       errors { field message }
     }
