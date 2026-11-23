@@ -46,10 +46,11 @@ export const REMOVE_PRINT_JOB = gql`
   }
 `
 
-// Never below the copies done and printing: the server refuses with the reason
+// Never below the copies done and printing: the server refuses with the reason. samePrinter: null leaves it as it is
+// (Print More Copies sets it for the whole batch)
 export const SET_PRINT_JOB_COPIES = gql`
-  mutation QueueSetPrintJobCopies($id: ID!, $copies: Int!) {
-    setPrintJobCopies(input: { id: $id, copies: $copies }) {
+  mutation QueueSetPrintJobCopies($id: ID!, $copies: Int!, $samePrinter: Boolean) {
+    setPrintJobCopies(input: { id: $id, copies: $copies, samePrinter: $samePrinter }) {
       success
       errors { field message }
       printJob { ...QueuePrintJobResult }
