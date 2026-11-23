@@ -62,7 +62,7 @@ RSpec.describe PrintQueue::Connector::Fake, 'running the global queue' do
 
   # A person confirms the printer's bed is cleared (Bed cleared)
   def clear_bed(printer)
-    PrintQueue::BedClearance.new(printer:).save!
+    PrintQueue::BedClearance.new(printer:, expected_print_id: printer.bed_to_clear&.id).save!
   end
 
   def idle_reason(printer) = PrintQueue::Readiness.for(printer).idle_reason
