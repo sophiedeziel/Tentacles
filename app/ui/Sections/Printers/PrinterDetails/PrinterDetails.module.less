@@ -1,5 +1,5 @@
-// The printer details page, as in the mockup: the header over the cards, Connection and Remove on the left, About
-// This Printer on the right
+// The printer details page, as in the mockup: the header over the cards, Connection, Loaded Filament and Remove on
+// the left, About This Printer on the right
 
 @muted: rgba(0, 0, 0, 0.65);
 @purple: #722ed1;
@@ -187,4 +187,25 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+}
+
+// Loaded Filament: the icon beside the title, the status line beside its buttons
+.filamentTitle {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 16px;
+}
+
+.changedElsewhere {
+  margin-bottom: 16px;
+}
+
+.filamentFooter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
 }

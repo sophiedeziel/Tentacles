@@ -118,6 +118,8 @@ export const TYPE_POLICIES = {
     )
   },
   PrinterSpecs: { merge: true },
+  // A list without ids, always sent whole: replaced, even by a shorter one (a removed filament)
+  Printer: { fields: { loadedFilaments: { merge: false } } },
   Dashboard: { merge: false },
   PrinterWidgetOptions: { merge: false },
   PrintQueueWidgetOptions: { merge: false }

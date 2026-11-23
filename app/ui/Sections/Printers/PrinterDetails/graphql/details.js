@@ -1,6 +1,7 @@
 import { gql } from '@apollo/client'
 
 import { PRINTER_FIELDS } from '../../../Dashboard/graphql/dashboard'
+import { LOADED_FILAMENT_FIELDS } from './loadedFilament'
 
 // Every field of the About This Printer card, saved or reported
 const SPECS_FIELDS = gql`
@@ -25,7 +26,9 @@ const SPECS_FIELDS = gql`
 `
 
 // The details page: the dashboard's printer fields (pushed live by useFleetLiveUpdates), the saved connection and
-// specs. Never select anything that calls the printer (version, reportedSpecs): those load apart.
+// specs, and the loaded filaments (pushed by the Loaded Filament card's subscription; here so that the page's
+// refetch catches a missed push). Never select anything that calls the printer (version, reportedSpecs): those load
+// apart.
 export const PRINTER_DETAILS = gql`
   query PrinterDetails($id: ID!) {
     printer(id: $id) {
@@ -34,10 +37,12 @@ export const PRINTER_DETAILS = gql`
       username
       favorite
       specs { ...PrinterDetailsSpecsFields }
+      loadedFilaments { ...LoadedFilamentFields }
     }
   }
   ${PRINTER_FIELDS}
   ${SPECS_FIELDS}
+  ${LOADED_FILAMENT_FIELDS}
 `
 
 // Calls the printer (answer cached 2 hours on the server), so it loads after the page
