@@ -10,10 +10,13 @@ module Mutations
                   'back in the queue, at the bottom (Requeue).'
 
       argument :copies, Integer, required: true, description: 'From 1, and not below the copies done and printing'
+      argument :same_printer, Boolean, required: false,
+                                       description: 'Every copy on the same printer, or not (which lets a bound ' \
+                                                    'batch go). Null keeps it as it is.'
 
       private
 
-      def operation_for(job, copies:) = ::PrintQueue::CopiesChange.new(job:, copies:)
+      def operation_for(job, copies:, same_printer: nil) = ::PrintQueue::CopiesChange.new(job:, copies:, same_printer:)
     end
   end
 end

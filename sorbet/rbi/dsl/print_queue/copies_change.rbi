@@ -20,5 +20,11 @@ class PrintQueue::CopiesChange
 
     sig { params(value: T.untyped).returns(T.untyped) }
     def job=(value); end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def same_printer; end
+
+    sig { params(value: T.nilable(T::Boolean)).returns(T.nilable(T::Boolean)) }
+    def same_printer=(value); end
   end
 end
