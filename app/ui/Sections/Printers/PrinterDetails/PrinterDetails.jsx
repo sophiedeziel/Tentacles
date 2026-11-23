@@ -7,12 +7,15 @@ import { ArrowLeftOutlined, StarFilled, StarOutlined } from '@ant-design/icons'
 
 import PrinterStatus from '../../../components/PrinterStatus/PrinterStatus'
 import useFleetLiveUpdates from '../../../utils/useFleetLiveUpdates'
+import useQueueEnabled from '../../Queue/useQueueEnabled'
 import { forgetPrinter } from '../PrintersList/RowMenu'
 import useFavorite from '../useFavorite'
 import AboutCard from './AboutCard'
 import ConnectionCard from './ConnectionCard'
 import LoadedFilament from './LoadedFilament'
+import { BedBanner, Skipped, TakesJobsSwitch, UpNext } from './PrinterQueue'
 import RemoveCard from './RemoveCard'
+import usePrinterQueue from './usePrinterQueue'
 import { formValues, hasChanges, updateInput } from './detailsForm'
 import { reloadedValues, reportedValues, specsHints } from './specsHints'
 import { IDENTIFY_SAVED_PRINTER, PRINTER_DETAILS, REPORTED_SPECS, UPDATE_PRINTER } from './graphql/details'
@@ -60,9 +63,9 @@ function useReported (printer) {
   return reportedSpecs || name ? reportedValues(reportedSpecs, name) : null
 }
 
-// One form for the whole page: Save Changes sends what changed in one updatePrinter. Favorite, Loaded Filament and
-// Remove act at once.
-function DetailsForm ({ printer }) {
+// One form for the whole page: Save Changes sends what changed in one updatePrinter. Favorite, Loaded Filament,
+// Remove and the queue's part (Takes Jobs, Bed Cleared, Release) act at once.
+function DetailsForm ({ printer, queueEnabled }) {
   const { message } = App.useApp()
   const client = useApolloClient()
   const navigate = useNavigate()
@@ -74,6 +77,8 @@ function DetailsForm ({ printer }) {
   const blocker = useUnsavedChangesGuard(dirty, leaving)
   const [initialValues] = useState(() => formValues(printer))
   const reported = useReported(printer)
+  const queue = usePrinterQueue(printer.id, { enabled: queueEnabled })
+  const queuePrinter = queueEnabled ? queue.printer : null
   const hints = specsHints(printer.backend, values, reported)
   const { status } = printer
 
@@ -109,28 +114,55 @@ function DetailsForm ({ printer }) {
       className={classes.page}>
       <div className={classes.header}>
         <div className={classes.heading}>
-          <Link to="/printers/manage" className={classes.back}><ArrowLeftOutlined /> Printers</Link>
+          {queueEnabled
+            ? <Link to="/queue" className={classes.back}><ArrowLeftOutlined /> Print Queue</Link>
+            : <Link to="/printers/manage" className={classes.back}><ArrowLeftOutlined /> Printers</Link>}
           <div className={classes.title}>
             <Typography.Title level={3} style={{ margin: 0 }}>{printer.name}</Typography.Title>
             <PrinterStatus family={status.stateFamily} text={status.stateText} />
           </div>
         </div>
         <div className={classes.buttons}>
+          {queuePrinter && <TakesJobsSwitch printer={queuePrinter} reload={queue.reload} />}
           <FavoriteButton printer={printer} />
           <Button onClick={() => navigate(`/printers/${printer.id}/queue`)}>Open Queue</Button>
           <Button type="primary" htmlType="submit" loading={saving} disabled={!dirty}>Save Changes</Button>
         </div>
       </div>
 
-      <div className={classes.columns}>
-        <div className={classes.side}>
-          <ConnectionCard printer={printer} nameHint={hints.name} onReload={reload} />
-          {/* Saved on its own: none of its fields are the form's */}
-          <LoadedFilament printerId={printer.id} />
-          <RemoveCard printer={printer} onRemoved={onRemoved} />
-        </div>
-        <AboutCard printer={printer} hints={hints} onReload={reload} />
-      </div>
+      {queuePrinter?.bedNeedsClearing && (
+        <BedBanner printer={queuePrinter} dispatchPaused={queue.dispatchPaused} reload={queue.reload} />
+      )}
+
+      {queueEnabled
+        ? (
+          // The PrinterQueue frame: the queue's lists in the wide column, with Connection and Remove under them;
+          // Loaded Filament and About This Printer (its Capabilities) beside them
+          <div className={classes.columns}>
+            <div className={classes.queueMain}>
+              {queuePrinter && <UpNext printer={queuePrinter} reload={queue.reload} />}
+              {queuePrinter && <Skipped rows={queuePrinter.skipped} />}
+              <ConnectionCard printer={printer} nameHint={hints.name} onReload={reload} />
+              <RemoveCard printer={printer} onRemoved={onRemoved} />
+            </div>
+            <div className={classes.queueSide}>
+              {/* Saved on its own: none of its fields are the form's */}
+              <LoadedFilament printerId={printer.id} demand={queuePrinter?.loadedFilaments} />
+              <AboutCard printer={printer} hints={hints} onReload={reload} narrow />
+            </div>
+          </div>
+          )
+        : (
+          <div className={classes.columns}>
+            <div className={classes.side}>
+              <ConnectionCard printer={printer} nameHint={hints.name} onReload={reload} />
+              {/* Saved on its own: none of its fields are the form's */}
+              <LoadedFilament printerId={printer.id} />
+              <RemoveCard printer={printer} onRemoved={onRemoved} />
+            </div>
+            <AboutCard printer={printer} hints={hints} onReload={reload} />
+          </div>
+          )}
 
       <Modal open={blocker.state === 'blocked'} title="Leave without saving?" okText="Discard Changes"
         cancelText="Keep Editing" okButtonProps={{ danger: true }} onOk={() => blocker.proceed()}
@@ -145,10 +177,14 @@ function DetailsPage () {
   const { id } = useParams()
   // cache-and-network: never edits (or shows the state of) a printer cached earlier
   const { data, error, refetch } = useQuery(PRINTER_DETAILS, { variables: { id }, fetchPolicy: 'cache-and-network' })
+  // Whether the global queue is on decides the page's layout, so the form waits for that answer: rendered in the
+  // queue-off layout first, then moved to the queue's, its fields would be remounted under the person typing in them
+  // (focus and keystrokes lost)
+  const queue = useQueueEnabled()
   useFleetLiveUpdates(refetch)
 
   if (error && !data) return <Alert type="error" title="Could not load the printer" description={error.message} />
-  if (!data) return <Skeleton active />
+  if (!data || queue.loading) return <Skeleton active />
   if (!data.printer) {
     return (
       <Alert type="warning" showIcon title="Printer not found"
@@ -156,7 +192,7 @@ function DetailsPage () {
     )
   }
   // A new form for another printer
-  return <DetailsForm key={data.printer.id} printer={data.printer} />
+  return <DetailsForm key={data.printer.id} printer={data.printer} queueEnabled={queue.enabled} />
 }
 
 const printerShape = PropTypes.shape({
@@ -168,10 +204,13 @@ const printerShape = PropTypes.shape({
 }).isRequired
 
 FavoriteButton.propTypes = { printer: printerShape }
-DetailsForm.propTypes = { printer: printerShape }
+DetailsForm.propTypes = { printer: printerShape, queueEnabled: PropTypes.bool.isRequired }
 
-// A printer's page, at /printers/:id: its live state in the header, its connection and About This Printer to edit
-// in one form, its Loaded Filament, and Remove.
+// A printer's page, at /printers/:id: its live state in the header, its part of the global queue (while it is on),
+// its connection and About This Printer to edit in one form, its Loaded Filament, and Remove. While the global queue
+// is on, the page follows the PrinterQueue frame: back to the Print Queue, the takes-jobs switch in the header, the
+// bed banner, then Up Next and Skipped (with Connection and Remove under them) beside Loaded Filament and About This
+// Printer.
 export default function PrinterDetails () {
   return <App><DetailsPage /></App>
 }

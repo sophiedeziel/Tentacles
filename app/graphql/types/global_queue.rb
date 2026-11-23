@@ -48,7 +48,10 @@ module Types
       ::Printer::Job.copies.unfinished.in_queue_order.includes(*PRINT_PRELOADS)
     end
 
-    def waiting = ::PrintQueue::NextJob.candidates.select { |entry| entry.waiting_count.positive? }
+    # The candidates What Happens Next reads too: loaded once
+    def waiting
+      dataloader.with(Sources::CandidatesSource).load(:current).select { |entry| entry.waiting_count.positive? }
+    end
 
     def finished(first:)
       ::Printer::Job.copies.finished.last_finished_first.limit(first).includes(*PRINT_PRELOADS)

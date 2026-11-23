@@ -21,6 +21,9 @@
 #
 #   PrintQueue::Forecast.current.outcome(entry) # => PrintQueue::Forecast::Outcome(kind: :after_current_print, ...)
 #
+# For a printer's page, PrintQueue::Lineup splits the waiting entries into the ones it qualifies for (Up Next) and the
+# ones it skips, with why, and PrintQueue::FilamentDemand counts the entries asking for a loaded filament.
+#
 # The operations change the queue (see PrintQueue::Operation): PrintQueue::Addition, Move, Hold, Release,
 # CopiesChange, WaitingCopiesRemoval, PrinterBinding, PrinterBindingRelease, DispatchPause, DispatchResumption and
 # CopyCancellation. Each pushes PrintQueue.push_changed once, then asks for a dispatch pass (PrintQueue::DispatchRequest)

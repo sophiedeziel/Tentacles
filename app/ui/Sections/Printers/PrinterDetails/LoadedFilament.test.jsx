@@ -40,11 +40,11 @@ const setMock = (input, result, delay = 20) => ({
   delay
 })
 
-const renderCard = ({ loaded = [], materials = [], mocks = [], push = pushed([]) } = {}) => {
+const renderCard = ({ loaded = [], materials = [], mocks = [], push = pushed([]), demand } = {}) => {
   const cache = new InMemoryCache({ possibleTypes: POSSIBLE_TYPES, typePolicies: TYPE_POLICIES })
   render(
     <MockedProvider cache={cache} mocks={[cardMock(loaded, materials), push, ...mocks]}>
-      <App><LoadedFilament printerId="1" /></App>
+      <App><LoadedFilament printerId="1" demand={demand} /></App>
     </MockedProvider>
   )
   return { cache }
@@ -248,6 +248,45 @@ describe('LoadedFilament', () => {
       expect(await screen.findByText('Removed in another window')).toBeInTheDocument()
       expect(shownMaterial()).toHaveTextContent('ABS')
       expect(colour()).toHaveValue('Black')
+    })
+  })
+
+  describe('with the global queue on', () => {
+    // How many waiting jobs ask for each loaded filament (the printer page's queue query)
+    const asking = (material, colour, waitingJobsAskingCount) => [{ slot: 1, material, colour, waitingJobsAskingCount }]
+
+    it('says when no waiting job asks for the loaded filament', async () => {
+      renderCard({ loaded: [filament('PLA', 'White')], demand: asking('PLA', 'White', 0) })
+      await loadedCard()
+      expect(screen.getByText('No waiting job asks for PLA White. Any Colour jobs still match.')).toBeInTheDocument()
+    })
+
+    it('counts the waiting jobs that ask for it', async () => {
+      renderCard({ loaded: [filament('PLA', 'White')], demand: asking('PLA', 'White', 3) })
+      await loadedCard()
+      expect(screen.getByText('PLA White matches 3 waiting jobs.')).toBeInTheDocument()
+      expect(screen.getByText('Set this when you swap spools. The queue matches jobs against it.')).toBeInTheDocument()
+    })
+
+    it('never shows a count for another filament (changed since)', async () => {
+      renderCard({ loaded: [filament('PLA', 'Black')], demand: asking('PLA', 'White', 3) })
+      await loadedCard()
+      expect(screen.queryByText(/waiting job/)).not.toBeInTheDocument()
+    })
+
+    it('says nothing without a loaded filament', async () => {
+      renderCard({ demand: [] })
+      await loadedCard()
+      expect(screen.getByText('No filament set')).toBeInTheDocument()
+      expect(screen.queryByText(/waiting job/)).not.toBeInTheDocument()
+    })
+
+    it('says nothing while the queue is off (no demand)', async () => {
+      renderCard({ loaded: [filament('PLA', 'White')] })
+      await loadedCard()
+      expect(await screen.findByText('Updated 2 h ago')).toBeInTheDocument()
+      expect(screen.queryByText(/waiting job/)).not.toBeInTheDocument()
+      expect(screen.getByText('Set this when you swap spools.')).toBeInTheDocument()
     })
   })
 })

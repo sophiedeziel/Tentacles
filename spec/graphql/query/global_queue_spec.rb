@@ -76,8 +76,8 @@ RSpec.describe 'Query globalQueue', type: :request do
       'finished' => '[Print!]!'
     )
     expect(signatures['PrintJob']).to eq(
-      'id' => 'ID!', 'file' => 'File!', 'copies' => 'Int!', 'position' => 'Int!', 'held' => 'Boolean!',
-      'samePrinter' => 'Boolean!', 'allCapable' => 'Boolean!', 'boundPrinter' => 'Printer',
+      'id' => 'ID!', 'file' => 'File!', 'copies' => 'Int!', 'position' => 'Int!', 'waitingPosition' => 'Int',
+      'held' => 'Boolean!', 'samePrinter' => 'Boolean!', 'allCapable' => 'Boolean!', 'boundPrinter' => 'Printer',
       'copiesLeftToStart' => 'Int!', 'needs' => 'PrintJobNeeds!', 'eligiblePrinters' => '[Printer!]!',
       'whatHappensNext' => 'WhatHappensNext', 'prints' => '[Print!]!'
     )

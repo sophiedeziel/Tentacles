@@ -47,8 +47,9 @@ function SwitchField ({ label, name, hint, extra, product, onReload }) {
 }
 
 // About This Printer: what the printer is and can do, in the page's form (Save Changes writes it). `hints` holds
-// what its server reports, per field; `onReload(field)` copies a reported value into the form.
-export default function AboutCard ({ printer, hints, onReload }) {
+// what its server reports, per field; `onReload(field)` copies a reported value into the form. `narrow`: in the
+// page's side column (the global queue's layout), where its rows of three fields and switches stack.
+export default function AboutCard ({ printer, hints, onReload, narrow = false }) {
   const form = Form.useFormInstance()
   const specs = Form.useWatch('specs', form)
   const product = productName(printer.backend)
@@ -57,7 +58,7 @@ export default function AboutCard ({ printer, hints, onReload }) {
   const field = (name) => ({ name: ['specs', name], hint: hints[name], product, onReload: () => onReload(name) })
 
   return (
-    <Card className={classes.about}
+    <Card className={narrow ? `${classes.about} ${classes.narrow}` : classes.about}
       title={<span className={classes.title}><h2 className={classes.cardTitle}>About This Printer</h2><Tag>Optional</Tag></span>}>
       <div className={classes.banner}>
         <span className={classes.strong}>{product} can fill in some of these fields</span>
@@ -110,7 +111,7 @@ export default function AboutCard ({ printer, hints, onReload }) {
         </Form.Item>
       </div>
 
-      <div className={classes.grid3}>
+      <div className={`${classes.grid3} ${classes.switches}`}>
         <SwitchField label="Heated bed" name="heatedBed" hint={hints.heatedBed} product={product} onReload={onReload} />
         <SwitchField label="Heated chamber" name="heatedChamber" hint={hints.heatedChamber} product={product}
           onReload={onReload} />
@@ -139,5 +140,6 @@ SwitchField.propTypes = {
 AboutCard.propTypes = {
   printer: PropTypes.shape({ backend: PropTypes.string.isRequired }).isRequired,
   hints: PropTypes.objectOf(PropTypes.string).isRequired,
-  onReload: PropTypes.func.isRequired
+  onReload: PropTypes.func.isRequired,
+  narrow: PropTypes.bool
 }

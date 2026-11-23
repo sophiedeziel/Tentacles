@@ -10,7 +10,8 @@ class Printer
   #   removal.removed? # false when the slot had no filament: a success that changes nothing
   #
   # printerStatusChanged is pushed (best effort, see Printer#push_status_changed) only when a filament was removed:
-  # nothing changed otherwise.
+  # nothing changed otherwise. While the global queue is on, its pages are told too (PrintQueue.push_changed: what
+  # happens next to an entry may change). No dispatch pass is asked for: an empty slot makes no entry fit.
   class FilamentRemoval < ApplicationModel
     attribute :printer
     attribute :slot, :integer, default: 1
@@ -32,6 +33,7 @@ class Printer
 
       printer.loaded_filaments.reset # Read again by the push's subscribers
       printer.push_status_changed
+      PrintQueue.push_changed([printer]) if PrintQueue.enabled?
     end
   end
 end

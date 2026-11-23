@@ -25,11 +25,11 @@ RSpec.describe 'Query printers { loadedFilaments filamentSlots }', type: :reques
       expect(printer_type.get_field('filamentSlots').type.to_type_signature).to eq('Int!')
     end
 
-    it 'exposes the slot, material, colour and updatedAt of a loaded filament' do
+    it 'exposes the slot, material, colour and updatedAt of a loaded filament, and the waiting jobs asking for it' do
       signatures = filament_type.fields.transform_values { |field| field.type.to_type_signature }
 
       expect(signatures).to eq('slot' => 'Int!', 'material' => 'String!', 'colour' => 'String!',
-                               'updatedAt' => 'ISO8601DateTime!')
+                               'updatedAt' => 'ISO8601DateTime!', 'waitingJobsAskingCount' => 'Int!')
     end
 
     it 'exposes takesJobs, a non-null Boolean' do
