@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  availableSummary, batchSummary, batchView, copyText, filamentLabel, isQueueEmpty, loadedText, needsView,
-  nextCopyNumber, offlineText, onBedText, printLabel, printersView, printingSummary, swatchColour, takesNextView,
+  availableSummary, batchSummary, batchView, copiesFloor, copiesUnderWay, copyText, filamentLabel, isQueueEmpty,
+  loadedText, needsView, nextCopyNumber, offlineText, onBedText, printLabel, printersView, printingSummary, swatchColour, takesNextView,
   waitingCopiesView, waitingSummary
 } from './queueView'
 
@@ -194,5 +194,19 @@ describe('batchSummary and waitingCopiesView', () => {
       label: 'Copies 4 to 10', printer: 'Prusa MK4', detail: 'One after another, after copy 3'
     })
     expect(waitingCopiesView({ ...batch, copiesLeftToStart: 1 }).label).toBe('Copy 10 of 10')
+  })
+})
+
+describe('copiesFloor', () => {
+  const job = (...statuses) => ({ prints: statuses.map((status, index) => ({ id: String(index), status })) })
+
+  it('counts the copies done and handed to a printer, failed ones aside', () => {
+    expect(copiesFloor(job('COMPLETED', 'ACTIVE', 'ENQUEUED', 'ERROR', 'CANCELLED'))).toBe(3)
+    expect(copiesUnderWay(job('COMPLETED', 'ACTIVE', 'ENQUEUED', 'ERROR'))).toBe(2)
+  })
+
+  it('is at least 1', () => {
+    expect(copiesFloor(job())).toBe(1)
+    expect(copiesFloor(job('ERROR'))).toBe(1)
   })
 })

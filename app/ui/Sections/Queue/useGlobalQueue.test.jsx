@@ -57,3 +57,41 @@ describe('useGlobalQueue', () => {
     expect(server.pageRequests).toBe(2)
   })
 })
+
+describe('useGlobalQueue while holding', () => {
+  // A server whose queue says dispatch is paused once `paused` is set
+  function changingServer () {
+    const server = { paused: false, requests: 0 }
+    server.link = new ApolloLink((operation) => new Observable((observer) => {
+      if (operation.operationName !== 'GlobalQueuePage') return
+      server.requests += 1
+      observer.next({ data: { globalQueue: { ...EMPTY_QUEUE, dispatchPaused: server.paused } } })
+      observer.complete()
+    }))
+    return server
+  }
+
+  it('keeps what it showed while holding, then shows the latest answer', async () => {
+    const server = changingServer()
+    const client = new ApolloClient({
+      link: server.link,
+      cache: new InMemoryCache({ possibleTypes: POSSIBLE_TYPES, typePolicies: TYPE_POLICIES })
+    })
+    const { result, rerender } = renderHook(({ holding }) => useGlobalQueue({ holding }), {
+      initialProps: { holding: false },
+      wrapper: ({ children }) => <ApolloProvider client={client}>{children}</ApolloProvider>
+    })
+    await waitFor(() => expect(result.current.loaded).toBe(true))
+    const before = result.current.queue
+
+    rerender({ holding: true })
+    server.paused = true
+    await act(() => result.current.reload())
+    expect(server.requests).toBe(2)
+    expect(result.current.queue).toBe(before)
+    expect(result.current.queue.dispatchPaused).toBe(false)
+
+    rerender({ holding: false })
+    expect(result.current.queue.dispatchPaused).toBe(true)
+  })
+})

@@ -183,3 +183,18 @@ export function waitingCopiesView (job) {
   if (job.samePrinter) return { label, printer: 'Not assigned yet', detail: 'All on the first ready printer' }
   return { label, printer: 'Not assigned yet', detail: left === 1 ? 'Goes to the next ready printer' : 'Each goes to the next ready printer' }
 }
+
+// The statuses of a copy that count toward a print job's floor: done, or handed to a printer (starting, printing)
+const FLOOR_STATUSES = ['COMPLETED', 'ENQUEUED', 'ACTIVE']
+const UNDER_WAY_STATUSES = ['ENQUEUED', 'ACTIVE']
+
+// The fewest copies a print job can ask for: the copies done and printing, and at least 1. The server refuses
+// below it with the same floor (setPrintJobCopies); a failed copy can be given up.
+export function copiesFloor (job) {
+  return Math.max(1, job.prints.filter((print) => FLOOR_STATUSES.includes(print.status)).length)
+}
+
+// How many of a print job's copies are handed to a printer and not ended yet
+export function copiesUnderWay (job) {
+  return job.prints.filter((print) => UNDER_WAY_STATUSES.includes(print.status)).length
+}
