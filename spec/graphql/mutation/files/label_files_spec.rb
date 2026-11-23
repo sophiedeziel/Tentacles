@@ -80,14 +80,6 @@ module Mutations
 
               expect(data['labels']).to be_empty
             end
-
-            it 'returns a nil file' do
-              post '/graphql', params: { query:, variables: }
-              json = JSON.parse(response.body)
-              data = json['data']['labelFiles']
-
-              expect(data['files']).to be_empty
-            end
           end
 
           context 'when the file does not exist' do

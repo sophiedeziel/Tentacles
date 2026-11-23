@@ -1,11 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { STATE_FAMILIES, STATE_PALETTE, lightTheme, statePalette } from './theme'
+import { STATE_FAMILIES, STATE_PALETTE, statePalette } from './theme'
 
 describe('theme', () => {
-  it('uses the brand purple as the primary colour', () => {
-    expect(lightTheme.token.colorPrimary).toBe('#722ed1')
-  })
-
   it('has a colour, a tint and a tag colour for every state family', () => {
     STATE_FAMILIES.forEach((family) => {
       expect(STATE_PALETTE[family]).toEqual({

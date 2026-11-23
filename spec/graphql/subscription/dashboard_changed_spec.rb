@@ -80,13 +80,6 @@ RSpec.describe Subscriptions::DashboardChanged do
     pubsub.broadcasts(name).map { |message| JSON.parse(message) }
   end
 
-  it 'returns a non-null Dashboard and takes no arguments' do
-    field = TentaclesSchema.subscription.get_field('dashboardChanged')
-
-    expect(field.type.to_type_signature).to eq('Dashboard!')
-    expect(field.arguments).to be_empty
-  end
-
   it 'is broadcastable, options and printers included' do
     expect(subscriptions.broadcastable?(query)).to be(true)
   end

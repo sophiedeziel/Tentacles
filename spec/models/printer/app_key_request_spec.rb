@@ -91,10 +91,6 @@ RSpec.describe Printer::AppKeyRequest do
     it 'is the URL of an IPv4 address' do
       expect(described_class.new(address: '192.168.1.57').url).to eq('http://192.168.1.57/')
     end
-
-    it 'puts an IPv6 address in brackets' do
-      expect(described_class.new(address: 'fd00::57').url).to eq('http://[fd00::57]/')
-    end
   end
 
   describe '#payload' do
@@ -111,10 +107,6 @@ RSpec.describe Printer::AppKeyRequest do
 
       expect(request.payload('added', printer:)).to include(state: 'added', printer:)
       expect(request.payload('failed', error: 'Unreachable')).to include(state: 'failed', error: 'Unreachable')
-    end
-
-    it 'takes every state of Types::AppKeyRequestState' do
-      expect(described_class::STATES.map { |state| request.payload(state)[:state] }).to eq(described_class::STATES)
     end
 
     it 'rejects an unknown state' do

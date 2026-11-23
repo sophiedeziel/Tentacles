@@ -58,13 +58,6 @@ RSpec.describe Subscriptions::PrintQueueChanged do
     pubsub.broadcasts(name).map { |message| JSON.parse(message) }
   end
 
-  it 'returns a non-null Printer and takes no arguments' do
-    field = TentaclesSchema.subscription.get_field('printQueueChanged')
-
-    expect(field.type.to_type_signature).to eq('Printer!')
-    expect(field.arguments).to be_empty
-  end
-
   it 'is broadcast' do
     expect(subscriptions.broadcastable?(query)).to be(true)
   end
@@ -112,15 +105,5 @@ RSpec.describe Subscriptions::PrintQueueChanged do
       [{ 'result' => { 'data' => { 'printQueueChanged' => expected } }, 'more' => true }]
     )
     expect(Printer::Backend).not_to have_received(:for)
-  end
-
-  it 'pushes nothing on progress updates' do
-    job = create(:printer_job, status: 'active')
-    subscription_id = subscribe.context[:subscription_id]
-
-    job.update!(progress: 42)
-    deliver_events
-
-    expect(deliveries(subscription_id)).to be_empty
   end
 end

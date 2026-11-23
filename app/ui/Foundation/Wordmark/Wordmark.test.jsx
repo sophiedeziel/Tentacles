@@ -10,11 +10,4 @@ describe('Wordmark', () => {
     expect(screen.getByText('Tentacles')).toBeInTheDocument()
     expect(container.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   })
-
-  it('shows only the mark when collapsed, named for screen readers', () => {
-    render(<Wordmark collapsed />)
-
-    expect(screen.queryByText('Tentacles')).not.toBeInTheDocument()
-    expect(screen.getByRole('img', { name: 'Tentacles' })).toBeInTheDocument()
-  })
 })

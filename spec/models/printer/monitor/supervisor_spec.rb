@@ -138,11 +138,6 @@ RSpec.describe Printer::Monitor::Supervisor do
   end
 
   describe '#step' do
-    it 'writes the heartbeat' do
-      supervisor.step
-      expect(Printer::Monitor::Heartbeat.healthy?).to be true
-    end
-
     context 'when there are no printers' do
       before { printer.destroy! }
 

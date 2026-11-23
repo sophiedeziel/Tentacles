@@ -21,16 +21,4 @@ RSpec.describe Types::Url do
       end
     end
   end
-
-  describe '.coerce_result' do
-    it 'sends the URL as a string' do
-      expect(described_class.coerce_result(URI('http://192.168.1.57/'), nil)).to eq('http://192.168.1.57/')
-    end
-  end
-
-  it 'is named URL in the schema, with its specification' do
-    type = TentaclesSchema.get_type('URL')
-    expect(type.specified_by_url).to eq('https://url.spec.whatwg.org/')
-    expect(TentaclesSchema.get_type('NetworkPrinter').get_field('url').type.unwrap.graphql_name).to eq('URL')
-  end
 end

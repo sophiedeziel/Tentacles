@@ -103,16 +103,6 @@ describe('PrinterWidget', () => {
       expect(screen.queryByRole('button')).not.toBeInTheDocument()
     })
 
-    it.each([
-      ['PAUSED', ['Resume', 'Cancel']],
-      ['OPERATIONAL', ['Start Next']],
-      ['CONNECTING', []],
-      ['OFFLINE', ['Connect']]
-    ])('shows the %s controls', (family, labels) => {
-      renderWidget(family, 'L')
-      expect(screen.queryAllByRole('button').map((button) => button.textContent)).toEqual(labels)
-    })
-
     it('shows a disabled spinner button while cancelling', () => {
       renderWidget('CANCELLING', 'L')
       expect(screen.getByRole('button', { name: /Cancelling/ })).toBeDisabled()

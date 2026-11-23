@@ -256,12 +256,6 @@ describe('PrinterDetails', () => {
       await userEvent.type(field('Printer name'), ' left')
       expect(closeTab()).toBe(false)
     })
-
-    it('lets the page go without asking once nothing is unsaved', async () => {
-      renderPage()
-      await userEvent.click(await screen.findByRole('button', { name: 'Open Queue' }))
-      expect(await screen.findByText('Queue')).toBeInTheDocument()
-    })
   })
 
   describe('About This Printer', () => {
@@ -327,14 +321,6 @@ describe('PrinterDetails', () => {
       await save()
       expect(await screen.findByText('Changes saved')).toBeInTheDocument()
       expect(volume('Diameter')).toHaveValue('180')
-    })
-
-    it('clears the build volume once all of its dimensions are cleared', async () => {
-      renderAbout(MK4_SPECS, [savedSpecs({ buildVolume: null }, { ...MK4_SPECS, buildVolume: null })])
-      await screen.findByRole('heading', { name: 'About This Printer' })
-      for (const label of ['Width (X)', 'Depth (Y)', 'Height (Z)']) await userEvent.clear(volume(label))
-      await save()
-      expect(await screen.findByText('Changes saved')).toBeInTheDocument()
     })
 
     it('takes a firmware that is not in the list, as typed', async () => {

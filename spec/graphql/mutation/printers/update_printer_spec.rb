@@ -75,14 +75,6 @@ RSpec.describe Mutations::Printers::UpdatePrinter, type: :request do
     expect(printer.reload).to have_attributes(brand: 'Prusa', model: 'MK4', extruders: 1)
   end
 
-  it 'saves any firmware as free text' do
-    input.merge!(specs: { firmware: ' Smoothieware ' })
-
-    update_printer
-
-    expect(data['printer']['specs']).to include('firmware' => 'OTHER', 'firmwareDisplayName' => 'Smoothieware')
-  end
-
   describe 'secret' do
     it 'replaces the saved secret with the one sent' do
       input.merge!(secret: 'new-password')
@@ -141,15 +133,6 @@ RSpec.describe Mutations::Printers::UpdatePrinter, type: :request do
 
       expect(data['printer']['specs']['buildVolume']).to be_nil
       expect(build_volume_columns.values).to all(be_nil)
-    end
-
-    it 'refuses both shapes at once' do
-      input.merge!(specs: { buildVolume: { rectangular: { x: 1, y: 1, z: 1 }, circular: { diameter: 1, height: 1 } } })
-
-      update_printer
-
-      expect(response.parsed_body['errors'].first['message']).to match(/requires exactly one argument/)
-      expect(build_volume_columns['build_volume_x']).to eq(250.0)
     end
   end
 

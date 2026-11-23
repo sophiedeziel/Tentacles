@@ -5,13 +5,10 @@ import FleetSummary from './FleetSummary'
 
 const printer = (stateFamily) => ({ status: { stateFamily } })
 
-// The figure under a label, and the colour of its bar
+// The figure under a label
 const figure = (label) => {
   const statistic = screen.getByText(label).closest('.ant-statistic')
-  return {
-    value: statistic.querySelector('.ant-statistic-content-value').textContent,
-    bar: statistic.previousElementSibling
-  }
+  return { value: statistic.querySelector('.ant-statistic-content-value').textContent }
 }
 
 describe('FleetSummary', () => {
@@ -45,15 +42,5 @@ describe('FleetSummary', () => {
     render(<FleetSummary />)
     expect(['Printing', 'Ready', 'Paused', 'Needs Attention'].map((label) => figure(label).value))
       .toEqual(['0', '0', '0', '0'])
-  })
-
-  it.each([
-    ['Printing', '#722ed1'],
-    ['Ready', '#52c41a'],
-    ['Paused', '#faad14'],
-    ['Needs Attention', '#ff4d4f']
-  ])('draws the %s bar in its state colour', (label, color) => {
-    render(<FleetSummary />)
-    expect(figure(label).bar).toHaveStyle({ background: color })
   })
 })

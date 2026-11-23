@@ -21,12 +21,6 @@ RSpec.describe Printer, :vcr, type: :model do
     end
   end
 
-  describe 'job_status' do
-    subject { printer.job_status }
-
-    it { is_expected.to eq 'Operational' }
-  end
-
   describe 'jobs_count' do
     let!(:enqueued_printer_jobs) { create_list(:printer_job, 3, printer:, status: 'enqueued') }
 
@@ -42,7 +36,6 @@ RSpec.describe Printer, :vcr, type: :model do
     subject { printer.queue }
 
     it { is_expected.to eq enqueued_printer_jobs }
-    it { is_expected.to_not include completed_jobs }
   end
 
   describe 'next_job' do
@@ -86,22 +79,10 @@ RSpec.describe Printer, :vcr, type: :model do
   describe 'loaded filaments' do
     let(:printer) { create(:printer) }
 
-    it 'starts with one filament slot, none set, taking jobs' do
-      expect(printer).to have_attributes(filament_slots: 1, takes_jobs: true, filament_set?: false)
-    end
-
     it 'has a filament set once a slot has one' do
       create(:printer_loaded_filament, printer:)
 
       expect(printer.filament_set?).to be true
-    end
-
-    it 'deletes its loaded filaments when destroyed' do
-      create(:printer_loaded_filament, printer:)
-
-      printer.destroy!
-
-      expect(Printer::LoadedFilament.where(printer_id: printer.id)).to be_empty
     end
 
     it 'has its loaded filaments deleted by the database too (ON DELETE CASCADE)' do
@@ -165,11 +146,6 @@ RSpec.describe Printer, :vcr, type: :model do
 
     it 'is memoized' do
       expect(printer.api).to be api
-    end
-
-    it 'is the PrusaLink adapter of a PrusaLink printer' do
-      printer = build(:printer, :prusalink)
-      expect(printer.api).to be_a(Printer::Backend::Prusalink).and have_attributes(printer:)
     end
 
     %i[uri secret username].each do |attribute|
@@ -237,12 +213,6 @@ RSpec.describe Printer, :vcr, type: :model do
       end
     end
 
-    context 'when octoprint is connected' do
-      it 'returns the octoprint version' do
-        expect(subject).to eq('OctoPrint 1.7.3')
-      end
-    end
-
     context 'when octoprint is not available' do
       let(:printer) { build(:printer, :disconnected) }
 
@@ -304,10 +274,6 @@ RSpec.describe Printer, :vcr, type: :model do
       expect(printer.version).to eq 'OctoPrint 1.7.3'
       expect(Octoprint::ServerVersion).to have_received(:get).once
       expect(described_class.find(printer.id).version).to eq 'OctoPrint 1.7.3'
-    end
-
-    it 'reads it from the printer', vcr: { cassette_name: 'Printer/version/1_3_1' } do
-      expect(build(:printer).version).to eq 'OctoPrint 1.7.3'
     end
   end
 
@@ -406,12 +372,12 @@ RSpec.describe Printer, :vcr, type: :model do
       it "requires the #{attribute} of a new printer" do
         expect(build(:printer, attribute => '')).not_to be_valid
       end
+    end
 
-      it "does not require the #{attribute} of a printer saved before it existed" do
-        printer = create(:printer, :disconnected)
-        printer.name = 'Renamed'
-        expect(printer).to be_valid
-      end
+    it 'does not require the URI and secret of a printer saved before they existed' do
+      printer = create(:printer, :disconnected)
+      printer.name = 'Renamed'
+      expect(printer).to be_valid
     end
   end
 

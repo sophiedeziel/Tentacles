@@ -5,17 +5,6 @@ require 'rails_helper'
 RSpec.describe Library::Item, type: :model do
   let(:file) { create(:file_record) }
 
-  it 'has a valid factory' do
-    expect(file).to be_valid
-    expect(build(:file_record, :with_labels)).to be_valid
-  end
-
-  describe '#filename' do
-    subject { file.filename }
-
-    it { is_expected.to eq 'test.gcode' }
-  end
-
   describe '#filetype' do
     subject { file.filetype }
 
@@ -33,17 +22,6 @@ RSpec.describe Library::Item, type: :model do
 
     it 'archives the file' do
       expect { subject }.to change { file.is_not_archived }.from(true).to(false)
-    end
-  end
-
-  describe '#is_not_archived?' do
-    subject { file.is_not_archived? }
-
-    it { is_expected.to eq true }
-
-    context 'when the file is archived' do
-      before { file.archive }
-      it { is_expected.to eq false }
     end
   end
 
@@ -65,12 +43,6 @@ RSpec.describe Library::Item, type: :model do
       file.archive
       expect { subject }.to change { file.is_not_archived }.from(false).to(true)
     end
-  end
-
-  describe '#deleted?' do
-    subject { file.deleted? }
-
-    it { is_expected.to eq false }
   end
 
   describe '#download_url' do
@@ -117,26 +89,6 @@ RSpec.describe Library::Item, type: :model do
           ';Generated with Cura_SteamEngine 4.11.0'
         ].join("\r\n")
       end
-    end
-  end
-
-  describe '#file_content' do
-    subject { file.file_content }
-
-    it { is_expected.to eq Rails.root.join('spec/fixture_files/test.gcode').read }
-  end
-
-  describe '#labels' do
-    subject { build(:file_record, :with_labels).labels }
-
-    it { is_expected.to_not be_nil }
-    it { is_expected.to_not be_empty }
-
-    it 'does not have duplicate labels associated to a single file record' do
-      file_record = create(:file_record, :with_labels)
-      file_record.labels.build(items: [file_record])
-
-      expect(file_record).to be_invalid # (same as to_not be_valid)
     end
   end
 

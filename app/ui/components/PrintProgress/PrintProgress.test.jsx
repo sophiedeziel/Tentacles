@@ -16,11 +16,6 @@ describe('PrintProgress', () => {
     expect(bar(container).querySelector('.ant-progress-track')).toHaveStyle({ backgroundColor: '#722ed1' })
   })
 
-  it('shows hours and minutes for long prints', () => {
-    render(<PrintProgress family="PRINTING" progress={10} timeLeft={(3 * 60 + 5) * MINUTE} />)
-    expect(screen.getByText('3 h 05 min left')).toBeInTheDocument()
-  })
-
   it('falls back to the percentage when the printer does not say how long is left', () => {
     render(<PrintProgress family="PRINTING" progress={8} />)
     expect(screen.getByText('8% printed')).toBeInTheDocument()

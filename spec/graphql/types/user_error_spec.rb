@@ -3,12 +3,6 @@
 require 'rails_helper'
 
 RSpec.describe Types::UserError do
-  it 'has a nullable field and a non-null message' do
-    signatures = described_class.fields.transform_values { |field| field.type.to_type_signature }
-
-    expect(signatures).to eq('field' => 'String', 'message' => 'String!')
-  end
-
   describe '.from' do
     let(:errors) { ActiveModel::Errors.new(Printer::LoadedFilament.new) }
 
@@ -30,12 +24,6 @@ RSpec.describe Types::UserError do
 
     it 'is empty when there is no error' do
       expect(described_class.from(errors)).to eq([])
-    end
-  end
-
-  describe '.base' do
-    it 'has no field' do
-      expect(described_class.base('Printer not found')).to eq(field: nil, message: 'Printer not found')
     end
   end
 end

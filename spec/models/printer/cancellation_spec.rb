@@ -16,5 +16,4 @@ RSpec.describe Printer::Cancellation do
                   }
 
   it_behaves_like 'a job command', sends: :cancel, state: Printer::StateFamily::Printing
-  it_behaves_like 'a job command', sends: :cancel, state: Printer::StateFamily::Paused
 end

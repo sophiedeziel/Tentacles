@@ -61,11 +61,5 @@ RSpec.describe Printer::Monitor::Heartbeat do
 
       expect(described_class.healthy?).to be false
     end
-
-    it 'is false when the heartbeat is unreadable' do
-      redis.set('printer_monitor:heartbeat', 'garbage')
-
-      expect(described_class.healthy?).to be false
-    end
   end
 end

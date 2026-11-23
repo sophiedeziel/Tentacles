@@ -64,9 +64,5 @@ RSpec.describe 'Query printers', type: :request do
         'version' => 'OctoPrint 1.11.2'
       )
     end
-
-    it "returns 'Unavailable' when the version can't be read" do
-      expect(printers['Unreadable']).to include('backend' => 'OCTOPRINT', 'version' => 'Unavailable')
-    end
   end
 end

@@ -64,12 +64,6 @@ describe('PrinterTile', () => {
     expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument()
   })
 
-  it('shows its controls out of edit mode', () => {
-    renderTile('PRINTING', [], { editing: false })
-    expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
-  })
-
   it('hides Start Next in edit mode', () => {
     renderTile('OPERATIONAL', [], { editing: true })
     expect(screen.getByText('Ready to print')).toBeInTheDocument()

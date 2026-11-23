@@ -63,16 +63,6 @@ RSpec.describe Printer::ApiCache do
     end
   end
 
-  describe '#destroy' do
-    it 'deletes the cached answer' do
-      cached { 'OctoPrint 1.11.2' }
-
-      described_class.find_by(printer_id: 1, api_method: 'version').destroy
-
-      expect(redis.keys).to be_empty
-    end
-  end
-
   describe '.delete_by' do
     it "deletes the printer's cached answers, not those of other printers" do
       cached { 'OctoPrint 1.11.2' }

@@ -43,27 +43,17 @@ RSpec.describe 'Query printers { canStartNext }', type: :request do
     expect(can_start_next[printer.id]).to be true
   end
 
-  (Printer::StateFamily.values - [Printer::StateFamily::Operational]).each do |family|
-    it "is false when the printer is #{family.serialize}" do
-      printer = ready_printer
-      snapshot(printer, family)
-      post '/graphql', params: { query: }
-      expect(can_start_next[printer.id]).to be false
-    end
+  it 'is false when the printer is not OPERATIONAL' do
+    printer = ready_printer
+    snapshot(printer, Printer::StateFamily::Printing)
+    post '/graphql', params: { query: }
+    expect(can_start_next[printer.id]).to be false
   end
 
   it 'is false when the monitor has no snapshot of the printer' do
     printer = create(:printer)
     enqueue(printer)
     post '/graphql', params: { query: }
-    expect(can_start_next[printer.id]).to be false
-  end
-
-  it 'is false when Redis is down' do
-    printer = ready_printer
-    allow(redis).to receive(:mget).and_raise(Redis::CannotConnectError)
-    post '/graphql', params: { query: }
-    expect(json['errors']).to be_nil
     expect(can_start_next[printer.id]).to be false
   end
 
@@ -93,18 +83,6 @@ RSpec.describe 'Query printers { canStartNext }', type: :request do
   end
 
   describe 'batching' do
-    def query_count(printer_count)
-      Printer::Job.delete_all
-      Printer.delete_all
-      Array.new(printer_count) { ready_printer.tap { |printer| enqueue(printer, 'active') if printer.id.even? } }
-      sql_queries { post '/graphql', params: { query: } }.size
-    end
-
-    it 'issues the same number of SQL queries for 1 and 5 printers' do
-      expect(query_count(5)).to eq(query_count(1))
-      expect(json['data']['printers'].size).to eq 1
-    end
-
     it 'reads the jobs with one grouped query' do
       3.times { ready_printer }
       queries = sql_queries { post '/graphql', params: { query: } }

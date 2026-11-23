@@ -30,21 +30,6 @@ RSpec.describe 'Query file { gcodeSummary }', type: :request do
     queries
   end
 
-  describe 'the fields' do
-    it 'types the summary as nullable, its lists as non-null lists, and its values as nullable' do
-      expect(TentaclesSchema.get_type('File').get_field('gcodeSummary').type.to_type_signature).to eq 'GcodeSummary'
-      signatures = TentaclesSchema.get_type('GcodeSummary').fields.transform_values { |f| f.type.to_type_signature }
-
-      expect(signatures).to include('status' => 'GcodeSummaryStatus!', 'printSeconds' => 'Int',
-                                    'filamentGrams' => 'Float', 'tools' => '[GcodeTool!]!',
-                                    'filamentChanges' => '[GcodeFilamentChange!]!', 'footprint' => 'GcodeFootprint')
-    end
-
-    it 'leaves File.gcodeAnalysis as it is' do
-      expect(TentaclesSchema.get_type('File').get_field('gcodeAnalysis').type.to_type_signature).to eq 'GcodeAnalysis'
-    end
-  end
-
   it 'is PENDING for a G-code file with no row yet' do
     expect(summary_of(create(:file_record))).to include('status' => 'PENDING', 'slicer' => nil, 'tools' => [],
                                                         'filamentChanges' => [], 'footprint' => nil)

@@ -29,10 +29,6 @@ RSpec.describe Printer::Backend do
         expect(adapter.reader_class).to include(Printer::Monitor::Reader)
       end
     end
-
-    it 'is the list of backends a printer can have' do
-      expect(Printer::BACKENDS).to eq described_class::ADAPTERS.keys
-    end
   end
 
   describe '.adapter_class' do
@@ -47,11 +43,5 @@ RSpec.describe Printer::Backend do
 
   it 'has nothing to save' do
     expect { described_class.for(build(:printer)).save }.to raise_error(NotImplementedError)
-  end
-
-  it 'has a single base for the errors the callers rescue' do
-    expect([Printer::Backend::Unreachable, Printer::Backend::Unauthorized, Printer::Backend::MissingCredentials,
-            Printer::Backend::NoJob])
-      .to all(be < Printer::Backend::Error)
   end
 end

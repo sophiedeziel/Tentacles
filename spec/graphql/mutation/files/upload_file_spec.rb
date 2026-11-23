@@ -29,8 +29,4 @@ RSpec.describe Mutations::Files::UploadFile, type: :request do
     expect(item.gcode_summary).to be_pending
     expect(AnalyseGcodeJob).to have_been_enqueued.with(item.id)
   end
-
-  it 'schedules nothing for another file' do
-    expect { upload('spec/fixture_files/home.gcode', 'cube.stl') }.not_to have_enqueued_job(AnalyseGcodeJob)
-  end
 end

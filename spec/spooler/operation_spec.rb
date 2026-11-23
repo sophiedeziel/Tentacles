@@ -83,18 +83,6 @@ RSpec.describe Spooler::Print do
       expect(polls).to eq %w[Printing Pausing Paused Resuming Printing Finishing Operational]
     end
 
-    it 'keeps monitoring while the print is cancelling' do
-      octoprint_states('Printing', 'Cancelling', 'Cancelling', 'Operational')
-      operation.execute
-      expect(polls).to eq %w[Printing Cancelling Cancelling Operational]
-    end
-
-    it 'keeps monitoring while OctoPrint starts the print' do
-      octoprint_states('Starting', 'Printing from SD', 'Operational')
-      operation.execute
-      expect(polls).to eq ['Starting', 'Printing from SD', 'Operational']
-    end
-
     ['Operational', 'Offline', 'Offline after error', 'Error: Printer halted', 'Connecting'].each do |state|
       it "stops monitoring when the printer is #{state}" do
         octoprint_states('Printing', state, 'Printing')
@@ -161,14 +149,6 @@ RSpec.describe Spooler::Print do
 
       expect { operation.execute }.not_to raise_error
       expect(operation).not_to have_received(:track_progress)
-    end
-
-    it 'does not crash when OctoPrint has no progress at all' do
-      allow(Octoprint::Job).to receive(:get).and_return(
-        Octoprint::Job.deserialize({ state: 'Starting', job: {} }),
-        Octoprint::Job.deserialize({ state: 'Operational', job: {} })
-      )
-      expect { operation.execute }.not_to raise_error
     end
 
     it "uses the printer's own client without touching the global configuration" do

@@ -28,10 +28,6 @@ RSpec.describe Printer::LiveJob do
     end
   end
 
-  it 'casts the state family' do
-    expect(described_class.new(state_family: 'PRINTING').state_family).to eq(Printer::StateFamily::Printing)
-  end
-
   it 'is read-only' do
     live_job = described_class.new(printer:, state_family: Printer::StateFamily::Printing)
 

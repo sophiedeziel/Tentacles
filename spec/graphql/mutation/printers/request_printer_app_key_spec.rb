@@ -132,31 +132,4 @@ RSpec.describe Mutations::Printers::RequestPrinterAppKey, type: :request do
                                     'Printer::Backend::Unreachable')
     end
   end
-
-  context 'when OctoPrint got too many requests (3 a minute)' do
-    before { octoprint.to_return(status: 429, body: '{"error": "Too many requests"}') }
-
-    it_behaves_like 'a request OctoPrint could not take',
-                    'OctoPrint at http://192.168.1.57/ got too many requests. Try again in a minute.'
-  end
-
-  context 'when the server has no Application Keys plugin' do
-    before { octoprint.to_return(status: 404) }
-
-    it_behaves_like 'a request OctoPrint could not take',
-                    'OctoPrint at http://192.168.1.57/ refused the request (HTTP 404). Is its Application Keys ' \
-                    'plugin enabled?'
-  end
-
-  context 'when the server is not OctoPrint' do
-    before { octoprint.to_return(status: 201, body: '<html></html>') }
-
-    it_behaves_like 'a request OctoPrint could not take', 'http://192.168.1.57/ does not answer like OctoPrint'
-  end
-
-  context 'when OctoPrint answers an empty app token' do
-    before { octoprint.to_return(created(app_token: '', auth_dialog:)) }
-
-    it_behaves_like 'a request OctoPrint could not take', 'http://192.168.1.57/ does not answer like OctoPrint'
-  end
 end

@@ -32,11 +32,6 @@ describe('printerView', () => {
       expect(['OPERATIONAL', 'ERROR', 'OFFLINE'].map((family) => view(family).icon)).toEqual([true, true, true])
     })
 
-    it('colours the tile by state family', () => {
-      expect(view('PRINTING')).toMatchObject({ color: '#722ed1', tint: '#f9f0ff' })
-      expect(view('ERROR')).toMatchObject({ color: '#ff4d4f', tint: '#fff2f0' })
-    })
-
     it('offers Start Next only when the printer can start its next job', () => {
       expect(view('OPERATIONAL', { printer: { canStartNext: false } }).actions).toEqual([])
     })

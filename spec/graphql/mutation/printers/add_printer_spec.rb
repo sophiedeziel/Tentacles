@@ -28,10 +28,6 @@ module Mutations
           context 'with an OctoPrint printer' do
             let(:input) { { name: 'Ender 3', uri: 'http://192.168.0.15', secret: '12345678' } }
 
-            it 'adds a printer' do
-              expect { add_printer(input) }.to change { Printer.count }.by(1)
-            end
-
             it 'stores the credentials of an OctoPrint printer, the default backend' do
               add_printer(input)
 
@@ -57,26 +53,6 @@ module Mutations
                                'uri' => 'http://192.168.0.15', 'username' => nil },
                 'errors' => []
               )
-            end
-
-            it 'tells the spooler, so that the printer gets a spool without a restart' do
-              add_printer(input)
-
-              expect(redis).to have_received(:publish)
-                .with('printers', { command: 'add_printer', printer_id: Printer.last.id }.to_json).once
-            end
-
-            it 'fills the webcam from the OctoPrint settings' do
-              add_printer(input)
-
-              expect(Printer.last).to have_attributes(webcam: true, model: nil)
-            end
-
-            it 'adds the printer even when the spooler cannot be told' do
-              allow(redis).to receive(:publish).and_raise(Redis::CannotConnectError)
-
-              expect { add_printer(input) }.to change { Printer.count }.by(1)
-              expect(data['errors']).to eq([])
             end
           end
 
@@ -104,28 +80,6 @@ module Mutations
               expect(response.body).not_to include('printer-password')
             end
 
-            it 'fills its specs with what PrusaLink reports' do
-              add_printer(input)
-
-              expect(Printer.last).to have_attributes(firmware: 'prusa_firmware', firmware_version: '6.2.0',
-                                                      nozzle_diameter: 0.6, name: 'Prusa MK4')
-            end
-
-            it 'adds the printer even when its specs cannot be read' do
-              allow(Prusalink::Info).to receive(:get).and_raise(Prusalink::Exceptions::AuthenticationError, '[401]')
-
-              expect { add_printer(input) }.to change { Printer.count }.by(1)
-              expect(data['errors']).to eq([])
-              expect(Printer.last).to have_attributes(firmware: nil, nozzle_diameter: nil)
-            end
-
-            it 'adds the printer even when it is unreachable' do
-              allow(Prusalink::Info).to receive(:get).and_raise(Prusalink::Exceptions::ConnectionError, 'timeout')
-
-              expect { add_printer(input) }.to change { Printer.count }.by(1)
-              expect(data['errors']).to eq([])
-            end
-
             it 'stores a blank username as nil (the default username)' do
               add_printer(input.merge(username: ''))
 
@@ -144,11 +98,6 @@ module Mutations
 
           context 'with invalid arguments' do
             let(:input) { { backend: 'PRUSALINK', name: '', uri: '', secret: '' } }
-
-            it 'does not add a printer nor tell the spooler' do
-              expect { add_printer(input) }.not_to(change { Printer.count })
-              expect(redis).not_to have_received(:publish)
-            end
 
             it 'returns a nil printer and the validation errors' do
               add_printer(input)

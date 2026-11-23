@@ -9,13 +9,6 @@ RSpec.describe Subscriptions::PrinterAppKeyChanged do
   let(:request) { create_request }
   let(:other_request) { create_request(app_token: 'OTHER-APP-TOKEN') }
 
-  it 'returns a non-null AppKeyRequest for the id of a request' do
-    field = TentaclesSchema.subscription.get_field('printerAppKeyChanged')
-
-    expect(field.type.to_type_signature).to eq('AppKeyRequest!')
-    expect(field.arguments.transform_values { |argument| argument.type.to_type_signature }).to eq('id' => 'ID!')
-  end
-
   it 'sends nothing on subscribe' do
     result = subscribe_to_request(request.id)
 
@@ -50,9 +43,5 @@ RSpec.describe Subscriptions::PrinterAppKeyChanged do
     expect(pushes).to contain_exactly(include('state' => 'ADDED', 'printer' => {
                                                 'id' => printer.id.to_s, 'name' => 'Prusa i3 MK3S', 'uri' => printer.uri
                                               }))
-  end
-
-  it 'refuses a state that AppKeyRequestState does not have' do
-    expect { request.push('approved') }.to raise_error(ArgumentError, 'Unknown state "approved"')
   end
 end

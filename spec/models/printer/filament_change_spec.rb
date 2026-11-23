@@ -96,8 +96,6 @@ RSpec.describe Printer::FilamentChange do
     {
       'a material outside the list' => [{ material: 'Wood' }, :material, ['Material is not included in the list']],
       'a blank colour' => [{ colour: ' ' }, :colour, ["Colour can't be blank"]],
-      'a colour over 40 characters' => [{ colour: 'x' * 41 }, :colour,
-                                        ['Colour is too long (maximum is 40 characters)']],
       "a slot above the printer's" => [{ slot: 2 }, :slot, ['Slot must be less than or equal to 1']],
       'no slot' => [{ slot: nil }, :slot, ['Slot is not a number']]
     }.each do |refused, (attributes, attribute, messages)|

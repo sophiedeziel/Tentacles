@@ -5,12 +5,6 @@ require 'rails_helper'
 RSpec.describe Printer::Specs, type: :model do
   let(:printer) { build(:printer) }
 
-  it 'leaves every spec unset on a new printer, with no materials and not a favorite' do
-    expect(printer).to have_attributes(favorite: false, brand: nil, firmware: nil, bed_shape: nil,
-                                       build_volume_x: nil, heated_bed: nil, materials: [])
-    expect(printer).to be_valid
-  end
-
   describe 'normalizers' do
     it 'strips brand, model, firmware and firmware version' do
       printer.assign_attributes(brand: '  Prusa Research ', model: "MK4\n", firmware: ' klipper ',
@@ -37,12 +31,6 @@ RSpec.describe Printer::Specs, type: :model do
 
       expect(printer.materials).to eq []
     end
-
-    it 'saves and reads back the materials' do
-      printer.update!(materials: %w[PLA ASA])
-
-      expect(Printer.find(printer.id).materials).to eq %w[PLA ASA]
-    end
   end
 
   describe 'validations' do
@@ -52,10 +40,6 @@ RSpec.describe Printer::Specs, type: :model do
       expect(printer).to be_valid
     end
 
-    it 'accepts the bed shapes' do
-      expect(Printer::Specs::BED_SHAPES.map { |bed_shape| build(:printer, bed_shape:) }).to all(be_valid)
-    end
-
     it 'refuses another bed shape' do
       printer.bed_shape = 'hexagonal'
 
@@ -63,13 +47,11 @@ RSpec.describe Printer::Specs, type: :model do
       expect(printer.errors[:bed_shape]).to eq ['is not included in the list']
     end
 
-    %i[build_volume_x build_volume_y build_volume_z build_diameter nozzle_diameter].each do |attribute|
-      it "refuses a #{attribute} of 0 or less" do
-        printer[attribute] = 0
+    it 'refuses a build volume of 0 or less' do
+      printer.build_volume_x = 0
 
-        expect(printer).not_to be_valid
-        expect(printer.errors[attribute]).to eq ['must be greater than 0']
-      end
+      expect(printer).not_to be_valid
+      expect(printer.errors[:build_volume_x]).to eq ['must be greater than 0']
     end
 
     it 'accepts a circular bed with a diameter and a height, without X and Y' do

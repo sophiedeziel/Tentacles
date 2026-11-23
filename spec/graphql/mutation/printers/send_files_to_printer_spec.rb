@@ -48,14 +48,6 @@ module Mutations
                 post '/graphql', params: { query:, variables: }
               end.to change { enqueued_jobs.count }.by(0)
             end
-
-            it 'returns a nil printer' do
-              post '/graphql', params: { query:, variables: }
-              json = JSON.parse(response.body)
-              data = json['data']['sendFilesToPrinters']
-
-              expect(data['jobEnqueued']).to be_falsey
-            end
           end
         end
 

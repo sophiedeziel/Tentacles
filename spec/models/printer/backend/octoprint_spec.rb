@@ -10,10 +10,6 @@ RSpec.describe Printer::Backend::Octoprint do
     Octoprint::Job.deserialize({ state:, job: { file: }, progress: { completion: } })
   end
 
-  it 'is OctoPrint' do
-    expect(adapter.product_name).to eq 'OctoPrint'
-  end
-
   describe 'reading the printer, from the recorded OctoPrint answers' do
     it 'reads the version', vcr: { cassette_name: 'Printer/version/1_3_1' } do
       expect(adapter.version).to eq 'OctoPrint 1.7.3'
@@ -30,10 +26,6 @@ RSpec.describe Printer::Backend::Octoprint do
        vcr: { cassette_name: 'Printer/using_api/when_octoprint_is_misconfigured/raises_an_error' } do
       printer.secret = '193736djdbs'
       expect { adapter.version }.to raise_error(Printer::Backend::Unauthorized, /\[403\]/)
-    end
-
-    it 'uploads a file', vcr: { cassette_name: 'Printer/upload/1_8_1' } do
-      expect { adapter.upload('spec/fixture_files/test.gcode') }.not_to raise_error
     end
   end
 

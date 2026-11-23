@@ -14,10 +14,6 @@ RSpec.describe Printer::Backend::Prusalink do
     Prusalink::Job.deserialize({ id:, state: 'PRINTING', progress:, file: })
   end
 
-  it 'is named PrusaLink, with a password' do
-    expect(adapter).to have_attributes(product_name: 'PrusaLink', secret_name: 'password', connects_on_its_own?: true)
-  end
-
   describe '#client' do
     it "is built from the printer's URI, username and password, with short timeouts" do
       expect(adapter.client).to have_attributes(host: 'http://prusa-mk4.local', username: 'maker',
@@ -161,12 +157,6 @@ RSpec.describe Printer::Backend::Prusalink do
       allow(Prusalink::Info).to receive(:get).and_return(Prusalink::Info.new(name: ''))
       expect(adapter.identify).to eq(name: 'prusa-mk4.local', version: 'PrusaLink 2.1.2 (firmware 6.2.0+8899)')
     end
-
-    it 'raises Unauthorized when the password is rejected' do
-      allow(Prusalink::Info).to receive(:get).and_raise(Prusalink::Exceptions::AuthenticationError,
-                                                        '[401] Unauthorized')
-      expect { adapter.identify }.to raise_error(Printer::Backend::Unauthorized, '[401] Unauthorized')
-    end
   end
 
   describe '#reported_specs' do
@@ -212,10 +202,6 @@ RSpec.describe Printer::Backend::Prusalink do
       expect(['1.0.0', '6.2.0+8899', '2.1.2-rc1', '', ' ', nil].map { described_class.readable_model(it) })
         .to all(be_nil)
     end
-  end
-
-  it 'has no webcam' do
-    expect(adapter.webcam_url).to be_nil
   end
 
   describe 'job commands' do

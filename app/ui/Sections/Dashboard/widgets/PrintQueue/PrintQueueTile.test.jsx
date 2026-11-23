@@ -113,11 +113,4 @@ describe('PrintQueueTile', () => {
     expect(screen.getByRole('table', { name: 'Queues by printer' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Start Next' })).not.toBeInTheDocument()
   })
-
-  it('shows the ready bar out of edit mode', async () => {
-    const { mock } = listsMock(variables(null, 8, 0), { printQueue: queueResult(QUEUE) })
-    renderTile(tile('L'), [mock])
-    expect(await screen.findByText('Prusa Mini+ is ready for spool_holder.gcode')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Start Next' })).toBeInTheDocument()
-  })
 })

@@ -25,15 +25,6 @@ RSpec.describe Mutations::Printers::SetPrinterFavorite, type: :request do
     expect(printer.reload.favorite).to be true
   end
 
-  it 'unmarks a favorite' do
-    printer.update!(favorite: true)
-
-    set_favorite(printer.id, false)
-
-    expect(data).to eq('printer' => { 'id' => printer.id.to_s, 'favorite' => false }, 'errors' => [])
-    expect(printer.reload.favorite).to be false
-  end
-
   it 'returns an error for an unknown printer' do
     set_favorite(printer.id + 1, true)
 

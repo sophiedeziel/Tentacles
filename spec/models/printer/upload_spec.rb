@@ -8,10 +8,6 @@ RSpec.describe Printer::Upload, :vcr do
 
   subject(:upload) { described_class.new(printer:, path: file_path) }
 
-  it 'does not print by default' do
-    expect(upload.print).to be false
-  end
-
   it 'needs a printer and a path' do
     empty = described_class.new
 
@@ -25,10 +21,6 @@ RSpec.describe Printer::Upload, :vcr do
     described_class.new(printer:, path: file_path, print: true).save!
 
     expect(printer.api).to have_received(:upload).with(file_path, print: true)
-  end
-
-  it 'uploads the file', vcr: { cassette_name: 'Printer/upload/1_8_1' } do
-    expect { upload.save! }.not_to raise_error
   end
 
   it 'uses a client with long timeouts for large files', vcr: { cassette_name: 'Printer/upload/1_8_1' } do

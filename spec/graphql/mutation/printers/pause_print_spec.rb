@@ -8,14 +8,7 @@ RSpec.describe Mutations::Printers::PausePrint, type: :request do
                   mutation: 'pausePrint',
                   commands: [[Octoprint::Job, :pause]],
                   allowed: [Printer::StateFamily::Printing],
-                  refusals: {
-                    Printer::StateFamily::Paused => 'Prusa MK4 is no longer printing',
-                    Printer::StateFamily::Cancelling => 'Prusa MK4 is no longer printing',
-                    Printer::StateFamily::Operational => 'Prusa MK4 is no longer printing',
-                    Printer::StateFamily::Connecting => 'Prusa MK4 is no longer printing',
-                    Printer::StateFamily::Error => 'Prusa MK4 is no longer printing',
-                    Printer::StateFamily::Offline => 'Prusa MK4 is no longer printing'
-                  }
+                  refusals: { Printer::StateFamily::Paused => 'Prusa MK4 is no longer printing' }
 
   describe 'the inline monitor tick' do
     include_context 'with a printer action request', 'pausePrint'

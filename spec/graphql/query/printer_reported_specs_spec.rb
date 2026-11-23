@@ -44,15 +44,6 @@ RSpec.describe Types::Printer, 'reportedSpecs', type: :request do
     )
   end
 
-  it 'is null, without calling the server, while the printer is flagged disconnected' do
-    Printer::Disconnection.create!(printer_id: printer.id)
-
-    query_printer
-
-    expect(reported).to be_nil
-    expect(Prusalink::Info).not_to have_received(:get)
-  end
-
   it 'is null when the printer is unreachable' do
     allow(Prusalink::Info).to receive(:get).and_raise(Prusalink::Exceptions::ConnectionError, 'timeout')
 

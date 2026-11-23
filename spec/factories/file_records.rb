@@ -19,9 +19,5 @@ FactoryBot.define do
         )
       end
     end
-
-    trait(:with_labels) do
-      labels { build_list :label, 1 }
-    end
   end
 end

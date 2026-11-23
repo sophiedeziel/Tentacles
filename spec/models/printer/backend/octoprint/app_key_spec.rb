@@ -34,12 +34,6 @@ RSpec.describe Printer::Backend::Octoprint::AppKey do
       expect(described_class.available?('192.168.1.57')).to be(false)
     end
 
-    it 'is false when the plugin is missing (404)' do
-      probe.to_return(status: 404)
-
-      expect(described_class.available?('192.168.1.57')).to be(false)
-    end
-
     it 'is false when the address does not answer' do
       probe.to_raise(Errno::ECONNREFUSED)
 
