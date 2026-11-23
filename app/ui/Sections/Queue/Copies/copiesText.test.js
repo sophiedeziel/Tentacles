@@ -69,6 +69,14 @@ describe('copyUse', () => {
       .toEqual({ grams: 18, seconds: 4200, material: 'PLA, PETG' })
   })
 
+  it('names every material of a file with several filaments, even one saved with a material', () => {
+    const twoTools = { ...READY, tools: [{ material: 'PLA' }, { material: 'PETG' }] }
+
+    expect(copyUse(printJob('PLA', twoTools))).toEqual({ grams: 18, seconds: 4200, material: 'PLA, PETG' })
+    expect(estimateRows(SINGLE, 3, copyUse(printJob(null, { ...twoTools, filamentGrams: 42 })))[0])
+      .toEqual({ label: 'Added filament', value: '84 g of PLA, PETG' })
+  })
+
   it('knows nothing of a summary pending or failed', () => {
     expect(copyUse(printJob('PLA', { status: 'PENDING' }))).toEqual({ grams: null, seconds: null, material: 'PLA' })
     expect(copyUse(printJob(null, null))).toEqual({ grams: null, seconds: null, material: null })

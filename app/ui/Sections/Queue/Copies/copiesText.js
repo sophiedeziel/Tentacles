@@ -77,15 +77,17 @@ export function copiesDialog (job, total) {
 
 // What one copy uses, from its print job (its material, null for the G-code's) and its file's G-code summary:
 // { grams, seconds, material }, each null when it isn't known (a summary pending or failed, a value the slicer didn't
-// write). The material is the job's, else what its G-code says ("PLA", or "PLA, PETG" for several filaments).
+// write). The material is the job's, else what its G-code says ("PLA"). A file with several filaments prints with
+// the materials its G-code says whatever the job asks (phase 9), so they're all named: "PLA, PETG".
 export function copyUse (printJob) {
   const summary = printJob?.file?.gcodeSummary
   if (summary?.status !== 'READY') return { grams: null, seconds: null, material: printJob?.material ?? null }
   const materials = [...new Set(summary.tools.map((tool) => tool.material).filter(Boolean))]
+  const several = summary.tools.length > 1
   return {
     grams: summary.filamentGrams ?? null,
     seconds: summary.printSeconds ?? null,
-    material: printJob.material ?? (materials.join(', ') || null)
+    material: (several ? null : printJob.material) ?? (materials.join(', ') || null)
   }
 }
 
