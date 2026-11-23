@@ -3,7 +3,7 @@
 module Subscriptions
   # Pushed once by each PrintQueue.push_changed, while the global queue is on: after each queue operation commits,
   # when a copy starts or ends, after a dispatch pass that started copies, when a printer's own job changes status,
-  # turns ready or goes offline, starts or stops taking jobs, or is removed.
+  # turns ready or goes offline, starts or stops taking jobs, has its loaded filament set or removed, or is removed.
   #
   #   TentaclesSchema.subscriptions.trigger(:queue_changed, {}, {})
   #

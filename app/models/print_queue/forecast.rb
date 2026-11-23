@@ -94,10 +94,10 @@ module PrintQueue
     attribute :starting_printer_ids, default: -> { {} }
     attribute :dispatch_paused, :boolean, default: false
 
-    # The queue as it is now: the candidates, the enqueued copies (one query) and the setting, with this fleet
-    #: (?fleet: PrintQueue::Fleet) -> PrintQueue::Forecast
-    def self.current(fleet: PrintQueue::Fleet.current)
-      entries = PrintQueue::NextJob.candidates
+    # The queue as it is now: the candidates (unless given), the enqueued copies (one query) and the setting, with this
+    # fleet
+    #: (?fleet: PrintQueue::Fleet, ?entries: Array[PrintQueue::Job]) -> PrintQueue::Forecast
+    def self.current(fleet: PrintQueue::Fleet.current, entries: PrintQueue::NextJob.candidates)
       enqueued = Printer::Job.where(print_job_id: entries.map(&:id), status: 'enqueued').in_queue_order
                              .pluck(:print_job_id, :printer_id)
       new(entries:, fleet:, starting_printer_ids: enqueued.reverse.to_h, # the first enqueued wins

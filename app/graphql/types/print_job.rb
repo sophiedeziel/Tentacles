@@ -10,6 +10,10 @@ module Types
     field :file, Types::File, null: false
     field :copies, Integer, null: false, description: 'How many copies are asked for'
     field :position, Integer, null: false, description: 'Its place in the queue: lower goes first'
+    field :waiting_position, Integer, null: true,
+                                      description: 'Its place among the print jobs with copies left to start ' \
+                                                   '(globalQueue.waiting), from 1: the number the queue page shows. ' \
+                                                   'Null when none is left to start.'
     field :held, Boolean, null: false, description: 'Held: no copy starts until it is released'
     field :same_printer, Boolean, null: false, description: 'Whether every copy prints on the same printer'
     field :all_capable, Boolean, null: false, method: :all_capable?,
@@ -44,6 +48,9 @@ module Types
       object.copy_counts = dataloader.with(Sources::CopyCountsSource).load(object.id)
       object.waiting_count
     end
+
+    # Batched: read once from the queue's candidates for the print jobs of a query
+    def waiting_position = dataloader.with(Sources::WaitingPositionsSource).load(object.id)
 
     def needs = dataloader.with(Sources::PrintJobNeedsSource).load(object)
 

@@ -81,30 +81,47 @@ RSpec.describe Printer::FilamentChange do
   describe 'the global queue' do
     let(:dispatch_request) { instance_spy(PrintQueue::DispatchRequest, save: true) }
 
-    before { allow(PrintQueue::DispatchRequest).to receive(:new).and_return(dispatch_request) }
+    before do
+      allow(PrintQueue::DispatchRequest).to receive(:new).and_return(dispatch_request)
+      allow(PrintQueue).to receive(:push_changed)
+    end
 
-    it 'asks for a dispatch pass once the filament is saved: an entry may now fit the printer' do
+    it 'pushes the printer queue change, then asks for a dispatch pass, once the filament is saved' do
       allow(PrintQueue).to receive(:enabled?).and_return(true)
-      allow(dispatch_request).to receive(:save) { expect(printer.loaded_filaments.count).to eq 1 }
+      allow(PrintQueue).to receive(:push_changed) { expect(printer.loaded_filaments.count).to eq 1 }
+      allow(dispatch_request).to receive(:save) { expect(PrintQueue).to have_received(:push_changed) }
 
       build_change.save!
 
+      expect(PrintQueue).to have_received(:push_changed).once.with([printer])
       expect(dispatch_request).to have_received(:save).once
     end
 
-    it 'asks for nothing while the global queue is off' do
+    it 'pushes and asks for nothing while the global queue is off' do
       allow(PrintQueue).to receive(:enabled?).and_return(false)
 
       build_change.save!
 
+      expect(PrintQueue).not_to have_received(:push_changed)
       expect(PrintQueue::DispatchRequest).not_to have_received(:new)
     end
 
-    it 'asks for nothing when the filament is refused' do
+    it 'pushes and asks for nothing when the filament is refused' do
       allow(PrintQueue).to receive(:enabled?).and_return(true)
 
       expect(build_change(colour: '').save).to be false
+      expect(PrintQueue).not_to have_received(:push_changed)
       expect(PrintQueue::DispatchRequest).not_to have_received(:new)
+    end
+
+    it 'pushes queueChanged through the schema' do
+      allow(PrintQueue).to receive(:enabled?).and_return(true)
+      allow(PrintQueue).to receive(:push_changed).and_call_original
+
+      build_change.save!
+
+      expect(subscriptions).to have_received(:trigger).with(:print_queue_changed, {}, printer).once
+      expect(subscriptions).to have_received(:trigger).with(:queue_changed, {}, {}).once
     end
   end
 

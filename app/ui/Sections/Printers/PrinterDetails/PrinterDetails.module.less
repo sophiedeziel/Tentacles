@@ -12,7 +12,7 @@
   gap: 12px;
 }
 
-.header, .title, .buttons, .columns, .serverRow, .versionRow, .removeCard {
+.header, .title, .buttons, .columns, .serverRow, .versionRow, .removeCard, .takesJobs, .queueLine {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -25,7 +25,7 @@
   padding-bottom: 4px;
 }
 
-.heading, .side, .removeText {
+.heading, .side, .removeText, .takesJobsText, .queue, .queueCell {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -57,7 +57,7 @@
   gap: 12px;
 }
 
-.cardTitle, .removeTitle {
+.cardTitle, .removeTitle, .takesJobsTitle {
   margin: 0;
   font-size: 16px;
   line-height: 24px;
@@ -89,7 +89,7 @@
   margin-top: 16px;
 }
 
-.removeCard {
+.removeCard, .takesJobs {
   justify-content: space-between;
   padding: 16px 24px;
   background: #ffffff;
@@ -97,12 +97,12 @@
   border-radius: 8px;
 }
 
-.removeText {
+.removeText, .takesJobsText {
   flex: 1 1 200px;
   gap: 0;
 }
 
-.removeTitle {
+.removeTitle, .takesJobsTitle {
   font-size: 14px;
   line-height: 22px;
 }
@@ -208,4 +208,24 @@
   align-items: center;
   justify-content: space-between;
   margin-top: 16px;
+}
+
+// The printer's part of the global queue, between the header and the cards: the bed banner, Takes Jobs (boxed like
+// Remove this printer), Up Next and Skipped
+.queue {
+  gap: 12px;
+}
+
+.queueCell {
+  gap: 2px;
+}
+
+.queueLine {
+  gap: 8px;
+}
+
+// Loaded Filament's hint, under its fields
+.filamentHint {
+  display: block;
+  margin: -12px 0 8px;
 }

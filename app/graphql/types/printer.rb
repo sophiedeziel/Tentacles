@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Types
-  class Printer < Base::Object
+  class Printer < Base::Object # rubocop:disable Metrics/ClassLength -- one field per thing the pages read about a printer
     # No field depends on the context, so printerStatusChanged can broadcast them
     default_broadcastable true
 
@@ -110,12 +110,30 @@ module Types
     field :print_on_bed, Types::Print, null: true,
                                        description: 'The print still on its bed, null when the bed is clear (or the ' \
                                                     'global queue is off)'
+    field :up_next, [Types::PrintJob], null: false,
+                                       description: 'The print jobs with copies left to start that it qualifies ' \
+                                                    'for, in queue order: allowed on it, big enough, with their ' \
+                                                    'filament loaded here. Held ones included. Empty while the ' \
+                                                    'global queue is off.'
+    field :skipped, [Types::SkippedPrintJob], null: false,
+                                              description: 'The print jobs with copies left to start that it skips, ' \
+                                                           'in queue order, with why. With upNext, every one. Empty ' \
+                                                           'while the global queue is off.'
 
     # Batched: one query for the printers of a query
     def bed_needs_clearing? = !print_on_bed.nil?
 
     def print_on_bed
       dataloader.with(Sources::BedToClearSource).load(object.id) if ::PrintQueue.enabled?
+    end
+
+    # Batched with globalQueue: the fleet and the queue are read once per query, whatever the number of print jobs
+    def up_next
+      ::PrintQueue.enabled? ? dataloader.with(Sources::LineupSource).load(object).up_next : []
+    end
+
+    def skipped
+      ::PrintQueue.enabled? ? dataloader.with(Sources::LineupSource).load(object).skipped : []
     end
   end
 end

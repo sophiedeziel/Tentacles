@@ -9,8 +9,8 @@ class Printer
   # the slots are validated against `printer.filament_slots` already.
   #
   # Written through Printer::FilamentChange and Printer::FilamentRemoval, which push printerStatusChanged: not
-  # directly. A change asks the global queue for a dispatch pass (an entry may now fit the printer); a removal doesn't,
-  # since it can't make an entry fit.
+  # directly. Both push the global queue's changes; a change also asks for a dispatch pass (an entry may now fit the
+  # printer), a removal doesn't, since it can't make an entry fit.
   class LoadedFilament < ApplicationRecord
     belongs_to :printer, inverse_of: :loaded_filaments
 

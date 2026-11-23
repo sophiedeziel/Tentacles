@@ -6,6 +6,7 @@ import { Alert, App, AutoComplete, Button, Card, Form, Select } from 'antd'
 import { FilamentOutlined } from '../../../components/icons'
 import { formatAgo } from '../../../utils/time'
 import useNow from '../../../utils/useNow'
+import filamentHint from './filamentHint'
 import {
   CLEAR_LOADED_FILAMENT, LOADED_FILAMENT, LOADED_FILAMENT_CHANGED, SET_LOADED_FILAMENT
 } from './graphql/loadedFilament'
@@ -36,7 +37,11 @@ const keepEnter = (event) => {
 // it may sit inside the page's) over local state, so its fields never make the page dirty, and Enter in them submits
 // nothing. A change made elsewhere (pushed by printerStatusChanged) replaces the values unless they were edited
 // here, which then keep the person's edits and say what it changed to.
-export default function LoadedFilament ({ printerId, slot = 1 }) {
+//
+// `demand` (the printer page's queue query, while the global queue is on): how many waiting jobs ask for each loaded
+// filament, shown under the fields. Only for the filament it was counted for: a count for another (changed since)
+// never shows.
+export default function LoadedFilament ({ printerId, slot = 1, demand }) {
   const { message } = App.useApp()
   const id = useId()
   const now = useNow()
@@ -54,6 +59,8 @@ export default function LoadedFilament ({ printerId, slot = 1 }) {
   const values = edit ? edit.values : saved
   const complete = Boolean(values.material && values.colour.trim())
   const changedElsewhere = edit && !busy && !sameFilament(edit.from, saved)
+  const asking = loaded && demand?.find((entry) => entry.slot === loaded.slot && sameFilament(entry, loaded))
+  const hint = asking ? filamentHint(loaded, asking.waitingJobsAskingCount) : null
 
   // Back to the saved values: untouched again
   const change = (field, value) => {
@@ -136,6 +143,8 @@ export default function LoadedFilament ({ printerId, slot = 1 }) {
         </div>
       </Form>
 
+      {hint && <span className={`${classes.small} ${classes.filamentHint}`}>{hint}</span>}
+
       {changedElsewhere && (
         <Alert className={classes.changedElsewhere} type="info" showIcon
           title={loaded ? `Changed to ${loaded.material} · ${loaded.colour} in another window` : 'Removed in another window'} />
@@ -162,5 +171,11 @@ export default function LoadedFilament ({ printerId, slot = 1 }) {
 
 LoadedFilament.propTypes = {
   printerId: PropTypes.string.isRequired,
-  slot: PropTypes.number
+  slot: PropTypes.number,
+  demand: PropTypes.arrayOf(PropTypes.shape({
+    slot: PropTypes.number.isRequired,
+    material: PropTypes.string.isRequired,
+    colour: PropTypes.string.isRequired,
+    waitingJobsAskingCount: PropTypes.number
+  }))
 }
