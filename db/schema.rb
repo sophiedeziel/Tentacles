@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_22_160000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_22_170000) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -170,6 +170,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_160000) do
     t.json "filament"
     t.datetime "bed_cleared_at"
     t.string "bed_cleared_by"
+    t.datetime "cancel_requested_at"
     t.index ["print_job_id", "status"], name: "index_printer_jobs_on_print_job_id_and_status"
     t.index ["printer_id", "status", "created_at"], name: "index_printer_jobs_on_printer_id_and_status_and_created_at"
   end

@@ -42,4 +42,33 @@ RSpec.describe Library::Item::ContentChange do
 
     expect { described_class.new(item:, content: 'solid cube').save! }.not_to have_enqueued_job(AnalyseGcodeJob)
   end
+
+  context 'when the file is in the print queue' do
+    let!(:entry) { create(:print_job, item:, copies: 1) }
+    let(:message) { "test.gcode is in the print queue: it can't be changed until its copies are done or removed" }
+
+    it 'is refused, whether the global queue is on or off, leaving the file as it was' do
+      [true, false].each do |enabled|
+        allow(PrintQueue).to receive(:enabled?).and_return(enabled)
+        change = described_class.new(item:, content: 'G1 X1 E1')
+
+        expect { expect(change.save).to be false }.not_to have_enqueued_job(AnalyseGcodeJob)
+        expect(change.errors[:base]).to eq [message]
+        expect(item.reload.file_content).not_to eq 'G1 X1 E1'
+      end
+    end
+
+    it 'is refused while a copy is printing' do
+      create(:printer_job, :copy, print_job: entry, status: 'active')
+
+      expect(described_class.new(item:, content: 'G1 X1 E1').save).to be false
+    end
+
+    it 'is allowed once the entry is finished' do
+      create(:printer_job, :copy, print_job: entry, status: 'completed')
+
+      expect(described_class.new(item:, content: 'G1 X1 E1').save).to be true
+      expect(item.reload.file_content).to eq 'G1 X1 E1'
+    end
+  end
 end

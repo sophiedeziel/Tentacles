@@ -64,6 +64,19 @@ RSpec.describe Spooler do
       expect(workers.keys).to eq [printer.id]
     end
 
+    it 'logs a dispatch request, for the whole queue, and keeps listening' do
+      spooler
+      allow(Printer).to receive(:find).and_call_original
+      messages.push({ command: 'dispatch' }, { command: 'add_printer', printer_id: printer.id })
+
+      spooler.subcribe_to_commands
+
+      expect(spooler).to have_received(:log).with('dispatch: not handled yet')
+      expect(spooler).not_to have_received(:log).with(/Couldn't find Printer/)
+      expect(Printer).to have_received(:find).once.with(printer.id)
+      expect(workers.keys).to eq [printer.id]
+    end
+
     context 'when a printer is removed mid-print' do
       let(:api) do
         instance_spy(Printer::Backend,
