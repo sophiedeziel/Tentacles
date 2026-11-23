@@ -3,19 +3,18 @@ import { describe, expect, it } from 'vitest'
 import whatHappensNext, { WHAT_HAPPENS_NEXT_KINDS } from './whatHappensNext'
 
 const MK4 = { id: '1', name: 'Prusa MK4' }
-const next = (kind, printer = null) => ({ kind, printer })
+const next = (kind, printer = null, more = {}) => ({ kind, printer, jobsAhead: 0, dispatchPaused: false, ...more })
 
 describe('whatHappensNext', () => {
   it('knows every WhatHappensNextKind of the schema', () => {
     expect(WHAT_HAPPENS_NEXT_KINDS).toEqual([
-      'ON_HOLD', 'DISPATCH_PAUSED', 'BLOCKED', 'NEXT_READY_PRINTER', 'AFTER_CURRENT_PRINT', 'AFTER_BED_CLEARED',
-      'STARTING', 'BATCH_ON_PRINTER', 'BATCH_FIRST_READY_PRINTER'
+      'ON_HOLD', 'BLOCKED', 'NEXT_READY_PRINTER', 'AFTER_CURRENT_PRINT', 'AFTER_BED_CLEARED', 'STARTING',
+      'BATCH_ON_PRINTER', 'BATCH_FIRST_READY_PRINTER'
     ])
   })
 
   it.each([
     ['ON_HOLD', null, 'On hold', 'held'],
-    ['DISPATCH_PAUSED', null, 'Dispatch paused', 'paused'],
     ['NEXT_READY_PRINTER', null, 'Goes to the next ready printer', 'plain'],
     ['AFTER_CURRENT_PRINT', MK4, 'Prusa MK4 takes it when its print finishes', 'plain'],
     ['AFTER_BED_CLEARED', MK4, 'Prusa MK4 takes it once its bed is cleared', 'plain'],
@@ -24,6 +23,22 @@ describe('whatHappensNext', () => {
     ['BATCH_FIRST_READY_PRINTER', null, 'The first ready printer takes all the copies', 'plain']
   ])('says %s as words', (kind, printer, text, tone) => {
     expect(whatHappensNext(next(kind, printer), { eligibleCount: 1 })).toEqual({ text, tone, loadFilament: false })
+  })
+
+  it('counts the jobs the printer takes first', () => {
+    expect(whatHappensNext(next('AFTER_CURRENT_PRINT', MK4, { jobsAhead: 1 })).text)
+      .toBe('Prusa MK4, after 1 job ahead of it')
+    expect(whatHappensNext(next('AFTER_CURRENT_PRINT', MK4, { jobsAhead: 3 })).text)
+      .toBe('Prusa MK4, after 3 jobs ahead of it')
+  })
+
+  it('says it waits for dispatch to resume first while dispatch is paused', () => {
+    expect(whatHappensNext(next('AFTER_BED_CLEARED', MK4, { dispatchPaused: true }))).toEqual({
+      text: 'Waiting for dispatch to resume. Prusa MK4 takes it once its bed is cleared', tone: 'paused', loadFilament: false
+    })
+    expect(whatHappensNext(next('BLOCKED', null, { dispatchPaused: true }), { eligibleCount: 1 })).toEqual({
+      text: 'Waiting for dispatch to resume. No printer has the needed filament loaded', tone: 'blocked', loadFilament: true
+    })
   })
 
   it('says each copy of a batch goes to the next ready printer', () => {

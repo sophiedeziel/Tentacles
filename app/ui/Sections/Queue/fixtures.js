@@ -65,7 +65,7 @@ export const waitingJob = (overrides = {}) => ({
     footprint: { __typename: 'GcodeFootprint', width: 120, depth: 80 }
   },
   eligiblePrinters: [ref(MINI), ref(VORON_ZERO)],
-  whatHappensNext: { __typename: 'WhatHappensNext', kind: 'NEXT_READY_PRINTER', printer: null },
+  whatHappensNext: { __typename: 'WhatHappensNext', kind: 'NEXT_READY_PRINTER', printer: null, jobsAhead: 0, dispatchPaused: false },
   prints: [],
   ...overrides
 })
@@ -88,7 +88,7 @@ export const BATCH = waitingJob({
     footprint: null
   },
   eligiblePrinters: [ref(MK4)],
-  whatHappensNext: { __typename: 'WhatHappensNext', kind: 'BATCH_ON_PRINTER', printer: ref(MK4) },
+  whatHappensNext: { __typename: 'WhatHappensNext', kind: 'BATCH_ON_PRINTER', printer: ref(MK4), jobsAhead: 0, dispatchPaused: false },
   prints: [
     { __typename: 'Print', id: '31', copyNumber: 1, status: 'COMPLETED', progress: 100, result: 'COMPLETED', printer: ref(MK4) },
     { __typename: 'Print', id: '32', copyNumber: 2, status: 'ACTIVE', progress: 40, result: null, printer: ref(MK4) }
@@ -100,7 +100,7 @@ export const HELD = waitingJob({
   position: 3,
   held: true,
   file: file('23', 'lid.gcode'),
-  whatHappensNext: { __typename: 'WhatHappensNext', kind: 'ON_HOLD', printer: null }
+  whatHappensNext: { __typename: 'WhatHappensNext', kind: 'ON_HOLD', printer: null, jobsAhead: 0, dispatchPaused: false }
 })
 
 // Every section filled: the Mini waits for its bed (bracket.gcode failed on it), the Voron 0.2 is free, the MK4

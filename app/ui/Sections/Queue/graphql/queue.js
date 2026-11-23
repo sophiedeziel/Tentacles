@@ -49,7 +49,7 @@ export const PRINT_JOB_FIELDS = gql`
       footprint { width depth }
     }
     eligiblePrinters { id name }
-    whatHappensNext { kind printer { id name } }
+    whatHappensNext { kind printer { id name } jobsAhead dispatchPaused }
     prints { id copyNumber status progress result printer { id name } }
   }
 `

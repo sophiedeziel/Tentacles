@@ -1,8 +1,9 @@
 // The one place a waiting job's What Happens Next (computed by the server, so the queue page and the printer page
-// agree) turns into words. `next` is the PrintJob's whatHappensNext: a kind, and the printer when the kind names one.
+// agree) turns into words. `next` is the PrintJob's whatHappensNext: a kind, the printer when the kind names one, how
+// many jobs that printer takes first (jobsAhead) and whether it waits for dispatch to resume first (dispatchPaused).
 //
 // Returns { text, tone, loadFilament }:
-// - tone: 'held' and 'paused' read as warnings, 'blocked' as an error, the others as plain text
+// - tone: 'held' and 'paused' (waiting for dispatch to resume) read as warnings, 'blocked' as an error, the others as plain text
 // - loadFilament: whether the row offers Load Filament (BLOCKED, when some printer could print it once its filament
 //   is changed)
 
@@ -11,7 +12,6 @@ const printerName = (next) => next.printer?.name || 'A printer'
 
 const WORDS = {
   ON_HOLD: () => ({ text: 'On hold', tone: 'held' }),
-  DISPATCH_PAUSED: () => ({ text: 'Dispatch paused', tone: 'paused' }),
   // BLOCKED also covers a job no printer can print at all (no eligible printer): no filament change helps then
   BLOCKED: (next, { eligibleCount }) => (eligibleCount > 0
     ? { text: 'No printer has the needed filament loaded', tone: 'blocked', loadFilament: true }
@@ -19,7 +19,11 @@ const WORDS = {
   NEXT_READY_PRINTER: (next, { copiesLeft }) => ({
     text: copiesLeft > 1 ? 'Each copy goes to the next ready printer' : 'Goes to the next ready printer'
   }),
-  AFTER_CURRENT_PRINT: (next) => ({ text: `${printerName(next)} takes it when its print finishes` }),
+  AFTER_CURRENT_PRINT: (next) => ({
+    text: next.jobsAhead > 0
+      ? `${printerName(next)}, after ${next.jobsAhead} ${next.jobsAhead === 1 ? 'job' : 'jobs'} ahead of it`
+      : `${printerName(next)} takes it when its print finishes`
+  }),
   AFTER_BED_CLEARED: (next) => ({ text: `${printerName(next)} takes it once its bed is cleared` }),
   STARTING: (next) => ({ text: `Starting on ${printerName(next)}` }),
   BATCH_ON_PRINTER: (next) => ({ text: `${printerName(next)} prints the next copy when the current one finishes` }),
@@ -33,5 +37,7 @@ export const WHAT_HAPPENS_NEXT_KINDS = Object.keys(WORDS)
 export default function whatHappensNext (next, { copiesLeft = 1, eligibleCount = 0 } = {}) {
   const words = next && WORDS[next.kind]
   if (!words) return null
-  return { tone: 'plain', loadFilament: false, ...words(next, { copiesLeft, eligibleCount }) }
+  const said = { tone: 'plain', loadFilament: false, ...words(next, { copiesLeft, eligibleCount }) }
+  if (!next.dispatchPaused) return said
+  return { ...said, text: `Waiting for dispatch to resume. ${said.text}`, tone: said.tone === 'plain' ? 'paused' : said.tone }
 }

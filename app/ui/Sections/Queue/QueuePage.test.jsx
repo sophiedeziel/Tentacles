@@ -29,7 +29,7 @@ const section = (name) => screen.getByRole('region', { name })
 const rows = (name) => within(section(name)).getAllByRole('row').filter((row) => row.dataset.rowKey)
 const row = (name, key) => rows(name).find((each) => each.dataset.rowKey === key)
 const blocked = (eligiblePrinters) => waitingJob({
-  eligiblePrinters, whatHappensNext: { __typename: 'WhatHappensNext', kind: 'BLOCKED', printer: null }
+  eligiblePrinters, whatHappensNext: { __typename: 'WhatHappensNext', kind: 'BLOCKED', printer: null, jobsAhead: 0, dispatchPaused: false }
 })
 
 describe('QueuePage', () => {
