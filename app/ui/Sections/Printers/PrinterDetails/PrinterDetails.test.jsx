@@ -440,6 +440,14 @@ describe('PrinterDetails with the global queue on', () => {
     expect(screen.getByText('Set this when you swap spools. The queue matches jobs against it.')).toBeInTheDocument()
   })
 
+  it('shows no bed banner once the bed is clear', async () => {
+    renderOn([printerQueue({ ...printerQueue().printer, bedNeedsClearing: false, printOnBed: null })])
+
+    expect(await screen.findByRole('region', { name: 'Up Next for This Printer' })).toBeInTheDocument()
+    // Every title of the banner ("Print finished: remove the part", "Remove the last print", ...)
+    expect(screen.queryByRole('region', { name: /remove the (part|last print)/i })).not.toBeInTheDocument()
+  })
+
   it('saves Takes Jobs apart from the page\'s form, which it never submits', async () => {
     const sent = []
     renderOn([printerQueue(), printerQueue({ ...printerQueue().printer, takesJobs: false })], [{
