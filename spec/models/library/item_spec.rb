@@ -126,18 +126,6 @@ RSpec.describe Library::Item, type: :model do
     it { is_expected.to eq Rails.root.join('spec/fixture_files/test.gcode').read }
   end
 
-  describe '#change_file_content!' do
-    subject { file.change_file_content!(content) }
-
-    let(:content) { 'new_content' }
-
-    it 'changes the file content' do
-      expect { subject }.to change {
-                              file.file_content
-                            }.from(Rails.root.join('spec/fixture_files/test.gcode').read).to(content)
-    end
-  end
-
   describe '#labels' do
     subject { build(:file_record, :with_labels).labels }
 
@@ -160,6 +148,19 @@ RSpec.describe Library::Item, type: :model do
 
       expect(Printer::Job.exists?(job.id)).to be false
       expect(Printer.exists?(job.printer_id)).to be true
+    end
+  end
+
+  describe '#gcode?' do
+    it 'is true for a .gcode file, whatever its case' do
+      expect(file).to be_gcode
+      file.file.attach(io: StringIO.new('G1'), filename: 'CUBE.GCODE')
+      expect(file).to be_gcode
+    end
+
+    it 'is false for another file, binary G-code included' do
+      file.file.attach(io: StringIO.new('GCDE'), filename: 'cube.bgcode')
+      expect(file).not_to be_gcode
     end
   end
 end

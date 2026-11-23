@@ -30,6 +30,11 @@ module Library
       ".#{filename.split('.').last}"
     end
 
+    # Whether the file is G-code text, the only kind Gcode::Summary reads (not .bgcode)
+    def gcode?
+      filetype.casecmp?('.gcode')
+    end
+
     def filesize
       file.blob.byte_size
     end
@@ -60,12 +65,6 @@ module Library
 
     def file_content
       file.blob.download
-    end
-
-    def change_file_content!(content, new_filename: nil)
-      temp_filename = Rails.root.join("tmp/#{file.filename}")
-      ::File.write(temp_filename, content)
-      file.attach(io: ::File.open(temp_filename), filename: new_filename || filename)
     end
 
     def gcode_analysis

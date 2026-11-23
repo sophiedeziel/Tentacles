@@ -18,7 +18,7 @@ module Mutations
       def resolve(id:, file_content:, file_name: nil)
         file = ::Library::Item.find(id)
 
-        if file.change_file_content!(file_content, new_filename: file_name)
+        if ::Library::Item::ContentChange.new(item: file, content: file_content, filename: file_name).save
           { file: }
         else
           { file: nil }
