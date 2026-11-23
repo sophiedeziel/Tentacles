@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Runs the linters, the type check and every test suite, like CI: RuboCop, ESLint, Sorbet, RSpec, then Vitest.
+# Every step runs even when an earlier one fails, then a summary lists the failures.
+# Exits non-zero when any step fails.
+#
+#   bin/check
+set -uo pipefail
+cd "$(dirname "$0")/.."
+
+steps=(
+  "RuboCop|bin/rubocop --parallel"
+  "ESLint|bin/yarn run --silent eslint app/ui"
+  "Sorbet|bin/bundle exec srb tc"
+  "RSpec|bin/rspec"
+  "Vitest|bin/yarn test"
+)
+
+failed=()
+for step in "${steps[@]}"; do
+  name=${step%%|*}
+  command=${step#*|}
+  echo
+  echo "== $name: $command =="
+  if ! $command; then
+    failed+=("$name")
+  fi
+done
+
+echo
+if [ ${#failed[@]} -eq 0 ]; then
+  echo "== All checks passed =="
+else
+  echo "== Failed: ${failed[*]} =="
+  exit 1
+fi
