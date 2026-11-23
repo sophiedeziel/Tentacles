@@ -388,6 +388,20 @@ class Printer
 
     sig { params(value: T::Enumerable[::Printer::Job]).void }
     def jobs=(value); end
+
+    sig { returns(T::Array[T.untyped]) }
+    def loaded_filament_ids; end
+
+    sig { params(ids: T::Array[T.untyped]).returns(T::Array[T.untyped]) }
+    def loaded_filament_ids=(ids); end
+
+    # This method is created by ActiveRecord on the `Printer` class because it declared `has_many :loaded_filaments`.
+    # 🔗 [Rails guide for `has_many` association](https://guides.rubyonrails.org/association_basics.html#the-has-many-association)
+    sig { returns(::Printer::LoadedFilament::PrivateCollectionProxy) }
+    def loaded_filaments; end
+
+    sig { params(value: T::Enumerable[::Printer::LoadedFilament]).void }
+    def loaded_filaments=(value); end
   end
 
   module GeneratedAssociationRelationMethods
@@ -989,6 +1003,51 @@ class Printer
 
     sig { void }
     def favorite_will_change!; end
+
+    sig { returns(::Integer) }
+    def filament_slots; end
+
+    sig { params(value: ::Integer).returns(::Integer) }
+    def filament_slots=(value); end
+
+    sig { returns(T::Boolean) }
+    def filament_slots?; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def filament_slots_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def filament_slots_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def filament_slots_came_from_user?; end
+
+    sig { returns(T.nilable([::Integer, ::Integer])) }
+    def filament_slots_change; end
+
+    sig { returns(T.nilable([::Integer, ::Integer])) }
+    def filament_slots_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def filament_slots_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def filament_slots_in_database; end
+
+    sig { returns(T.nilable([::Integer, ::Integer])) }
+    def filament_slots_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def filament_slots_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def filament_slots_previously_was; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def filament_slots_was; end
+
+    sig { void }
+    def filament_slots_will_change!; end
 
     sig { returns(T.nilable(::String)) }
     def firmware; end
@@ -1606,6 +1665,9 @@ class Printer
     def restore_favorite!; end
 
     sig { void }
+    def restore_filament_slots!; end
+
+    sig { void }
     def restore_firmware!; end
 
     sig { void }
@@ -1649,6 +1711,9 @@ class Printer
 
     sig { void }
     def restore_specs_filled_at!; end
+
+    sig { void }
+    def restore_takes_jobs!; end
 
     sig { void }
     def restore_updated_at!; end
@@ -1721,6 +1786,12 @@ class Printer
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def saved_change_to_favorite?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([::Integer, ::Integer])) }
+    def saved_change_to_filament_slots; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_filament_slots?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
     def saved_change_to_firmware; end
@@ -1811,6 +1882,12 @@ class Printer
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def saved_change_to_specs_filled_at?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable([T::Boolean, T::Boolean])) }
+    def saved_change_to_takes_jobs; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def saved_change_to_takes_jobs?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { returns(T.nilable([::ActiveSupport::TimeWithZone, ::ActiveSupport::TimeWithZone])) }
     def saved_change_to_updated_at; end
@@ -1925,6 +2002,51 @@ class Printer
 
     sig { void }
     def specs_filled_at_will_change!; end
+
+    sig { returns(T::Boolean) }
+    def takes_jobs; end
+
+    sig { params(value: T::Boolean).returns(T::Boolean) }
+    def takes_jobs=(value); end
+
+    sig { returns(T::Boolean) }
+    def takes_jobs?; end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def takes_jobs_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def takes_jobs_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def takes_jobs_came_from_user?; end
+
+    sig { returns(T.nilable([T::Boolean, T::Boolean])) }
+    def takes_jobs_change; end
+
+    sig { returns(T.nilable([T::Boolean, T::Boolean])) }
+    def takes_jobs_change_to_be_saved; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def takes_jobs_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def takes_jobs_in_database; end
+
+    sig { returns(T.nilable([T::Boolean, T::Boolean])) }
+    def takes_jobs_previous_change; end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def takes_jobs_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def takes_jobs_previously_was; end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def takes_jobs_was; end
+
+    sig { void }
+    def takes_jobs_will_change!; end
 
     sig { returns(::ActiveSupport::TimeWithZone) }
     def updated_at; end
@@ -2137,6 +2259,9 @@ class Printer
     def will_save_change_to_favorite?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_filament_slots?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def will_save_change_to_firmware?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
@@ -2180,6 +2305,9 @@ class Printer
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def will_save_change_to_specs_filled_at?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
+    def will_save_change_to_takes_jobs?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { params(from: T.untyped, to: T.untyped).returns(T::Boolean) }
     def will_save_change_to_updated_at?(from: T.unsafe(nil), to: T.unsafe(nil)); end
