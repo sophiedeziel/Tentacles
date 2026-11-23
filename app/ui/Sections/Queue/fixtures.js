@@ -52,8 +52,8 @@ export const VORON_ZERO = queuePrinter({ ...PRINTERS.OPERATIONAL, id: '9', name:
 export const KOBRA = fleetPrinter(PRINTERS.OFFLINE)
 
 // A copy handed to a printer (QueuePrintFields)
-// (`jobPrints`, `copiesLeftToStart`: its print job's copies, which a Printing row brings for the copies dialog)
-export const print = ({ id, printer, jobId, copies = 1, jobFile, copyNumber = 1, status = 'ACTIVE', progress = 0, result = null, finishedAt = null, copiesLeftToStart = 0, jobPrints = [] }) => ({
+// (`jobPrints`, `copiesLeftToStart`, `samePrinter`: its print job's copies, which a Printing row brings for the copies dialog)
+export const print = ({ id, printer, jobId, copies = 1, jobFile, copyNumber = 1, status = 'ACTIVE', progress = 0, result = null, finishedAt = null, copiesLeftToStart = 0, jobPrints = [], samePrinter = false }) => ({
   __typename: 'Print',
   id,
   copyNumber,
@@ -63,7 +63,7 @@ export const print = ({ id, printer, jobId, copies = 1, jobFile, copyNumber = 1,
   finishedAt,
   result,
   printer,
-  printJob: { __typename: 'PrintJob', id: jobId, copies, copiesLeftToStart, file: jobFile, prints: jobPrints }
+  printJob: { __typename: 'PrintJob', id: jobId, copies, samePrinter, copiesLeftToStart, file: jobFile, prints: jobPrints }
 })
 
 const what = (kind, printer = null, more = {}) => ({
@@ -146,12 +146,12 @@ export const queue = (overrides = {}) => ({
   availablePrinters: [VORON_ZERO],
   offlinePrinters: [KOBRA],
   printing: [print({
-    id: '32', printer: MK4, jobId: '12', copies: 3, jobFile: CLIPS, copyNumber: 2, progress: 40, copiesLeftToStart: 1, jobPrints: BATCH.prints
+    id: '32', printer: MK4, jobId: '12', copies: 3, samePrinter: true, jobFile: CLIPS, copyNumber: 2, progress: 40, copiesLeftToStart: 1, jobPrints: BATCH.prints
   })],
   waiting: [waitingJob(), BATCH, HELD],
   finished: [
     print({ id: '33', printer: MINI, jobId: '14', jobFile: BRACKET, status: 'ERROR', result: 'FAILED', finishedAt: '2026-11-14T13:00:00Z' }),
-    print({ id: '31', printer: MK4, jobId: '12', copies: 3, jobFile: CLIPS, status: 'COMPLETED', progress: 100, result: 'COMPLETED', finishedAt: '2026-11-14T12:30:00Z' })
+    print({ id: '31', printer: MK4, jobId: '12', copies: 3, samePrinter: true, jobFile: CLIPS, status: 'COMPLETED', progress: 100, result: 'COMPLETED', finishedAt: '2026-11-14T12:30:00Z' })
   ],
   ...overrides
 })

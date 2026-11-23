@@ -34,3 +34,38 @@
   padding-bottom: 5px;
   flex: 1 1 200px;
 }
+
+// What the copies use: label and value rows on a tinted box
+.estimate {
+  margin: 0;
+  padding: 4px 16px;
+  border-radius: 8px;
+}
+
+.estimateRow {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
+  gap: 16px;
+  padding: 10px 0;
+
+  & + & {
+    border-top: 1px solid var(--line);
+  }
+
+  dt, dd {
+    margin: 0;
+  }
+}
+
+// Print More Copies' same-printer switch, its words on the left
+.samePrinter {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.samePrinterText {
+  display: flex;
+  flex-direction: column;
+}

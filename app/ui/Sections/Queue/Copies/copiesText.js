@@ -1,5 +1,6 @@
 // What the copies dialog says (Change Number of Copies on a batch, Print More Copies on a single print), from the
 // print job's copies: how many are done, printing and waiting, and the fewest it can ask for
+import { formatPrintTime } from '../../../utils/time'
 import { copiesFloor } from '../queueView'
 
 const UNDER_WAY = ['ENQUEUED', 'ACTIVE']
@@ -72,4 +73,58 @@ export function copiesDialog (job, total) {
     keep: `Keep ${Cp(job.copies)}`,
     unchanged: total === job.copies
   }
+}
+
+// What one copy uses, from its print job (its material, null for the G-code's) and its file's G-code summary:
+// { grams, seconds, material }, each null when it isn't known (a summary pending or failed, a value the slicer didn't
+// write). The material is the job's, else what its G-code says ("PLA", or "PLA, PETG" for several filaments).
+export function copyUse (printJob) {
+  const summary = printJob?.file?.gcodeSummary
+  if (summary?.status !== 'READY') return { grams: null, seconds: null, material: printJob?.material ?? null }
+  const materials = [...new Set(summary.tools.map((tool) => tool.material).filter(Boolean))]
+  return {
+    grams: summary.filamentGrams ?? null,
+    seconds: summary.printSeconds ?? null,
+    material: printJob.material ?? (materials.join(', ') || null)
+  }
+}
+
+const grams = (value) => `${value < 10 ? value.toFixed(1) : Math.round(value)} g`
+
+// "84 g of PETG" for `count` copies, null when not known
+function filamentFor (use, count) {
+  if (use.grams == null) return null
+  const amount = grams(use.grams * count)
+  return use.material ? `${amount} of ${use.material}` : amount
+}
+
+// "6 h 20 min" for `count` copies, null when not known
+const timeFor = (use, count) => (use.seconds == null ? null : formatPrintTime(use.seconds * count))
+
+// "4 copies waiting, after the one printing now": the copies a batch still has to print at `total`
+function stillToPrint (waiting, printing) {
+  const copies = waiting === 0 ? 'No copies waiting' : `${cp(waiting)} waiting`
+  if (printing === 0) return copies
+  if (waiting === 0) return `${copies}. ${printing === 1 ? 'The one printing now finishes' : `The ${printing} printing now finish`}`
+  return `${copies}, after ${printing === 1 ? 'the one' : `the ${printing}`} printing now`
+}
+
+// The dialog's estimate box at `total` copies, as { label, value } rows, a row left out when its value isn't known
+// (`use`: copyUse). A single print (Print More Copies): what the added copies use. A batch (Change Number of Copies):
+// what its waiting copies still need, the copies printing aside.
+export function estimateRows (job, total, use) {
+  if (job.copies === 1) {
+    const added = Math.max(0, total - 1)
+    return [
+      { label: 'Added filament', value: filamentFor(use, added) },
+      { label: 'Added print time', value: timeFor(use, added) }
+    ].filter((row) => row.value)
+  }
+  const { printing, waiting } = copyCounts(job)
+  const left = Math.max(0, waiting + total - job.copies)
+  return [
+    { label: 'Still to print', value: stillToPrint(left, printing) },
+    { label: 'Filament left to use', value: filamentFor(use, left) },
+    { label: 'Print time left', value: timeFor(use, left) }
+  ].filter((row) => row.value)
 }

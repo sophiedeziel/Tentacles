@@ -7,7 +7,7 @@ import { InMemoryCache } from '@apollo/client'
 import { MemoryRouter, useLocation } from 'react-router'
 
 import QueuePage from './QueuePage'
-import { FINISHED_ROWS, GLOBAL_QUEUE_PAGE, QUEUE_CHANGED } from './graphql/queue'
+import { COPIES_USE, FINISHED_ROWS, GLOBAL_QUEUE_PAGE, QUEUE_CHANGED } from './graphql/queue'
 import {
   ADD_TO_QUEUE, CONFIRM_BED_CLEARED, HOLD_PRINT_JOB, MOVE_PRINT_JOB, PAUSE_DISPATCH, RELEASE_PRINT_JOB,
   REMOVE_PRINT_JOB, RESUME_DISPATCH, SET_PRINT_JOB_COPIES, UNBIND_PRINT_JOB
@@ -15,6 +15,7 @@ import {
 import { ACTIONS } from '../Dashboard/graphql/actions'
 import { POSSIBLE_TYPES, PRINT_QUEUE_CHANGED, PRINTER_STATUS_CHANGED, TYPE_POLICIES } from '../Dashboard/graphql/dashboard'
 import { BATCH, HELD, KOBRA, MINI, MK4, print, printOnBed, queue, waitingJob } from './fixtures'
+import { summary } from './AddToQueue/fixtures'
 
 const later = { delay: 60000 }
 const always = { maxUsageCount: Number.POSITIVE_INFINITY }
@@ -344,7 +345,8 @@ describe('the copies dialog', () => {
   const total = () => screen.getByRole('spinbutton', { name: 'Total copies' })
 
   it('changes the number of copies of a batch, never below the copies done and printing', async () => {
-    const save = mutation(SET_PRINT_JOB_COPIES, 'setPrintJobCopies', { id: '12', copies: 5 }, { payload: { printJob: null } })
+    const save = mutation(SET_PRINT_JOB_COPIES, 'setPrintJobCopies', { id: '12', copies: 5, samePrinter: null },
+      { payload: { printJob: null } })
     renderPage(queue(), [save.mock])
     await loaded()
 
@@ -362,12 +364,13 @@ describe('the copies dialog', () => {
     expect(dialog).toHaveTextContent('Adds 2 copies to the 1 waiting.')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Set to 5 Copies' }))
 
-    await waitFor(() => expect(save.sent).toEqual([{ id: '12', copies: 5 }]))
+    await waitFor(() => expect(save.sent).toEqual([{ id: '12', copies: 5, samePrinter: null }]))
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
   })
 
   it('prints more copies of a single print', async () => {
-    const save = mutation(SET_PRINT_JOB_COPIES, 'setPrintJobCopies', { id: '11', copies: 2 }, { payload: { printJob: null } })
+    const save = mutation(SET_PRINT_JOB_COPIES, 'setPrintJobCopies', { id: '11', copies: 2, samePrinter: false },
+      { payload: { printJob: null } })
     renderPage(queue(), [save.mock])
     await loaded()
 
@@ -379,11 +382,11 @@ describe('the copies dialog', () => {
     expect(dialog).toHaveTextContent('The job becomes a batch.')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Print 2 Copies' }))
 
-    await waitFor(() => expect(save.sent).toEqual([{ id: '11', copies: 2 }]))
+    await waitFor(() => expect(save.sent).toEqual([{ id: '11', copies: 2, samePrinter: false }]))
   })
 
   it('stays open and shows why when the server refuses', async () => {
-    const save = mutation(SET_PRINT_JOB_COPIES, 'setPrintJobCopies', { id: '11', copies: 2 }, {
+    const save = mutation(SET_PRINT_JOB_COPIES, 'setPrintJobCopies', { id: '11', copies: 2, samePrinter: false }, {
       payload: { printJob: null }, errors: refused('phone_stand.gcode is no longer in the queue')
     })
     renderPage(queue(), [save.mock])
@@ -394,6 +397,65 @@ describe('the copies dialog', () => {
 
     expect(await screen.findByText('phone_stand.gcode is no longer in the queue')).toBeInTheDocument()
     expect(screen.getByRole('dialog')).toBeInTheDocument()
+  })
+
+  // What one copy of a print job uses: 42 g and 3 h 10 min, in PETG
+  const copyUse = (id, { material = 'PETG', grams = 42, seconds = 11400 } = {}) => ({
+    request: { query: COPIES_USE, variables: { id } },
+    result: {
+      data: {
+        globalQueue: {
+          __typename: 'GlobalQueue',
+          printJob: {
+            __typename: 'PrintJob',
+            id,
+            material,
+            file: { __typename: 'File', id: `file-${id}`, gcodeSummary: summary({ filamentGrams: grams, printSeconds: seconds }) }
+          }
+        }
+      }
+    },
+    ...always
+  })
+
+  it('says what the added copies use, and keeps them all on the same printer when asked', async () => {
+    const save = mutation(SET_PRINT_JOB_COPIES, 'setPrintJobCopies', { id: '11', copies: 3, samePrinter: true },
+      { payload: { printJob: null } })
+    renderPage(queue(), [copyUse('11'), save.mock])
+    await loaded()
+
+    await pick(row('Waiting', '11'), 'Print More Copies')
+    const dialog = await screen.findByRole('dialog')
+    expect(await within(dialog).findByText('42 g of PETG')).toBeInTheDocument()
+    expect(dialog).toHaveTextContent('Added print time3 h 10 min')
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Increase Value' }))
+    expect(dialog).toHaveTextContent('Added filament84 g of PETG')
+    expect(dialog).toHaveTextContent('Added print time6 h 20 min')
+    const samePrinter = within(dialog).getByRole('switch', { name: 'Keep all copies on the same printer' })
+    expect(samePrinter).not.toBeChecked()
+    await userEvent.click(samePrinter)
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Print 3 Copies' }))
+
+    await waitFor(() => expect(save.sent).toEqual([{ id: '11', copies: 3, samePrinter: true }]))
+  })
+
+  it('says what a batch still has to print, without a same-printer switch', async () => {
+    renderPage(queue(), [copyUse(BATCH.id, { material: null, grams: 18, seconds: 4200 })])
+    await loaded()
+
+    await pick(row('Waiting', BATCH.id), 'Change Number of Copies')
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByText('Now:')).toBeInTheDocument()
+    expect(await within(dialog).findByText('1 copy waiting, after the one printing now')).toBeInTheDocument()
+    // No material asked: the G-code's
+    expect(dialog).toHaveTextContent('Filament left to use18 g of PLA')
+    expect(dialog).toHaveTextContent('Print time left1 h 10 min')
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Increase Value' }))
+    expect(dialog).toHaveTextContent('Still to print2 copies waiting, after the one printing now')
+    expect(dialog).toHaveTextContent('Filament left to use36 g of PLA')
+    expect(within(dialog).queryByRole('switch')).not.toBeInTheDocument()
   })
 
   it('opens from a copy printing, for its print job', async () => {
@@ -460,7 +522,7 @@ describe('the Printing ⋯ menu', () => {
   const CLIPS = BATCH.file
   const pausedQueue = () => queue({
     printing: [print({
-      id: '32', printer: PAUSED, jobId: '12', copies: 3, jobFile: CLIPS, copyNumber: 2, progress: 40, copiesLeftToStart: 1, jobPrints: BATCH.prints
+      id: '32', printer: PAUSED, jobId: '12', copies: 3, samePrinter: true, jobFile: CLIPS, copyNumber: 2, progress: 40, copiesLeftToStart: 1, jobPrints: BATCH.prints
     })],
     // Not the MK4's finished copy: its printer's status would say printing
     finished: [queue().finished[0]]

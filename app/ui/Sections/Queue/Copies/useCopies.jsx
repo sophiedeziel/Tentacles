@@ -5,18 +5,18 @@ import CopiesModal from './CopiesModal'
 // Change Number of Copies and Print More Copies, from a row's "⋯" menu:
 //
 //   const copies = useCopies({ onSave: actions.setCopies })
-//   copies.ask(job)   // job: { id, copies, copiesLeftToStart, file, prints }
+//   copies.ask(job)   // job: { id, copies, copiesLeftToStart, samePrinter, file, prints }
 //   {copies.modal}
 //
-// `onSave(job, total)` resolves to whether it was saved (useQueueActions shows a refusal): the dialog closes once
+// `onSave(job, total, { samePrinter })` (samePrinter null: unchanged) resolves to whether it was saved (useQueueActions shows a refusal): the dialog closes once
 // saved, and stays open on a refusal.
 export default function useCopies ({ onSave }) {
   const [job, setJob] = useState(null)
   const [saving, setSaving] = useState(false)
 
-  const save = async (total) => {
+  const save = async (total, options) => {
     setSaving(true)
-    const saved = await onSave(job, total)
+    const saved = await onSave(job, total, options)
     setSaving(false)
     if (saved) setJob(null)
   }

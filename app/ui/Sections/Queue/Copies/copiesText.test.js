@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { copiesDialog, effectText, floorText } from './copiesText'
+import { copiesDialog, copyUse, effectText, estimateRows, floorText } from './copiesText'
 
 const copy = (status) => ({ status, result: status === 'COMPLETED' ? 'COMPLETED' : null })
 // bracket_v3.gcode × 10: 2 done, 1 printing, 7 waiting
@@ -52,5 +52,54 @@ describe('floorText', () => {
     expect(floorText({ ...BATCH, prints: [copy('COMPLETED')], copiesLeftToStart: 9 }))
       .toBe('The lowest is 1: 1 copy is done, and it can\'t be taken back.')
     expect(floorText({ ...BATCH, prints: [], copiesLeftToStart: 10 })).toBeNull()
+  })
+})
+
+// A print job's material and its file's G-code summary, as COPIES_USE reads them
+const printJob = (material, summary) => ({ material, file: { gcodeSummary: summary } })
+const READY = {
+  status: 'READY', filamentGrams: 18, printSeconds: 4200, tools: [{ material: 'PLA' }]
+}
+
+describe('copyUse', () => {
+  it('reads what one copy uses: the job\'s material, else the G-code\'s', () => {
+    expect(copyUse(printJob('PETG', READY))).toEqual({ grams: 18, seconds: 4200, material: 'PETG' })
+    expect(copyUse(printJob(null, READY))).toEqual({ grams: 18, seconds: 4200, material: 'PLA' })
+    expect(copyUse(printJob(null, { ...READY, tools: [{ material: 'PLA' }, { material: 'PETG' }, { material: null }] })))
+      .toEqual({ grams: 18, seconds: 4200, material: 'PLA, PETG' })
+  })
+
+  it('knows nothing of a summary pending or failed', () => {
+    expect(copyUse(printJob('PLA', { status: 'PENDING' }))).toEqual({ grams: null, seconds: null, material: 'PLA' })
+    expect(copyUse(printJob(null, null))).toEqual({ grams: null, seconds: null, material: null })
+  })
+})
+
+describe('estimateRows', () => {
+  const use = { grams: 42, seconds: 11400, material: 'PETG' }
+
+  it('says what the added copies of a single print use', () => {
+    expect(estimateRows(SINGLE, 3, use)).toEqual([
+      { label: 'Added filament', value: '84 g of PETG' },
+      { label: 'Added print time', value: '6 h 20 min' }
+    ])
+  })
+
+  it('says what a batch still has to print, the copies printing aside', () => {
+    expect(estimateRows(BATCH, 7, { grams: 18, seconds: 4200, material: 'PLA' })).toEqual([
+      { label: 'Still to print', value: '4 copies waiting, after the one printing now' },
+      { label: 'Filament left to use', value: '72 g of PLA' },
+      { label: 'Print time left', value: '4 h 40 min' }
+    ])
+    expect(estimateRows(BATCH, 3, use)[0].value).toBe('No copies waiting. The one printing now finishes')
+    const idle = { ...BATCH, prints: [copy('COMPLETED')], copiesLeftToStart: 9 }
+    expect(estimateRows(idle, 10, use)[0].value).toBe('9 copies waiting')
+  })
+
+  it('leaves out what is not known, and the material when none is', () => {
+    expect(estimateRows(SINGLE, 2, { grams: null, seconds: 600, material: 'PLA' }))
+      .toEqual([{ label: 'Added print time', value: '10 min' }])
+    expect(estimateRows(SINGLE, 2, { grams: 4.25, seconds: null, material: null }))
+      .toEqual([{ label: 'Added filament', value: '4.3 g' }])
   })
 })
