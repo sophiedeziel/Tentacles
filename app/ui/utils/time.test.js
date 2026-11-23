@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { doneAt, formatAgo, formatClock, formatTimeLeft } from './time'
+import { doneAt, formatAgo, formatClock, formatPrintTime, formatTimeLeft } from './time'
 
 describe('time', () => {
   it('adds the time left to the snapshot time', () => {
@@ -17,6 +17,17 @@ describe('time', () => {
     expect(formatTimeLeft(52 * 60 * 1000)).toBe('52 min')
     expect(formatTimeLeft(10 * 1000)).toBe('< 1 min')
     expect(formatTimeLeft(-5000)).toBe('< 1 min')
+  })
+
+  it('formats a print time in hours and minutes, or in minutes and seconds under an hour', () => {
+    expect(formatPrintTime(3720)).toBe('1 h 2 min')
+    expect(formatPrintTime(3745)).toBe('1 h 2 min')
+    expect(formatPrintTime(26 * 3600 + 180)).toBe('26 h 3 min')
+    expect(formatPrintTime(7200)).toBe('2 h')
+    expect(formatPrintTime(1828)).toBe('30 min 28 s')
+    expect(formatPrintTime(1800)).toBe('30 min')
+    expect(formatPrintTime(45)).toBe('45 s')
+    expect(formatPrintTime(0)).toBe('0 s')
   })
 
   it('formats a clock time on 24 hours', () => {

@@ -1,0 +1,37 @@
+# Every field of a file's G-code summary. The summary has no id (Apollo keeps it inside its File), so every query or
+# mutation that selects it selects all of this, or Apollo would replace the whole summary with a partial one.
+fragment GcodeSummaryFields on GcodeSummary {
+  status
+  analysedAt
+  error
+  slicer
+  slicerVersion
+  printSeconds
+  filamentGrams
+  filamentMetres
+  footprint {
+    width
+    depth
+    height
+    minX
+    maxX
+    minY
+    maxY
+    source
+  }
+  toolCount
+  toolChanges
+  tools {
+    tool
+    material
+    materialRaw
+    colourHex
+    grams
+    metres
+  }
+  filamentChanges {
+    line
+    z
+    layer
+  }
+}

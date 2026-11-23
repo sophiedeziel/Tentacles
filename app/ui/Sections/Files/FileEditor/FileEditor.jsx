@@ -8,11 +8,12 @@ import UpdateFile from 'graphql/UpdateFile.graphql'
 import GcodeDocs from './GcodeDocs/GcodeDocs.json'
 import GCodePreviewUI from 'components/GCodePreviewUI'
 
-import { Card, Collapse, Col, Row, Button, Typography, Divider, Input, Slider } from 'antd'
+import { App, Card, Collapse, Col, Row, Button, Typography, Divider, Input, Slider } from 'antd'
 import { PageHeader } from '@ant-design/pro-layout'
 import { GcodeFileOutlined } from '../../../components/icons'
 
 import GCodeAnalysis from './components/GCodeAnalysis.jsx'
+import GcodeSummary from './components/GcodeSummary/GcodeSummary.jsx'
 import gcodeDefinition from 'common/gcodeDefinition.js'
 import TomorrowTheme from 'common/TomorrowTheme.json'
 import * as monaco from 'monaco-editor/editor/editor.api.js'
@@ -316,7 +317,14 @@ export default function FileEditor () {
       key: '3',
       label: 'Code analysis',
       style: {},
-      children: <GCodeAnalysis gcodeAnalysis={file.gcodeAnalysis} onLineSelect={ (num) => { jumpAndHighlight(num) }} />
+      children:
+      <>
+        {/* App: GcodeSummary shows its errors with App.useApp().message */}
+        <App component={false}>
+          <GcodeSummary fileId={fileID} onLineSelect={jumpAndHighlight} />
+        </App>
+        <GCodeAnalysis gcodeAnalysis={file.gcodeAnalysis} onLineSelect={ (num) => { jumpAndHighlight(num) }} />
+      </>
     }
   ]
 

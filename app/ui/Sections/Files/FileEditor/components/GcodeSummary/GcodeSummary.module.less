@@ -1,0 +1,39 @@
+// A file's print details, at the top of the editor's Code analysis panel
+
+.details {
+  margin-bottom: 16px;
+}
+
+// One tool's filament: its label, colour swatch, material and amounts
+.line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.toolLabel {
+  font-weight: 600;
+  min-width: 20px;
+}
+
+.swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  flex: none;
+}
+
+.raw {
+  text-decoration: underline dotted;
+  cursor: help;
+}
+
+// A filament change, a link that jumps to its line in the editor
+.jump {
+  padding: 0;
+  height: auto;
+}
