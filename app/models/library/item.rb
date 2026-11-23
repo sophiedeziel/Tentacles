@@ -16,6 +16,9 @@ module Library
     has_many :labelings, class_name: 'Library::Labeling', foreign_key: :file_record_id, inverse_of: :item,
                          dependent: :destroy
     has_many :labels, through: :labelings
+    # What the file needs to print (G-code only), read from the file by Gcode::Summary
+    has_one :gcode_summary, class_name: 'Library::GcodeSummary', foreign_key: :file_record_id, inverse_of: :item,
+                            dependent: :destroy
 
     validates :file, presence: true
 
