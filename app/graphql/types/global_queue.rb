@@ -22,6 +22,11 @@ module Types
                                                               'connected, idle, without an unfinished job and with ' \
                                                               'a clear bed, by id. Whether a waiting job fits them, ' \
                                                               'and whether dispatch is paused, aside.'
+    field :offline_printers, [Types::Printer], null: false,
+                                               description: 'The printers that take jobs but are offline (no ' \
+                                                            'status, offline, connecting or in error): they take ' \
+                                                            'nothing until they reconnect, by id. Printers that ' \
+                                                            'do not take jobs are left out.'
     field :printing, [Types::Print], null: false,
                                      description: 'The copies handed to a printer and not ended (ENQUEUED or ' \
                                                   'ACTIVE), in the order they were handed out'
@@ -37,6 +42,7 @@ module Types
     def dispatch_paused? = ::PrintQueue::Setting.current.dispatch_paused?
     def printers_to_clear = dataloader.with(Sources::FleetSource).load(:current).bed_to_clear
     def available_printers = dataloader.with(Sources::FleetSource).load(:current).available
+    def offline_printers = dataloader.with(Sources::FleetSource).load(:current).offline
 
     def printing
       ::Printer::Job.copies.unfinished.in_queue_order.includes(*PRINT_PRELOADS)

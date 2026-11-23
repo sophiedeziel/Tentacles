@@ -9,6 +9,18 @@ class PrintQueue::Forecast::Outcome
   include GeneratedAttributeMethods
 
   module GeneratedAttributeMethods
+    sig { returns(T.nilable(T::Boolean)) }
+    def dispatch_paused; end
+
+    sig { params(value: T.nilable(T::Boolean)).returns(T.nilable(T::Boolean)) }
+    def dispatch_paused=(value); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def jobs_ahead; end
+
+    sig { params(value: T.nilable(::Integer)).returns(T.nilable(::Integer)) }
+    def jobs_ahead=(value); end
+
     sig { returns(T.untyped) }
     def kind; end
 

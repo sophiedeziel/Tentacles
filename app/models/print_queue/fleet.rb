@@ -10,9 +10,14 @@ module PrintQueue
   #   fleet = PrintQueue::Fleet.current # 4 queries and one Redis MGET, whatever the number of printers
   #   fleet.available          # => the printers that take jobs and are free for one
   #   fleet.bed_to_clear       # => the printers whose last print is still on the bed
+  #   fleet.offline            # => the printers that take jobs but are offline
+  #   fleet.serving_order      # => the printers a dispatch pass serves, in order
   #   fleet.readiness(printer) # => its PrintQueue::Readiness, dispatch pause aside
   #   fleet.capable(entry)     # => the printers that can print the entry
   class Fleet < ApplicationModel
+    # The idle reasons of the printers a dispatch pass serves, or will once they're free
+    SERVED = %i[nothing_eligible busy bed_not_cleared].freeze #: Array[Symbol]
+
     # Array[Printer], by id, their loaded_filaments loaded
     attribute :printers, default: -> { [] }
     # Hash[Integer, Printer::Status], by printer id: a printer without a snapshot is left out
@@ -67,6 +72,19 @@ module PrintQueue
     # The printers whose last print is still on the bed, whether they take jobs or not
     #: -> Array[Printer]
     def bed_to_clear = printers.select { |printer| bed_to_clear_ids.include?(printer.id) }
+
+    # The printers that take jobs but are offline (no snapshot, Offline, Connecting or Error): they take nothing until
+    # they reconnect. Printers that don't take jobs are left out, whether online or not.
+    #: -> Array[Printer]
+    def offline = printers.select { |printer| readiness(printer).idle_reason == :offline }
+
+    # The printers that take jobs and are connected, in the order a dispatch pass serves them: the free ones first,
+    # then the busy ones and those with a bed to clear, each in id order (which of those frees up first isn't known)
+    #: -> Array[Printer]
+    def serving_order
+      @serving_order ||= printers.select { |printer| SERVED.include?(readiness(printer).idle_reason) }
+                                 .partition { |printer| readiness(printer).free? }.flatten
+    end
 
     # The printers that can print the entry: open to it (PrintQueue::Job#open_to?: allowed by its printer list, not
     # bound to another printer) and without a hard limitation for it (PrintQueue::HardLimitations: not :cannot).

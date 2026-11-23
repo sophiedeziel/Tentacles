@@ -12,6 +12,9 @@ module Types
     field :position, Integer, null: false, description: 'Its place in the queue: lower goes first'
     field :held, Boolean, null: false, description: 'Held: no copy starts until it is released'
     field :same_printer, Boolean, null: false, description: 'Whether every copy prints on the same printer'
+    field :all_capable, Boolean, null: false, method: :all_capable?,
+                                 description: 'Whether every printer that can print it may: false when it ' \
+                                              'is limited to a list of printers'
     field :bound_printer, Types::Printer, null: true,
                                           description: 'The printer a same-printer batch prints on: null until its ' \
                                                        'first copy starts, or once released to other printers'
@@ -47,7 +50,7 @@ module Types
     def eligible_printers = dataloader.with(Sources::EligiblePrintersSource).load(object)
 
     # Computed once for the whole queue, whatever the number of print jobs of a query
-    def what_happens_next = dataloader.with(Sources::ForecastSource).load(object.id)
+    def what_happens_next = dataloader.with(Sources::ForecastSource).load(:current).outcome(object)
 
     def prints = dataload_association(:printer_jobs).sort_by { |print| [print.copy_number.to_i, print.id] }
   end

@@ -74,12 +74,10 @@ RSpec.describe PrintQueue::Forecast do
       expect(outcome(queued)).to eq [:starting, mk4]
     end
 
-    it 'is :next_ready_printer when no printer is free and none will take it next' do
-      printer
-      first = entry(position: 1)
-      second = entry(position: 2)
+    it 'is :next_ready_printer when no printer that takes jobs and is online can take it' do
+      printer(Printer::StateFamily::Connecting)
 
-      expect(outcomes(first, second).map(&:first)).to eq %i[starting next_ready_printer]
+      expect(outcome(entry)).to eq [:next_ready_printer, nil]
     end
 
     it 'is :after_current_print, naming the busy printer that takes it when its print finishes' do
@@ -109,8 +107,8 @@ RSpec.describe PrintQueue::Forecast do
       expect(outcome(batch)).to eq [:batch_on_printer, mk4]
     end
 
-    it 'is :batch_first_ready_printer for a same-printer batch not bound yet' do
-      printing_printer
+    it 'is :batch_first_ready_printer for a same-printer batch not bound yet that no printer is lined up for' do
+      printer(Printer::StateFamily::Offline)
 
       expect(outcome(entry(copies: 3, same_printer: true))).to eq [:batch_first_ready_printer, nil]
     end
@@ -119,13 +117,6 @@ RSpec.describe PrintQueue::Forecast do
       printer
 
       expect(outcome(entry(held: true))).to eq [:on_hold, nil]
-    end
-
-    it 'is :dispatch_paused while dispatch is paused' do
-      printer
-      create(:print_queue_setting, dispatch_paused: true)
-
-      expect(outcome(entry)).to eq [:dispatch_paused, nil]
     end
 
     it 'is nil when nothing is left to happen: every copy is printing' do
@@ -137,7 +128,7 @@ RSpec.describe PrintQueue::Forecast do
     end
   end
 
-  describe 'held and dispatch paused override the rest' do
+  describe 'held overrides the rest' do
     let(:mk4) { printing_printer }
 
     # One entry of each other kind
@@ -154,20 +145,114 @@ RSpec.describe PrintQueue::Forecast do
       expect(outcomes(*held).map(&:first)).to all(eq :on_hold)
     end
 
-    it 'reads :dispatch_paused for every entry while paused, :on_hold for a held one' do
-      create(:print_queue_setting, dispatch_paused: true)
-      held = entry(held: true)
-
-      expect(outcomes(*others).map(&:first)).to all(eq :dispatch_paused)
-      expect(outcome(held)).to eq [:on_hold, nil]
-    end
-
     it 'still reads :starting for an entry whose only copy left is enqueued: holding or pausing does not stop it' do
       queued = entry(held: true)
       copy(queued, mk4, 'enqueued')
       create(:print_queue_setting, dispatch_paused: true)
 
       expect(outcome(queued)).to eq [:starting, mk4]
+    end
+  end
+
+  describe 'dispatch paused' do
+    before { create(:print_queue_setting, dispatch_paused: true) }
+
+    def paused(queued)
+      outcome = described_class.current.outcome(queued)
+      [outcome.kind, outcome.dispatch_paused]
+    end
+
+    it 'is a flag on the outcome computed as if dispatch were running' do
+      mk4 = printer_with_bed_to_clear
+      queued = entry
+
+      expect(outcome(queued)).to eq [:after_bed_cleared, mk4]
+      expect(paused(queued)).to eq [:after_bed_cleared, true]
+    end
+
+    it 'flags every waiting kind, but not :on_hold nor a copy already enqueued' do
+      mk4 = printing_printer
+      starting = entry(copies: 1)
+      copy(starting, mk4, 'enqueued')
+      kinds = [entry, entry(materials: ['PETG']), entry(copies: 2, same_printer: true, bound_printer: mk4),
+               entry(held: true), starting].map { |queued| paused(queued) }
+
+      expect(kinds).to eq [[:after_current_print, true], [:blocked, true], [:batch_on_printer, true],
+                           [:on_hold, false], [:starting, false]]
+    end
+
+    it 'is false while dispatch runs' do
+      PrintQueue::Setting.current.update!(dispatch_paused: false)
+      printer
+
+      expect(paused(entry)).to eq [:starting, false]
+    end
+  end
+
+  describe 'jobs ahead' do
+    def ahead(*entries, forecast: described_class.current)
+      entries.map do |queued|
+        outcome = forecast.outcome(queued)
+        [outcome.kind, outcome.printer, outcome.jobs_ahead]
+      end
+    end
+
+    it 'is 0 for the first entry a printer takes, and counts the entries it takes before the others' do
+      busy = printing_printer
+      entries = Array.new(3) { |index| entry(position: index + 1) }
+
+      expect(ahead(*entries)).to eq [[:after_current_print, busy, 0], [:after_current_print, busy, 1],
+                                     [:after_current_print, busy, 2]]
+    end
+
+    it 'names the printer an entry limited to it waits for, after the entries it takes first' do
+      ender = printer_with_bed_to_clear
+      voron = printing_printer(material: 'PETG')
+      bracket = entry(position: 1, copies: 10)
+      gear = entry(position: 2, materials: ['PETG'])
+      spool = entry(position: 3, materials: ['PETG'], all_capable: false)
+      create(:print_job_printer, job: spool, printer: voron)
+
+      expect(ahead(bracket, gear, spool)).to eq [[:after_bed_cleared, ender, 0], [:after_current_print, voron, 0],
+                                                 [:after_current_print, voron, 1]]
+    end
+
+    it 'counts a batch ahead once, whatever its copies' do
+      mk4 = printer
+      batch = entry(position: 1, copies: 3, same_printer: true)
+      later = entry(position: 2)
+
+      expect(ahead(batch, later)).to eq [[:starting, mk4, 0], [:after_current_print, mk4, 1]]
+    end
+
+    it 'is 0 for kinds without a printer' do
+      printer(material: 'PETG')
+      blocked = entry
+
+      expect(described_class.current.outcome(blocked)).to have_attributes(kind: :blocked, jobs_ahead: 0)
+    end
+  end
+
+  describe 'takes_next' do
+    it 'is the entry each printer takes first, as if dispatch were running' do
+      create(:print_queue_setting, dispatch_paused: true)
+      free = printer
+      bed = printer_with_bed_to_clear
+      petg = printer(material: 'PETG')
+      first = entry(position: 1)
+      second = entry(position: 2)
+      forecast = described_class.current
+
+      expect([free, bed, petg].map { |one| forecast.takes_next(one) }).to eq [first, second, nil]
+    end
+
+    it 'is nil for a printer offline or not taking jobs' do
+      offline = printer(nil)
+      off = printer(takes_jobs: false)
+      entry
+      forecast = described_class.current
+
+      expect([offline, off].map { |one| forecast.takes_next(one) }).to eq [nil, nil]
     end
   end
 
@@ -183,7 +268,8 @@ RSpec.describe PrintQueue::Forecast do
       forecast = described_class.current
       dispatched = PrintQueue::Dispatch.new.tap(&:save!).dispatched
 
-      expect(outcomes(*entries, forecast:)).to eq [[:starting, mk4], [:starting, mini], [:next_ready_printer, nil]]
+      # The third entry: round 2, once the first printer is done
+      expect(outcomes(*entries, forecast:)).to eq [[:starting, mk4], [:starting, mini], [:after_current_print, mk4]]
       expect(dispatched.map { |copy| [copy.printer, copy.print_job] })
         .to eq [[mk4, entries[0]], [mini, entries[1]], [xl, entries[0]]]
     end
@@ -195,7 +281,7 @@ RSpec.describe PrintQueue::Forecast do
       entries = Array.new(4) { |index| entry(position: index + 1) }
 
       expect(outcomes(*entries)).to eq [[:starting, free], [:after_current_print, busy], [:after_bed_cleared, bed],
-                                        [:next_ready_printer, nil]]
+                                        [:after_current_print, free]]
     end
 
     it 'lets a later entry overtake one that does not fit the printer' do
@@ -213,17 +299,24 @@ RSpec.describe PrintQueue::Forecast do
       batch = entry(copies: 2)
       later = entry
 
-      # The busy printer takes the second copy: nothing is left for the later entry
-      expect(outcomes(batch, later)).to eq [[:starting, mk4], [:next_ready_printer, nil]]
+      # The busy printer takes the second copy: the later entry waits for the free one's next round
+      expect(outcomes(batch, later)).to eq [[:starting, mk4], [:after_current_print, mk4]]
     end
 
-    it 'lets a same-printer batch take one printer only, the one it is bound to in the simulation' do
-      printer
-      printer
+    it 'lets a same-printer batch take one printer only, the one it is bound to in the simulation, and names it' do
+      mk4 = printer
+      mini = printer
       batch = entry(position: 1, copies: 3, same_printer: true)
       later = entry(position: 2)
 
-      expect(outcomes(batch, later).map(&:first)).to eq %i[batch_first_ready_printer starting]
+      expect(outcomes(batch, later)).to eq [[:starting, mk4], [:starting, mini]]
+    end
+
+    it 'names the printer lined up for an unbound same-printer batch, whatever its state' do
+      ender = printer_with_bed_to_clear
+      printing_printer(material: 'PETG')
+
+      expect(outcome(entry(copies: 2, same_printer: true))).to eq [:after_bed_cleared, ender]
     end
 
     it 'skips held entries, and entries limited to other printers' do
