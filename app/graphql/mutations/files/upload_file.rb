@@ -14,6 +14,8 @@ module Mutations
       def resolve(file_attributes:)
         file = ::Library::Item.new(file_attributes.to_h)
         if file.save!
+          # Once the file is stored: the job reads it
+          ::Library::GcodeSummaryScheduling.new(item: file).save
           { file: }
         else
           { file: nil }

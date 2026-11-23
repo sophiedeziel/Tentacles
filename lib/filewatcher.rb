@@ -20,9 +20,12 @@ class Filewatcher
   private
 
   def create_file_record(path)
-    Library::Item.create(notes: '') do |file|
+    item = Library::Item.create(notes: '') do |file|
       file.file.attach(io: File.open(path), filename: File.basename(path))
     end
+    # Once the file is stored: the job reads it
+    Library::GcodeSummaryScheduling.new(item:).save if item.persisted?
+    item
   end
 
   def delete_file(path)

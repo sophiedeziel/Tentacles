@@ -26,6 +26,14 @@ module Library
 
     validates :file_record_id, uniqueness: true
 
+    # The file's summary, created (pending) when it has none
+    #
+    #   Library::GcodeSummary.find_or_create_for!(item) # => item.gcode_summary, never nil
+    #: (Library::Item item) -> Library::GcodeSummary
+    def self.find_or_create_for!(item)
+      item.gcode_summary || (item.gcode_summary = create_or_find_by!(file_record_id: item.id))
+    end
+
     # Whether this row holds values read by the current Gcode::Summary::VERSION: nothing to read again
     #: -> bool
     def current?

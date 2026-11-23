@@ -43,6 +43,21 @@ RSpec.describe Library::GcodeSummary do
       .to change(described_class, :count).by(-1).and change(Library::GcodeSummary::Tool, :count).by(-1)
   end
 
+  describe '.find_or_create_for!' do
+    it "returns the file's summary" do
+      expect(described_class.find_or_create_for!(summary.item)).to eq summary
+    end
+
+    it 'creates a pending one for a file with none, and sets the association' do
+      item = create(:file_record)
+
+      created = described_class.find_or_create_for!(item)
+
+      expect(created).to have_attributes(persisted?: true, status: 'pending', file_record_id: item.id)
+      expect(item.gcode_summary).to equal created
+    end
+  end
+
   describe '#current?' do
     it 'is true for a ready row read by the current version' do
       expect(build(:gcode_summary, :ready)).to be_current
