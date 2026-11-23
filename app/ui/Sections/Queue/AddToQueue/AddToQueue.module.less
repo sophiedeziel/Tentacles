@@ -1,0 +1,273 @@
+// The Add to Queue page (and the Edit page): the header over the form's cards, the Summary on the right, sticky. Colours
+// come from the antd theme (Typography types, theme.useToken in the components): nothing here sets one.
+
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding-bottom: 4px;
+
+  h1 {
+    margin: 4px 0 0;
+    font-size: 22px;
+    line-height: 30px;
+    font-weight: 600;
+  }
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  gap: 12px;
+  align-items: start;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.card :global {
+  .ant-card-head {
+    padding-inline: 24px;
+  }
+
+  .ant-card-body {
+    padding: 16px 24px;
+  }
+}
+
+.cardTitle {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+
+  h2 {
+    margin: 0;
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+  }
+}
+
+.count {
+  font-weight: 400;
+}
+
+.small {
+  font-size: 12px;
+  line-height: 20px;
+}
+
+// File and Copies
+.fileRow {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.fileLine {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.fileName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notes {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  white-space: pre-wrap;
+}
+
+.paragraph {
+  margin: 12px 0 0;
+}
+
+// Filament
+.filamentFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.fieldRow {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.select {
+  min-width: 140px;
+}
+
+.hint {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid;
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-top: 16px;
+}
+
+// Printers: the paragraph, a row per printer, then the same-printer switch
+.printers :global(.ant-card-body) {
+  padding: 0;
+}
+
+.intro {
+  margin: 0;
+  padding: 12px 24px;
+}
+
+.printerRows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.printerRow {
+  display: grid;
+  grid-template-columns: 28px minmax(100px, 160px) 150px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 10px 24px;
+  border-top: 1px solid var(--line);
+}
+
+.printerName {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fit {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+
+  :global(.anticon) {
+    margin-top: 4px;
+  }
+}
+
+.option {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.optionText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.switchRow {
+  padding: 12px 24px;
+  border-top: 1px solid var(--line);
+}
+
+.divided + .divided {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+// Summary
+.summary {
+  position: sticky;
+  top: 16px;
+}
+
+.summaryRows {
+  margin: 0;
+}
+
+.summaryRow {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  gap: 8px;
+  padding: 12px 0;
+
+  & + & {
+    border-top: 1px solid var(--line);
+  }
+
+  dt {
+    margin: 0;
+  }
+
+  dd {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+}
+
+.strong {
+  font-weight: 600;
+}
+
+.filamentLine {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}

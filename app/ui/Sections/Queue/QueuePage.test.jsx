@@ -190,7 +190,7 @@ describe('QueuePage', () => {
 
     expect(screen.getByRole('switch', { name: 'Dispatch' })).toBeChecked()
     expect(screen.getByText('Dispatching jobs')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Add to Queue/ })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /Add to Queue/ })).toBeEnabled()
     expect(screen.queryByText('Dispatch is paused')).not.toBeInTheDocument()
     expect(within(section('Waiting')).queryByText('Dispatch paused')).not.toBeInTheDocument()
   })
@@ -216,10 +216,24 @@ describe('QueuePage', () => {
 
     expect(await screen.findByText('The queue is empty')).toBeInTheDocument()
     expect(screen.getByText(/Add a file and say how many copies you need/)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Add to Queue/ })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /Add to Queue/ })).toBeEnabled()
     expect(screen.queryByRole('switch')).not.toBeInTheDocument()
     expect(screen.queryByRole('region', { name: 'Waiting' })).not.toBeInTheDocument()
     expect(screen.queryByRole('region', { name: 'Available Printers' })).not.toBeInTheDocument()
+  })
+
+  it('opens the file picker from Add to Queue', async () => {
+    await loadPage(queue())
+
+    await userEvent.click(screen.getByRole('button', { name: /Add to Queue/ }))
+    expect(await screen.findByRole('dialog', { name: 'Choose a file to add to the queue' })).toBeInTheDocument()
+  })
+
+  it('opens the file picker from the empty queue too', async () => {
+    renderPage({ ...EMPTY_QUEUE, availablePrinters: [VORON_ZERO] })
+
+    await userEvent.click(await screen.findByRole('button', { name: /Add to Queue/ }))
+    expect(await screen.findByRole('dialog', { name: 'Choose a file to add to the queue' })).toBeInTheDocument()
   })
 
   it('says the queue is off when globalQueue is null', async () => {

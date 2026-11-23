@@ -1,0 +1,61 @@
+// The file picker (the FilePicker frame): the search over a bordered list of files, the note, then the footer's
+// Upload a File on the left and the buttons on the right. Colours come from the antd theme.
+
+.search {
+  margin-bottom: 12px;
+}
+
+.box {
+  max-height: 320px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+
+  & + & {
+    border-top: 1px solid var(--line);
+  }
+}
+
+.name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.small {
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.buttons {
+  display: flex;
+  gap: 8px;
+}

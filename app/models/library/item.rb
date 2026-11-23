@@ -26,6 +26,11 @@ module Library
 
     validates :file, presence: true
 
+    # The G-code files (see #gcode?), by the filename of their attachment
+    scope :gcode, lambda {
+      joins(file_attachment: :blob).where('LOWER(active_storage_blobs.filename) LIKE ?', '%.gcode')
+    }
+
     def filename
       file.filename.to_s
     end
