@@ -19,10 +19,12 @@ const FilesList = lazy(() => import('../../Sections/Files/FilesList/FilesList'))
 const FileEditor = lazy(() => import('../../Sections/Files/FileEditor/FileEditor'))
 const FilePrinter = lazy(() => import('../../Sections/Files/FilePrinter/FilePrinter'))
 const QueuePage = lazy(() => import('../../Sections/Queue/QueuePage'))
+const AddToQueuePage = lazy(() => import('../../Sections/Queue/AddToQueue/AddToQueuePage'))
 
 export default function AppSwithcer () {
-  // The global print queue's page exists only while its flag is on. Opened directly, it waits for the answer.
+  // The global print queue's pages exist only while its flag is on. Opened directly, they wait for the answer.
   const queue = useQueueEnabled()
+  const queuePage = (page) => (queue.enabled ? page : <div>Loading...</div>)
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
@@ -38,7 +40,10 @@ export default function AppSwithcer () {
             <Route path=":id" element={<PrinterDetails />} />
           </Route>
           {(queue.enabled || queue.loading) && (
-            <Route path="queue" element={queue.enabled ? <QueuePage /> : <div>Loading...</div>} />
+            <Route path="queue" element={<Outlet />}>
+              <Route index element={queuePage(<QueuePage />)} />
+              <Route path="add/:fileId" element={queuePage(<AddToQueuePage />)} />
+            </Route>
           )}
           <Route path="files" element={<Outlet />} >
             <Route index element={<FilesList />} />
