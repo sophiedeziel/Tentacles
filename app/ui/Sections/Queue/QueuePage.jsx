@@ -9,7 +9,7 @@ import { Muted } from './parts'
 import { AvailablePrinters } from './PrinterTables'
 import { Finished, Printing } from './PrintTables'
 import { Waiting } from './WaitingTable'
-import { isQueueEmpty, lastPrintByPrinter } from './queueView'
+import { isQueueEmpty } from './queueView'
 import useGlobalQueue from './useGlobalQueue'
 import * as classes from './QueuePage.module.less'
 
@@ -100,7 +100,7 @@ function QueueContent () {
         : (
           <>
             <AvailablePrinters toClear={queue.printersToClear} available={queue.availablePrinters}
-              offline={queue.offlinePrinters} paused={paused} onBed={lastPrintByPrinter(queue.finished)} />
+              offline={queue.offlinePrinters} paused={paused} />
             <Printing prints={queue.printing} now={now} />
             <Waiting jobs={queue.waiting} paused={paused} printing={queue.printing} now={now} />
             <Finished prints={queue.finished} now={now} />

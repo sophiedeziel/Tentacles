@@ -34,10 +34,9 @@ function OfflinePrinters ({ printers, renderAction }) {
 // act: highlighted while dispatch runs, with Bed Cleared), then the ones free now, then a line per offline printer.
 // Takes Next says what the queue lines up for each one (Printer.takesNext, as if dispatch ran).
 //
-// `onBed`: the latest finished print by printer id (the print on a bed to clear, when it is among them).
 // `renderAction(printer, { toClear })` and `renderOfflineAction(printer)`: the buttons of a row (Bed Cleared,
 // Reconnect), from the page's actions.
-export function AvailablePrinters ({ toClear, available, offline, paused, onBed, renderAction, renderOfflineAction }) {
+export function AvailablePrinters ({ toClear, available, offline, paused, renderAction, renderOfflineAction }) {
   const { token } = theme.useToken()
   const rows = [
     ...toClear.map((printer) => ({ key: printer.id, printer, toClear: true })),
@@ -70,7 +69,7 @@ export function AvailablePrinters ({ toClear, available, offline, paused, onBed,
       title: 'Takes Next',
       width: '36%',
       render: (_, { printer, toClear: bed }) => {
-        const view = takesNextView(printer, { paused, toClear: bed, onBed: onBed[printer.id] })
+        const view = takesNextView(printer, { paused, toClear: bed, onBed: printer.printOnBed })
         return <TwoLines title={view.text} detail={view.detail} />
       }
     },
@@ -107,7 +106,6 @@ AvailablePrinters.propTypes = {
   available: PropTypes.arrayOf(queuePrinterShape).isRequired,
   offline: PropTypes.arrayOf(printerShape).isRequired,
   paused: PropTypes.bool.isRequired,
-  onBed: PropTypes.objectOf(PropTypes.object).isRequired,
   renderAction: PropTypes.func,
   renderOfflineAction: PropTypes.func
 }

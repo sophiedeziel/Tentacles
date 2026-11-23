@@ -73,15 +73,6 @@ export function isQueueEmpty (queue) {
   return queue.waiting.length === 0 && queue.printing.length === 0 && queue.printersToClear.length === 0
 }
 
-// The latest finished print of each printer that has one, by printer id: what is on a bed to clear
-export function lastPrintByPrinter (finished) {
-  const prints = {}
-  finished.forEach((print) => {
-    if (!prints[print.printer.id]) prints[print.printer.id] = print
-  })
-  return prints
-}
-
 // Available Printers' line: how many printers are free (their bed cleared or not), and whether they take a job now
 export function availableSummary (count, paused) {
   if (count === 0) return 'No printer free right now'
@@ -89,8 +80,8 @@ export function availableSummary (count, paused) {
   return paused ? `${free}, not taking jobs while dispatch is paused` : `${free} to take a job`
 }
 
-// "Copy 2 of 10 is finished and still on the bed": the print on a bed to clear (the latest finished one of its
-// printer, when it is among the finished rows). Named by its file unless it is the file the printer takes next.
+// "Copy 2 of 10 is finished and still on the bed": the print on a bed to clear (Printer.printOnBed, null when not
+// known). Named by its file unless it is the file the printer takes next.
 export function onBedText (print, takesNext) {
   if (!print) return 'Its last print is still on the bed'
   const sameFile = takesNext && takesNext.file.filename === print.printJob.file.filename

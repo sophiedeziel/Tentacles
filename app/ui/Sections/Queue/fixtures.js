@@ -28,18 +28,25 @@ export const takesNext = ({ id, copies = 1, copiesLeftToStart = 1, file: { id: f
   __typename: 'PrintJob', id, copies, copiesLeftToStart, file: { __typename: 'File', id: fileId, filename }
 })
 
-// An Available Printers row (QueuePrinterFields)
+// An Available Printers row (QueuePrinterFields), its bed clear
 const queuePrinter = (printer, extra = {}) => fleetPrinter(printer, {
-  takesJobs: true, loadedFilaments: [loaded('PLA', 'Black')], takesNext: null, ...extra
+  takesJobs: true, loadedFilaments: [loaded('PLA', 'Black')], takesNext: null, printOnBed: null, ...extra
 })
 
 const CLIPS = file('21', 'cable_clip.gcode')
 const BRACKET = file('22', 'bracket.gcode')
 const PHONE_STAND = file('20', 'phone_stand.gcode')
 
+// The print still on a printer's bed (QueuePrinterFields' printOnBed)
+export const printOnBed = ({ id, jobId, copies = 1, jobFile, copyNumber = 1, result = 'COMPLETED' }) => ({
+  __typename: 'Print', id, copyNumber, result, printJob: { __typename: 'PrintJob', id: jobId, copies, file: jobFile }
+})
+
 export const MK4 = fleetPrinter(PRINTERS.PRINTING, { loadedFilaments: [loaded('PETG', 'Grey')] })
+// Its bed holds bracket.gcode, failed (the queue's finished print 33)
 export const MINI = queuePrinter(PRINTERS.OPERATIONAL, {
-  takesNext: takesNext({ id: '11', file: PHONE_STAND })
+  takesNext: takesNext({ id: '11', file: PHONE_STAND }),
+  printOnBed: printOnBed({ id: '33', jobId: '14', jobFile: BRACKET, result: 'FAILED' })
 })
 export const VORON_ZERO = queuePrinter({ ...PRINTERS.OPERATIONAL, id: '9', name: 'Voron 0.2', nextJob: null })
 export const KOBRA = fleetPrinter(PRINTERS.OFFLINE)

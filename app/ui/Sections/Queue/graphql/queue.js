@@ -55,14 +55,16 @@ export const PRINT_JOB_FIELDS = gql`
   }
 `
 
-// An Available Printers row: the dashboard's printer fields (live status), whether it takes jobs, its loaded filament and
-// the job the queue lines up for it (takesNext, as if dispatch ran): the copy it takes is the first not handed out
+// An Available Printers row: the dashboard's printer fields (live status), whether it takes jobs, its loaded filament,
+// the job the queue lines up for it (takesNext, as if dispatch ran): the copy it takes is the first not handed out,
+// and the print still on its bed (printOnBed, null when the bed is clear: what Bed Cleared confirms is off it)
 export const QUEUE_PRINTER_FIELDS = gql`
   fragment QueuePrinterFields on Printer {
     ...DashboardPrinterFields
     takesJobs
     loadedFilaments { slot material colour }
     takesNext { id copies copiesLeftToStart file { id filename } }
+    printOnBed { id copyNumber result printJob { id copies file { id filename isDeleted } } }
   }
 `
 

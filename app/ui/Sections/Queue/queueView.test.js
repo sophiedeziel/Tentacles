@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  availableSummary, batchSummary, batchView, copyText, filamentLabel, isQueueEmpty, lastPrintByPrinter, loadedText, needsView,
+  availableSummary, batchSummary, batchView, copyText, filamentLabel, isQueueEmpty, loadedText, needsView,
   nextCopyNumber, offlineText, onBedText, printLabel, printersView, printingSummary, swatchColour, takesNextView,
   waitingCopiesView, waitingSummary
 } from './queueView'
@@ -63,12 +63,6 @@ describe('isQueueEmpty', () => {
   })
 })
 
-describe('lastPrintByPrinter', () => {
-  it('keeps the first (latest) finished print of each printer', () => {
-    const prints = [{ id: '3', printer: { id: '1' } }, { id: '2', printer: { id: '2' } }, { id: '1', printer: { id: '1' } }]
-    expect(lastPrintByPrinter(prints)).toEqual({ 1: prints[0], 2: prints[1] })
-  })
-})
 
 describe('filamentLabel', () => {
   it('says a filament the frames’ way', () => {

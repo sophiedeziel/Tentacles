@@ -59,6 +59,12 @@ describe('QueuePage', () => {
     expect(toClear.style.background).not.toBe('')
   })
 
+  it('names the print on a bed to clear even when it is not among the finished rows', async () => {
+    await loadPage(queue({ finished: [] }))
+
+    expect(within(row('Available Printers', MINI.id)).getByText('bracket.gcode failed and is still on the bed')).toBeInTheDocument()
+  })
+
   it('lists the free printers after, then the offline ones', async () => {
     await loadPage(queue())
 
