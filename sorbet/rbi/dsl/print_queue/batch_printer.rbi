@@ -22,6 +22,12 @@ class PrintQueue::BatchPrinter
     def job=(value); end
 
     sig { returns(T.untyped) }
+    def needs; end
+
+    sig { params(value: T.untyped).returns(T.untyped) }
+    def needs=(value); end
+
+    sig { returns(T.untyped) }
     def printer_ids; end
 
     sig { params(value: T.untyped).returns(T.untyped) }

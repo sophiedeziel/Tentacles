@@ -64,7 +64,7 @@ module PrintQueue
     #: -> Printer?
     def batch_printer
       PrintQueue::BatchPrinter.new(job:, same_printer:, all_capable: job.all_capable?,
-                                   printer_ids: job.job_printers.map(&:printer_id)).printer
+                                   printer_ids: job.job_printers.map(&:printer_id), needs: job.needs).printer
     end
 
     # A finished entry with copies waiting again goes back into the queue, at the bottom

@@ -9,7 +9,7 @@ RSpec.describe PrintQueue::BatchPrinter do
 
   def copy(status, printer) = create(:printer_job, :copy, print_job: job, status:, printer:)
 
-  def printer(**) = described_class.new(job:, **).printer
+  def printer(**) = described_class.new(job:, needs: job.needs, **).printer
 
   it 'is nil when same printer is off' do
     job.update!(same_printer: true, bound_printer: mk4)
@@ -51,7 +51,17 @@ RSpec.describe PrintQueue::BatchPrinter do
     expect(printer(same_printer: true, all_capable: false, printer_ids: [mk4.id.to_s])).to eq mk4
   end
 
+  it 'lets go of a printer that can never print it, even when every printer that can print it may' do
+    job.update!(same_printer: true, bound_printer: mk4)
+    mk4.update!(materials: ['PLA'])
+    needs = PrintQueue::Job.new(item: job.item, material: 'PETG').needs
+
+    expect(described_class.new(job:, needs:, same_printer: true).printer).to be_nil
+    expect(printer(same_printer: true)).to eq mk4
+  end
+
   it 'is nil for an entry not saved' do
-    expect(described_class.new(job: PrintQueue::Job.new, same_printer: true).printer).to be_nil
+    expect(described_class.new(job: PrintQueue::Job.new, needs: PrintQueue::Needs.new,
+                               same_printer: true).printer).to be_nil
   end
 end

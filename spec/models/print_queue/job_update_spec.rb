@@ -69,6 +69,14 @@ RSpec.describe PrintQueue::JobUpdate do
       expect_pushed_once([mk4])
     end
 
+    it 'is let go when its printer can never print the material asked for, even with every printer allowed' do
+      mk4.update!(materials: ['PLA'])
+
+      expect(update(same_printer: true, material: 'PETG').errors).to be_empty
+      expect(job.reload).to have_attributes(same_printer: true, bound_printer: nil, material: 'PETG')
+      expect_pushed_once([mk4])
+    end
+
     it 'is let go when its printer is no longer allowed' do
       update(same_printer: true, all_capable: false, printer_ids: [voron.id])
 

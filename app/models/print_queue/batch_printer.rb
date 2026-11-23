@@ -6,7 +6,7 @@ module PrintQueue
   # PrintQueue::JobUpdate), and as the Edit page's summary shows it (PrintQueue::Estimate): one rule, so the summary
   # agrees with what saving does. Read-only.
   #
-  #   PrintQueue::BatchPrinter.new(job:, same_printer: true, all_capable: true).printer # => mk4
+  #   PrintQueue::BatchPrinter.new(job:, same_printer: true, all_capable: true, needs: job.needs).printer
   #
   # nil when same_printer is off, or when no printer qualifies: the dispatcher then binds the batch to the printer
   # that takes its next copy. Otherwise, the first of these that the batch may still go to:
@@ -16,8 +16,9 @@ module PrintQueue
   #    already printing or printed on a printer keeps the batch there when same_printer goes on. Failed and cancelled
   #    copies don't count.
   #
-  # "May still go to": allowed by its printer list (all capable, or listed in `printer_ids`). A printer that no longer
-  # is lets the batch go.
+  # "May still go to": allowed by its printer list (all capable, or listed in `printer_ids`) and able to print it as
+  # it will be saved (`needs`: no PrintQueue::HardLimitations, e.g. a material it doesn't print). A printer that no
+  # longer may lets the batch go, all capable or not: else no printer would ever take its copies.
   class BatchPrinter < ApplicationModel
     # The statuses of the copies that tie a batch to their printer
     STARTED_STATUSES = [*Printer::Job::UNFINISHED_STATUSES, 'completed'].freeze #: Array[String]
@@ -28,6 +29,8 @@ module PrintQueue
     attribute :all_capable, :boolean, default: true
     # Printer ids (Integers or Strings), when all_capable is off. Ignored otherwise
     attribute :printer_ids, default: -> { [] }
+    # The PrintQueue::Needs of the entry as it will be saved
+    attribute :needs
 
     # The printer it's bound to after the change, nil when it isn't (see above)
     #: -> Printer?
@@ -56,7 +59,8 @@ module PrintQueue
 
     #: (Printer candidate) -> bool
     def may_go_to?(candidate)
-      all_capable || listed_ids.include?(candidate.id.to_s)
+      allowed = all_capable || listed_ids.include?(candidate.id.to_s)
+      allowed && PrintQueue::HardLimitations.new(needs:, printer: candidate).none?
     end
 
     #: -> Array[String]

@@ -17,9 +17,9 @@ module PrintQueue
   # below the copies done and printing (PrintQueue::CopiesChange.below_floor), for an entry no longer in the queue, and
   # for a printer list naming a printer that can never print it (PrintQueue::PrinterChoice).
   #
-  # The printer a same-printer batch is bound to is PrintQueue::BatchPrinter's: unbound when same_printer goes off or
-  # its printer is no longer allowed, bound to the printer it already prints on when same_printer goes on. Asks for a
-  # dispatch pass: the change may make a printer eligible.
+  # The printer a same-printer batch is bound to is PrintQueue::BatchPrinter's: unbound when same_printer goes off, its
+  # printer is no longer allowed or can't print the new material; bound to the printer it already prints on when
+  # same_printer goes on. Asks for a dispatch pass: the change may make a printer eligible.
   class JobUpdate < EntryOperation
     attribute :copies, :integer
     # The material asked for (a key of Filament::MATERIALS), nil for the one its G-code says
@@ -59,7 +59,9 @@ module PrintQueue
     end
 
     #: -> Printer?
-    def batch_printer = PrintQueue::BatchPrinter.new(job:, same_printer:, all_capable:, printer_ids:).printer
+    def batch_printer
+      PrintQueue::BatchPrinter.new(job:, same_printer:, all_capable:, printer_ids:, needs: printer_choice.needs).printer
+    end
 
     # The printer it was bound to, even once released
     #: -> Array[Printer]
