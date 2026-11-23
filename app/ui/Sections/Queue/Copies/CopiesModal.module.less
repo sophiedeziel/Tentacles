@@ -1,0 +1,36 @@
+// The copies dialog: the Now line, Total copies beside what it changes, then the note
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 4px;
+}
+
+.now, .total {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.total {
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.change {
+  padding-bottom: 5px;
+  flex: 1 1 200px;
+}

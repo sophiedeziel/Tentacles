@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { useQuery, useSubscription } from '@apollo/client/react'
 
 import useDebouncedCallback from '../../utils/useDebouncedCallback'
@@ -16,13 +16,17 @@ export const REFETCH_DELAY = 300
 // - the page reloads when the tab comes back and every minute, for pushes missed
 //
 // Returns { queue, loaded, error, reload }: `queue` is globalQueue (null when the flag is off, undefined until the
-// first answer), `reload` refetches now. The actions (drag to reorder) can hold a reload's result here while a row
-// is dragged, and apply it on drop.
-export default function useGlobalQueue () {
-  // cache-and-network: coming back to the page never shows (and acts on) a queue cached earlier
+// first answer), `reload` refetches now and resolves once the answer landed.
+//
+// `holding` (while a Waiting row is dragged): `queue` stays what it was when the drag started, so a reload's answer
+// never reorders the rows under the pointer. The latest answer shows as soon as `holding` goes back to false.
+export default function useGlobalQueue ({ holding = false } = {}) {
+  // cache-and-network: coming back to the page never shows (and acts on) a queue cached earlier. No deduplication:
+  // the reload after an action never joins a request sent before the action was saved.
   const { data, error, refetch } = useQuery(GLOBAL_QUEUE_PAGE, {
     variables: { finished: FINISHED_ROWS },
-    fetchPolicy: 'cache-and-network'
+    fetchPolicy: 'cache-and-network',
+    context: { queryDeduplication: false }
   })
   // A failed reload shows as the query's error: nothing to catch here
   const reload = useCallback(() => refetch().catch(() => {}), [refetch])
@@ -31,5 +35,12 @@ export default function useGlobalQueue () {
   useFleetLiveUpdates(reload)
   useSubscription(QUEUE_CHANGED, { onData: reloadSoon })
 
-  return { queue: data?.globalQueue, loaded: data !== undefined, error, reload }
+  const latest = data?.globalQueue
+  // What was shown when holding started. Set while rendering (React's "state from props" pattern), so the render
+  // that starts holding already shows it.
+  const [held, setHeld] = useState(null)
+  if (holding && !held) setHeld({ queue: latest })
+  if (!holding && held) setHeld(null)
+
+  return { queue: holding && held ? held.queue : latest, loaded: data !== undefined, error, reload }
 }

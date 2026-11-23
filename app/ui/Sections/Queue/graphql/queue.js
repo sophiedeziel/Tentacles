@@ -68,7 +68,8 @@ export const QUEUE_PRINTER_FIELDS = gql`
   }
 `
 
-// The /queue page: one field per section, in one request. PRINT_FIELDS brings DashboardPrinterFields.
+// The /queue page: one field per section, in one request. PRINT_FIELDS brings DashboardPrinterFields. A copy printing
+// brings its print job's copies: the copies dialog opens from its row too.
 export const GLOBAL_QUEUE_PAGE = gql`
   query GlobalQueuePage($finished: Int!) {
     globalQueue {
@@ -79,6 +80,7 @@ export const GLOBAL_QUEUE_PAGE = gql`
       printing {
         ...QueuePrintFields
         printer { id loadedFilaments { slot material colour } }
+        printJob { id copiesLeftToStart prints { id status result } }
       }
       waiting { ...QueuePrintJobFields }
       finished(first: $finished) { ...QueuePrintFields }
