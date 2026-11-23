@@ -28,14 +28,17 @@ export const NEW_JOB = {
 //
 // - file: the file, with its gcodeSummary (the page refetches a PENDING one: the empty fields take what it says)
 // - materials, colours: what the Material and Colour fields offer
-// - initial: the options to start from (NEW_JOB for a new job)
-// - printJobId: the job edited, if any (its estimate counts only its copies still waiting)
+// - initial: the options to start from (NEW_JOB for a new job, editedJob(job) for the Edit page)
+// - mode: 'add', or 'edit' (the Edit page): the job edited is `printJobId` (its estimate counts only its copies still
+//   waiting), its copies never go below `minCopies` (done and printing), and its place `waitingPosition` is read-only
 // - submitLabel(copies), cancelLabel: the Summary's buttons
 // - onSubmit(variables): saves (addToQueue's options but the file; printerIds null for the automatic selection),
 //   resolving to whether it was saved. onCancel: leaves.
 export default function QueueJobForm ({
-  file, materials, colours, initial = NEW_JOB, printJobId = null, submitLabel, cancelLabel = 'Cancel', onSubmit, onCancel
+  file, materials, colours, initial = NEW_JOB, mode = 'add', printJobId = null, minCopies = 1, waitingPosition = null,
+  submitLabel, cancelLabel = 'Cancel', onSubmit, onCancel
 }) {
+  const editing = mode === 'edit'
   const { token } = theme.useToken()
   const [copies, setCopies] = useState(initial.copies)
   const [fields, setFields] = useState({ material: initial.material, colour: initial.colour })
@@ -91,14 +94,15 @@ export default function QueueJobForm ({
   return (
     <div className={classes.layout} style={{ '--line': token.colorSplit }}>
       <div className={classes.cards}>
-        <FileCard file={file} copies={copies} onCopies={setCopies} />
+        <FileCard file={file} copies={copies} min={minCopies} onCopies={setCopies} />
         <FilamentCard fields={fields} gcode={gcode} materials={materials} colours={colours}
           footprint={gcode.status === 'READY' ? file.gcodeSummary.footprint : null} onChange={setFields} />
         <PrintersCard fits={fits} loading={fitsQuery.loading} selected={selected}
           onTick={(id, checked) => setSelection(tick(fits, selection, id, checked))}
           onSelectAll={() => setSelection(selectAll(fits))} onClear={() => setSelection(clearAll())}
           samePrinter={samePrinter} onSamePrinter={setSamePrinter} />
-        <OrderCard position={position} onPosition={setPosition} held={held} onHeld={setHeld} />
+        <OrderCard position={position} onPosition={setPosition} held={held} onHeld={setHeld}
+          place={editing ? { rank: waitingPosition, count: estimate?.waitingJobs ?? null } : null} />
       </div>
       <SummaryCard estimate={estimate} job={job}
         readyPrinters={selectedFits.filter((fit) => fit.result === 'READY').length}>
@@ -132,7 +136,10 @@ QueueJobForm.propTypes = {
     selection: PropTypes.shape({ touched: PropTypes.bool.isRequired, ticked: PropTypes.arrayOf(PropTypes.string) })
       .isRequired
   }),
+  mode: PropTypes.oneOf(['add', 'edit']),
   printJobId: PropTypes.string,
+  minCopies: PropTypes.number,
+  waitingPosition: PropTypes.number,
   submitLabel: PropTypes.func.isRequired,
   cancelLabel: PropTypes.string,
   onSubmit: PropTypes.func.isRequired,

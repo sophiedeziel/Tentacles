@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 
 import { hexColour, nearestColourName } from './colours'
 import {
-  ANY_COLOUR, clearAll, colourHint, fillEmpty, fitView, gcodeFilament, jobVariables, materialHint, selectAll,
-  selectedPrinterIds, summaryView, tick
+  ANY_COLOUR, clearAll, colourHint, editedJob, fillEmpty, fitView, gcodeFilament, jobVariables, materialHint,
+  selectAll, selectedPrinterIds, summaryView, tick, updateVariables
 } from './formRules'
 
 const summary = (tools, overrides = {}) => ({ status: 'READY', toolCount: tools.length, tools, ...overrides })
@@ -184,5 +184,43 @@ describe('jobVariables', () => {
 
   it('saves the explicit list once the person changed the selection', () => {
     expect(jobVariables(form, { fits: FITS, selection: { touched: true, ticked: ['2', '3'] } }).printerIds).toEqual(['2'])
+  })
+})
+
+describe('editedJob', () => {
+  const job = {
+    copies: 4, material: 'PETG', colour: 'Grey', samePrinter: true, held: true, allCapable: false,
+    printers: [{ id: '2' }, { id: '3' }]
+  }
+
+  it('starts the Edit page from the job as saved: its printer list ticked', () => {
+    expect(editedJob(job)).toEqual({
+      copies: 4,
+      material: 'PETG',
+      colour: 'Grey',
+      samePrinter: true,
+      position: 'BOTTOM',
+      held: true,
+      selection: { touched: true, ticked: ['2', '3'] }
+    })
+  })
+
+  it('leaves the automatic selection untouched for a job every printer may take', () => {
+    expect(editedJob({ ...job, allCapable: true, printers: [] }).selection).toEqual({ touched: false, ticked: [] })
+  })
+
+  it('reads a null colour as Any Colour, kept over the G-code\'s, and a null material as the G-code\'s to fill', () => {
+    const edited = editedJob({ ...job, material: null, colour: null })
+    expect(edited.colour).toBe(ANY_COLOUR)
+    expect(fillEmpty(edited, { material: 'PLA', colour: 'Black' })).toEqual({ material: 'PLA', colour: ANY_COLOUR })
+  })
+})
+
+describe('updateVariables', () => {
+  it('sends every option but the place and the hold', () => {
+    const variables = { copies: 2, material: 'PLA', colour: null, samePrinter: false, printerIds: null, position: 'BOTTOM', held: true }
+    expect(updateVariables('12', variables)).toEqual({
+      id: '12', copies: 2, material: 'PLA', colour: null, samePrinter: false, printerIds: null
+    })
   })
 })

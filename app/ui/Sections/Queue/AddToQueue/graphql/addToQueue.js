@@ -80,3 +80,53 @@ export const ADD_PRINT_JOB = gql`
     }
   }
 `
+
+// The Edit page: a print job with the options it was saved with (material null: the G-code's; colour null: Any
+// colour; printers: its list, empty when allCapable), what is done and printing (the copies floor), its place among
+// the waiting jobs, and its file as the form reads it
+export const EDIT_PRINT_JOB = gql`
+  query EditPrintJob($id: ID!) {
+    globalQueue {
+      printJob(id: $id) {
+        id
+        copies
+        material
+        colour
+        samePrinter
+        allCapable
+        held
+        waitingPosition
+        copiesLeftToStart
+        printers { id }
+        prints { id status }
+        file {
+          id
+          filename
+          filesize
+          notes
+          isDeleted
+          gcodeSummary { ...GcodeSummaryFields }
+        }
+      }
+    }
+    filamentMaterials
+    filamentColours
+  }
+  ${GCODE_SUMMARY_FIELDS}
+`
+
+// Saves the Edit page: every option but the file, its place and its hold (movePrintJob, holdPrintJob). printerIds left
+// out: every printer that can print it.
+export const UPDATE_PRINT_JOB = gql`
+  mutation EditPrintJobSave(
+    $id: ID!, $copies: Int!, $material: String, $colour: String, $samePrinter: Boolean, $printerIds: [ID!]
+  ) {
+    updatePrintJob(input: {
+      id: $id, copies: $copies, material: $material, colour: $colour, samePrinter: $samePrinter, printerIds: $printerIds
+    }) {
+      success
+      errors { field message }
+      printJob { id copies material colour samePrinter allCapable held }
+    }
+  }
+`

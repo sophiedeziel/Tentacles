@@ -44,7 +44,8 @@ const expectedFile = (print) => ({ printerId: print.printer.id, expectedFileName
 
 // Every action of the queue page, each resolving to whether it was saved (see useQueueMutation):
 // - print jobs: move(job, { beforeId } | { to: 'TOP' | 'BOTTOM' }), hold(job), release(job), unbind(job) (Release to
-//   Other Printers), remove(job) (the waiting copies), setCopies(job, copies), requeue(file) (one copy, at the bottom)
+//   Other Printers), remove(job) (the waiting copies), setCopies(job, copies, { samePrinter }) (samePrinter left out:
+//   unchanged), requeue(file) (one copy, at the bottom)
 // - copies printing: pausePrint(print), resumePrint(print), cancelPrint(print), with the file shown as expectedFileName
 // - printers: reconnect(printer) (connectPrinter when offline, reconnectPrinter when in error)
 // - the fleet: pauseDispatch(), resumeDispatch()
@@ -65,7 +66,8 @@ export default function useQueueActions (reload) {
       release: printJob(RELEASE_PRINT_JOB, 'releasePrintJob', 'Release failed'),
       unbind: printJob(UNBIND_PRINT_JOB, 'unbindPrintJob', 'Release to Other Printers failed'),
       remove: printJob(REMOVE_PRINT_JOB, 'removePrintJob', 'Remove from Queue failed'),
-      setCopies: (job, copies) => run(SET_PRINT_JOB_COPIES, { id: job.id, copies }, 'setPrintJobCopies',
+      setCopies: (job, copies, { samePrinter = null } = {}) => run(SET_PRINT_JOB_COPIES,
+        { id: job.id, copies, samePrinter }, 'setPrintJobCopies',
         { failure: 'The copies could not be changed' }),
       requeue: (file) => run(ADD_TO_QUEUE, { fileId: file.id, copies: 1 }, 'addToQueue', { failure: 'Requeue failed' }),
       pausePrint: printControl('pause', 'Pause Print failed'),

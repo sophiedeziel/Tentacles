@@ -1,6 +1,8 @@
 import { gql } from '@apollo/client'
 
 import { PRINTER_FIELDS } from '../../Dashboard/graphql/dashboard'
+// The summary has no id: Apollo keeps it inside its File, so every document that selects it selects all of it
+import GCODE_SUMMARY_FIELDS from 'graphql/GcodeSummaryFragment.graphql'
 
 // How many finished prints the page lists, the latest first (the server returns at most 50)
 export const FINISHED_ROWS = 10
@@ -80,7 +82,7 @@ export const GLOBAL_QUEUE_PAGE = gql`
       printing {
         ...QueuePrintFields
         printer { id loadedFilaments { slot material colour } }
-        printJob { id copiesLeftToStart prints { id status result } }
+        printJob { id samePrinter copiesLeftToStart prints { id status result } }
       }
       waiting { ...QueuePrintJobFields }
       finished(first: $finished) { ...QueuePrintFields }
@@ -96,4 +98,19 @@ export const QUEUE_CHANGED = gql`
   subscription GlobalQueueChanged {
     queueChanged { dispatchPaused }
   }
+`
+
+// The copies dialog's estimates: what one copy of a print job uses, from its material (null: the G-code's) and its
+// file's G-code summary. Asked when the dialog opens.
+export const COPIES_USE = gql`
+  query QueueCopiesUse($id: ID!) {
+    globalQueue {
+      printJob(id: $id) {
+        id
+        material
+        file { id gcodeSummary { ...GcodeSummaryFields } }
+      }
+    }
+  }
+  ${GCODE_SUMMARY_FIELDS}
 `

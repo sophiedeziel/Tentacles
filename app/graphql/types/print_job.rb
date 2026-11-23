@@ -23,6 +23,9 @@ module Types
     field :all_capable, Boolean, null: false, method: :all_capable?,
                                  description: 'Whether every printer that can print it may: false when it ' \
                                               'is limited to a list of printers'
+    field :printers, [Types::Printer], null: false,
+                                       description: 'The printers it is limited to when allCapable is false, by ' \
+                                                    'name. Empty when every printer that can print it may.'
     field :bound_printer, Types::Printer, null: true,
                                           description: 'The printer a same-printer batch prints on: null until its ' \
                                                        'first copy starts, or once released to other printers'
@@ -42,6 +45,8 @@ module Types
     field :prints, [Types::Print], null: false, description: 'Its copies handed to a printer, by copy number'
 
     def file = dataload_association(:item)
+
+    def printers = dataload_association(:printers).sort_by { |printer| [printer.name.to_s.downcase, printer.id] }
 
     def bound_printer
       dataload_record(::Printer, object.bound_printer_id) if object.same_printer? && object.bound_printer_id

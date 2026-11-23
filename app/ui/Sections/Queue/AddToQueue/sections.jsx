@@ -49,8 +49,8 @@ function Option ({ title, description, children }) {
 // "PrusaSlicer · 2.4 MB": the slicer when the G-code says it
 const fileFacts = (file) => [file.gcodeSummary?.slicer, fileSize(file.filesize).human('si')].filter(Boolean).join(' · ')
 
-// File and Copies: the file, how many copies, and its notes
-export function FileCard ({ file, copies, onCopies }) {
+// File and Copies: the file, how many copies (never below `min`), and its notes
+export function FileCard ({ file, copies, min = 1, onCopies }) {
   const { token } = theme.useToken()
   return (
     <FormCard title="File and Copies">
@@ -62,8 +62,8 @@ export function FileCard ({ file, copies, onCopies }) {
         </div>
         <label className={classes.field}>
           <Muted small>Copies</Muted>
-          <InputNumber mode="spinner" min={1} max={MAX_COPIES} precision={0} value={copies} aria-label="Copies"
-            onChange={(value) => onCopies(value ?? 1)} style={{ width: 128 }} />
+          <InputNumber mode="spinner" min={min} max={MAX_COPIES} precision={0} value={copies} aria-label="Copies"
+            onChange={(value) => onCopies(Math.max(min, value ?? min))} style={{ width: 128 }} />
         </label>
       </div>
       <p className={classes.paragraph}>
@@ -226,15 +226,28 @@ export function PrintersCard ({ fits, loading, selected, onTick, onSelectAll, on
   )
 }
 
-// Order and Timing: where it goes in the queue, and whether it is held
-export function OrderCard ({ position, onPosition, held, onHeld }) {
+// "2 of 5 in Waiting": a job's place among the waiting ones (the count once the estimate knows it)
+const placeText = ({ rank, count }) => (count ? `${rank} of ${count} in Waiting` : `${rank} in Waiting`)
+
+// Order and Timing: where it goes in the queue, and whether it is held. With `place` (the Edit page: { rank, count }),
+// the position is read-only: editing doesn't move a job.
+export function OrderCard ({ position, onPosition, place = null, held, onHeld }) {
   return (
     <FormCard title="Order and Timing">
-      <Option title="Position"
-        description="Next Up goes ahead of everything waiting. Prints under way are not interrupted.">
-        <Segmented value={position} onChange={onPosition} aria-label="Position"
-          options={[{ value: 'BOTTOM', label: 'End of Queue' }, { value: 'TOP', label: 'Next Up' }]} />
-      </Option>
+      {place
+        ? (
+          <Option title="Position"
+            description="Editing does not move the job. Use Move to Top or Move to Bottom in the queue.">
+            {place.rank != null && <span className={classes.place}>{placeText(place)}</span>}
+          </Option>
+          )
+        : (
+          <Option title="Position"
+            description="Next Up goes ahead of everything waiting. Prints under way are not interrupted.">
+            <Segmented value={position} onChange={onPosition} aria-label="Position"
+              options={[{ value: 'BOTTOM', label: 'End of Queue' }, { value: 'TOP', label: 'Next Up' }]} />
+          </Option>
+          )}
       <Option title="Hold until I release it" description="It keeps its place in the queue, but no printer takes it.">
         <Switch checked={held} onChange={onHeld} aria-label="Hold until I release it" />
       </Option>
@@ -275,6 +288,7 @@ FileCard.propTypes = {
     gcodeSummary: PropTypes.shape({ slicer: PropTypes.string })
   }).isRequired,
   copies: PropTypes.number.isRequired,
+  min: PropTypes.number,
   onCopies: PropTypes.func.isRequired
 }
 FilamentField.propTypes = {
@@ -306,6 +320,7 @@ PrintersCard.propTypes = {
 OrderCard.propTypes = {
   position: PropTypes.oneOf(['TOP', 'BOTTOM']).isRequired,
   onPosition: PropTypes.func.isRequired,
+  place: PropTypes.shape({ rank: PropTypes.number, count: PropTypes.number }),
   held: PropTypes.bool.isRequired,
   onHeld: PropTypes.func.isRequired
 }
