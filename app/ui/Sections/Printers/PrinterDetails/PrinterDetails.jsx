@@ -11,6 +11,7 @@ import { forgetPrinter } from '../PrintersList/RowMenu'
 import useFavorite from '../useFavorite'
 import AboutCard from './AboutCard'
 import ConnectionCard from './ConnectionCard'
+import LoadedFilament from './LoadedFilament'
 import RemoveCard from './RemoveCard'
 import { formValues, hasChanges, updateInput } from './detailsForm'
 import { reloadedValues, reportedValues, specsHints } from './specsHints'
@@ -59,7 +60,8 @@ function useReported (printer) {
   return reportedSpecs || name ? reportedValues(reportedSpecs, name) : null
 }
 
-// One form for the whole page: Save Changes sends what changed in one updatePrinter. Favorite and Remove act at once.
+// One form for the whole page: Save Changes sends what changed in one updatePrinter. Favorite, Loaded Filament and
+// Remove act at once.
 function DetailsForm ({ printer }) {
   const { message } = App.useApp()
   const client = useApolloClient()
@@ -123,6 +125,8 @@ function DetailsForm ({ printer }) {
       <div className={classes.columns}>
         <div className={classes.side}>
           <ConnectionCard printer={printer} nameHint={hints.name} onReload={reload} />
+          {/* Saved on its own: none of its fields are the form's */}
+          <LoadedFilament printerId={printer.id} />
           <RemoveCard printer={printer} onRemoved={onRemoved} />
         </div>
         <AboutCard printer={printer} hints={hints} onReload={reload} />
@@ -167,7 +171,7 @@ FavoriteButton.propTypes = { printer: printerShape }
 DetailsForm.propTypes = { printer: printerShape }
 
 // A printer's page, at /printers/:id: its live state in the header, its connection and About This Printer to edit
-// in one form, and Remove.
+// in one form, its Loaded Filament, and Remove.
 export default function PrinterDetails () {
   return <App><DetailsPage /></App>
 }

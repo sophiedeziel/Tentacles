@@ -10,6 +10,7 @@ import { RouterProvider } from 'react-router/dom'
 
 import PrinterDetails from './PrinterDetails'
 import { IDENTIFY_SAVED_PRINTER, PRINTER_DETAILS, PRINTER_VERSION, REPORTED_SPECS, UPDATE_PRINTER } from './graphql/details'
+import { LOADED_FILAMENT, LOADED_FILAMENT_CHANGED } from './graphql/loadedFilament'
 import { REMOVE_PRINTER, SET_PRINTER_FAVORITE } from '../PrintersList/graphql/fleet'
 import { POSSIBLE_TYPES, PRINT_QUEUE_CHANGED, PRINTER_STATUS_CHANGED, TYPE_POLICIES } from '../../Dashboard/graphql/dashboard'
 import { PRINTERS } from '../../Dashboard/widgets/Printer/fixtures'
@@ -28,6 +29,7 @@ const PRINTER = {
   username: 'maker',
   favorite: false,
   specs: specs(),
+  loadedFilaments: [],
   nextJob: { __typename: 'EnqueuedJob', ...PRINTERS.PRINTING.nextJob, executable: { __typename: 'File', ...PRINTERS.PRINTING.nextJob.executable } },
   status: {
     __typename: 'PrinterStatus',
@@ -38,6 +40,11 @@ const PRINTER = {
   }
 }
 const later = { delay: 60000 }
+// The Loaded Filament card's query (it selects the printer's materials too)
+const filamentMock = ({ specs: { materials } }) => ({
+  request: { query: LOADED_FILAMENT, variables: { printerId: '1' } },
+  result: { data: { printer: { __typename: 'Printer', id: '1', specs: { __typename: 'PrinterSpecs', materials }, loadedFilaments: [] }, filamentMaterials: ['PLA', 'PETG'], filamentColours: ['Black'] } }
+})
 const identify = (secret, result, options = {}) => ({
   request: {
     query: IDENTIFY_SAVED_PRINTER,
@@ -58,6 +65,8 @@ const PAGE_MOCKS = [
   { request: { query: PRINTER_DETAILS, variables: { id: '1' } }, result: { data: { printer: PRINTER } } },
   { request: { query: PRINTER_VERSION, variables: { id: '1' } }, result: { data: { printer: { __typename: 'Printer', id: '1', version: 'PrusaLink 2.1.2 (firmware 6.2.0)' } } } },
   { request: { query: PRINTER_STATUS_CHANGED }, result: { data: { printerStatusChanged: PRINTER } }, ...later },
+  filamentMock(PRINTER),
+  { request: { query: LOADED_FILAMENT_CHANGED }, result: { data: { printerStatusChanged: { __typename: 'Printer', id: '1', loadedFilaments: [] } } }, ...later },
   { request: { query: PRINT_QUEUE_CHANGED }, result: { data: { printQueueChanged: null } }, ...later }
 ]
 const BASE_MOCKS = [...PAGE_MOCKS, ...reportedMocks()]
@@ -189,6 +198,39 @@ describe('PrinterDetails', () => {
     warn.mockRestore()
   })
 
+  describe('Loaded Filament', () => {
+    const fillInFilament = async () => {
+      await userEvent.click(await screen.findByLabelText('Material'))
+      await userEvent.click(await screen.findByTitle('PETG', { selector: '.ant-select-item-option' }))
+      await userEvent.type(field('Colour'), 'Black')
+    }
+
+    it('is not part of the page\'s form: its edits leave Save Changes disabled and the page free to leave', async () => {
+      renderPage()
+      expect(await screen.findByRole('heading', { name: 'Loaded Filament' })).toBeInTheDocument()
+      await fillInFilament()
+      expect(screen.getByRole('button', { name: /Update Filament/ })).toBeEnabled()
+      expect(screen.getByRole('button', { name: /Save Changes/ })).toBeDisabled()
+      expect(window.dispatchEvent(new Event('beforeunload', { cancelable: true }))).toBe(true)
+      await userEvent.click(screen.getByRole('button', { name: 'Open Queue' }))
+      expect(await screen.findByText('Queue')).toBeInTheDocument()
+    })
+
+    it('submits nothing on Enter, even while the page\'s form has changes', async () => {
+      renderPage([updated({ name: 'Prusa MK4 left' }, { name: 'Prusa MK4 left' })])
+      await userEvent.type(await screen.findByLabelText('Printer name'), ' left')
+      await fillInFilament()
+      await userEvent.type(field('Colour'), '{Enter}')
+      await new Promise((resolve) => setTimeout(resolve, 50))
+      expect(screen.queryByText('Changes saved')).not.toBeInTheDocument()
+      expect(screen.queryByText(/Could not save/)).not.toBeInTheDocument()
+
+      // Where Enter does submit the page's form
+      await userEvent.type(field('Printer name'), '{Enter}')
+      expect(await screen.findByText('Changes saved')).toBeInTheDocument()
+    })
+  })
+
   describe('with unsaved changes', () => {
     it('asks before following a link, and stays when asked to', async () => {
       const { router } = renderPage()
@@ -237,7 +279,7 @@ describe('PrinterDetails', () => {
       const printer = { ...PRINTER, specs: specs(saved) }
       return renderPage(mocks, [
         { ...PAGE_MOCKS[0], result: { data: { printer } } },
-        ...PAGE_MOCKS.slice(1),
+        ...PAGE_MOCKS.slice(1).map((mock) => (mock.request.query === LOADED_FILAMENT ? filamentMock(printer) : mock)),
         ...reportedMocks(reported && specs(reported), name)
       ])
     }
