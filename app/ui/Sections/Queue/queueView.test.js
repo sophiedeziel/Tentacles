@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 
 import {
   availableSummary, batchSummary, batchView, copiesFloor, copiesUnderWay, copyText, filamentLabel, isQueueEmpty,
-  loadedText, needsView, nextCopyNumber, offlineText, onBedText, printLabel, printersView, printingSummary, swatchColour, takesNextView,
-  waitingCopiesView, waitingSummary
+  loadedText, needsView, nextCopyNumber, offlineText, onBedText, printLabel, printersView,
+  printingSummary, swatchColour, takesNextView, waitingCopiesView, waitingSummary
 } from './queueView'
 
 const needs = (overrides) => ({ pending: false, known: true, colour: null, filaments: [], footprint: null, ...overrides })

@@ -2,35 +2,44 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Modal, Typography } from 'antd'
 
-// What the Bed Cleared modal says: what to check (the print, named when known, and any leftover filament off the
-// bed), then what happens next for the printer. A printer not taking jobs won't start the next one, and nothing
-// starts while dispatch is paused; otherwise it can take the next job.
-export function bedClearedText ({ printerName, fileName, takesJobs = true, dispatchPaused = false }) {
-  const print = fileName || 'the last print'
-  let next = `${printerName} can then take the next job in the queue.`
-  if (!takesJobs) next = `${printerName} isn't taking jobs, so it won't start the next one.`
-  else if (dispatchPaused) next = `Dispatch is paused, so ${printerName} won't start the next job until it resumes.`
+// The copy a printer takes next of a print job: the first one not handed out yet
+const nextCopy = (job) => job.copies - job.copiesLeftToStart + 1
+
+// What the Bed Cleared modal says (the BedConfirm frame): whether the printer starts printing once its bed is clear
+// and what it takes next (`takesNext`, the job the queue lines up for it, as if dispatch ran), then what to check.
+// A printer not taking jobs won't start the next one, and nothing starts while dispatch is paused.
+export function bedClearedText ({ printerName, takesJobs = true, dispatchPaused = false, takesNext = null }) {
+  let body = 'It starts printing as soon as it can pick a job from the queue.'
+  if (!takesJobs) body = `${printerName} isn't taking jobs from the queue, so it won't start the next one.`
+  else if (dispatchPaused) {
+    body = 'Dispatch is paused, so it will not start yet. It picks a job from the queue as soon as you resume dispatch.'
+  } else if (takesNext) {
+    const copy = takesNext.copies > 1 ? `, copy ${nextCopy(takesNext)} of ${takesNext.copies}` : ''
+    body = `${body} Next for it: ${takesNext.file.filename}${copy}.`
+  }
 
   return {
-    title: `Bed cleared on ${printerName}?`,
-    check: `Check that ${print} and any leftover filament are off the bed.`,
-    next
+    title: `Is the bed of ${printerName} clear?`,
+    body,
+    check: 'Check that the part and any leftover filament are off the bed first.'
   }
 }
 
-// Bed Cleared (the BedConfirm frame): asks the person to check the bed, says what the printer does next, and
-// confirms. Controlled: `open`, `confirming` while the mutation runs, `onConfirm`, `onCancel`. `printer` needs
-// { name, takesJobs }; `fileName` is the print on the bed, when known. useBedCleared runs it.
-export default function BedClearedModal ({ open, printer, fileName, dispatchPaused, confirming, onConfirm, onCancel }) {
-  const text = printer && bedClearedText({ printerName: printer.name, fileName, takesJobs: printer.takesJobs, dispatchPaused })
+// Bed Cleared (the BedConfirm frame): asks whether the bed is clear, says what the printer does then, and confirms.
+// Controlled: `open`, `confirming` while the mutation runs, `onConfirm`, `onCancel`. `printer` needs
+// { name, takesJobs, takesNext }. useBedCleared runs it.
+export default function BedClearedModal ({ open, printer, dispatchPaused, confirming, onConfirm, onCancel }) {
+  const text = printer && bedClearedText({
+    printerName: printer.name, takesJobs: printer.takesJobs ?? true, dispatchPaused, takesNext: printer.takesNext
+  })
 
   return (
-    <Modal open={open} title={text?.title} okText="Bed Cleared" cancelText="Not Yet" confirmLoading={confirming}
-      onOk={onConfirm} onCancel={onCancel} centered width={420} destroyOnHidden>
+    <Modal open={open} title={text?.title} okText="Bed Is Clear" cancelText="Not Yet" confirmLoading={confirming}
+      onOk={onConfirm} onCancel={onCancel} centered width={440} destroyOnHidden>
       {text && (
         <>
-          <Typography.Paragraph>{text.check}</Typography.Paragraph>
-          <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>{text.next}</Typography.Paragraph>
+          <Typography.Paragraph style={{ marginBottom: 8 }}>{text.body}</Typography.Paragraph>
+          <Typography.Paragraph type="secondary" style={{ marginBottom: 0 }}>{text.check}</Typography.Paragraph>
         </>
       )}
     </Modal>
@@ -39,8 +48,15 @@ export default function BedClearedModal ({ open, printer, fileName, dispatchPaus
 
 BedClearedModal.propTypes = {
   open: PropTypes.bool.isRequired,
-  printer: PropTypes.shape({ name: PropTypes.string.isRequired, takesJobs: PropTypes.bool }),
-  fileName: PropTypes.string,
+  printer: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    takesJobs: PropTypes.bool,
+    takesNext: PropTypes.shape({
+      copies: PropTypes.number.isRequired,
+      copiesLeftToStart: PropTypes.number.isRequired,
+      file: PropTypes.shape({ filename: PropTypes.string.isRequired }).isRequired
+    })
+  }),
   dispatchPaused: PropTypes.bool,
   confirming: PropTypes.bool,
   onConfirm: PropTypes.func.isRequired,

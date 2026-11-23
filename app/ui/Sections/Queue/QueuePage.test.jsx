@@ -92,7 +92,7 @@ describe('QueuePage', () => {
     await loadPage(queue())
 
     expect(within(section('Waiting')).getByText('3 jobs · 3 prints')).toBeInTheDocument()
-    expect(rows('Waiting').map((each) => within(each).getAllByRole('cell')[0].textContent)).toEqual(['1', '2', '3'])
+    expect(rows('Waiting').map((each) => within(each).getAllByRole('cell')[1].textContent)).toEqual(['1', '2', '3'])
 
     const single = row('Waiting', '11')
     expect(within(single).getByText('phone_stand.gcode')).toBeInTheDocument()
@@ -138,7 +138,7 @@ describe('QueuePage', () => {
     await loadPage(queue({ waiting: [waitingJob(), blocked([VORON_ZERO]), { ...HELD, id: '14' }] }))
 
     const filter = (name) => userEvent.click(within(section('Waiting')).getByText(name))
-    const shown = () => rows('Waiting').map((each) => within(each).getAllByRole('cell')[0].textContent)
+    const shown = () => rows('Waiting').map((each) => within(each).getAllByRole('cell')[1].textContent)
 
     await filter('Blocked')
     expect(shown()).toEqual(['2'])

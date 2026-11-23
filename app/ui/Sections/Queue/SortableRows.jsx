@@ -102,8 +102,12 @@ function SortableKeyedRow (props) {
 }
 
 // The row's grip: what picks the row up, by pointer or keyboard. `label` names the row ("Drag phone_stand.gcode").
-export function DragHandle ({ label }) {
+// `disabled` (a filtered list): shown, but nothing picks the row up.
+export function DragHandle ({ label, disabled = false }) {
   const { attributes, listeners, setActivatorNodeRef, isDragging } = useContext(RowContext)
+  if (disabled) {
+    return <Button type="text" size="small" icon={<HolderOutlined />} aria-label={label} disabled title="Show All to reorder" />
+  }
 
   return (
     <Button ref={setActivatorNodeRef} type="text" size="small" icon={<HolderOutlined />} {...attributes} {...listeners}
@@ -120,4 +124,4 @@ SortableRows.propTypes = {
 }
 SortableRow.propTypes = { 'data-row-key': PropTypes.oneOfType([PropTypes.string, PropTypes.number]), style: PropTypes.object }
 SortableKeyedRow.propTypes = SortableRow.propTypes
-DragHandle.propTypes = { label: PropTypes.string.isRequired }
+DragHandle.propTypes = { label: PropTypes.string.isRequired, disabled: PropTypes.bool }

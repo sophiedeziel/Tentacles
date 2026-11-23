@@ -46,6 +46,7 @@ const expectedFile = (print) => ({ printerId: print.printer.id, expectedFileName
 // - print jobs: move(job, { beforeId } | { to: 'TOP' | 'BOTTOM' }), hold(job), release(job), unbind(job) (Release to
 //   Other Printers), remove(job) (the waiting copies), setCopies(job, copies), requeue(file) (one copy, at the bottom)
 // - copies printing: pausePrint(print), resumePrint(print), cancelPrint(print), with the file shown as expectedFileName
+// - printers: reconnect(printer) (connectPrinter when offline, reconnectPrinter when in error)
 // - the fleet: pauseDispatch(), resumeDispatch()
 // Bed Cleared has its own hook and modal (BedCleared/useBedCleared), shared with the printer page.
 export default function useQueueActions (reload) {
@@ -70,6 +71,11 @@ export default function useQueueActions (reload) {
       pausePrint: printControl('pause', 'Pause Print failed'),
       resumePrint: printControl('resume', 'Resume Print failed'),
       cancelPrint: printControl('cancel', 'Cancel Print failed'),
+      // Reconnect (an offline printer's line): a printer in error reconnects, an offline one connects again
+      reconnect: (printer) => {
+        const { document, mutation } = ACTIONS[printer.status?.stateFamily === 'ERROR' ? 'reconnect' : 'connect']
+        return run(document, { printerId: printer.id }, mutation, { failure: 'Reconnect failed' })
+      },
       pauseDispatch: () => run(PAUSE_DISPATCH, {}, 'pauseDispatch', { failure: 'Pausing dispatch failed' }),
       resumeDispatch: () => run(RESUME_DISPATCH, {}, 'resumeDispatch', { failure: 'Resuming dispatch failed' })
     }

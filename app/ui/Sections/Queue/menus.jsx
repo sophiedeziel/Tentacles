@@ -1,14 +1,23 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { useNavigate } from 'react-router'
 import { App, Button, Dropdown } from 'antd'
-import { MoreOutlined } from '@ant-design/icons'
+import {
+  ArrowDownOutlined, ArrowUpOutlined, DeleteOutlined, EllipsisOutlined, PauseCircleOutlined, PlayCircleOutlined,
+  PlusOutlined, StopOutlined, UndoOutlined, UnorderedListOutlined
+} from '@ant-design/icons'
 
+import { GcodeFileOutlined, Printer3DOutlined, PrintQueueOutlined } from '../../components/icons'
 import { cancelConfirmation, removeConfirmation } from './confirmations'
 
-// The "⋯" menus of the Waiting and Printing rows (antd Dropdown). Each entry runs one of useQueueActions' actions;
-// Remove and Cancel Print ask first, in a plain Modal.confirm.
+// The "⋯" menus of the Waiting and Printing rows (antd Dropdown), as the MoreMenu frame draws them (without Open
+// Project and Edit Printers and Options, which come with projects and the Add to Queue screen). Each entry runs one
+// of useQueueActions' actions, opens the copies dialog, shows a batch or opens a page; Remove from Queue and Cancel
+// Print ask first, in a plain Modal.confirm.
 
+const DIVIDER = { type: 'divider' }
 const isBound = (job) => job.samePrinter && !!job.boundPrinter
+const item = (key, label, Icon, extra = {}) => ({ key, label, icon: <Icon aria-hidden />, ...extra })
 
 // Asks in a Modal.confirm, then runs `action`: the modal stays open (OK loading) until it's done
 function useConfirm () {
@@ -26,28 +35,40 @@ function useConfirm () {
 
 function MoreMenu ({ label, items, onClick }) {
   return (
-    <Dropdown menu={{ items, onClick }} trigger={['click']} placement="bottomRight">
-      <Button type="text" size="small" icon={<MoreOutlined rotate={90} />} aria-label={label} />
+    <Dropdown menu={{ items, onClick, style: { minWidth: 232 } }} trigger={['click']} placement="bottomRight">
+      <Button type="text" size="small" icon={<EllipsisOutlined />} aria-label={label} />
     </Dropdown>
   )
 }
 
-// A waiting job: Move to Top / Bottom, Hold or Release, Release to Other Printers (a same-printer batch bound to its
-// printer), Remove from Queue (its waiting copies, after a confirmation). `rank` and `count`: where it is in the queue.
-export function WaitingMenu ({ job, rank, count, actions }) {
+// A waiting job: Move to Top / Bottom, Hold or Release | Change Number of Copies and Show Copies (a batch) or Print
+// More Copies (a single print), Release to Other Printers (a bound same-printer batch) | Open File | Remove from Queue.
+// `rank` and `count`: where it is in the queue. `onCopies(job)`: the copies dialog; `onShow(job)`: expands its copies.
+export function WaitingMenu ({ job, rank, count, actions, onCopies, onShow }) {
   const confirm = useConfirm()
+  const navigate = useNavigate()
+  const batch = job.copies > 1
   const items = [
-    { key: 'top', label: 'Move to Top', disabled: rank === 1 },
-    { key: 'bottom', label: 'Move to Bottom', disabled: rank === count },
-    job.held ? { key: 'release', label: 'Release' } : { key: 'hold', label: 'Hold' },
-    isBound(job) && { key: 'unbind', label: 'Release to Other Printers' },
-    { type: 'divider' },
-    { key: 'remove', label: 'Remove from Queue', danger: true }
+    item('top', 'Move to Top', ArrowUpOutlined, { disabled: rank === 1 }),
+    item('bottom', 'Move to Bottom', ArrowDownOutlined, { disabled: rank === count }),
+    job.held ? item('release', 'Release', PlayCircleOutlined) : item('hold', 'Hold', PauseCircleOutlined),
+    DIVIDER,
+    ...(batch
+      ? [item('copies', 'Change Number of Copies', PlusOutlined), item('show', 'Show Copies', UnorderedListOutlined)]
+      : [item('copies', 'Print More Copies', PlusOutlined)]),
+    isBound(job) && item('unbind', 'Release to Other Printers', UndoOutlined),
+    DIVIDER,
+    item('file', 'Open File', GcodeFileOutlined, { disabled: job.file.isDeleted }),
+    DIVIDER,
+    item('remove', 'Remove from Queue', DeleteOutlined, { danger: true })
   ].filter(Boolean)
 
   const onClick = ({ key }) => {
     if (key === 'top') actions.move(job, { to: 'TOP' })
     else if (key === 'bottom') actions.move(job, { to: 'BOTTOM' })
+    else if (key === 'copies') onCopies(job)
+    else if (key === 'show') onShow(job)
+    else if (key === 'file') navigate(`/files/${job.file.id}`)
     else if (key === 'remove') confirm(removeConfirmation(job), () => actions.remove(job))
     else actions[key](job)
   }
@@ -55,40 +76,48 @@ export function WaitingMenu ({ job, rank, count, actions }) {
   return <MoreMenu label={`More actions for ${job.file.filename}`} items={items} onClick={onClick} />
 }
 
-// The controls a printer's live state allows: Pause while printing, Resume while paused, Cancel Print in both
-const printControls = (family) => [
-  family === 'PRINTING' && { key: 'pausePrint', label: 'Pause Print' },
-  family === 'PAUSED' && { key: 'resumePrint', label: 'Resume Print' },
-  ['PRINTING', 'PAUSED'].includes(family) && { key: 'cancelPrint', label: 'Cancel Print', danger: true }
-].filter(Boolean)
-
-// What can be done to the rest of a copy's job while it still has copies waiting (`job`, its Waiting row)
-const restOfJob = (job) => (job
-  ? [
-      job.held ? { key: 'release', label: 'Release the Rest' } : { key: 'hold', label: 'Hold the Rest' },
-      isBound(job) && { key: 'unbind', label: 'Release to Other Printers' },
-      { key: 'remove', label: 'Remove the Waiting Copies', danger: true }
-    ].filter(Boolean)
-  : [])
-
-// A copy printing: Pause, Resume and Cancel Print (from its printer's live status), then the waiting job's options
-// when its job still has copies waiting (`job`). Cancel Print sends the file shown on the row as expectedFileName.
-export function PrintingMenu ({ print, job, actions }) {
+// A copy printing: Pause Print or Resume Print (from its printer's live status) | Change Number of Copies and Show
+// Batch in Waiting (a batch with copies waiting) or Print More Copies (a single print) | Open File, Open Printer |
+// Cancel Print. Cancel Print sends the file shown on the row as expectedFileName. `onCopies(job)` opens the copies
+// dialog for its print job; `onShow(job)` shows its Waiting row.
+export function PrintingMenu ({ print, actions, onCopies, onShow }) {
   const confirm = useConfirm()
-  const controls = printControls(print.printer.status?.stateFamily)
-  const rest = restOfJob(job)
-  const items = [...controls, ...(controls.length && rest.length ? [{ type: 'divider' }] : []), ...rest]
-  if (items.length === 0) return null
+  const navigate = useNavigate()
+  const family = print.printer.status?.stateFamily
+  const job = print.printJob
+  const batch = job.copies > 1
+  const control = [
+    family === 'PRINTING' && item('pausePrint', 'Pause Print', PauseCircleOutlined),
+    family === 'PAUSED' && item('resumePrint', 'Resume Print', PlayCircleOutlined)
+  ].filter(Boolean)
+  const items = [
+    ...control,
+    control.length > 0 && DIVIDER,
+    ...(batch
+      ? [
+          item('copies', 'Change Number of Copies', PlusOutlined),
+          job.copiesLeftToStart > 0 && item('show', 'Show Batch in Waiting', PrintQueueOutlined)
+        ]
+      : [item('copies', 'Print More Copies', PlusOutlined)]),
+    DIVIDER,
+    item('file', 'Open File', GcodeFileOutlined, { disabled: job.file.isDeleted }),
+    item('printer', 'Open Printer', Printer3DOutlined),
+    ...(['PRINTING', 'PAUSED'].includes(family)
+      ? [DIVIDER, item('cancelPrint', 'Cancel Print', StopOutlined, { danger: true })]
+      : [])
+  ].filter(Boolean)
 
   const onClick = ({ key }) => {
     if (key === 'cancelPrint') confirm(cancelConfirmation(print), () => actions.cancelPrint(print))
-    else if (key === 'pausePrint' || key === 'resumePrint') actions[key](print)
-    else if (key === 'remove') confirm(removeConfirmation(job), () => actions.remove(job))
-    else actions[key](job)
+    else if (key === 'copies') onCopies(job)
+    else if (key === 'show') onShow(job)
+    else if (key === 'file') navigate(`/files/${job.file.id}`)
+    else if (key === 'printer') navigate(`/printers/${print.printer.id}`)
+    else actions[key](print)
   }
 
-  const copy = print.printJob.copies > 1 ? ` copy ${print.copyNumber}` : ''
-  return <MoreMenu label={`More actions for ${print.printJob.file.filename}${copy}`} items={items} onClick={onClick} />
+  const copy = batch ? ` copy ${print.copyNumber}` : ''
+  return <MoreMenu label={`More actions for ${job.file.filename}${copy}`} items={items} onClick={onClick} />
 }
 
 const actionsShape = PropTypes.shape({
@@ -101,7 +130,8 @@ const actionsShape = PropTypes.shape({
   resumePrint: PropTypes.func,
   cancelPrint: PropTypes.func,
   setCopies: PropTypes.func,
-  requeue: PropTypes.func
+  requeue: PropTypes.func,
+  reconnect: PropTypes.func
 })
 
 MoreMenu.propTypes = {
@@ -113,8 +143,15 @@ WaitingMenu.propTypes = {
   job: PropTypes.object.isRequired,
   rank: PropTypes.number.isRequired,
   count: PropTypes.number.isRequired,
-  actions: actionsShape.isRequired
+  actions: actionsShape.isRequired,
+  onCopies: PropTypes.func.isRequired,
+  onShow: PropTypes.func.isRequired
 }
-PrintingMenu.propTypes = { print: PropTypes.object.isRequired, job: PropTypes.object, actions: actionsShape.isRequired }
+PrintingMenu.propTypes = {
+  print: PropTypes.object.isRequired,
+  actions: actionsShape.isRequired,
+  onCopies: PropTypes.func.isRequired,
+  onShow: PropTypes.func.isRequired
+}
 
 export { actionsShape }

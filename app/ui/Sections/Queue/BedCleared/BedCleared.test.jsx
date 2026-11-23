@@ -9,40 +9,44 @@ import { App, Button } from 'antd'
 import { bedClearedText, useBedCleared } from '.'
 import { CONFIRM_BED_CLEARED } from '../graphql/actions'
 
-describe('bedClearedText', () => {
-  const words = (extra) => bedClearedText({ printerName: 'Prusa MK4', fileName: 'cube.gcode', ...extra })
+const BRACKET = { copies: 10, copiesLeftToStart: 7, file: { filename: 'bracket_v3.gcode' } }
 
-  it('asks to check the print and any leftover filament are off the bed, then says the printer takes the next job', () => {
+describe('bedClearedText', () => {
+  const words = (extra) => bedClearedText({ printerName: 'Ender 3 V2', takesNext: BRACKET, ...extra })
+
+  it('asks whether the bed is clear, and says the printer starts with the copy it takes next', () => {
     expect(words()).toEqual({
-      title: 'Bed cleared on Prusa MK4?',
-      check: 'Check that cube.gcode and any leftover filament are off the bed.',
-      next: 'Prusa MK4 can then take the next job in the queue.'
+      title: 'Is the bed of Ender 3 V2 clear?',
+      body: 'It starts printing as soon as it can pick a job from the queue. Next for it: bracket_v3.gcode, copy 4 of 10.',
+      check: 'Check that the part and any leftover filament are off the bed first.'
     })
   })
 
-  it('says the last print when the file is not known', () => {
-    expect(words({ fileName: null }).check).toBe('Check that the last print and any leftover filament are off the bed.')
+  it('names a single print without a copy, and nothing when nothing is lined up', () => {
+    expect(words({ takesNext: { ...BRACKET, copies: 1, copiesLeftToStart: 1 } }).body)
+      .toBe('It starts printing as soon as it can pick a job from the queue. Next for it: bracket_v3.gcode.')
+    expect(words({ takesNext: null }).body).toBe('It starts printing as soon as it can pick a job from the queue.')
   })
 
   it('says a printer not taking jobs won’t start the next one', () => {
-    expect(words({ takesJobs: false }).next).toBe("Prusa MK4 isn't taking jobs, so it won't start the next one.")
-    expect(words({ takesJobs: false, dispatchPaused: true }).next)
-      .toBe("Prusa MK4 isn't taking jobs, so it won't start the next one.")
+    expect(words({ takesJobs: false }).body).toBe("Ender 3 V2 isn't taking jobs from the queue, so it won't start the next one.")
+    expect(words({ takesJobs: false, dispatchPaused: true }).body)
+      .toBe("Ender 3 V2 isn't taking jobs from the queue, so it won't start the next one.")
   })
 
   it('says nothing starts while dispatch is paused', () => {
-    expect(words({ dispatchPaused: true }).next)
-      .toBe("Dispatch is paused, so Prusa MK4 won't start the next job until it resumes.")
+    expect(words({ dispatchPaused: true }).body)
+      .toBe('Dispatch is paused, so it will not start yet. It picks a job from the queue as soon as you resume dispatch.')
   })
 })
 
 // A page with one printer to clear, as the printer page uses it
 function Page ({ onDone, dispatchPaused = false }) {
   const bedCleared = useBedCleared({ dispatchPaused, onDone })
-  const printer = { id: '1', name: 'Prusa MK4', takesJobs: true }
+  const printer = { id: '1', name: 'Prusa MK4', takesJobs: true, takesNext: { ...BRACKET, copiesLeftToStart: 10 } }
   return (
     <>
-      <Button onClick={() => bedCleared.ask(printer, 'cube.gcode')}>Bed Cleared</Button>
+      <Button onClick={() => bedCleared.ask(printer)}>Bed Cleared</Button>
       {bedCleared.modal}
     </>
   )
@@ -73,11 +77,11 @@ describe('useBedCleared', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Bed Cleared' }))
     const dialog = await screen.findByRole('dialog')
-    expect(dialog).toHaveTextContent('Bed cleared on Prusa MK4?')
-    expect(dialog).toHaveTextContent('Check that cube.gcode and any leftover filament are off the bed.')
-    expect(dialog).toHaveTextContent('Prusa MK4 can then take the next job in the queue.')
+    expect(dialog).toHaveTextContent('Is the bed of Prusa MK4 clear?')
+    expect(dialog).toHaveTextContent('Next for it: bracket_v3.gcode, copy 1 of 10.')
+    expect(dialog).toHaveTextContent('Check that the part and any leftover filament are off the bed first.')
 
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Bed Cleared' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Bed Is Clear' }))
     await waitFor(() => expect(sent).toEqual([{ printerId: '1' }]))
     await waitFor(() => expect(done).toBe(1))
   })
@@ -87,7 +91,7 @@ describe('useBedCleared', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Bed Cleared' }))
     expect(await screen.findByRole('dialog'))
-      .toHaveTextContent("Dispatch is paused, so Prusa MK4 won't start the next job until it resumes.")
+      .toHaveTextContent('Dispatch is paused, so it will not start yet.')
   })
 
   it('sends nothing when the person has not cleared it yet', async () => {
@@ -103,7 +107,7 @@ describe('useBedCleared', () => {
     renderPage({ success: false, errors: [{ __typename: 'UserError', field: null, message: 'Nothing to clear on Prusa MK4' }] })
 
     await userEvent.click(screen.getByRole('button', { name: 'Bed Cleared' }))
-    await userEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Bed Cleared' }))
+    await userEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Bed Is Clear' }))
     expect(await screen.findByText('Nothing to clear on Prusa MK4')).toBeInTheDocument()
   })
 })

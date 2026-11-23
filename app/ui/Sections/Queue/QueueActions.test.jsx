@@ -4,7 +4,7 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import userEvent from '@testing-library/user-event'
 import { MockedProvider } from '@apollo/client/testing/react'
 import { InMemoryCache } from '@apollo/client'
-import { MemoryRouter } from 'react-router'
+import { MemoryRouter, useLocation } from 'react-router'
 
 import QueuePage from './QueuePage'
 import { FINISHED_ROWS, GLOBAL_QUEUE_PAGE, QUEUE_CHANGED } from './graphql/queue'
@@ -14,7 +14,7 @@ import {
 } from './graphql/actions'
 import { ACTIONS } from '../Dashboard/graphql/actions'
 import { POSSIBLE_TYPES, PRINT_QUEUE_CHANGED, PRINTER_STATUS_CHANGED, TYPE_POLICIES } from '../Dashboard/graphql/dashboard'
-import { BATCH, HELD, MK4, print, queue, waitingJob } from './fixtures'
+import { BATCH, HELD, KOBRA, MK4, print, queue, waitingJob } from './fixtures'
 
 const later = { delay: 60000 }
 const always = { maxUsageCount: Number.POSITIVE_INFINITY }
@@ -34,9 +34,13 @@ const renderPage = (pages, mocks = []) => render(
     { request: { query: QUEUE_CHANGED }, result: { data: { queueChanged: { __typename: 'QueueChange', dispatchPaused: false } } }, ...later },
     ...mocks
   ]}>
-    <MemoryRouter initialEntries={['/queue']}><QueuePage /></MemoryRouter>
+    <MemoryRouter initialEntries={['/queue']}><QueuePage /><CurrentPath /></MemoryRouter>
   </MockedProvider>
 )
+
+function CurrentPath () {
+  return <span data-testid="path">{useLocation().pathname}</span>
+}
 
 const refused = (message) => [{ __typename: 'UserError', field: null, message }]
 
@@ -174,32 +178,47 @@ describe('reordering the Waiting rows', () => {
   it('drags a batch as one row: its copies fold away while it moves', async () => {
     renderPage(queue())
     await loaded()
-    await userEvent.click(within(row('Waiting', BATCH.id)).getByRole('button', { name: /expand row/i }))
-    expect(within(section('Waiting')).getByText('1 copy left to start')).toBeInTheDocument()
+    await userEvent.click(within(row('Waiting', BATCH.id)).getByRole('button', { name: 'Show the copies of cable_clip.gcode' }))
+    const copies = () => screen.getByRole('group', { name: 'Copies of cable_clip.gcode', hidden: true })
+    expect(copies()).toBeVisible()
     // The copies have no handle of their own
     expect(within(section('Waiting')).getAllByRole('button', { name: /^Drag / })).toHaveLength(3)
 
     const handle = screen.getByRole('button', { name: 'Drag cable_clip.gcode' })
     handle.focus()
     await userEvent.keyboard(' ')
-    expect(within(section('Waiting')).getByText('1 copy left to start')).not.toBeVisible()
+    expect(copies()).not.toBeVisible()
 
     await act(async () => { fireEvent.keyDown(document.activeElement, { code: 'Escape', key: 'Escape' }) })
-    expect(within(section('Waiting')).getByText('1 copy left to start')).toBeVisible()
+    expect(copies()).toBeVisible()
     expect(order()).toEqual(['11', '12', '13'])
   })
 })
 
+it('reorders only with every job shown', async () => {
+  renderPage(queue())
+  await loaded()
+
+  await userEvent.click(within(section('Waiting')).getByText('On Hold'))
+
+  expect(screen.getByRole('button', { name: 'Drag lid.gcode' })).toBeDisabled()
+})
+
 describe('the Waiting ⋯ menu', () => {
-  it('lists what each waiting job allows', async () => {
+  it('lists what each waiting job allows, as the MoreMenu frame draws it', async () => {
     renderPage(queue())
     await loaded()
 
-    expect(menuItems(await openMenu(row('Waiting', '11'))))
-      .toEqual(['Move to Top', 'Move to Bottom', 'Hold', 'Remove from Queue'])
+    expect(menuItems(await openMenu(row('Waiting', '11')))).toEqual([
+      'Move to Top', 'Move to Bottom', 'Hold', 'Print More Copies', 'Open File', 'Remove from Queue'
+    ])
     await userEvent.keyboard('{Escape}')
-    expect(menuItems(await openMenu(row('Waiting', BATCH.id))))
-      .toEqual(['Move to Top', 'Move to Bottom', 'Hold', 'Release to Other Printers', 'Remove from Queue'])
+    expect(menuItems(await openMenu(row('Waiting', BATCH.id)))).toEqual([
+      'Move to Top', 'Move to Bottom', 'Hold', 'Change Number of Copies', 'Show Copies', 'Release to Other Printers',
+      'Open File', 'Remove from Queue'
+    ])
+    await userEvent.keyboard('{Escape}')
+    expect(menuItems(await openMenu(row('Waiting', HELD.id)))).toContain('Release')
   })
 
   it('disables moving the first row up and the last row down', async () => {
@@ -207,8 +226,8 @@ describe('the Waiting ⋯ menu', () => {
     await loaded()
 
     const first = await openMenu(row('Waiting', '11'))
-    expect(within(first).getByRole('menuitem', { name: 'Move to Top' })).toHaveAttribute('aria-disabled', 'true')
-    expect(within(first).getByRole('menuitem', { name: 'Move to Bottom' })).not.toHaveAttribute('aria-disabled', 'true')
+    expect(within(first).getByRole('menuitem', { name: /Move to Top/ })).toHaveAttribute('aria-disabled', 'true')
+    expect(within(first).getByRole('menuitem', { name: /Move to Bottom/ })).not.toHaveAttribute('aria-disabled', 'true')
   })
 
   it.each([
@@ -227,6 +246,25 @@ describe('the Waiting ⋯ menu', () => {
     await waitFor(() => expect(sent.sent).toEqual([variables]))
   })
 
+  it('shows a batch’s copies', async () => {
+    renderPage(queue())
+    await loaded()
+    expect(screen.queryByRole('group', { name: 'Copies of cable_clip.gcode' })).not.toBeInTheDocument()
+
+    await pick(row('Waiting', BATCH.id), 'Show Copies')
+
+    expect(await screen.findByRole('group', { name: 'Copies of cable_clip.gcode' })).toBeVisible()
+  })
+
+  it('opens the file', async () => {
+    renderPage(queue())
+    await loaded()
+
+    await pick(row('Waiting', '11'), 'Open File')
+
+    expect(screen.getByTestId('path')).toHaveTextContent('/files/20')
+  })
+
   it('releases a held job from its What Happens Next', async () => {
     const release = mutation(RELEASE_PRINT_JOB, 'releasePrintJob', { id: HELD.id }, { payload: { printJob: null } })
     renderPage(queue(), [release.mock])
@@ -235,6 +273,18 @@ describe('the Waiting ⋯ menu', () => {
     await userEvent.click(within(row('Waiting', HELD.id)).getByRole('button', { name: 'Release' }))
 
     await waitFor(() => expect(release.sent).toEqual([{ id: HELD.id }]))
+  })
+
+  it('releases a bound batch to other printers from its copies', async () => {
+    const unbind = mutation(UNBIND_PRINT_JOB, 'unbindPrintJob', { id: '12' }, { payload: { printJob: null } })
+    renderPage(queue(), [unbind.mock])
+    await loaded()
+    await userEvent.click(within(row('Waiting', BATCH.id)).getByRole('button', { name: 'Show the copies of cable_clip.gcode' }))
+
+    const copies = screen.getByRole('group', { name: 'Copies of cable_clip.gcode' })
+    await userEvent.click(within(copies).getByRole('button', { name: 'Release to Other Printers' }))
+
+    await waitFor(() => expect(unbind.sent).toEqual([{ id: '12' }]))
   })
 
   it('shows why the server refused, then reloads', async () => {
@@ -280,75 +330,74 @@ describe('the Waiting ⋯ menu', () => {
   })
 })
 
-describe('the copies of a waiting job', () => {
-  const copiesOf = (filename) => screen.getByRole('spinbutton', { name: `Copies of ${filename}` })
+describe('the copies dialog', () => {
+  const total = () => screen.getByRole('spinbutton', { name: 'Total copies' })
 
-  it('never goes below the copies done and printing', async () => {
-    renderPage(queue())
-    await loaded()
-
-    // The batch: copy 1 done, copy 2 printing
-    expect(copiesOf('cable_clip.gcode')).toHaveAttribute('aria-valuemin', '2')
-    expect(copiesOf('cable_clip.gcode')).toHaveValue('3')
-    expect(copiesOf('phone_stand.gcode')).toHaveAttribute('aria-valuemin', '1')
-  })
-
-  it('saves on Enter', async () => {
+  it('changes the number of copies of a batch, never below the copies done and printing', async () => {
     const save = mutation(SET_PRINT_JOB_COPIES, 'setPrintJobCopies', { id: '12', copies: 5 }, { payload: { printJob: null } })
     renderPage(queue(), [save.mock])
     await loaded()
 
-    await userEvent.clear(copiesOf('cable_clip.gcode'))
-    await userEvent.type(copiesOf('cable_clip.gcode'), '5{Enter}')
+    await pick(row('Waiting', BATCH.id), 'Change Number of Copies')
+
+    const dialog = await screen.findByRole('dialog')
+    expect(dialog).toHaveTextContent('Change the number of copies of cable_clip.gcode')
+    expect(dialog).toHaveTextContent('The lowest is 2: 1 copy is done and 1 is printing, and those can\'t be taken back.')
+    expect(total()).toHaveAttribute('aria-valuemin', '2')
+    expect(total()).toHaveValue('3')
+    expect(within(dialog).getByRole('button', { name: 'Set to 3 Copies' })).toBeDisabled()
+
+    await userEvent.tripleClick(total())
+    await userEvent.keyboard('5')
+    expect(dialog).toHaveTextContent('Adds 2 copies to the 1 waiting.')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Set to 5 Copies' }))
 
     await waitFor(() => expect(save.sent).toEqual([{ id: '12', copies: 5 }]))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
   })
 
-  it('saves once when it loses focus, not on each step', async () => {
-    const save = mutation(SET_PRINT_JOB_COPIES, 'setPrintJobCopies', { id: '11', copies: 3 }, { payload: { printJob: null } })
+  it('prints more copies of a single print', async () => {
+    const save = mutation(SET_PRINT_JOB_COPIES, 'setPrintJobCopies', { id: '11', copies: 2 }, { payload: { printJob: null } })
     renderPage(queue(), [save.mock])
     await loaded()
 
-    const field = copiesOf('phone_stand.gcode')
-    const increase = within(field.closest('.ant-input-number')).getByRole('button', { name: 'Increase Value' })
-    await userEvent.click(increase)
-    await userEvent.click(increase)
-    expect(field).toHaveValue('3')
-    expect(save.sent).toEqual([])
+    await pick(row('Waiting', '11'), 'Print More Copies')
 
-    await userEvent.click(screen.getByRole('heading', { name: 'Print Queue' }))
-    await waitFor(() => expect(save.sent).toEqual([{ id: '11', copies: 3 }]))
+    const dialog = await screen.findByRole('dialog')
+    expect(dialog).toHaveTextContent('Print more copies of phone_stand.gcode')
+    expect(dialog).toHaveTextContent('Now 1 copy. 1 more will be added.')
+    expect(dialog).toHaveTextContent('The job becomes a batch.')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Print 2 Copies' }))
+
+    await waitFor(() => expect(save.sent).toEqual([{ id: '11', copies: 2 }]))
   })
 
-  it('sends nothing when the number did not change', async () => {
-    const save = mutation(SET_PRINT_JOB_COPIES, 'setPrintJobCopies', { id: '11', copies: 1 }, { payload: { printJob: null } })
-    renderPage(queue(), [save.mock])
-    await loaded()
-
-    await userEvent.click(copiesOf('phone_stand.gcode'))
-    await userEvent.keyboard('{Enter}')
-    await userEvent.click(screen.getByRole('heading', { name: 'Print Queue' }))
-    await new Promise((resolve) => setTimeout(resolve, 50))
-
-    expect(save.sent).toEqual([])
-  })
-
-  it('puts the number back and shows why when the server refuses', async () => {
-    const save = mutation(SET_PRINT_JOB_COPIES, 'setPrintJobCopies', { id: '12', copies: 2 }, {
-      payload: { printJob: null }, errors: refused("Can't go below 3: 2 done and 1 printing")
+  it('stays open and shows why when the server refuses', async () => {
+    const save = mutation(SET_PRINT_JOB_COPIES, 'setPrintJobCopies', { id: '11', copies: 2 }, {
+      payload: { printJob: null }, errors: refused('phone_stand.gcode is no longer in the queue')
     })
     renderPage(queue(), [save.mock])
     await loaded()
 
-    await userEvent.clear(copiesOf('cable_clip.gcode'))
-    await userEvent.type(copiesOf('cable_clip.gcode'), '2{Enter}')
+    await pick(row('Waiting', '11'), 'Print More Copies')
+    await userEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Print 2 Copies' }))
 
-    expect(await screen.findByText("Can't go below 3: 2 done and 1 printing")).toBeInTheDocument()
-    await waitFor(() => expect(copiesOf('cable_clip.gcode')).toHaveValue('3'))
+    expect(await screen.findByText('phone_stand.gcode is no longer in the queue')).toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+  })
+
+  it('opens from a copy printing, for its print job', async () => {
+    renderPage(queue())
+    await loaded()
+
+    await pick(row('Printing', '32'), 'Change Number of Copies')
+
+    expect(await screen.findByRole('dialog')).toHaveTextContent('Change the number of copies of cable_clip.gcode')
+    expect(total()).toHaveAttribute('aria-valuemin', '2')
   })
 })
 
-describe('the dispatch switch', () => {
+describe('the dispatch switch and banner', () => {
   it('pauses dispatch, then shows the state reloaded', async () => {
     const pause = mutation(PAUSE_DISPATCH, 'pauseDispatch', {})
     renderPage([queue(), queue({ dispatchPaused: true })], [pause.mock])
@@ -372,6 +421,17 @@ describe('the dispatch switch', () => {
     await waitFor(() => expect(screen.getByRole('switch', { name: 'Dispatch' })).toBeChecked())
   })
 
+  it('resumes dispatch from the banner', async () => {
+    const resume = mutation(RESUME_DISPATCH, 'resumeDispatch', {})
+    renderPage([queue({ dispatchPaused: true }), queue()], [resume.mock])
+    await loaded()
+
+    await userEvent.click(within(screen.getByRole('alert')).getByRole('button', { name: 'Resume Dispatch' }))
+
+    await waitFor(() => expect(resume.sent).toEqual([{}]))
+    await waitFor(() => expect(screen.queryByText('Dispatch is paused')).not.toBeInTheDocument())
+  })
+
   it('stays as it was and says why when the server refuses', async () => {
     const pause = mutation(PAUSE_DISPATCH, 'pauseDispatch', {}, { errors: refused('The global print queue is off') })
     renderPage(queue(), [pause.mock])
@@ -389,19 +449,21 @@ describe('the Printing ⋯ menu', () => {
   const PAUSED = { ...MK4, status: { ...MK4.status, stateFamily: 'PAUSED', stateText: 'Paused' } }
   const CLIPS = BATCH.file
   const pausedQueue = () => queue({
-    printing: [print({ id: '32', printer: PAUSED, jobId: '12', copies: 3, jobFile: CLIPS, copyNumber: 2, progress: 40 })],
+    printing: [print({
+      id: '32', printer: PAUSED, jobId: '12', copies: 3, jobFile: CLIPS, copyNumber: 2, progress: 40, copiesLeftToStart: 1, jobPrints: BATCH.prints
+    })],
     // Not the MK4's finished copy: its printer's status would say printing
     finished: [queue().finished[0]]
   })
   const printing = (key = '32') => row('Printing', key)
 
-  it('offers Pause and Cancel while printing, then what can be done to the copies still waiting', async () => {
+  it('offers what the MoreMenu frame draws for a batch’s copy', async () => {
     renderPage(queue())
     await loaded()
 
     expect(within(printing()).queryByRole('button', { name: /Pause|Cancel/ })).not.toBeInTheDocument()
     expect(menuItems(await openMenu(printing()))).toEqual([
-      'Pause Print', 'Cancel Print', 'Hold the Rest', 'Release to Other Printers', 'Remove the Waiting Copies'
+      'Pause Print', 'Change Number of Copies', 'Show Batch in Waiting', 'Open File', 'Open Printer', 'Cancel Print'
     ])
   })
 
@@ -413,12 +475,31 @@ describe('the Printing ⋯ menu', () => {
     expect(menuItems((await screen.findAllByRole('menu')).at(-1))).not.toContain('Pause Print')
   })
 
-  it('offers only the print controls when nothing of its job waits', async () => {
+  it('offers Print More Copies on a single print', async () => {
     const single = print({ id: '40', printer: MK4, jobId: '99', jobFile: { __typename: 'File', id: '50', filename: 'knob.gcode', isDeleted: false } })
     renderPage(queue({ printing: [single], waiting: [waitingJob()] }))
     await loaded()
 
-    expect(menuItems(await openMenu(printing('40')))).toEqual(['Pause Print', 'Cancel Print'])
+    expect(menuItems(await openMenu(printing('40'))))
+      .toEqual(['Pause Print', 'Print More Copies', 'Open File', 'Open Printer', 'Cancel Print'])
+  })
+
+  it('shows the batch in Waiting, its copies expanded', async () => {
+    renderPage(queue())
+    await loaded()
+
+    await pick(printing(), 'Show Batch in Waiting')
+
+    expect(await screen.findByRole('group', { name: 'Copies of cable_clip.gcode' })).toBeVisible()
+  })
+
+  it('opens the printer', async () => {
+    renderPage(queue())
+    await loaded()
+
+    await pick(printing(), 'Open Printer')
+
+    expect(screen.getByTestId('path')).toHaveTextContent('/printers/1')
   })
 
   it('pauses the copy, naming the file shown', async () => {
@@ -467,79 +548,80 @@ describe('the Printing ⋯ menu', () => {
 
     expect(await screen.findByText('Prusa MK4 is now printing bracket_v3.gcode')).toBeInTheDocument()
   })
-
-  it.each([
-    ['Hold the Rest', HOLD_PRINT_JOB, 'holdPrintJob', { printJob: null }],
-    ['Release to Other Printers', UNBIND_PRINT_JOB, 'unbindPrintJob', { printJob: null }]
-  ])('%s acts on the copy’s job', async (label, query, field, payload) => {
-    const sent = mutation(query, field, { id: '12' }, { payload })
-    renderPage(queue(), [sent.mock])
-    await loaded()
-
-    await pick(printing(), label)
-
-    await waitFor(() => expect(sent.sent).toEqual([{ id: '12' }]))
-  })
-
-  it('removes the waiting copies of the copy’s job after a confirmation', async () => {
-    const remove = mutation(REMOVE_PRINT_JOB, 'removePrintJob', { id: '12' }, { payload: { deletedPrintJobId: null } })
-    renderPage(queue(), [remove.mock])
-    await loaded()
-
-    await pick(printing(), 'Remove the Waiting Copies')
-    const dialog = await screen.findByRole('dialog')
-    expect(dialog).toHaveTextContent('Remove cable_clip.gcode from the queue?')
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Remove from Queue' }))
-
-    await waitFor(() => expect(remove.sent).toEqual([{ id: '12' }]))
-  })
 })
 
 describe('Finished', () => {
-  it('requeues a file: one copy, at the bottom', async () => {
+  it('requeues a failed print: one copy, at the bottom', async () => {
     const requeue = mutation(ADD_TO_QUEUE, 'addToQueue', { fileId: '22', copies: 1 }, { payload: { printJob: null } })
     renderPage(queue(), [requeue.mock])
     await loaded()
 
+    expect(within(row('Finished', '31')).queryByRole('button', { name: /Requeue/ })).not.toBeInTheDocument()
     await userEvent.click(within(row('Finished', '33')).getByRole('button', { name: 'Requeue bracket.gcode' }))
 
     await waitFor(() => expect(requeue.sent).toEqual([{ fileId: '22', copies: 1 }]))
   })
 })
 
-describe('Bed Cleared on a printer waiting to be cleared', () => {
+describe('Reconnect on an offline printer', () => {
+  it('connects an offline printer again', async () => {
+    const connect = mutation(ACTIONS.connect.document, 'connectPrinter', { printerId: '7' })
+    renderPage(queue(), [connect.mock])
+    await loaded()
+
+    const line = within(section('Available Printers')).getByText('Kobra 2 is offline and takes no jobs.').parentElement
+    await userEvent.click(within(line).getByRole('button', { name: 'Reconnect' }))
+
+    await waitFor(() => expect(connect.sent).toEqual([{ printerId: '7' }]))
+  })
+
+  it('reconnects a printer in error', async () => {
+    const reconnect = mutation(ACTIONS.reconnect.document, 'reconnectPrinter', { printerId: '7' })
+    const errored = { ...KOBRA, status: { ...KOBRA.status, stateFamily: 'ERROR', stateText: 'Error' } }
+    renderPage(queue({ offlinePrinters: [errored] }), [reconnect.mock])
+    await loaded()
+
+    await userEvent.click(within(section('Available Printers')).getByRole('button', { name: 'Reconnect' }))
+
+    await waitFor(() => expect(reconnect.sent).toEqual([{ printerId: '7' }]))
+  })
+})
+
+describe('Bed Cleared on a printer with its bed to clear', () => {
   const clear = async (pages, mocks) => {
     renderPage(pages, mocks)
     await loaded()
-    await userEvent.click(within(row('Printers Waiting to Be Cleared', '4')).getByRole('button', { name: 'Bed Cleared' }))
+    await userEvent.click(within(row('Available Printers', '4')).getByRole('button', { name: 'Bed Cleared' }))
     return screen.findByRole('dialog')
   }
 
-  it('asks to check the bed, says what happens next, then confirms', async () => {
+  it('asks whether the bed is clear, says what the printer takes next, then confirms', async () => {
     const confirm = mutation(CONFIRM_BED_CLEARED, 'confirmBedCleared', { printerId: '4' })
     const dialog = await clear([queue(), queue({ printersToClear: [] })], [confirm.mock])
 
-    expect(dialog).toHaveTextContent('Bed cleared on Prusa Mini+?')
-    expect(dialog).toHaveTextContent('Check that bracket.gcode and any leftover filament are off the bed.')
-    expect(dialog).toHaveTextContent('Prusa Mini+ can then take the next job in the queue.')
+    expect(dialog).toHaveTextContent('Is the bed of Prusa Mini+ clear?')
+    expect(dialog).toHaveTextContent(
+      'It starts printing as soon as it can pick a job from the queue. Next for it: phone_stand.gcode.'
+    )
+    expect(dialog).toHaveTextContent('Check that the part and any leftover filament are off the bed first.')
     expect(confirm.sent).toEqual([])
 
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Bed Cleared' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Bed Is Clear' }))
     await waitFor(() => expect(confirm.sent).toEqual([{ printerId: '4' }]))
-    await waitFor(() => expect(screen.queryByRole('region', { name: 'Printers Waiting to Be Cleared' })).not.toBeInTheDocument())
+    await waitFor(() => expect(row('Available Printers', '4')).toBeUndefined())
   })
 
-  it('says the printer won’t start the next job while dispatch is paused', async () => {
+  it('says the printer won’t start yet while dispatch is paused', async () => {
     const dialog = await clear(queue({ dispatchPaused: true }))
 
-    expect(dialog).toHaveTextContent("Dispatch is paused, so Prusa Mini+ won't start the next job until it resumes.")
+    expect(dialog).toHaveTextContent('Dispatch is paused, so it will not start yet.')
   })
 
   it('says the printer won’t start the next job when it isn’t taking jobs', async () => {
     const mini = { ...queue().printersToClear[0], takesJobs: false }
     const dialog = await clear(queue({ printersToClear: [mini] }))
 
-    expect(dialog).toHaveTextContent("Prusa Mini+ isn't taking jobs, so it won't start the next one.")
+    expect(dialog).toHaveTextContent("Prusa Mini+ isn't taking jobs from the queue, so it won't start the next one.")
   })
 
   it('shows why the server refused', async () => {
@@ -548,7 +630,7 @@ describe('Bed Cleared on a printer waiting to be cleared', () => {
     })
     const dialog = await clear(queue(), [confirm.mock])
 
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Bed Cleared' }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Bed Is Clear' }))
     expect(await screen.findByText('Nothing to clear on Prusa Mini+')).toBeInTheDocument()
   })
 })
