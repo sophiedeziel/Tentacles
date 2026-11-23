@@ -16,6 +16,11 @@
 #   PrintQueue::NextJob.for(printer).job             # => a PrintQueue::Job, or nil
 #   PrintQueue::Readiness.for(printer).idle_reason   # => nil, or :offline, :busy, :nothing_eligible, ...
 #
+# For the queue page (GraphQL's globalQueue), PrintQueue::Fleet reads every printer with what the rules need at once,
+# and PrintQueue::Forecast says what happens next to each entry (What Happens Next), agreeing with the dispatcher:
+#
+#   PrintQueue::Forecast.current.outcome(entry) # => PrintQueue::Forecast::Outcome(kind: :after_current_print, ...)
+#
 # The operations change the queue (see PrintQueue::Operation): PrintQueue::Addition, Move, Hold, Release,
 # CopiesChange, WaitingCopiesRemoval, PrinterBinding, PrinterBindingRelease, DispatchPause, DispatchResumption and
 # CopyCancellation. Each pushes PrintQueue.push_changed once, then asks for a dispatch pass (PrintQueue::DispatchRequest)

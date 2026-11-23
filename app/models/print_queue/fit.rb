@@ -67,6 +67,10 @@ module PrintQueue
     #: -> bool
     def cannot? = result == :cannot
 
+    # Whether the filament it needs is loaded: :ready, or :after_reconnect only because the printer is offline
+    #: -> bool
+    def filament_loaded? = ready? || (result == :after_reconnect && reasons.all? { |reason| reason.code == :offline })
+
     # @override
     #: -> bool
     def readonly? = true

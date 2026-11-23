@@ -65,6 +65,21 @@ RSpec.describe PrintQueue::Fit do
     end
   end
 
+  describe '#filament_loaded?' do
+    before { load('PLA', 'Black') }
+
+    it 'is true when ready, or offline with nothing else in the way' do
+      expect(fit(needs)).to be_filament_loaded
+      expect(fit(needs, status: nil)).to be_filament_loaded
+    end
+
+    it 'is false when a filament change is needed, online or not, or when it cannot print' do
+      expect(fit(needs(materials: ['PETG']))).not_to be_filament_loaded
+      expect(fit(needs(materials: ['PETG']), status: nil)).not_to be_filament_loaded
+      expect(fit(needs(width: 300, depth: 100))).not_to be_filament_loaded
+    end
+  end
+
   describe 'offline' do
     before { load('PLA', 'Black') }
 
