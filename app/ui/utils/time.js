@@ -25,6 +25,19 @@ export function formatTimeLeft (milliseconds) {
   return `${hours} h ${String(minutes % 60).padStart(2, '0')} min`
 }
 
+// A print's estimated length, from its seconds: "1 h 2 min" (seconds dropped past an hour), "30 min 28 s", "45 s"
+export function formatPrintTime (seconds) {
+  const total = Math.max(0, Math.round(seconds))
+  if (total < 60) return `${total} s`
+  if (total < 3600) {
+    const left = total % 60
+    return left ? `${Math.floor(total / 60)} min ${left} s` : `${total / 60} min`
+  }
+  const minutes = Math.round(total / 60)
+  const left = minutes % 60
+  return left ? `${Math.floor(minutes / 60)} h ${left} min` : `${minutes / 60} h`
+}
+
 // "14:35", on a 24-hour clock like the rest of the dashboard
 export function formatClock (time) {
   return dayjs(time).format('HH:mm')

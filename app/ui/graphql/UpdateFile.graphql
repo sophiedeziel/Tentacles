@@ -1,3 +1,4 @@
+#import "./GcodeSummaryFragment.graphql"
 mutation UpdateFile($input: UpdateFileInput!) {
   updateFile(input: $input) {
     file{
@@ -5,6 +6,9 @@ mutation UpdateFile($input: UpdateFileInput!) {
       filename
       fileContent
       downloadUrl
+      gcodeSummary {
+        ...GcodeSummaryFields
+      }
     }
   }
 }
