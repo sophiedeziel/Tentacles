@@ -27,11 +27,29 @@ class PrintQueue::Addition
     sig { params(value: T.nilable(::Integer)).returns(T.nilable(::Integer)) }
     def copies=(value); end
 
+    sig { returns(T.nilable(T::Boolean)) }
+    def held; end
+
+    sig { params(value: T.nilable(T::Boolean)).returns(T.nilable(T::Boolean)) }
+    def held=(value); end
+
     sig { returns(T.untyped) }
     def item; end
 
     sig { params(value: T.untyped).returns(T.untyped) }
     def item=(value); end
+
+    sig { returns(T.nilable(::String)) }
+    def material; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def material=(value); end
+
+    sig { returns(T.nilable(::String)) }
+    def position; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def position=(value); end
 
     sig { returns(T.untyped) }
     def printer_ids; end

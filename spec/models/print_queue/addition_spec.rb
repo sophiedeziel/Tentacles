@@ -34,8 +34,39 @@ RSpec.describe PrintQueue::Addition do
     expect(add.job.position).to eq 9
   end
 
-  it 'defaults to one copy, for any colour, on all capable printers' do
-    expect(add.job).to have_attributes(copies: 1, colour: nil, all_capable: true, same_printer: false)
+  it "defaults to one copy, of the G-code's material in any colour, on all capable printers, at the bottom" do
+    expect(add.job).to have_attributes(copies: 1, material: nil, colour: nil, all_capable: true, same_printer: false,
+                                       held: false)
+  end
+
+  it 'asks for a material, as a material key' do
+    expect(add(material: 'petg').job.material).to eq 'PETG'
+  end
+
+  it 'is refused for a material that is not in the list' do
+    expect_refused(described_class.new(item:, material: 'PCTG'), 'Material is not included in the list')
+  end
+
+  it 'adds it held' do
+    expect(add(held: true).job).to be_held
+  end
+
+  describe 'at the top (Next Up)' do
+    it 'goes first among the entries still in the queue, which are numbered 1..n again' do
+      second = create(:print_job, position: 3)
+      third = create(:print_job, position: 8)
+      finished = create(:print_job, position: 1, copies: 1)
+      create(:printer_job, :copy, print_job: finished, status: 'completed')
+
+      job = add(position: 'top').job
+
+      expect([job, second, third].map { |entry| entry.reload.position }).to eq [1, 2, 3]
+      expect(finished.reload.position).to eq 1
+    end
+
+    it 'is refused for another place' do
+      expect_refused(described_class.new(item:, position: 'middle'), 'Position is not included in the list')
+    end
   end
 
   it 'pushes once, with no printer, and asks for a dispatch pass' do
@@ -58,6 +89,29 @@ RSpec.describe PrintQueue::Addition do
     it 'is refused without a printer' do
       expect_refused(described_class.new(item:, all_capable: false, printer_ids: []), 'Choose at least one printer')
       expect(PrintQueue::Job.count).to eq 0
+    end
+
+    it 'is refused when a printer can never print it, with why' do
+      create(:gcode_summary, :ready, :with_tools, item:, materials: ['PLA'])
+      mini = create(:printer, name: 'Mini Delta', bed_shape: 'circular', build_diameter: 110)
+
+      expect_refused(described_class.new(item:, all_capable: false, printer_ids: [printers.first.id, mini.id]),
+                     "Mini Delta can't print it: Bed too small: needs 123.09 × 130 mm, has a 110 mm round bed")
+    end
+
+    it 'is refused when a printer does not print the material asked for' do
+      create(:gcode_summary, :ready, :with_tools, item:, materials: ['PLA'])
+      printers.first.update!(name: 'Ender 3 V2', materials: ['PLA'])
+
+      expect_refused(described_class.new(item:, material: 'PETG', all_capable: false, printer_ids: [printers.first.id]),
+                     "Ender 3 V2 can't print it: Doesn't print PETG (prints PLA)")
+    end
+
+    it 'is not refused for a printer whose limits are not known yet (summary pending or failed)' do
+      mini = create(:printer, bed_shape: 'circular', build_diameter: 110)
+      create(:gcode_summary, :failed, item:)
+
+      expect(add(all_capable: false, printer_ids: [mini.id]).job.printers).to eq [mini]
     end
 
     it 'is refused when a printer does not exist' do
