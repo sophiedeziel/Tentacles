@@ -48,14 +48,11 @@ class Printer
     #   job.update!(status: 'active')
     #   job.push_print_queue_changed
     #
-    # The job is saved by then: a push that fails is logged, never raised, and only leaves the dashboards behind until
-    # their next reload.
+    # Through PrintQueue.push_changed, which pushes queueChanged too while the global queue is on: the printer's own
+    # jobs make it busy for the queue page. The job is saved by then: a push that fails is logged, never raised, and
+    # only leaves the dashboards behind until their next reload.
     def push_print_queue_changed
-      return unless printer
-
-      TentaclesSchema.subscriptions.trigger(:print_queue_changed, {}, printer)
-    rescue StandardError => e
-      Rails.logger.error("[Printer::Job] Could not push printQueueChanged: #{e.class}: #{e.message}")
+      PrintQueue.push_changed([printer]) if printer
     end
   end
 end

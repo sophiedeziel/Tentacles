@@ -12,11 +12,11 @@ RSpec.describe PrintQueue::PrinterReady do
     let(:operation) { described_class.new(printer:) }
   end
 
-  it 'asks for a dispatch pass, without a push' do
+  it "pushes queueChanged only (no printer's queue changed) and asks for a dispatch pass" do
     expect(described_class.new(printer:).save).to be true
 
+    expect(PrintQueue).to have_received(:push_changed).once.with(no_args)
     expect_dispatch_requested
-    expect(PrintQueue).not_to have_received(:push_changed)
   end
 
   it "leaves the printer's active copy to its spool" do

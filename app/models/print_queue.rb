@@ -68,13 +68,16 @@ module PrintQueue
     @connector = connector
   end
 
-  # Pushes printQueueChanged for each printer whose queue changed, once a queue change is committed. Phase 4 adds the
-  # fleet-level subscription (the whole queue) here, so every queue operation keeps calling this one method.
+  # Pushes printQueueChanged for each printer whose queue changed, then queueChanged once (the whole queue, for the
+  # queue page) while the global queue is on, once a change is committed. Every queue operation, print event and
+  # dispatch pass calls this one method, and so does Printer::Job#push_print_queue_changed: a printer's own jobs make it
+  # busy for the queue. With no printers, only queueChanged is pushed (a dispatch pause, a printer removed).
   #
   # Best effort, like Printer::Job#push_print_queue_changed: a push that fails is logged, never raised, and the next
-  # printers are still pushed.
+  # ones are still pushed.
   #
   #   PrintQueue.push_changed([printer])
+  #   PrintQueue.push_changed # queueChanged only
   #: (?Array[Printer] printers) -> void
   def self.push_changed(printers = [])
     printers.uniq.each do |printer|
@@ -83,5 +86,17 @@ module PrintQueue
       Rails.logger.error("[PrintQueue] Could not push printQueueChanged for printer #{printer.id}: " \
                          "#{e.class}: #{e.message}")
     end
+    push_queue_changed
   end
+
+  # queueChanged, while the global queue is on (no one subscribes while it's off)
+  #: -> void
+  def self.push_queue_changed
+    return unless enabled?
+
+    TentaclesSchema.subscriptions.trigger(:queue_changed, {}, {})
+  rescue StandardError => e
+    Rails.logger.error("[PrintQueue] Could not push queueChanged: #{e.class}: #{e.message}")
+  end
+  private_class_method :push_queue_changed
 end

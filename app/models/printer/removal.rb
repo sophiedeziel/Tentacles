@@ -35,6 +35,7 @@ class Printer
       forget_redis_keys
       stop_spool
       push_print_queue_changed
+      push_queue_changed
       push_dashboard_changed
     end
 
@@ -70,6 +71,10 @@ class Printer
         TentaclesSchema.subscriptions.trigger(:print_queue_changed, {}, { removed_printer: attributes })
       end
     end
+
+    # queueChanged, for the queue page: the printer leaves its lists. Best effort (PrintQueue.push_changed)
+    #: -> void
+    def push_queue_changed = PrintQueue.push_changed
 
     #: -> void
     def push_dashboard_changed
