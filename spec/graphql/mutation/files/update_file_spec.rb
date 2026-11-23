@@ -6,7 +6,7 @@ RSpec.describe Mutations::Files::UpdateFile, type: :request do
   let(:query) do
     <<~GQL
       mutation($input: UpdateFileInput!) {
-        updateFile(input: $input) { file { id filename fileContent } }
+        updateFile(input: $input) { file { id filename fileContent gcodeSummary { status } } }
       }
     GQL
   end
@@ -24,6 +24,7 @@ RSpec.describe Mutations::Files::UpdateFile, type: :request do
     expect { file = update(fileContent: 'G1 X1 E1', fileName: 'cube.gcode') }
       .to have_enqueued_job(AnalyseGcodeJob).with(item.id)
     expect(file).to include('filename' => 'cube.gcode', 'fileContent' => 'G1 X1 E1')
+    expect(file['gcodeSummary']).to eq('status' => 'PENDING')
     expect(item.reload.gcode_summary).to be_pending
   end
 end
