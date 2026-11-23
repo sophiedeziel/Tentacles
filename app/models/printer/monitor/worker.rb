@@ -73,19 +73,27 @@ class Printer
       #: Printer::Status
       attr_reader :status
 
-      # Saves the status, then asks the global queue for a dispatch pass when the printer just turned Operational: it
-      # may be ready for a job (PrintQueue::Readiness). The worker remembers the family it saved last: no Redis read.
-      # The first status saved counts as a change, so a printer that is Operational when its monitor starts (a new
-      # printer, a restart) is dispatched to too.
+      # Saves the status, then tells the global queue when the printer just turned Operational (PrintQueue::PrinterReady:
+      # it may be ready for a job, a dispatch pass is asked for) or went offline (PrintQueue::PrinterOffline). The
+      # worker remembers the family it saved last: no Redis read. The first status saved counts as a change, so a
+      # printer that is Operational when its monitor starts (a new printer, a restart) is dispatched to too.
       #: -> void
       def save_status
         status.save!
-        family = status.state_family
         previous_family = @saved_family
-        @saved_family = family
-        return unless family == Printer::StateFamily::Operational && previous_family != family
+        @saved_family = status.state_family
+        tell_queue(previous_family, @saved_family) if previous_family != @saved_family && PrintQueue.enabled?
+      end
 
-        PrintQueue::DispatchRequest.new.save if PrintQueue.enabled?
+      # The printer event of a family change, if any: Offline, Connecting and Error are offline, once from a connected
+      # family (or at the first status saved)
+      #: (Printer::StateFamily? previous_family, Printer::StateFamily? family) -> void
+      def tell_queue(previous_family, family)
+        if family == Printer::StateFamily::Operational
+          PrintQueue::PrinterReady.new(printer:).save
+        elsif family && !family.connected? && (previous_family.nil? || previous_family.connected?)
+          PrintQueue::PrinterOffline.new(printer:).save
+        end
       end
 
       # Reloads the status from the printer, with the camera of the webcam tracker. When the printer can't be read, the

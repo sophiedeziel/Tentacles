@@ -1,16 +1,21 @@
 # frozen_string_literal: true
 
+require_relative 'queue_copies'
+
 class Spooler
   class Spool
+    include QueueCopies
+
     attr_reader :name
 
+    # The state is set before the thread starts: the thread may adopt a copy right away (#adopt_active_copy)
     def initialize(printer)
       @printer = printer
-      @thread = start_thread
       @current_operation = nil
       @active = false
       @start_job_after_finish = false
       @discarded = false
+      @thread = start_thread
     end
 
     def working?
@@ -54,16 +59,27 @@ class Spooler
     end
 
     def operations_loop
+      adopt_active_copy if PrintQueue.enabled?
       loop do
         if @active && (job = @printer.next_job)
-          @current_operation = build_operation(job)
-          start_and_monitor
-          @active = @start_job_after_finish
-          @current_operation = nil
+          run(job)
         else
           Thread.pass
         end
       end
+    end
+
+    # A copy of a global queue entry while the queue is on (Spooler::QueueCopies), any other job as it always was
+    def run(job)
+      Operation.queue_copy?(job) ? run_copy(job) : run_job(job)
+    end
+
+    # A job of the printer's own queue, or any job while the global queue is off
+    def run_job(job)
+      @current_operation = build_operation(job)
+      start_and_monitor
+      @active = @start_job_after_finish
+      @current_operation = nil
     end
 
     # A job whose file can't be sent (printer unreachable, no writable storage, ...) is marked `error` rather than
@@ -87,12 +103,12 @@ class Spooler
       @current_operation.update_subscribers
     end
 
-    def build_operation(job)
+    def build_operation(job, **)
       type = {
         Library::Item.polymorphic_name => Print
       }[job.executable_type]
 
-      type.new(@printer, job)
+      type.new(@printer, job, **)
     end
   end
 end

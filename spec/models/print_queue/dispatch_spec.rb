@@ -129,11 +129,26 @@ RSpec.describe PrintQueue::Dispatch do
       expect(Printer::Job.count).to eq 0
     end
 
-    it 'skips a printer whose bed needs clearing' do
-      allow_any_instance_of(Printer).to receive(:bed_needs_clearing?).and_return(true)
-      printer
+    it 'skips a printer whose bed needs clearing, its last copy still on the bed' do
+      uncleared = printer
+      create(:printer_job, :copy, printer: uncleared, print_job: queued, status: 'completed',
+                                  started_at: 2.hours.ago, finished_at: 1.hour.ago)
+      cleared = printer
+      create(:printer_job, :copy, printer: cleared, print_job: queued, status: 'completed',
+                                  started_at: 2.hours.ago, finished_at: 1.hour.ago,
+                                  bed_cleared_at: 1.minute.ago, bed_cleared_by: 'person')
 
-      expect(dispatch.dispatched).to be_empty
+      expect(dispatch.dispatched.map(&:printer)).to eq [cleared]
+    end
+
+    it 'reads the beds of the printers that take jobs at once' do
+      ids = [printer.id, printer.id]
+      printer(takes_jobs: false)
+      allow(Printer).to receive(:ids_with_bed_to_clear).and_call_original
+
+      dispatch
+
+      expect(Printer).to have_received(:ids_with_bed_to_clear).once.with(ids)
     end
 
     it 'reads the snapshots once, of the printers that take jobs' do

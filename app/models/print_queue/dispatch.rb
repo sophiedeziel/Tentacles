@@ -15,7 +15,8 @@ module PrintQueue
   #    run one at a time. Nothing is dispatched while dispatch is paused.
   # 2. the printers that take jobs, by id, FOR UPDATE, with their loaded filaments
   # 3. the unfinished entries, in position order, FOR UPDATE, with their copy counts (PrintQueue::NextJob.candidates)
-  # 4. the printers' snapshots (one Redis MGET) and which of them have an unfinished printer_jobs row (one query)
+  # 4. the printers' snapshots (one Redis MGET), which of them have an unfinished printer_jobs row (one query) and
+  #    which of them have a print on their bed (Printer.ids_with_bed_to_clear, one query)
   # 5. for each printer that is free (PrintQueue::Readiness), its next entry: a copy is created, the entry is bound to
   #    it when it's an unbound same-printer batch, and the copy counts as printing for the printers after it. A printer
   #    gets one copy per pass.
@@ -56,29 +57,40 @@ module PrintQueue
     # Gives each free printer, in id order, a copy of its next entry
     #: (Array[Printer] printers, Array[PrintQueue::Job] entries) -> Array[Printer::Job]
     def assign(printers, entries)
-      statuses = Printer::Status.where(printer_id: printers.map(&:id)).index_by(&:printer_id)
-      busy = busy_printer_ids(printers)
-      printers.filter_map do |printer|
-        entry = next_entry(printer, statuses[printer.id], entries, has_unfinished_job: busy.include?(printer.id))
-        copy_of(entry, printer) if entry
+      readinesses(printers).filter_map do |readiness|
+        entry = next_entry(readiness, entries)
+        copy_of(entry, readiness.printer) if entry
+      end
+    end
+
+    # Each printer's readiness, from what is read once for all of them: their snapshots, which of them are busy and
+    # which of them have a print on their bed
+    #: (Array[Printer] printers) -> Array[PrintQueue::Readiness]
+    def readinesses(printers)
+      ids = printers.map(&:id)
+      statuses = Printer::Status.where(printer_id: ids).index_by(&:printer_id)
+      busy = busy_printer_ids(ids)
+      bed_to_clear = ::Printer.ids_with_bed_to_clear(ids)
+      printers.map do |printer|
+        PrintQueue::Readiness.new(printer:, status: statuses[printer.id], dispatch_paused: false,
+                                  has_unfinished_job: busy.include?(printer.id),
+                                  bed_needs_clearing: bed_to_clear.include?(printer.id))
       end
     end
 
     # The printer's next entry, when it's free for one
-    #: (Printer printer, Printer::Status? status, Array[PrintQueue::Job] entries, has_unfinished_job: bool)
-    #|   -> PrintQueue::Job?
-    def next_entry(printer, status, entries, has_unfinished_job:)
-      readiness = PrintQueue::Readiness.new(printer:, status:, has_unfinished_job:, dispatch_paused: false,
-                                            bed_needs_clearing: printer.bed_needs_clearing?)
+    #: (PrintQueue::Readiness readiness, Array[PrintQueue::Job] entries) -> PrintQueue::Job?
+    def next_entry(readiness, entries)
       return unless readiness.free?
 
-      PrintQueue::NextJob.new(printer:, status:, entries:, dispatch_paused: false).job
+      PrintQueue::NextJob.new(printer: readiness.printer, status: readiness.status, entries:,
+                              dispatch_paused: false).job
     end
 
     # The printers with an enqueued or active job, of the queue or their own: one query
-    #: (Array[Printer] printers) -> Set[Integer]
-    def busy_printer_ids(printers)
-      Printer::Job.where(printer_id: printers.map(&:id), status: Printer::Job::UNFINISHED_STATUSES)
+    #: (Array[Integer] printer_ids) -> Set[Integer]
+    def busy_printer_ids(printer_ids)
+      Printer::Job.where(printer_id: printer_ids, status: Printer::Job::UNFINISHED_STATUSES)
                   .distinct.pluck(:printer_id).to_set
     end
 

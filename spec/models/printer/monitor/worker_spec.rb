@@ -416,12 +416,14 @@ RSpec.describe Printer::Monitor::Worker do
     end
   end
 
-  describe 'dispatch requests of the global queue' do
+  describe 'printer events of the global queue (PrintQueue::PrinterReady, PrintQueue::PrinterOffline)' do
     let(:dispatch_request) { instance_spy(PrintQueue::DispatchRequest, save: true) }
 
     before do
       allow(PrintQueue).to receive(:enabled?).and_return(true)
+      allow(PrintQueue).to receive(:push_changed)
       allow(PrintQueue::DispatchRequest).to receive(:new).and_return(dispatch_request)
+      allow(PrintQueue::PrinterOffline).to receive(:new).and_call_original
     end
 
     # The printer reports this state from now on, with a new hotend temperature each time so that the status changes
@@ -467,12 +469,36 @@ RSpec.describe Printer::Monitor::Worker do
       expect(dispatch_request).to have_received(:save).once
     end
 
-    it 'asks for nothing while the global queue is off' do
-      allow(PrintQueue).to receive(:enabled?).and_return(false)
+    it "pushes the printer's queue once when it goes offline, without asking for a dispatch pass" do
       report('Operational')
+      worker.tick
+      go_offline
+      3.times { worker.tick }
 
+      expect(PrintQueue::PrinterOffline).to have_received(:new).once.with(printer:)
+      expect(PrintQueue).to have_received(:push_changed).once.with([printer])
+      expect(dispatch_request).to have_received(:save).once # When it turned Operational
+    end
+
+    it 'records nothing when a print starts or ends: the spool records the print events' do
+      worker.tick # Printing
+      report('Paused')
       worker.tick
 
+      expect(PrintQueue::PrinterOffline).not_to have_received(:new)
+      expect(dispatch_request).not_to have_received(:save)
+    end
+
+    it 'records nothing while the global queue is off' do
+      allow(PrintQueue).to receive(:enabled?).and_return(false)
+      allow(PrintQueue::PrinterReady).to receive(:new)
+      report('Operational')
+      worker.tick
+      go_offline
+      worker.tick
+
+      expect(PrintQueue::PrinterReady).not_to have_received(:new)
+      expect(PrintQueue::PrinterOffline).not_to have_received(:new)
       expect(PrintQueue::DispatchRequest).not_to have_received(:new)
     end
   end
