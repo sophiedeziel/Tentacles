@@ -39,8 +39,8 @@ const keepEnter = (event) => {
 // here, which then keep the person's edits and say what it changed to.
 //
 // `demand` (the printer page's queue query, while the global queue is on): how many waiting jobs ask for each loaded
-// filament, shown under the fields. Only for the filament it was counted for: a count for another (changed since)
-// never shows.
+// filament, shown under the fields ("PLA Black matches 2 waiting jobs."). Only for the filament it was counted for: a
+// count for another (changed since) never shows. With it, the card also says the queue matches jobs against it.
 export default function LoadedFilament ({ printerId, slot = 1, demand }) {
   const { message } = App.useApp()
   const id = useId()
@@ -143,14 +143,16 @@ export default function LoadedFilament ({ printerId, slot = 1, demand }) {
         </div>
       </Form>
 
-      {hint && <span className={`${classes.small} ${classes.filamentHint}`}>{hint}</span>}
+      {hint && <span className={`${classes.muted} ${classes.filamentHint}`}>{hint}</span>}
 
       {changedElsewhere && (
         <Alert className={classes.changedElsewhere} type="info" showIcon
           title={loaded ? `Changed to ${loaded.material} · ${loaded.colour} in another window` : 'Removed in another window'} />
       )}
 
-      <span className={classes.small}>Set this when you swap spools.</span>
+      <span className={classes.small}>
+        {demand ? 'Set this when you swap spools. The queue matches jobs against it.' : 'Set this when you swap spools.'}
+      </span>
       <div className={classes.filamentFooter}>
         <span className={classes.muted}>{loaded ? `Updated ${formatAgo(loaded.updatedAt, now)}` : 'No filament set'}</span>
         <div className={classes.buttons}>

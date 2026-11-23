@@ -114,10 +114,11 @@ describe('PrinterDetails', () => {
     expect(await screen.findByRole('heading', { name: 'Loaded Filament' })).toBeInTheDocument()
     await screen.findByLabelText('Material')
     await new Promise((resolve) => setTimeout(resolve, 50))
-    expect(screen.queryByRole('region', { name: 'Takes Jobs' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('switch', { name: 'Taking jobs from the queue' })).not.toBeInTheDocument()
     expect(screen.queryByRole('region', { name: 'Up Next for This Printer' })).not.toBeInTheDocument()
-    expect(screen.queryByText(/is still on the bed/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/remove the part/)).not.toBeInTheDocument()
     expect(screen.queryByText(/waiting job/)).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Printers/ })).toHaveAttribute('href', '/printers/manage')
   })
 
   it('says when there is no such printer', async () => {
@@ -425,20 +426,28 @@ describe('PrinterDetails with the global queue on', () => {
     ...reportedMocks()
   ])
 
-  it('shows the printer\'s part of the queue between the header and the cards, and the filament hint', async () => {
+  it('follows the PrinterQueue frame: back to the queue, the switch, the bed banner, then the lists beside the cards', async () => {
     renderOn()
 
     const upNext = await screen.findByRole('region', { name: 'Up Next for This Printer' })
-    expect(screen.getByText('bracket.gcode is still on the bed')).toBeInTheDocument()
-    expect(screen.getByRole('switch', { name: 'Takes jobs' })).toBeChecked()
-    expect(screen.getByRole('region', { name: 'Skipped by This Printer' })).toBeInTheDocument()
-    // Under the header, above the cards
+    expect(screen.getByRole('link', { name: /Print Queue/ })).toHaveAttribute('href', '/queue')
+    expect(screen.getByRole('switch', { name: 'Taking jobs from the queue' })).toBeChecked()
+    const banner = screen.getByRole('region', { name: 'Print finished: remove the part' })
+    expect(banner).toHaveTextContent('bracket.gcode · copy 2 of 10 is done.')
+    const skipped = screen.getByRole('region', { name: 'Skipped by This Printer' })
+
+    // The header, the banner, Up Next and Skipped, then Connection under them; Loaded Filament and About This
+    // Printer in the other column
+    const follows = (a, b) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING)
     const header = screen.getByRole('heading', { name: 'Prusa MK4' })
     const connection = screen.getByRole('heading', { name: 'Connection' })
-    expect(header.compareDocumentPosition(upNext) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect(upNext.compareDocumentPosition(connection) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    const filament = screen.getByRole('heading', { name: 'Loaded Filament' })
+    const about = screen.getByRole('heading', { name: 'About This Printer' })
+    expect(follows(header, banner) && follows(banner, upNext) && follows(upNext, skipped)).toBe(true)
+    expect(follows(skipped, connection) && follows(connection, filament) && follows(filament, about)).toBe(true)
 
     expect(await screen.findByText('No waiting job asks for PLA White. Any Colour jobs still match.')).toBeInTheDocument()
+    expect(screen.getByText('Set this when you swap spools. The queue matches jobs against it.')).toBeInTheDocument()
   })
 
   it('saves Takes Jobs apart from the page\'s form, which it never submits', async () => {
@@ -457,10 +466,10 @@ describe('PrinterDetails with the global queue on', () => {
       }
     }])
     await userEvent.type(await screen.findByLabelText('Printer name'), ' left')
-    await userEvent.click(await screen.findByRole('switch', { name: 'Takes jobs' }))
+    await userEvent.click(await screen.findByRole('switch', { name: 'Taking jobs from the queue' }))
 
     await waitFor(() => expect(sent).toEqual([{ printerId: '1', takesJobs: false }]))
-    await waitFor(() => expect(screen.getByRole('switch', { name: 'Takes jobs' })).not.toBeChecked())
+    await waitFor(() => expect(screen.getByRole('switch', { name: 'Not taking jobs' })).not.toBeChecked())
     await new Promise((resolve) => setTimeout(resolve, 50))
     expect(screen.queryByText('Changes saved')).not.toBeInTheDocument()
     expect(screen.queryByText(/Could not save/)).not.toBeInTheDocument()

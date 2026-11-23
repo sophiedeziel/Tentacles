@@ -4,6 +4,5 @@ export default function filamentHint ({ material, colour }, count) {
   if (count == null) return null
   const filament = `${material} ${colour}`
   if (count === 0) return `No waiting job asks for ${filament}. Any Colour jobs still match.`
-  if (count === 1) return `1 waiting job asks for ${filament}.`
-  return `${count} waiting jobs ask for ${filament}.`
+  return `${filament} matches ${count === 1 ? '1 waiting job' : `${count} waiting jobs`}.`
 }

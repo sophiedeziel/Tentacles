@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import { describe, expect, it, vi } from 'vitest'
 import { act, render, renderHook, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -9,10 +10,10 @@ import { MemoryRouter } from 'react-router'
 import { App } from 'antd'
 import { Observable } from 'rxjs'
 
-import PrinterQueue from './PrinterQueue'
+import { BedBanner, Skipped, TakesJobsSwitch, UpNext } from './PrinterQueue'
 import usePrinterQueue from './usePrinterQueue'
 import { SET_PRINTER_TAKES_JOBS } from './graphql/printerQueue'
-import { printerQueue, queuePrinter } from './printerQueueFixtures'
+import { printOnBed, printerQueue, queuePrinter } from './printerQueueFixtures'
 import { CONFIRM_BED_CLEARED, RELEASE_PRINT_JOB } from '../../Queue/graphql/actions'
 import { REFETCH_DELAY } from '../../Queue/useGlobalQueue'
 import { POSSIBLE_TYPES, TYPE_POLICIES } from '../../Dashboard/graphql/dashboard'
@@ -33,12 +34,33 @@ function mutation (query, field, variables, { payload = {}, errors = [] } = {}) 
   return { sent, mock }
 }
 
+// The parts as the page places them: the switch, the bed banner while there is a bed to clear, Up Next and Skipped
+function Parts ({ printer, dispatchPaused, reload }) {
+  return (
+    <>
+      <TakesJobsSwitch printer={printer} reload={reload} />
+      {printer.bedNeedsClearing && <BedBanner printer={printer} dispatchPaused={dispatchPaused} reload={reload} />}
+      <UpNext printer={printer} reload={reload} />
+      <Skipped rows={printer.skipped} />
+    </>
+  )
+}
+
+Parts.propTypes = {
+  printer: PropTypes.shape({
+    bedNeedsClearing: PropTypes.bool.isRequired,
+    skipped: PropTypes.array.isRequired
+  }).isRequired,
+  dispatchPaused: PropTypes.bool.isRequired,
+  reload: PropTypes.func.isRequired
+}
+
 const renderQueue = (printer = queuePrinter(), { mocks = [], dispatchPaused = false } = {}) => {
   const reload = vi.fn(() => Promise.resolve())
   render(
     <MockedProvider cache={new InMemoryCache({ possibleTypes: POSSIBLE_TYPES, typePolicies: TYPE_POLICIES })} mocks={mocks}>
       <MemoryRouter>
-        <App><PrinterQueue printer={printer} dispatchPaused={dispatchPaused} reload={reload} /></App>
+        <App><Parts printer={printer} dispatchPaused={dispatchPaused} reload={reload} /></App>
       </MemoryRouter>
     </MockedProvider>
   )
@@ -52,18 +74,21 @@ const row = (name, key) => rows(name).find((each) => each.dataset.rowKey === key
 
 describe('PrinterQueue', () => {
   describe('the bed banner', () => {
-    it('names the print on the bed, and confirms Bed Cleared in the queue page\'s modal', async () => {
+    it('names the copy on the bed, and confirms Bed Cleared in the queue page\'s modal with what is next for it', async () => {
       const confirm = mutation(CONFIRM_BED_CLEARED, 'confirmBedCleared', { printerId: '1' })
       const { reload } = renderQueue(queuePrinter(), { mocks: [confirm.mock] })
 
-      const banner = screen.getByRole('alert')
-      expect(banner).toHaveTextContent('bracket.gcode is still on the bed')
-      expect(banner).toHaveTextContent('Clear it, then confirm: Prusa MK4 takes no job from the queue until then.')
+      const banner = section('Print finished: remove the part')
+      expect(banner).toHaveTextContent(
+        'bracket.gcode · copy 2 of 10 is done. This printer takes no new job until you confirm the bed is clear.'
+      )
 
       await userEvent.click(within(banner).getByRole('button', { name: 'Bed Cleared' }))
       const dialog = await screen.findByRole('dialog')
       expect(dialog).toHaveTextContent('Is the bed of Prusa MK4 clear?')
-      expect(dialog).toHaveTextContent('It starts printing as soon as it can pick a job from the queue.')
+      expect(dialog).toHaveTextContent(
+        'It starts printing as soon as it can pick a job from the queue. Next for it: cable_clip.gcode, copy 3 of 3.'
+      )
       expect(dialog).toHaveTextContent('Check that the part and any leftover filament are off the bed first.')
 
       await userEvent.click(within(dialog).getByRole('button', { name: 'Bed Is Clear' }))
@@ -71,36 +96,51 @@ describe('PrinterQueue', () => {
       await waitFor(() => expect(reload).toHaveBeenCalled())
     })
 
-    it('says the last print when it does not know which, and what a printer not taking jobs does next', async () => {
-      renderQueue(queuePrinter({ printOnBed: null, takesJobs: false }), { dispatchPaused: true })
+    it('says how the print ended, and what a printer not taking jobs does next', async () => {
+      renderQueue(queuePrinter({ printOnBed: printOnBed('FAILED'), takesJobs: false }), { dispatchPaused: true })
 
-      expect(screen.getByRole('alert')).toHaveTextContent('The last print is still on the bed')
+      expect(section('Print failed: remove the part')).toHaveTextContent('bracket.gcode · copy 2 of 10 failed.')
       await userEvent.click(screen.getByRole('button', { name: 'Bed Cleared' }))
       const dialog = await screen.findByRole('dialog')
       expect(dialog).toHaveTextContent("Prusa MK4 isn't taking jobs from the queue, so it won't start the next one.")
     })
 
+    it('says the last print when it does not know which', () => {
+      renderQueue(queuePrinter({ printOnBed: null }))
+      expect(section('Remove the last print'))
+        .toHaveTextContent('This printer takes no new job until you confirm the bed is clear.')
+    })
+
     it('is not shown once the bed is clear', () => {
       renderQueue(queuePrinter({ bedNeedsClearing: false, printOnBed: null }))
-      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Bed Cleared' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('region', { name: /remove/ })).not.toBeInTheDocument()
     })
   })
 
-  describe('Takes Jobs', () => {
+  describe('Taking jobs from the queue', () => {
     it('saves the switch at once, then reloads', async () => {
       const saved = mutation(SET_PRINTER_TAKES_JOBS, 'setPrinterTakesJobs', { printerId: '1', takesJobs: false }, {
         payload: { printer: { __typename: 'Printer', id: '1', takesJobs: false } }
       })
       const { reload } = renderQueue(queuePrinter(), { mocks: [saved.mock] })
 
-      expect(screen.getByRole('region', { name: 'Takes Jobs' }))
-        .toHaveTextContent('When off, the queue skips this printer: nothing new starts on it. A print under way goes on.')
-      const toggle = screen.getByRole('switch', { name: 'Takes jobs' })
+      const toggle = screen.getByRole('switch', { name: 'Taking jobs from the queue' })
       expect(toggle).toBeChecked()
 
       await userEvent.click(toggle)
       await waitFor(() => expect(saved.sent).toEqual([{ printerId: '1', takesJobs: false }]))
       await waitFor(() => expect(reload).toHaveBeenCalled())
+    })
+
+    it('flips from its words too', async () => {
+      const saved = mutation(SET_PRINTER_TAKES_JOBS, 'setPrinterTakesJobs', { printerId: '1', takesJobs: false }, {
+        payload: { printer: { __typename: 'Printer', id: '1', takesJobs: false } }
+      })
+      renderQueue(queuePrinter(), { mocks: [saved.mock] })
+
+      await userEvent.click(screen.getByText('Taking jobs from the queue'))
+      await waitFor(() => expect(saved.sent).toEqual([{ printerId: '1', takesJobs: false }]))
     })
 
     it('shows why the server refused', async () => {
@@ -110,33 +150,46 @@ describe('PrinterQueue', () => {
       })
       renderQueue(queuePrinter({ takesJobs: false }), { mocks: [saved.mock] })
 
-      await userEvent.click(screen.getByRole('switch', { name: 'Takes jobs' }))
+      await userEvent.click(screen.getByRole('switch', { name: 'Not taking jobs' }))
       expect(await screen.findByText('The global print queue is off')).toBeInTheDocument()
-      expect(screen.getByRole('switch', { name: 'Takes jobs' })).not.toBeChecked()
+      expect(screen.getByRole('switch', { name: 'Not taking jobs' })).not.toBeChecked()
     })
   })
 
   describe('Up Next for This Printer', () => {
-    it('lists the waiting jobs it can take, with their place in the queue, needs and what happens next', () => {
+    it('lists the waiting jobs it can take, with their place in the queue, size, needs and what happens next', () => {
       renderQueue()
 
-      expect(within(section('Up Next for This Printer')).getByText('3')).toBeInTheDocument()
+      expect(section('Up Next for This Printer')).toHaveTextContent('In queue order, jobs it qualifies for')
+      expect(within(section('Up Next for This Printer')).queryAllByRole('columnheader')).toHaveLength(0)
       expect(rows('Up Next for This Printer').map((each) => within(each).getAllByRole('cell')[0].textContent))
-        .toEqual(['1', '2', '4'])
+        .toEqual(['#1', '#2', '#4'])
 
       const single = row('Up Next for This Printer', '11')
-      expect(within(single).getByRole('link', { name: 'phone_stand.gcode' })).toHaveAttribute('href', '/files/20')
+      expect(within(single).getByText('phone_stand.gcode')).toBeInTheDocument()
+      expect(within(single).getByText('1 print')).toBeInTheDocument()
       expect(within(single).getByText('PLA · Black')).toBeInTheDocument()
-      expect(within(single).getByText('120 × 80 mm')).toBeInTheDocument()
       expect(within(single).getByText('Prusa Mini+ takes it once its bed is cleared')).toBeInTheDocument()
       expect(within(single).queryByText('Same printer')).not.toBeInTheDocument()
 
       const batch = row('Up Next for This Printer', '12')
-      expect(within(batch).getByText('× 3 · 1 left to start')).toBeInTheDocument()
+      expect(within(batch).getByText('Batch of 3 · 1 left to start')).toBeInTheDocument()
       expect(within(batch).getByText('Same printer')).toBeInTheDocument()
       expect(within(batch).getByText('T0 PETG · Any colour')).toBeInTheDocument()
+      expect(within(batch).getByText('T1 PLA · Any colour')).toBeInTheDocument()
       // Its own printer: said from this page
       expect(within(batch).getByText('Prints copy 3 when copy 2 finishes')).toBeInTheDocument()
+    })
+
+    it('highlights the job it takes next', () => {
+      renderQueue()
+      expect(row('Up Next for This Printer', '12').style.background).not.toBe('')
+      expect(row('Up Next for This Printer', '11').style.background).toBe('')
+    })
+
+    it('highlights nothing when it takes nothing next', () => {
+      renderQueue(queuePrinter({ takesNext: null }))
+      rows('Up Next for This Printer').forEach((each) => expect(each.style.background).toBe(''))
     })
 
     it('says a held job is on hold until released, and releases it', async () => {
@@ -157,15 +210,16 @@ describe('PrinterQueue', () => {
   })
 
   describe('Skipped by This Printer', () => {
-    it('lists the jobs it skips, each reason on its own line', () => {
+    it('lists the jobs it skips and how many, each reason on its own line', () => {
       renderQueue()
 
+      expect(section('Skipped by This Printer')).toHaveTextContent("1 job it can't take, and why")
       const skipped = row('Skipped by This Printer', '15')
       const cells = within(skipped).getAllByRole('cell')
-      expect(cells[0]).toHaveTextContent('3')
-      expect(within(skipped).getByRole('link', { name: 'vase.gcode' })).toBeInTheDocument()
+      expect(cells[0]).toHaveTextContent('#3')
+      expect(cells[1]).toHaveTextContent('vase.gcode')
       expect(within(cells[2]).getByText('Limited to Voron 2.4')).toBeInTheDocument()
-      expect(within(cells[2]).getByText('Needs PETG, PLA is loaded here')).toBeInTheDocument()
+      expect(within(cells[2]).getByText('Needs PETG. PLA is loaded here')).toBeInTheDocument()
     })
 
     it('is not shown when it skips nothing', () => {

@@ -8,7 +8,7 @@ module PrintQueue
   #
   #   fit = PrintQueue::Fit.new(needs: entry.needs, printer:, status:)
   #   fit.result  # => :after_filament_change
-  #   fit.reasons # => [PrintQueue::Reason(code: :wrong_material, message: "Needs PLA, PETG is loaded here")]
+  #   fit.reasons # => [PrintQueue::Reason(code: :wrong_material, message: "Needs PLA. PETG is loaded here")]
   #
   # The first that applies wins:
   #
@@ -121,15 +121,15 @@ module PrintQueue
 
       loaded = loaded_filament(tool)
       if loaded.nil?
-        return filament_reason(tool, :no_filament, "Needs #{asked(material, colour)}, no filament is loaded here")
+        return filament_reason(tool, :no_filament, "Needs #{asked(material, colour)}. No filament is loaded here")
       end
 
       loaded_check(tool, loaded, material, colour)
     end
 
     # What's loaded in the tool's slot against what's asked. A change says what's asked, then what's loaded: its
-    # material alone when the material is what differs ("Needs PETG, PLA is loaded here"), with its colour otherwise
-    # ("Needs PLA White, PLA Black is loaded here").
+    # material alone when the material is what differs ("Needs PETG. PLA is loaded here"), with its colour otherwise
+    # ("Needs PLA White. PLA Black is loaded here").
     #: (PrintQueue::Needs::Tool tool, Printer::LoadedFilament loaded, String? material, String? colour)
     #|   -> PrintQueue::Reason
     def loaded_check(tool, loaded, material, colour)
@@ -140,7 +140,7 @@ module PrintQueue
       wrong_material = !material.nil? && loaded.material != material
       here = wrong_material ? loaded.material : "#{loaded.material} #{loaded.colour}"
       filament_reason(tool, wrong_material ? :wrong_material : :wrong_colour,
-                      "Needs #{asked(material, colour)}, #{here} is loaded here")
+                      "Needs #{asked(material, colour)}. #{here} is loaded here")
     end
 
     # With a known material: Printer::LoadedFilament#matches? (and the colour, unless Any colour). With none: the colour

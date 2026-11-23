@@ -13,20 +13,31 @@ export const UP_NEXT = [upNextJob(waitingJob(), 1), upNextJob(BATCH, 2), upNextJ
 // vase.gcode (#3), skipped for two reasons
 export const SKIPPED = [{
   __typename: 'SkippedPrintJob',
-  reasons: ['Limited to Voron 2.4', 'Needs PETG, PLA is loaded here'],
+  reasons: ['Limited to Voron 2.4', 'Needs PETG. PLA is loaded here'],
   printJob: { __typename: 'PrintJob', id: '15', waitingPosition: 3, copies: 1, copiesLeftToStart: 1, file: file('25', 'vase.gcode') }
 }]
 
 export const PLA_WHITE = { __typename: 'LoadedFilament', slot: 1, material: 'PLA', colour: 'White' }
 
-// The Prusa MK4 (id 1): bracket.gcode on its bed, PLA White loaded (no waiting job asks for it)
+// Copy 2 of 10 of bracket.gcode, ended as `result`: what is on the printer's bed
+export const printOnBed = (result = 'COMPLETED') => ({
+  __typename: 'Print',
+  id: '40',
+  copyNumber: 2,
+  result,
+  printJob: { __typename: 'PrintJob', id: '14', copies: 10, file: file('22', 'bracket.gcode') }
+})
+
+// The Prusa MK4 (id 1): copy 2 of 10 of bracket.gcode on its bed, the same-printer batch (#2, its copy 3 of 3) next
+// for it, PLA White loaded (no waiting job asks for it)
 export const queuePrinter = (overrides = {}) => ({
   __typename: 'Printer',
   id: '1',
   name: 'Prusa MK4',
   takesJobs: true,
   bedNeedsClearing: true,
-  printOnBed: { __typename: 'Print', id: '40', printJob: { __typename: 'PrintJob', id: '14', file: file('22', 'bracket.gcode') } },
+  printOnBed: printOnBed(),
+  takesNext: { __typename: 'PrintJob', id: '12', copies: 3, copiesLeftToStart: 1, file: file('21', 'cable_clip.gcode') },
   upNext: UP_NEXT,
   skipped: SKIPPED,
   loadedFilaments: [{ ...PLA_WHITE, waitingJobsAskingCount: 0 }],

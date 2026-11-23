@@ -1,142 +1,160 @@
 import React, { useId, useState } from 'react'
 import PropTypes from 'prop-types'
-import { Alert, Button, Switch, Table, Tag } from 'antd'
+import { Button, Switch, Table, Tag, theme } from 'antd'
+import { LockOutlined } from '@ant-design/icons'
 
 import { useBedCleared } from '../../Queue/BedCleared'
-import { FileName, Muted, QueueSection } from '../../Queue/parts'
-import { batchView } from '../../Queue/queueView'
+import { Muted, QueueSection } from '../../Queue/parts'
 import useQueueActions, { useQueueMutation } from '../../Queue/useQueueActions'
-import { Needs, WhatHappensNextCell } from '../../Queue/WaitingTable'
+import whatHappensNext from '../../Queue/whatHappensNext'
 import { SET_PRINTER_TAKES_JOBS } from './graphql/printerQueue'
+import { bedBannerView, jobSizeText, needsLines, skippedSummary, takesJobsText } from './printerQueueView'
 import * as classes from './PrinterDetails.module.less'
 
-// The print still on the bed, and Bed Cleared (the queue page's modal and wording): the printer takes nothing from
-// the queue until then
-function BedBanner ({ printer, onBedCleared }) {
-  const filename = printer.printOnBed?.printJob?.file.filename
-  return (
-    <Alert type="warning" showIcon
-      title={filename ? `${filename} is still on the bed` : 'The last print is still on the bed'}
-      description={`Clear it, then confirm: ${printer.name} takes no job from the queue until then.`}
-      action={<Button size="small" onClick={() => onBedCleared(filename)}>Bed Cleared</Button>} />
-  )
-}
+// The printer page's part of the global queue (the PrinterQueue frame), shown only while the queue is on. The page
+// places each part: the switch in its header, the bed banner under it, Up Next and Skipped in its main column. Every
+// action reloads the page's queue query (`reload`). They sit in the page's form: their buttons and switch are
+// type="button" (antd's default), so none submits it.
 
-// Saved at once, apart from the page's form. A refusal shows as a message (useQueueMutation); the switch shows what
-// the server has.
-function TakesJobs ({ printer, reload }) {
-  const id = useId()
+// "Taking jobs from the queue": saved at once, apart from the page's form. A refusal shows as a message
+// (useQueueMutation); the switch shows what the server has.
+export function TakesJobsSwitch ({ printer, reload }) {
   const run = useQueueMutation(reload)
   const [saving, setSaving] = useState(false)
 
   const change = async (takesJobs) => {
     setSaving(true)
     await run(SET_PRINTER_TAKES_JOBS, { printerId: printer.id, takesJobs }, 'setPrinterTakesJobs',
-      { failure: 'Takes Jobs could not be saved' })
+      { failure: 'Taking jobs could not be saved' })
     setSaving(false)
   }
 
+  // The label around the switch names it, and a click on its words flips it
   return (
-    <section aria-labelledby={id} className={classes.takesJobs}>
-      <div className={classes.takesJobsText}>
-        <h2 id={id} className={classes.takesJobsTitle}>Takes Jobs</h2>
-        <span className={classes.small}>
-          When off, the queue skips this printer: nothing new starts on it. A print under way goes on.
-        </span>
-      </div>
-      <Switch aria-label="Takes jobs" checked={printer.takesJobs} loading={saving} onChange={change} />
-    </section>
+    <label className={classes.takesJobs}>
+      <Switch checked={printer.takesJobs} loading={saving} onChange={change} />
+      <span>{takesJobsText(printer.takesJobs)}</span>
+    </label>
   )
 }
 
-// The file, its same-printer mark, and for a batch its size and the copies left to start ("× 10 · 4 left to start")
-function JobFile ({ job }) {
-  const batch = batchView(job)
+// The print still on the bed, and Bed Cleared (the queue page's modal and wording, with what the printer takes next):
+// the printer takes nothing from the queue until then. Tinted with the theme's primary colours: it asks for an
+// action, it doesn't warn.
+export function BedBanner ({ printer, dispatchPaused, reload }) {
+  const id = useId()
+  const { token } = theme.useToken()
+  const bedCleared = useBedCleared({ dispatchPaused, onDone: reload })
+  const { title, text } = bedBannerView(printer.printOnBed)
+  const ask = () => bedCleared.ask({
+    id: printer.id, name: printer.name, takesJobs: printer.takesJobs, takesNext: printer.takesNext
+  })
+
   return (
-    <div className={classes.queueCell}>
-      <div className={classes.queueLine}>
-        <FileName file={job.file} />
-        {job.samePrinter && <Tag variant="filled" color="purple" style={{ marginInlineEnd: 0 }}>Same printer</Tag>}
+    <section aria-labelledby={id} className={classes.bedBanner}
+      style={{ background: token.colorPrimaryBg, borderColor: token.colorPrimaryBorder }}>
+      <div className={classes.bedText}>
+        <h2 id={id} className={classes.cardTitle}>{title}</h2>
+        <Muted>{text}</Muted>
       </div>
-      {batch && <Muted small>{`${batch.size} · ${batch.left}`}</Muted>}
-    </div>
+      <Button type="primary" onClick={ask}>Bed Cleared</Button>
+      {bedCleared.modal}
+    </section>
   )
 }
 
 // Its place among the waiting jobs: the queue page's "#"
 const positionColumn = (jobOf) => ({
   key: 'position',
-  title: '#',
-  width: 56,
-  render: (_, row) => <Muted>{jobOf(row).waitingPosition}</Muted>
+  width: 72,
+  render: (_, row) => <span className={classes.position}><Muted>{`#${jobOf(row).waitingPosition}`}</Muted></span>
 })
 
-// The waiting jobs this printer can take, in queue order (held ones too, with Release). What Happens Next is said
-// from this printer's page ("Starts once the bed is cleared") for the jobs lined up for it.
-function UpNext ({ jobs, printerId, onRelease }) {
+// The file in bold, its same-printer mark, then its batch size and copies left to start ("Batch of 10 · 7 left to
+// start") or "1 print"
+function JobFile ({ job }) {
+  return (
+    <div className={classes.queueCell}>
+      <span className={classes.queueLine}>
+        <span className={`${classes.strong} ${classes.ellipsis}`} title={job.file.filename}>{job.file.filename}</span>
+        {job.samePrinter && <Tag icon={<LockOutlined />} className={classes.tag}>Same printer</Tag>}
+      </span>
+      <Muted small>{jobSizeText(job)}</Muted>
+    </div>
+  )
+}
+
+// What happens next, said from this printer's page ("Starts once the bed is cleared"); a held job's in secondary
+// text, with Release
+function NextCell ({ job, printerId, onRelease }) {
+  const words = whatHappensNext(job, { printerId })
+  if (!words) return null
+  if (words.icon !== 'held') return <span>{words.text}</span>
+  return (
+    <span className={classes.queueLine}>
+      <Muted>{words.text}</Muted>
+      <Button size="small" onClick={() => onRelease(job)}>Release</Button>
+    </span>
+  )
+}
+
+// The waiting jobs this printer qualifies for, in queue order (held ones too, with Release). The one it takes next
+// (Printer.takesNext) is highlighted.
+export function UpNext ({ printer, reload }) {
+  const { token } = theme.useToken()
+  const actions = useQueueActions(reload)
   const columns = [
     positionColumn((job) => job),
-    { key: 'file', title: 'File', render: (_, job) => <JobFile job={job} /> },
-    { key: 'needs', title: 'Needs', width: 200, render: (_, job) => <Needs needs={job.needs} /> },
+    { key: 'file', render: (_, job) => <JobFile job={job} /> },
+    {
+      key: 'needs',
+      width: '22%',
+      render: (_, job) => (
+        <div className={classes.queueCell}>{needsLines(job.needs).map((line, index) => <span key={index}>{line}</span>)}</div>
+      )
+    },
     {
       key: 'next',
-      title: 'What Happens Next',
-      width: 280,
-      render: (_, job) => <WhatHappensNextCell job={job} printerId={printerId} onRelease={onRelease} />
+      width: '34%',
+      render: (_, job) => <NextCell job={job} printerId={printer.id} onRelease={actions.release} />
     }
   ]
+  const takesNext = (job) => job.id === printer.takesNext?.id
 
   return (
-    <QueueSection title="Up Next for This Printer" count={jobs.length}>
-      <Table rowKey="id" columns={columns} dataSource={jobs} pagination={false} size="middle" tableLayout="fixed"
-        scroll={{ x: 720 }} locale={{ emptyText: 'No waiting job for this printer' }} />
+    <QueueSection title="Up Next for This Printer" extra={<Muted>In queue order, jobs it qualifies for</Muted>}>
+      <Table rowKey="id" columns={columns} dataSource={printer.upNext} pagination={false} showHeader={false}
+        size="middle" tableLayout="fixed" scroll={{ x: 560 }} locale={{ emptyText: 'No waiting job for this printer' }}
+        onRow={(job) => (takesNext(job) ? { style: { background: token.colorPrimaryBg } } : {})} />
     </QueueSection>
   )
 }
 
-// The waiting jobs this printer can't take, each with the server's reasons, one per line
-function Skipped ({ rows }) {
+// The waiting jobs this printer can't take, each with the server's reasons, one per line. Nothing when it skips none.
+export function Skipped ({ rows }) {
+  if (rows.length === 0) return null
   const columns = [
     positionColumn(({ printJob }) => printJob),
-    { key: 'file', title: 'File', render: (_, { printJob }) => <JobFile job={printJob} /> },
+    {
+      key: 'file',
+      width: '36%',
+      render: (_, { printJob }) => (
+        <span className={classes.ellipsis} title={printJob.file.filename}>{printJob.file.filename}</span>
+      )
+    },
     {
       key: 'why',
-      title: 'Why',
-      width: 360,
       render: (_, { reasons }) => (
-        <div className={classes.queueCell}>
-          {reasons.map((reason, index) => <span key={index}>{reason}</span>)}
-        </div>
+        <div className={classes.queueCell}>{reasons.map((reason, index) => <Muted key={index}>{reason}</Muted>)}</div>
       )
     }
   ]
 
   return (
-    <QueueSection title="Skipped by This Printer" count={rows.length}>
+    <QueueSection title="Skipped by This Printer" extra={<Muted>{skippedSummary(rows.length)}</Muted>}>
       <Table rowKey={({ printJob }) => printJob.id} columns={columns} dataSource={rows} pagination={false}
-        size="middle" tableLayout="fixed" scroll={{ x: 720 }} />
+        showHeader={false} size="middle" tableLayout="fixed" scroll={{ x: 560 }} />
     </QueueSection>
-  )
-}
-
-// The printer page's part of the global queue (shown only while it is on): the print to clear off the bed, Takes
-// Jobs, Up Next and Skipped. Every action reloads the page's queue query (`reload`). It sits in the page's form: its
-// buttons and switch are type="button" (antd's default), so none submits it.
-export default function PrinterQueue ({ printer, dispatchPaused, reload }) {
-  const actions = useQueueActions(reload)
-  const bedCleared = useBedCleared({ dispatchPaused, onDone: reload })
-  const askBedCleared = (filename) => bedCleared.ask(
-    { id: printer.id, name: printer.name, takesJobs: printer.takesJobs }, filename
-  )
-
-  return (
-    <div className={classes.queue}>
-      {printer.bedNeedsClearing && <BedBanner printer={printer} onBedCleared={askBedCleared} />}
-      <TakesJobs printer={printer} reload={reload} />
-      <UpNext jobs={printer.upNext} printerId={printer.id} onRelease={actions.release} />
-      {printer.skipped.length > 0 && <Skipped rows={printer.skipped} />}
-      {bedCleared.modal}
-    </div>
   )
 }
 
@@ -157,23 +175,24 @@ const printerShape = PropTypes.shape({
   id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   takesJobs: PropTypes.bool.isRequired,
-  bedNeedsClearing: PropTypes.bool.isRequired,
-  printOnBed: PropTypes.shape({ printJob: PropTypes.shape({ file: fileShape.isRequired }) }),
-  upNext: PropTypes.arrayOf(jobShape).isRequired,
-  skipped: PropTypes.arrayOf(skippedShape).isRequired
+  bedNeedsClearing: PropTypes.bool,
+  printOnBed: PropTypes.shape({
+    copyNumber: PropTypes.number,
+    result: PropTypes.string,
+    printJob: PropTypes.shape({ copies: PropTypes.number, file: fileShape.isRequired })
+  }),
+  takesNext: PropTypes.shape({ id: PropTypes.string.isRequired }),
+  upNext: PropTypes.arrayOf(jobShape),
+  skipped: PropTypes.arrayOf(skippedShape)
 })
 
-BedBanner.propTypes = { printer: printerShape.isRequired, onBedCleared: PropTypes.func.isRequired }
-TakesJobs.propTypes = { printer: printerShape.isRequired, reload: PropTypes.func.isRequired }
-JobFile.propTypes = { job: jobShape.isRequired }
-UpNext.propTypes = {
-  jobs: PropTypes.arrayOf(jobShape).isRequired,
-  printerId: PropTypes.string.isRequired,
-  onRelease: PropTypes.func.isRequired
-}
-Skipped.propTypes = { rows: PropTypes.arrayOf(skippedShape).isRequired }
-PrinterQueue.propTypes = {
+TakesJobsSwitch.propTypes = { printer: printerShape.isRequired, reload: PropTypes.func.isRequired }
+BedBanner.propTypes = {
   printer: printerShape.isRequired,
   dispatchPaused: PropTypes.bool.isRequired,
   reload: PropTypes.func.isRequired
 }
+JobFile.propTypes = { job: jobShape.isRequired }
+NextCell.propTypes = { job: jobShape.isRequired, printerId: PropTypes.string.isRequired, onRelease: PropTypes.func.isRequired }
+UpNext.propTypes = { printer: printerShape.isRequired, reload: PropTypes.func.isRequired }
+Skipped.propTypes = { rows: PropTypes.arrayOf(skippedShape).isRequired }

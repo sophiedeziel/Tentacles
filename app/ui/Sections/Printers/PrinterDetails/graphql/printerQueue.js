@@ -25,8 +25,9 @@ const UP_NEXT_FIELDS = gql`
 `
 
 // The printer page's part of the global queue (only asked while it is on): whether the printer takes jobs, the
-// print still on its bed, the waiting jobs it can take and the ones it skips with why, and how many waiting jobs ask
-// for each loaded filament (Loaded Filament's hint). dispatchPaused: what the Bed Cleared modal says next.
+// print still on its bed (the banner's "copy 2 of 10 is done"), the job it takes next (highlighted in Up Next, and the
+// Bed Cleared modal's "Next for it"), the waiting jobs it can take and the ones it skips with why, and how many
+// waiting jobs ask for each loaded filament (Loaded Filament's hint). dispatchPaused: what the Bed Cleared modal says.
 export const PRINTER_QUEUE = gql`
   query PrinterDetailsQueue($id: ID!) {
     globalQueue { dispatchPaused }
@@ -35,7 +36,8 @@ export const PRINTER_QUEUE = gql`
       name
       takesJobs
       bedNeedsClearing
-      printOnBed { id printJob { id file { id filename isDeleted } } }
+      printOnBed { id copyNumber result printJob { id copies file { id filename isDeleted } } }
+      takesNext { id copies copiesLeftToStart file { id filename } }
       upNext { ...PrinterQueueJobFields }
       skipped {
         reasons

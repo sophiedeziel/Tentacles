@@ -10,7 +10,7 @@ module PrintQueue
   #
   #   lineup = PrintQueue::Lineup.new(printer:, status:, entries: PrintQueue::NextJob.candidates, printers:)
   #   lineup.up_next # => [PrintQueue::Job]
-  #   lineup.skipped # => [PrintQueue::Lineup::Skip(entry:, reasons: ["Needs PETG, PLA is loaded here"])]
+  #   lineup.skipped # => [PrintQueue::Lineup::Skip(entry:, reasons: ["Needs PETG. PLA is loaded here"])]
   #
   # Up next: PrintQueue::NextJob#eligible? for the printer, hold aside (a held entry stays up next: it's on hold until
   # released), and its filament loaded (PrintQueue::Fit#filament_loaded?: :ready, or :after_reconnect only because the
@@ -22,7 +22,7 @@ module PrintQueue
   # - its printer list leaves this printer out: "Limited to Voron 2.4"
   # - it's a same-printer batch bound to another printer: "Same-printer batch on Prusa XL"
   # - a hard limitation (PrintQueue::HardLimitations, Fit :cannot): "Bed too small: needs ..."
-  # - else, the filament to change (PrintQueue::Fit#filament_changes): "Needs PLA White, PLA Black is loaded here"
+  # - else, the filament to change (PrintQueue::Fit#filament_changes): "Needs PLA White. PLA Black is loaded here"
   #
   # The printer's own state (not taking jobs, offline, busy, a bed to clear) skips nothing: it delays every entry
   # alike, and its page shows it apart.

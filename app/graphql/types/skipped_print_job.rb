@@ -7,7 +7,7 @@ module Types
 
     field :print_job, Types::PrintJob, null: false
     field :reasons, [String], null: false,
-                              description: 'Why, one sentence each, e.g. "Limited to Voron 2.4" or "Needs PLA White, ' \
+                              description: 'Why, one reason each, e.g. "Limited to Voron 2.4" or "Needs PLA White. ' \
                                            'PLA Black is loaded here". Never empty.'
 
     def print_job = object.entry

@@ -73,8 +73,8 @@ RSpec.describe PrintQueue::Lineup do
       white = entry(position: 2, colour: 'White')
 
       expect(skipped).to eq [
-        [petg, ['Needs PETG, PLA is loaded here']],
-        [white, ['Needs PLA White, PLA Black is loaded here']]
+        [petg, ['Needs PETG. PLA is loaded here']],
+        [white, ['Needs PLA White. PLA Black is loaded here']]
       ]
       expect(lineup.up_next).to be_empty
     end
@@ -82,7 +82,7 @@ RSpec.describe PrintQueue::Lineup do
     it 'says what filament to change while the printer is offline too' do
       petg = entry(materials: ['PETG'])
 
-      expect(skipped(lineup(status: nil))).to eq [[petg, ['Needs PETG, PLA is loaded here']]]
+      expect(skipped(lineup(status: nil))).to eq [[petg, ['Needs PETG. PLA is loaded here']]]
     end
 
     it 'names the printers an entry is limited to' do
@@ -116,7 +116,7 @@ RSpec.describe PrintQueue::Lineup do
       limited = entry(all_capable: false, materials: ['PETG'])
       create(:print_job_printer, job: limited, printer: xl)
 
-      expect(skipped).to eq [[limited, ['Limited to Prusa XL', 'Needs PETG, PLA is loaded here']]]
+      expect(skipped).to eq [[limited, ['Limited to Prusa XL', 'Needs PETG. PLA is loaded here']]]
     end
 
     it 'skips an entry whose G-code is still being read' do

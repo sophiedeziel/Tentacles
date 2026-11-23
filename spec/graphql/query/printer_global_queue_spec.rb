@@ -108,10 +108,10 @@ RSpec.describe 'Query printer, its global queue fields', type: :request do
           'whatHappensNext' => { 'kind' => 'ON_HOLD', 'printer' => nil } }
       ]
       expect(data['printer']['skipped']).to eq [
-        { 'printJob' => { 'id' => id(petg), 'waitingPosition' => 2 }, 'reasons' => ['Needs PETG, PLA is loaded here'] },
+        { 'printJob' => { 'id' => id(petg), 'waitingPosition' => 2 }, 'reasons' => ['Needs PETG. PLA is loaded here'] },
         { 'printJob' => { 'id' => id(limited), 'waitingPosition' => 4 }, 'reasons' => ['Limited to Voron 2.4'] },
         { 'printJob' => { 'id' => id(white), 'waitingPosition' => 5 },
-          'reasons' => ['Needs PLA White, PLA Black is loaded here'] }
+          'reasons' => ['Needs PLA White. PLA Black is loaded here'] }
       ]
     end
 

@@ -264,7 +264,8 @@ describe('LoadedFilament', () => {
     it('counts the waiting jobs that ask for it', async () => {
       renderCard({ loaded: [filament('PLA', 'White')], demand: asking('PLA', 'White', 3) })
       await loadedCard()
-      expect(screen.getByText('3 waiting jobs ask for PLA White.')).toBeInTheDocument()
+      expect(screen.getByText('PLA White matches 3 waiting jobs.')).toBeInTheDocument()
+      expect(screen.getByText('Set this when you swap spools. The queue matches jobs against it.')).toBeInTheDocument()
     })
 
     it('never shows a count for another filament (changed since)', async () => {
@@ -285,6 +286,7 @@ describe('LoadedFilament', () => {
       await loadedCard()
       expect(await screen.findByText('Updated 2 h ago')).toBeInTheDocument()
       expect(screen.queryByText(/waiting job/)).not.toBeInTheDocument()
+      expect(screen.getByText('Set this when you swap spools.')).toBeInTheDocument()
     })
   })
 })
