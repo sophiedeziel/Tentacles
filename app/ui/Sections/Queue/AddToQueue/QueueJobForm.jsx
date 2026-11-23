@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import { useQuery } from '@apollo/client/react'
 import { Button, theme } from 'antd'
 
+import useDebouncedValue from '../../../utils/useDebouncedValue'
 import { PRINTER_FITS, QUEUE_ESTIMATE } from './graphql/addToQueue'
 import {
   clearAll, fillEmpty, gcodeFilament, jobVariables, savedColour, selectAll, selectedPrinterIds, tick
@@ -10,6 +11,10 @@ import {
 import { FileCard, FilamentCard, OrderCard, PrintersCard } from './sections'
 import SummaryCard from './SummaryCard'
 import * as classes from './AddToQueue.module.less'
+
+// How long the Summary waits for the form to settle before it asks for a new estimate: clicking + to go from 1 to 10
+// copies asks once, not ten times (each estimate simulates the whole queue)
+export const ESTIMATE_DELAY = 300
 
 export const NEW_JOB = {
   copies: 1,
@@ -46,8 +51,6 @@ export default function QueueJobForm ({
   const [saving, setSaving] = useState(false)
 
   const gcode = useMemo(() => gcodeFilament(file.gcodeSummary), [file.gcodeSummary])
-  // Once the G-code is read, its values fill the fields still empty, and nothing else
-  useEffect(() => { setFields((current) => fillEmpty(current, gcode)) }, [gcode])
 
   const material = fields.material || null
   const colour = savedColour(fields.colour)
@@ -56,20 +59,31 @@ export default function QueueJobForm ({
   const selected = useMemo(() => (fits ? selectedPrinterIds(fits, selection) : []), [fits, selection])
 
   const variables = jobVariables({ copies, material, colour, samePrinter, position, held }, { fits: fits ?? [], selection })
-  const estimateQuery = useQuery(QUEUE_ESTIMATE, { variables: { fileId: file.id, printJobId, ...variables } })
+  // The last estimate stays shown while the next one loads
+  const estimateVariables = useDebouncedValue({ fileId: file.id, printJobId, ...variables }, ESTIMATE_DELAY)
+  const estimateQuery = useQuery(QUEUE_ESTIMATE, { variables: estimateVariables })
   const estimate = (estimateQuery.data ?? estimateQuery.previousData)?.queueEstimate ?? null
 
-  // A summary read since the page opened changes the fits and the totals even when the fields don't
+  // Once the G-code is read, its values fill the fields still empty, and nothing else. Filling a field changes the
+  // queries' variables, so they ask again on their own; a summary read that fills nothing (the person set both fields)
+  // still changes the fits and the totals, so they're asked again.
   const { refetch: refetchFits } = fitsQuery
   const { refetch: refetchEstimate } = estimateQuery
+  const latestFields = useRef(fields)
+  useEffect(() => { latestFields.current = fields }, [fields])
   const status = useRef(gcode.status)
   useEffect(() => {
     const was = status.current
     status.current = gcode.status
-    if (was === gcode.status || gcode.status !== 'READY') return
-    refetchFits()
-    refetchEstimate()
-  }, [gcode.status, refetchFits, refetchEstimate])
+    const current = latestFields.current
+    const filled = fillEmpty(current, gcode)
+    if (filled.material !== current.material || filled.colour !== current.colour) {
+      setFields(filled)
+    } else if (was !== gcode.status && gcode.status === 'READY') {
+      refetchFits()
+      refetchEstimate()
+    }
+  }, [gcode, refetchFits, refetchEstimate])
 
   const selectedFits = (fits ?? []).filter((fit) => selected.includes(fit.printer.id))
   const job = {

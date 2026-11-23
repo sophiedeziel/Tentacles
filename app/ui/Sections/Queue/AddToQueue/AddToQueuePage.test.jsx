@@ -339,6 +339,18 @@ describe('AddToQueuePage', () => {
     expect(await within(summaryCard).findByText('All copies, one after another')).toBeInTheDocument()
   })
 
+  it('asks for one estimate once the copies settle, not one per keystroke', async () => {
+    const calls = renderPage()
+    await loaded()
+    const asked = calls.estimates.length
+
+    await setCopies(25)
+
+    await waitFor(() => expect(calls.estimates.at(-1)).toMatchObject({ copies: 25 }))
+    // Typing "25" goes through 2 copies on the way: it's never asked for
+    expect(calls.estimates.slice(asked).map((variables) => variables.copies)).not.toContain(2)
+  })
+
   it('saves the untouched selection as every printer that can print it, then goes back to the queue', async () => {
     const calls = renderPage()
     await loaded()
