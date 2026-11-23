@@ -10,89 +10,9 @@ import { App } from 'antd'
 import AddToQueuePage from './AddToQueuePage'
 import QueueJobForm from './QueueJobForm'
 import { ADD_PRINT_JOB, ADD_TO_QUEUE_FILE, PRINTER_FITS, QUEUE_ESTIMATE } from './graphql/addToQueue'
+import { FAILED, PENDING, estimateFor, file, fitsFor, summary, tool } from './fixtures'
 
 const always = { maxUsageCount: Number.POSITIVE_INFINITY }
-
-const tool = (overrides = {}) => ({
-  __typename: 'GcodeTool', tool: 0, material: 'PLA', materialRaw: 'PLA', colourHex: '#1A1A1A', grams: 18, metres: 6, ...overrides
-})
-const summary = (overrides = {}) => ({
-  __typename: 'GcodeSummary',
-  status: 'READY',
-  analysedAt: '2026-11-22T12:00:00Z',
-  error: null,
-  slicer: 'PrusaSlicer',
-  slicerVersion: '2.9.6',
-  printSeconds: 4200,
-  filamentGrams: 18,
-  filamentMetres: 6,
-  footprint: {
-    __typename: 'GcodeFootprint', width: 120, depth: 80, height: 28, minX: 0, maxX: 120, minY: 0, maxY: 80, source: 'moves'
-  },
-  toolCount: 1,
-  toolChanges: 0,
-  tools: [tool()],
-  filamentChanges: [],
-  ...overrides
-})
-const PENDING = summary({ status: 'PENDING', slicer: null, printSeconds: null, footprint: null, toolCount: null, tools: [] })
-const FAILED = summary({ status: 'FAILED', error: 'Unreadable', slicer: null, footprint: null, toolCount: null, tools: [] })
-const file = (gcodeSummary = summary(), overrides = {}) => ({
-  __typename: 'File',
-  id: '7',
-  filename: 'bracket_v3.gcode',
-  filesize: 2400000,
-  notes: 'Print flat side down, no supports.',
-  isDeleted: false,
-  gcodeSummary,
-  ...overrides
-})
-
-const printer = (id, name, family, loaded) => ({
-  __typename: 'Printer',
-  id,
-  name,
-  filamentSlots: 1,
-  status: family && { __typename: 'PrinterStatus', stateFamily: family, stateText: family.charAt(0) + family.slice(1).toLowerCase() },
-  loadedFilaments: loaded ? [{ __typename: 'LoadedFilament', slot: 1, ...loaded }] : []
-})
-const reason = (code, message) => ({ __typename: 'FitReason', code, message })
-const fit = (printerData, result, reasons = [], hardLimit = false) => ({
-  __typename: 'PrinterFit', printer: printerData, result, reasons, hardLimit
-})
-const MK4 = printer('1', 'Prusa MK4', 'PRINTING', { material: 'PLA', colour: 'Black' })
-const ENDER = printer('2', 'Ender 3 V2', 'OPERATIONAL', { material: 'PLA', colour: 'Black' })
-const VORON = printer('3', 'Voron 2.4', 'PAUSED', { material: 'PETG', colour: 'Grey' })
-const DELTA = printer('5', 'Mini Delta', 'OPERATIONAL', null)
-
-// The fits for the filament asked for: PLA puts the Voron after a filament change; PETG the MK4 and the Ender
-const fitsFor = ({ material }) => [
-  fit(MK4, material === 'PETG' ? 'AFTER_FILAMENT_CHANGE' : 'READY'),
-  fit(ENDER, material === 'PETG' ? 'AFTER_FILAMENT_CHANGE' : 'READY'),
-  fit(VORON, material === 'PETG' ? 'READY' : 'AFTER_FILAMENT_CHANGE'),
-  fit(DELTA, 'CANNOT', [reason('BED_TOO_SMALL', 'Bed too small: needs 120 × 80 mm, has a 110 mm round bed')], true)
-]
-
-const estimateFor = ({ copies }) => ({
-  __typename: 'QueueEstimate',
-  printing: 2,
-  waitingJobs: 5,
-  jobsAhead: 5,
-  printsAhead: 15,
-  copiesToPrint: copies,
-  filaments: [{ __typename: 'EstimatedFilament', tool: 0, material: 'PLA', colour: 'Black', grams: 18 * copies, metres: 6 * copies }],
-  filamentGrams: 18 * copies,
-  filamentMetres: 6 * copies,
-  printSeconds: 4200 * copies,
-  starts: {
-    __typename: 'WhatHappensNext',
-    kind: 'AFTER_CURRENT_PRINT',
-    printer: { __typename: 'Printer', id: '1', name: 'Prusa MK4' },
-    jobsAhead: 7,
-    dispatchPaused: false,
-    startsAt: null
-  }
-})
 
 // A server answering every fits and estimate request, and addToQueue with `saveResult`. `calls` records what was asked.
 const server = ({ fileData = file(), saveResult = { success: true, errors: [] } } = {}) => {

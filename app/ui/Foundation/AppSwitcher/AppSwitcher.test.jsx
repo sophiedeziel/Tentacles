@@ -68,4 +68,20 @@ describe('AppSwitcher', () => {
     await act(() => new Promise((resolve) => setTimeout(resolve, 50)))
     expect(container).toBeEmptyDOMElement()
   })
+
+  it('serves the Edit page at /queue/:printJobId/edit while it is on', async () => {
+    renderAt('/queue/12/edit', [flag(true)])
+
+    // The page loads lazily, then fails to load its data (no mocks)
+    expect(await screen.findByText('Could not load the job', {}, { timeout: 5000 })).toBeInTheDocument()
+  })
+
+  it('has no /queue/:printJobId/edit while the global queue is off', async () => {
+    let answered = false
+    const { container } = renderAt('/queue/12/edit', [flag(false, () => { answered = true })])
+
+    await waitFor(() => expect(answered).toBe(true))
+    await act(() => new Promise((resolve) => setTimeout(resolve, 50)))
+    expect(container).toBeEmptyDOMElement()
+  })
 })

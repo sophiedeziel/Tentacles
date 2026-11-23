@@ -3,7 +3,8 @@ import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router'
 import { App, Button, Dropdown } from 'antd'
 import {
-  ArrowDownOutlined, ArrowUpOutlined, DeleteOutlined, EllipsisOutlined, PauseCircleOutlined, PlayCircleOutlined,
+  ArrowDownOutlined, ArrowUpOutlined, DeleteOutlined, EditOutlined, EllipsisOutlined, PauseCircleOutlined,
+  PlayCircleOutlined,
   PlusOutlined, StopOutlined, UndoOutlined, UnorderedListOutlined
 } from '@ant-design/icons'
 
@@ -11,7 +12,7 @@ import { GcodeFileOutlined, Printer3DOutlined, PrintQueueOutlined } from '../../
 import { cancelConfirmation, removeConfirmation } from './confirmations'
 
 // The "⋯" menus of the Waiting and Printing rows (antd Dropdown), as the MoreMenu frame draws them (without Open
-// Project and Edit Printers and Options, which come with projects and the Add to Queue screen). Each entry runs one
+// Project, which comes with projects). Each entry runs one
 // of useQueueActions' actions, opens the copies dialog, shows a batch or opens a page; Remove from Queue and Cancel
 // Print ask first, in a plain Modal.confirm.
 
@@ -41,8 +42,9 @@ function MoreMenu ({ label, items, onClick }) {
   )
 }
 
-// A waiting job: Move to Top / Bottom, Hold or Release | Change Number of Copies and Show Copies (a batch) or Print
-// More Copies (a single print), Release to Other Printers (a bound same-printer batch) | Open File | Remove from Queue.
+// A waiting job: Move to Top / Bottom, Hold or Release | Edit Printers and Options (its Edit page), Change Number of
+// Copies and Show Copies (a batch) or Print More Copies (a single print), Release to Other Printers (a bound
+// same-printer batch) | Open File | Remove from Queue.
 // `rank` and `count`: where it is in the queue. `onCopies(job)`: the copies dialog; `onShow(job)`: expands its copies.
 export function WaitingMenu ({ job, rank, count, actions, onCopies, onShow }) {
   const confirm = useConfirm()
@@ -53,6 +55,7 @@ export function WaitingMenu ({ job, rank, count, actions, onCopies, onShow }) {
     item('bottom', 'Move to Bottom', ArrowDownOutlined, { disabled: rank === count }),
     job.held ? item('release', 'Release', PlayCircleOutlined) : item('hold', 'Hold', PauseCircleOutlined),
     DIVIDER,
+    item('edit', 'Edit Printers and Options', EditOutlined),
     ...(batch
       ? [item('copies', 'Change Number of Copies', PlusOutlined), item('show', 'Show Copies', UnorderedListOutlined)]
       : [item('copies', 'Print More Copies', PlusOutlined)]),
@@ -68,6 +71,7 @@ export function WaitingMenu ({ job, rank, count, actions, onCopies, onShow }) {
     else if (key === 'bottom') actions.move(job, { to: 'BOTTOM' })
     else if (key === 'copies') onCopies(job)
     else if (key === 'show') onShow(job)
+    else if (key === 'edit') navigate(`/queue/${job.id}/edit`)
     else if (key === 'file') navigate(`/files/${job.file.id}`)
     else if (key === 'remove') confirm(removeConfirmation(job), () => actions.remove(job))
     else actions[key](job)
