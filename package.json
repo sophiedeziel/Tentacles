@@ -88,7 +88,7 @@
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
-    "@testing-library/user-event": "^14.6.12",
+    "@testing-library/user-event": "^14.6.13",
     "@vitejs/plugin-react": "^6.3.0",
     "css-loader": "^7.1.4",
     "eslint": "^9.39.2",
